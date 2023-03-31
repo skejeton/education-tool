@@ -1,0 +1,220 @@
+#include <cassert>
+#include "imgui_utiliities.hpp"
+#include "flashbacks.hpp"
+#include <cstdio>
+
+FlashbacksAllocatedDialog Flashbacks::alloc_dialog() {
+  for (size_t i = 0; i < FLASHBACKS_DIALOGS_MAX; i++) {
+    if (this->dialogs[i].taken == false) {
+      this->dialogs[i] = {};
+      this->dialogs[i].taken = true;
+      return { i + 1, &this->dialogs[i] };
+    }
+  }
+
+  return { 0 };
+}
+
+
+FlashbacksDialog *Flashbacks::get_from_id(FlashbacksDialogId id) {
+  size_t index = id - 1;
+  if (index >= FLASHBACKS_DIALOGS_MAX) {
+    return nullptr;
+  }
+  
+  return &this->dialogs[index];
+}
+
+
+void Flashbacks::touch(FlashbacksDialogId id, FlashbacksDialogChoice choice) {
+  FlashbacksDialog *dialog = this->get_from_id(id);
+  assert(dialog && "Invalid dialog ID");
+
+  dialog->choice = choice;
+  
+  int index = -1, i = 0;
+
+  for (auto item : this->backlog) {
+    if (item == id) {
+      index = i;
+      break;
+    }
+    i++;
+  }
+
+  if (index == -1) {
+    backlog.push_back(id);
+  } else {
+    backlog.erase(backlog.begin()+index);
+    backlog.push_back(id);
+  }
+}
+
+
+void FlashbacksDialogMaker::append_dialog(FlashbacksDialogPrototype proto) {
+  FlashbacksAllocatedDialog allocated = this->flashbacks->alloc_dialog();
+  assert(allocated.id && "Couldn't allocate!");
+
+  if (starter_id == 0) {
+    this->starter_id = allocated.id;
+  }
+
+  if (allocated.id) {
+    allocated.pointer->text = proto.text;
+    allocated.pointer->answer = proto.answer;
+ 
+    if (this->previous_id != 0) {
+      FlashbacksDialog *previous = this->flashbacks->get_from_id(this->previous_id);
+      
+      previous->next = allocated.id;
+      allocated.pointer->prev = this->previous_id;
+    }
+
+    this->previous_id = allocated.id;
+  }
+}
+
+
+FlashbacksDialogMaker FlashbacksDialogMaker::from(Flashbacks *flashbacks) {
+  FlashbacksDialogMaker result = {};
+  result.flashbacks = flashbacks;
+
+  return result;
+}
+
+
+void FlashbacksGui::begin_sequence(FlashbacksDialogId start) {
+  // if ID is 0, resort to inactive state
+  if (start == 0) {
+    this->mode = this->prev_mode;
+  } else {
+    this->mode = Mode::SEQUENCE;
+    this->sequence_current = start;
+    this->answer_mode = AnswerMode::UNKNOWN;
+  }
+}
+
+void show_sequence(FlashbacksGui *gui) {
+  FlashbacksDialog *dialog = gui->flashbacks->get_from_id(gui->sequence_current);
+  assert(dialog && "Invalid dialog ID");
+
+  ImGui::SetNextWindowPos({ (1024-320)/2, (786-200)/2 });
+  ImGui::SetNextWindowSize({ 320, 200 });
+  ImGui::Begin("Dialogue");
+  {
+    ImGui::TextWrapped("%s", dialog->text);
+    
+    if (gui->answer_mode != FlashbacksGui::AnswerMode::UNKNOWN) {
+      ImGui::PushStyleColor(ImGuiCol_Text, { 0, 1, 0, 1 });
+      ImGui::TextWrapped("%s", dialog->answer);
+      ImGui::PopStyleColor();
+    }
+
+    iu_bottom_align_button();
+    if (ImGui::Button("Close")) {
+      gui->begin_sequence(0);
+    }
+    ImGui::SameLine();
+
+    if (dialog->answer) {
+      switch (gui->answer_mode) {
+        case FlashbacksGui::AnswerMode::UNKNOWN:
+          if (ImGui::Button("Show Answer")) {
+            gui->answer_mode = FlashbacksGui::AnswerMode::SEEN_ANSWER;
+          }
+          break;
+        case FlashbacksGui::AnswerMode::SEEN_ANSWER:
+          if (ImGui::Button("Guessed Wrong")) {
+            gui->flashbacks->touch(gui->sequence_current, FlashbacksDialogChoice::WRONG);
+            gui->answer_mode = FlashbacksGui::AnswerMode::CHOSE_ANSWER;
+          }
+          ImGui::SameLine();
+          if (ImGui::Button("Guessed Correct")) {
+            gui->flashbacks->touch(gui->sequence_current, FlashbacksDialogChoice::CORRECT);
+            gui->answer_mode = FlashbacksGui::AnswerMode::CHOSE_ANSWER;
+          }
+          break;
+        case FlashbacksGui::AnswerMode::CHOSE_ANSWER:
+          if (ImGui::Button("Next")) {
+            gui->begin_sequence(dialog->next);
+          }
+          break;
+      }
+    } else {
+      if (ImGui::Button("Next")) {
+        gui->flashbacks->touch(gui->sequence_current, FlashbacksDialogChoice::UNDEFINED);
+        gui->begin_sequence(dialog->next);
+      }
+    }
+  }
+  ImGui::End();
+}
+
+FlashbacksGui FlashbacksGui::create(Flashbacks *flashbacks) {
+  FlashbacksGui result = {};
+  result.flashbacks = flashbacks;
+
+  return result;
+}
+
+void FlashbacksGui::show() {
+  ImGui::Begin("Flashback Controls", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+  if (ImGui::Button("Backlog")) {
+    if (this->mode == Mode::BACKLOG) {
+      this->mode = Mode::INACTIVE;
+    } else {
+      this->mode = Mode::BACKLOG;
+    }
+  }
+  ImGui::End();
+
+  switch (mode) {
+    case Mode::INACTIVE:
+      this->prev_mode = Mode::INACTIVE;
+      break;
+    case Mode::SEQUENCE:
+      show_sequence(this);
+      break;
+    case Mode::BACKLOG:
+      this->prev_mode = Mode::BACKLOG;
+
+      ImGui::SetNextWindowPos({ (1024-400)/2, (786-500)/2 });
+      ImGui::SetNextWindowSize({ 400, 500 });
+      ImGui::Begin("Backlog");
+      {
+        if (ImGui::BeginTable("Backlog-Table", 2))
+        {
+          ImGui::TableSetupColumn("c1", ImGuiTableColumnFlags_WidthStretch, 1);
+          ImGui::TableSetupColumn("c2", ImGuiTableColumnFlags_WidthFixed, 50);
+          for (auto item : this->flashbacks->backlog) {
+            FlashbacksDialog *dialog = this->flashbacks->get_from_id(item);
+            assert(dialog && "Invalid dialog ID");
+
+            ImVec4 color = { 1, 1, 1, 1 };
+            if (dialog->choice == FlashbacksDialogChoice::WRONG) {
+              color = { 1, 0, 0, 1 };
+            } 
+            if (dialog->choice == FlashbacksDialogChoice::CORRECT) {
+              color = { 0, 1, 0, 1 };
+            }
+
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::PushStyleColor(ImGuiCol_Text, color);
+            ImGui::Text("%s", dialog->text);
+            ImGui::PopStyleColor();
+            ImGui::TableSetColumnIndex(1);
+            ImGui::PushID(item);
+            if (ImGui::Button("Retry")) {
+              this->begin_sequence(item);
+            }
+            ImGui::PopID();
+          }
+          ImGui::EndTable();
+        }
+      }
+      ImGui::End();
+      // TODO
+      break;
+  }
+}
