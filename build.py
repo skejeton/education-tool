@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 
 class Arguments:
   def __init__(self, target, switches):
@@ -24,6 +25,19 @@ def parse_arguments(argv):
 
   return Arguments(target, switches)
 
+system_features = {
+  "has_emcc": False
+}
+
+def target_build_wasm():
+  if os.name != "nt" and system_features["has_emcc"]:
+    return "./scripts/build-wasm.sh"
+  else:
+    if os.name == "nt":
+      raise Exception("Can not build WASM on Windows, please, install WSL2 with Emscripten SDK")
+    if not system_features["has_emcc"]:
+      raise Exception("Can not build WASM because you need to install Emscripten SDK")
+ 
 def target_build():
   if os.name == "nt":
     return "if not exist bin mkdir bin\nlib\\sokol-tools-bin\\bin\\win32\\sokol-shdc.exe --input src/shaders/amalgamation.glsl --output src/shaders.hxx --slang hlsl5:glsl100 && cd bin && cmake -DCMAKE_BUILD_TYPE=Debug .. && msbuild catedu.sln /property:Configuration=Debug && cd .."
@@ -36,18 +50,25 @@ def target_run():
   else:
     return target_build() + " && ./bin/debug/catedu.exe\n"
 
+def init_system_features():
+  if shutil.which("emcc") is not None:
+    system_features["has_emcc"] = True
+
 def main():
   arguments = parse_arguments(sys.argv[1:])
   script = ""
 
-  if arguments.target == "build":
+  init_system_features()
+
+  if arguments.target == "build-wasm":
+    script = target_build_wasm()
+  elif arguments.target == "build":
     script = target_build()
   elif arguments.target == "run":
     script = target_run()
   else:
     raise Exception(f"Unknown target: {arguments.target}")
 
-  print(script)
   lines = script.split('\n')
   for line in lines:
     os.system(line)
