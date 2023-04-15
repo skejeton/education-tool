@@ -204,7 +204,7 @@ void render_grid(PlacementGrid *grid) {
 }
 
 void render_building(int x, int y, int h) {
-  Vector2 position = { x, y };
+  Vector2 position = { (float)x, (float)y };
   float building_height = h * 2 + 2;
   Box3 building = box3_extrude_from_point({ position.x, building_height/2, position.y }, { 4, building_height/2, 4 });
   boxdraw_push(&boxdraw, boxdraw_cmdgradient(building, { 0.5, 0.5, 0.5, 1.0 }, { 0.4, 0.3, 0.3, 1.0 }));
