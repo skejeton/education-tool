@@ -10,6 +10,7 @@ void Input::update()
 {
   // Reset deltas
   this->mouse_delta = {0, 0};
+  this->mouse_wheel = 0;
 
   // Reset one-frame input states
   for (int i = 0; i < 512; ++i) {
@@ -25,7 +26,11 @@ void Input::update()
 
 void Input::pass_event(const sapp_event *event)
 {
+  int mouse_wheel;
   switch (event->type) {
+    case SAPP_EVENTTYPE_MOUSE_SCROLL:
+      this->mouse_wheel = event->scroll_y == 0 ? 0 : (event->scroll_y < 0 ? -1 : 1);
+      break;
     case SAPP_EVENTTYPE_KEY_DOWN:
       this->key_states[event->key_code].held = true;
       this->key_states[event->key_code].pressed = true;

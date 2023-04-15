@@ -4,7 +4,7 @@
 
 #ifndef H_BOXDRAW_CATEDU
 #define H_BOXDRAW_CATEDU
-#define BOXDRAW_CMD_MAX 128
+#define BOXDRAW_CMD_MAX 2048
 
 #include "math.hpp"
 #include "sokol/sokol_app.h"

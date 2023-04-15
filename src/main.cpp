@@ -90,6 +90,142 @@ void init(void) {
 
 int bheight = 0;
 
+
+struct Building {
+  int x, y, h;
+};
+
+struct World {
+  Building buildings[32];
+  size_t buildings_count;
+};
+
+enum PlacementGridTile {
+  PLACEMENT_GRID_TILE_EMPTY,
+  PLACEMENT_GRID_TILE_OCCUPIED,
+  PLACEMENT_GRID_TILE_CANTPLACE,
+  PLACEMENT_GRID_TILE_CANPLACE,
+};
+
+struct PlacementGrid {
+  PlacementGridTile tiles[32][32];
+};
+
+struct Placement {
+  int height;
+  int x, y;
+};
+
+Vector4 placement_colorscheme[4] = {
+  { 0.0f, 0.0f, 0.0f, 0.0f },
+  { 1.0f, 0.0f, 0.5f, 1.0f },
+  { 1.0f, 0.0f, 0.0f, 1.0f },
+  { 0.0f, 1.0f, 0.0f, 1.0f },
+};
+
+bool map_ray_to_grid(Ray3 ray, int *x, int *y) {
+  float ground_t;
+  if (ray3_vs_horizontal_plane(ray, 0, &ground_t)) {
+    Vector3 at = ray3_at(ray, ground_t);
+    *x = at.x+16;
+    *y = at.z+16;
+    return *x >= 0 && *x < 32 && *y >= 0 && *y < 32;
+  }
+
+  return false;
+}
+
+bool tile_available(PlacementGrid *grid, int x, int y) {
+  return x >= 0 && x < 32 && y >= 0 && y < 32;
+}
+
+bool place_building(PlacementGrid *grid, int x, int y, bool placed) {
+  if (placed) {
+    for (int i = -4; i < 4; i++) {
+      for (int j = -4; j < 4; j++) {
+        if (tile_available(grid, i+x, j+y)) {
+          grid->tiles[i+x][j+y] = PLACEMENT_GRID_TILE_OCCUPIED;
+        }
+      }
+    }
+  } else {
+    bool can_place = true;
+    for (int i = -4; i < 4; i++) {
+      for (int j = -4; j < 4; j++) {
+        if (!tile_available(grid, i+x, j+y) || grid->tiles[i+x][j+y] == PLACEMENT_GRID_TILE_OCCUPIED) {
+          can_place = false;
+          goto assign;
+        }
+      }
+    }
+
+    assign:
+    for (int i = -4; i < 4; i++) {
+      for (int j = -4; j < 4; j++) {
+        if (tile_available(grid, i+x, j+y)) {
+          grid->tiles[i+x][j+y] = can_place ? PLACEMENT_GRID_TILE_CANPLACE : PLACEMENT_GRID_TILE_CANTPLACE;
+        }
+      }
+    }
+
+    return can_place;
+  }
+
+  return false;
+}
+
+void world_place_building(World *world, Building building) {
+  assert(world->buildings_count < 32 && "Out of buildings");
+  world->buildings[world->buildings_count++] = building;
+}
+
+void render_grid(PlacementGrid *grid) {
+  Vector4 grid_color = {1.0, 1.0, 0.0, 1.0};
+  Vector4 occupied_color = {1.0, 0.0, 0.0, 1.0};
+
+  for (int i = -16; i <= 16; i++) {
+    Box3 box = box3_extrude_from_point( { (float)i, 0.0f, 0.0f }, { 0.05f, 0.15f, 16.0f });
+    boxdraw_push(&boxdraw, boxdraw_cmdcolored(box, grid_color));
+  }
+  for (int i = -16; i <= 16; i++) {
+    Box3 box = box3_extrude_from_point( { 0.0f, 0.0f, (float)i }, { 16.0f, 0.15f, 0.05f });
+    boxdraw_push(&boxdraw, boxdraw_cmdcolored(box, grid_color));
+  }
+  for (int i = 0; i < 32; i++) {
+    for (int j = 0; j < 32; j++) {
+      if (grid->tiles[i][j]) {
+        int x = (i - 16);
+        int y = (j - 16);
+        Box3 box = box3_extrude_from_point( { (float)x+0.5f, 0.0f, (float)y+0.5f }, { 0.5f, 0.13f, 0.5f });
+        boxdraw_push(&boxdraw, boxdraw_cmdcolored(box, placement_colorscheme[grid->tiles[i][j]]));
+      }
+    }
+  }
+}
+
+void render_building(int x, int y, int h) {
+  Vector2 position = { x, y };
+  float building_height = h * 2 + 2;
+  Box3 building = box3_extrude_from_point({ position.x, building_height/2, position.y }, { 4, building_height/2, 4 });
+  boxdraw_push(&boxdraw, boxdraw_cmdgradient(building, { 0.5, 0.5, 0.5, 1.0 }, { 0.4, 0.3, 0.3, 1.0 }));
+  for (int t = 0; t < h; t++) {
+    for (int x = -1; x <= 1; x++) {
+      float y = t * 2 + 2;
+      Box3 window = box3_extrude_from_point( { position.x+x*2.0f, y, position.y }, { 0.5, 0.75, 4.05 });
+      boxdraw_push(&boxdraw, boxdraw_cmdgradient(window, { 0.0, 0.0, 1.0, 1.0 }, { 1.0, 0.0, 0.1, 1.0 }));
+    }
+    for (int x = -1; x <= 1; x++) {
+      float y = t * 2 + 2;
+      Box3 window = box3_extrude_from_point( { position.x, y, position.y+x*2.0f }, { 4.05, 0.75, 0.5 });
+      boxdraw_push(&boxdraw, boxdraw_cmdgradient(window, { 0.0, 0.0, 1.0, 1.0 }, { 1.0, 0.0, 0.1, 1.0 }));
+    }
+  }
+}
+
+World global_world;
+Placement current_placement;
+bool show_buildings = true;
+
 void frame(void) {
   const int width = sapp_width();
   const int height = sapp_height();
@@ -99,12 +235,10 @@ void frame(void) {
     camera_input_apply(&camera, &inputs);
   }
 
-  if (inputs.key_states[SAPP_KEYCODE_UP].pressed) {
-    bheight += 1;
+  if (inputs.key_states[SAPP_KEYCODE_X].pressed) {
+    show_buildings = !show_buildings;
   }
-  if (inputs.key_states[SAPP_KEYCODE_DOWN].pressed) {
-    bheight -= 1;
-  }
+  bheight += inputs.mouse_wheel;
 
   if (bheight < 1) bheight = 1;
   if (bheight > 9) bheight = 9;
@@ -133,30 +267,38 @@ void frame(void) {
   ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
 
   draw_list->AddCircle( { width / 2.0f, height / 2.0f }, 4, 0xFFFFFFFF);
-  
-  {
-    Box3 floor = box3_extrude_from_point({ 0, 0, 0 }, { 50, 0.1, 50 });
-    boxdraw_push(&boxdraw, boxdraw_cmdcolored(floor, { 0.6, 0.6, 0.3, 1.0 }));
-  
-    float building_height = bheight * 4 + 4;
-    Box3 building = box3_extrude_from_point({ 0, building_height/2, 0 }, { 8, building_height/2, 8 });
-    boxdraw_push(&boxdraw, boxdraw_cmdgradient(building, { 0.5, 0.5, 0.5, 1.0 }, { 0.4, 0.3, 0.3, 1.0 }));
+  PlacementGrid grid = {};
+ 
+  Vector2 positions[3] = { { 0, 0 }, { 9, 0 }, { 9, 9 } };
+  int heights[3] = { 3, 4, 1 };
 
-    for (int t = 0; t < bheight; t++) {
-      for (int x = -1; x <= 1; x++) {
-        float y = t*4 + 4;
-        Box3 window = box3_extrude_from_point( { x*4.0f, y, 0 }, { 1, 1.5, 8.1 });
-        boxdraw_push(&boxdraw, boxdraw_cmdgradient(window, { 0.0, 0.0, 1.0, 1.0 }, { 1.0, 0.0, 0.1, 1.0 }));
+  for (int i = 0; i < global_world.buildings_count; i++) {
+    Building building = global_world.buildings[i];
+    place_building(&grid, building.x + 16, building.y + 16, true);
+    if (show_buildings) {
+      render_building(building.x, building.y, building.h);
+    }
+  }
+
+
+  int rx, ry;
+  if (map_ray_to_grid(camera.ray(), &rx, &ry)) {
+    if (place_building(&grid, rx, ry, false)) {
+      if (show_buildings) {
+        render_building(rx - 16, ry - 16, bheight);
       }
-
-      for (int x = -1; x <= 1; x++) {
-        float y = t*4 + 4;
-        Box3 window = box3_extrude_from_point( { 0, y, x*4.0f }, { 8.1, 1.5, 1 });
-        boxdraw_push(&boxdraw, boxdraw_cmdgradient(window, { 0.0, 0.0, 1.0, 1.0 }, { 1.0, 0.0, 0.1, 1.0 }));
+      if (inputs.mouse_states[0].pressed) {
+        world_place_building(&global_world, Building { rx - 16, ry - 16, bheight });
       }
     }
   }
 
+  render_grid(&grid);
+
+
+  Box3 floor = box3_extrude_from_point({ 0, 0, 0 }, { 50, 0.1, 50 });
+  boxdraw_push(&boxdraw, boxdraw_cmdcolored(floor, { 0.6, 0.6, 0.3, 1.0 }));
+ 
   for (
     SceneIterator iterator = scene_iterator_begin(&game_scene);
     scene_iterator_going(&iterator);

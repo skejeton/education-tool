@@ -166,7 +166,6 @@ inline bool vector3_vs_box3(Vector3 vector, Box3 box) {
   return x_plane && y_plane && z_plane;
 }
 
-#if 1
 inline bool ray3_vs_box3_slow(Ray3 r, Box3 b, float max_distance) {
   r.direction = vector3_normalize(r.direction);
   Vector3 dirfrac;
@@ -183,36 +182,38 @@ inline bool ray3_vs_box3_slow(Ray3 r, Box3 b, float max_distance) {
   float tmin = fmax(fmaxf(fminf(t1, t2), fminf(t3, t4)), fminf(t5, t6));
   float tmax = fmin(fminf(fmaxf(t1, t2), fmaxf(t3, t4)), fmaxf(t5, t6));
 
-  if (tmax < 0)
-  {
+  if (tmax < 0) {
     return false;
   }
 
-  if (tmin > tmax)
-  {
+  if (tmin > tmax) {
     return false;
   }
 
   return true;
 }
-#else
 
-inline bool ray3_vs_box3_slow(Ray3 ray, Box3 box, float max_distance) {
-  Vector3 direction = vector3_normalize(ray.direction);
-  size_t step_count = 100;
-  float step = max_distance/step_count;
-
-  for (int i = 0; i < step_count; i++) {
-    if (vector3_vs_box3(ray.origin, box)) {
+inline bool ray3_vs_horizontal_plane(Ray3 r, float y, float *t)
+{
+  if (r.origin.y < y) {
+    if (r.direction.y > 0) {
+      *t = (y - r.origin.y) / r.direction.y;
       return true;
     }
-    ray.origin += direction * step;
-  }
+  } else if (r.origin.y > y) {
+    if (r.direction.y < 0) {
+      *t = (r.origin.y - y) / -r.direction.y;
+      return true;
+    }
+  } 
 
   return false;
 }
-#endif
 
+inline Vector3 ray3_at(Ray3 r, float t)
+{
+  return r.origin + r.direction * t;
+}
 
 struct Matrix4 {
   float values[16];
