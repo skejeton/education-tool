@@ -316,12 +316,7 @@ void frame(void) {
   if (show_buildings) {
     for (int i = 0; i < global_world.buildings_count; i++) {
       Building building = global_world.buildings[i];
-      float dx = camera.position.x-building.x;
-      float dy = camera.position.y-building.y;
-      // Don't render outside of the radius
-      if ((dx*dx + dy*dy) < 4000) {
-        render_building(building.x, building.y, building.h);
-      }
+      render_building(building.x, building.y, building.h);
     }
   }
 
