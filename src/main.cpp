@@ -96,7 +96,7 @@ struct Building {
 };
 
 struct World {
-  Building buildings[32];
+  Building buildings[256];
   size_t buildings_count;
 };
 
@@ -111,11 +111,6 @@ struct PlacementGrid {
   PlacementGridTile tiles[32][32];
 };
 
-struct Placement {
-  int height;
-  int x, y;
-};
-
 Vector4 placement_colorscheme[4] = {
   { 0.0f, 0.0f, 0.0f, 0.0f },
   { 1.0f, 0.0f, 0.5f, 1.0f },
@@ -123,23 +118,38 @@ Vector4 placement_colorscheme[4] = {
   { 0.0f, 1.0f, 0.0f, 1.0f },
 };
 
-bool map_ray_to_grid(Ray3 ray, int *x, int *y) {
+float map_ray_to_grid(Ray3 ray, int *x, int *y) {
   float ground_t;
   if (ray3_vs_horizontal_plane(ray, 0, &ground_t)) {
     Vector3 at = ray3_at(ray, ground_t);
     *x = at.x+16;
     *y = at.z+16;
-    return *x >= 0 && *x < 32 && *y >= 0 && *y < 32;
+    return ground_t;
   }
-
-  return false;
+  return 100000;
 }
 
 bool tile_available(PlacementGrid *grid, int x, int y) {
   return x >= 0 && x < 32 && y >= 0 && y < 32;
 }
 
-bool place_building(PlacementGrid *grid, int x, int y, bool placed) {
+bool can_place_building(int chunkx, int chunky, PlacementGrid *grid, int x, int y) {
+  x -= chunkx*32;
+  y -= chunky*32;
+  for (int i = -4; i < 4; i++) {
+    for (int j = -4; j < 4; j++) {
+      if (tile_available(grid, i+x, j+y) && grid->tiles[i+x][j+y] == PLACEMENT_GRID_TILE_OCCUPIED) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+void place_building(int chunkx, int chunky, PlacementGrid *grid, int x, int y, bool placed, bool can_place) {
+  x -= chunkx*32;
+  y -= chunky*32;
   if (placed) {
     for (int i = -4; i < 4; i++) {
       for (int j = -4; j < 4; j++) {
@@ -149,17 +159,6 @@ bool place_building(PlacementGrid *grid, int x, int y, bool placed) {
       }
     }
   } else {
-    bool can_place = true;
-    for (int i = -4; i < 4; i++) {
-      for (int j = -4; j < 4; j++) {
-        if (!tile_available(grid, i+x, j+y) || grid->tiles[i+x][j+y] == PLACEMENT_GRID_TILE_OCCUPIED) {
-          can_place = false;
-          goto assign;
-        }
-      }
-    }
-
-    assign:
     for (int i = -4; i < 4; i++) {
       for (int j = -4; j < 4; j++) {
         if (tile_available(grid, i+x, j+y)) {
@@ -167,35 +166,30 @@ bool place_building(PlacementGrid *grid, int x, int y, bool placed) {
         }
       }
     }
-
-    return can_place;
   }
-
-  return false;
 }
 
 void world_place_building(World *world, Building building) {
-  assert(world->buildings_count < 32 && "Out of buildings");
+  assert(world->buildings_count < 256 && "Out of buildings");
   world->buildings[world->buildings_count++] = building;
 }
 
-void render_grid(PlacementGrid *grid) {
-  Vector4 grid_color = {1.0, 1.0, 0.0, 1.0};
-  Vector4 occupied_color = {1.0, 0.0, 0.0, 1.0};
+void render_grid(int chunkx, int chunky, PlacementGrid *grid, float alpha) {
+  Vector4 grid_color = {1.0, 1.0, 0.0, alpha};
 
   for (int i = -16; i <= 16; i++) {
-    Box3 box = box3_extrude_from_point( { (float)i, 0.0f, 0.0f }, { 0.05f, 0.15f, 16.0f });
+    Box3 box = box3_extrude_from_point( { (float)i+chunkx*32, 0.0f, chunky*32.0f }, { 0.05f, 0.15f, 16.0f });
     boxdraw_push(&boxdraw, boxdraw_cmdcolored(box, grid_color));
   }
   for (int i = -16; i <= 16; i++) {
-    Box3 box = box3_extrude_from_point( { 0.0f, 0.0f, (float)i }, { 16.0f, 0.15f, 0.05f });
+    Box3 box = box3_extrude_from_point( { chunkx*32.0f, 0.0f, (float)i+chunky*32 }, { 16.0f, 0.15f, 0.05f });
     boxdraw_push(&boxdraw, boxdraw_cmdcolored(box, grid_color));
   }
   for (int i = 0; i < 32; i++) {
     for (int j = 0; j < 32; j++) {
       if (grid->tiles[i][j]) {
-        int x = (i - 16);
-        int y = (j - 16);
+        int x = (i - 16)+chunkx*32;
+        int y = (j - 16)+chunky*32;
         Box3 box = box3_extrude_from_point( { (float)x+0.5f, 0.0f, (float)y+0.5f }, { 0.5f, 0.13f, 0.5f });
         boxdraw_push(&boxdraw, boxdraw_cmdcolored(box, placement_colorscheme[grid->tiles[i][j]]));
       }
@@ -222,8 +216,8 @@ void render_building(int x, int y, int h) {
   }
 }
 
+int cmdc = 0;
 World global_world;
-Placement current_placement;
 bool show_buildings = true;
 
 void frame(void) {
@@ -249,55 +243,88 @@ void frame(void) {
   simgui_new_frame( { width, height, sapp_frame_duration(), sapp_dpi_scale() });
 
   static Vector3 p = { 0.0, 0.0, 0.0 };
-
+  
+  int rx, ry;
+  float rt = map_ray_to_grid(camera.ray(), &rx, &ry);
 
   // the imgui UI pass
   flashbacks_gui.show();
 
-  ImGui::SetNextWindowPos( { 0, 600 });
+  ImGui::SetNextWindowPos( { 0, 400 });
   ImGui::Begin("debug");
   ImGui::Text("%g\n", 1 / sapp_frame_duration());
   ImGui::ColorPicker4("Colour", (float*)&boxdraw.pass_action.colors[0].value, ImGuiColorEditFlags_PickerHueWheel);
   
   ImGui::DragFloat("yaw", &camera.yaw);
   ImGui::DragFloat("pitch", &camera.pitch);
+  ImGui::DragFloat("rt", &rt);
+  ImGui::DragInt("cmdc", &cmdc);
   ImGui::Text("oof %d", flashbacks.dialogs[0].taken);
   ImGui::End();
 
   ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
 
   draw_list->AddCircle( { width / 2.0f, height / 2.0f }, 4, 0xFFFFFFFF);
-  PlacementGrid grid = {};
- 
-  Vector2 positions[3] = { { 0, 0 }, { 9, 0 }, { 9, 9 } };
-  int heights[3] = { 3, 4, 1 };
 
-  for (int i = 0; i < global_world.buildings_count; i++) {
-    Building building = global_world.buildings[i];
-    place_building(&grid, building.x + 16, building.y + 16, true);
-    if (show_buildings) {
-      render_building(building.x, building.y, building.h);
-    }
-  }
-
-
-  int rx, ry;
-  if (map_ray_to_grid(camera.ray(), &rx, &ry)) {
-    if (place_building(&grid, rx, ry, false)) {
-      if (show_buildings) {
-        render_building(rx - 16, ry - 16, bheight);
-      }
-      if (inputs.mouse_states[0].pressed) {
-        world_place_building(&global_world, Building { rx - 16, ry - 16, bheight });
-      }
-    }
-  }
-
-  render_grid(&grid);
-
-
-  Box3 floor = box3_extrude_from_point({ 0, 0, 0 }, { 50, 0.1, 50 });
+  
+  Box3 floor = box3_extrude_from_point({ 0, 0, 0 }, { 5000, 0.05, 5000 });
   boxdraw_push(&boxdraw, boxdraw_cmdcolored(floor, { 0.6, 0.6, 0.3, 1.0 }));
+
+  bool can_place = rt < 50;
+
+  PlacementGrid grids[5][5];
+
+  for (int chunkx = -2; chunkx <= 2; chunkx++) {
+    for (int chunky = -2; chunky <= 2; chunky++) {
+      PlacementGrid *grid = &grids[chunkx + 2][chunky + 2];
+      *grid = {};
+      int ofsx = camera.position.x / 32;
+      int ofsy = camera.position.z / 32;
+
+      for (int i = 0; i < global_world.buildings_count; i++) {
+        Building building = global_world.buildings[i];
+        place_building(chunkx+ofsx, chunky+ofsy, grid, building.x + 16, building.y + 16, true, true);
+      }
+
+       can_place = can_place_building(chunkx+ofsx, chunky+ofsy, grid, rx, ry) && can_place;
+    }
+  }
+  
+  for (int chunkx = -2; chunkx <= 2; chunkx++) {
+    for (int chunky = -2; chunky <= 2; chunky++) {
+      PlacementGrid *grid = &grids[chunkx + 2][chunky + 2];
+      int ofsx = camera.position.x / 32;
+      int ofsy = camera.position.z / 32;
+      float alpha = 1.0f-sqrt(chunkx*chunkx + chunky*chunky) / 2.0f + 0.2;
+
+      if (rt < 50) {
+        place_building(chunkx + ofsx, chunky + ofsy, grid, rx, ry, false, can_place);
+      }
+
+      render_grid(chunkx+ofsx, chunky+ofsy, grid, alpha);
+    }
+  }
+  if (can_place) {
+    if (show_buildings) {
+      render_building(rx - 16, ry - 16, bheight);
+    }
+    if (inputs.mouse_states[0].pressed) {
+      world_place_building(&global_world, Building { rx - 16, ry - 16, bheight });
+    }
+  }
+
+  if (show_buildings) {
+    for (int i = 0; i < global_world.buildings_count; i++) {
+      Building building = global_world.buildings[i];
+      float dx = camera.position.x-building.x;
+      float dy = camera.position.y-building.y;
+      // Don't render outside of the radius
+      if ((dx*dx + dy*dy) < 4000) {
+        render_building(building.x, building.y, building.h);
+      }
+    }
+  }
+
  
   for (
     SceneIterator iterator = scene_iterator_begin(&game_scene);
@@ -325,6 +352,7 @@ void frame(void) {
     boxdraw_push(&boxdraw, boxdraw_cmdgradient(object_box, color_top, color_bottom));
   }
   
+  cmdc = boxdraw.commands_count;
   boxdraw_flush(&boxdraw, view_projection);
   {
     sg_pass_action pass_action = {};

@@ -4,7 +4,7 @@
 
 #ifndef H_BOXDRAW_CATEDU
 #define H_BOXDRAW_CATEDU
-#define BOXDRAW_CMD_MAX 2048
+#define BOXDRAW_CMD_MAX (1 << 14)
 
 #include "math.hpp"
 #include "sokol/sokol_app.h"
@@ -22,7 +22,7 @@ struct BoxdrawRenderer {
   sg_bindings bindings;
   sg_pipeline pipeline;
   sg_shader shader;
-  BoxdrawCommand commands[BOXDRAW_CMD_MAX];
+  BoxdrawCommand *commands;
   size_t commands_count;
 };
 

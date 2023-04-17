@@ -1,6 +1,7 @@
 #include "boxdraw.hpp"
 #include "shaders.hxx"
 #include <cassert>
+#include <cstdlib>
 
 static float cube_vertices[] = {
   -1.0, -1.0, -1.0,   1.0,
@@ -46,6 +47,7 @@ static uint16_t cube_indices[] = {
 
 BoxdrawRenderer boxdraw_create() {
   BoxdrawRenderer result = {};
+  result.commands = (BoxdrawCommand*)calloc(BOXDRAW_CMD_MAX, sizeof(BoxdrawCommand));
 
   result.shader = sg_make_shader(samalg_shader_desc(sg_query_backend()));
 
@@ -65,6 +67,10 @@ BoxdrawRenderer boxdraw_create() {
   pipeline_desc.layout.attrs[0].format = SG_VERTEXFORMAT_FLOAT3; // position
   pipeline_desc.layout.attrs[1].format = SG_VERTEXFORMAT_FLOAT;  // is bottom vertex
   pipeline_desc.colors[0].blend.enabled = true;
+  pipeline_desc.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
+  pipeline_desc.colors[0].blend.dst_factor_rgb = SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+  pipeline_desc.colors[0].blend.src_factor_alpha = SG_BLENDFACTOR_ONE;
+  pipeline_desc.colors[0].blend.dst_factor_alpha = SG_BLENDFACTOR_ZERO;
   pipeline_desc.shader = result.shader;
   pipeline_desc.index_type = SG_INDEXTYPE_UINT16;
   pipeline_desc.cull_mode = SG_CULLMODE_BACK;
