@@ -1,4 +1,5 @@
 #include <cassert>
+#include "imgui/imgui.h"
 #include "imgui_utilities.hpp"
 #include "flashbacks.hpp"
 #include <cstdio>
@@ -98,8 +99,8 @@ void show_sequence(FlashbacksGui *gui) {
   FlashbacksDialog *dialog = gui->flashbacks->get_from_id(gui->sequence_current);
   assert(dialog && "Invalid dialog ID");
 
-  ImGui::SetNextWindowPos({ (1024-320)/2, (786-200)/2 });
-  ImGui::SetNextWindowSize({ 320, 200 });
+  ImGui::SetNextWindowPos({ (1024-400)/2, (786-300)/2 });
+  ImGui::SetNextWindowSize({ 400, 300 });
   ImGui::Begin("Dialogue");
   {
     ImGui::TextWrapped("%s", dialog->text);
@@ -157,17 +158,15 @@ FlashbacksGui FlashbacksGui::create(Flashbacks *flashbacks) {
   return result;
 }
 
-void FlashbacksGui::show() {
-  ImGui::Begin("Flashback Controls", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-  if (ImGui::Button("Backlog")) {
-    if (this->mode == Mode::BACKLOG) {
-      this->mode = Mode::INACTIVE;
-    } else {
-      this->mode = Mode::BACKLOG;
-    }
+void FlashbacksGui::toggle_backlog() {
+  if (this->mode == Mode::BACKLOG) {
+    this->mode = Mode::INACTIVE;
+  } else {
+    this->mode = Mode::BACKLOG;
   }
-  ImGui::End();
+}
 
+void FlashbacksGui::show() {
   switch (mode) {
     case Mode::INACTIVE:
       this->prev_mode = Mode::INACTIVE;

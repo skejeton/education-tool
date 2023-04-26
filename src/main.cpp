@@ -14,82 +14,7 @@
 #include "boxdraw.hpp"
 #include <stdio.h>
 
-static Input inputs;
-static Camera camera;
-static Scene game_scene;
-static Flashbacks flashbacks;
-static FlashbacksGui flashbacks_gui;
-static BoxdrawRenderer boxdraw;
-
-static const FlashbacksDialogPrototype ent_1_dialogs[] = {
-  { "Hello, there. I am here to teach you how to interact with this world.", nullptr },
-  { "First off, you can move around with WASD, and press the mouse button to TALK. Like you've probably already figured out.", nullptr },
-  { "After this discussion ends, you can press BACKLOG button, on the top left corner, to repeat it.", nullptr },
-  { "Now let's try a simple exam. What controls would you use to move: ", "WASD and mouse button"},
-  { "How would you re-try a specific question or information sheet?", "BACKLOG button"},
-};
-
-static const FlashbacksDialogPrototype ent_2_dialogs[] = {
-  { "Hello I'm here to teach you SIMD.\nSIMD (Single Instruction - Multiple Data), is a programming approach where instead of performing an operation on one value, we perform operations on several values at once.", nullptr },
-  { "It's like operating on arrays.\nFor example what will be [1, 2, 3, 4] + [1, 1, 1, 1]?", "[2, 3, 4, 5]"},
-  { "We've just added 1 to each value on the left.\nNow why is this useful?\nWhile SIMD may not be convenient to write, it allows us to make CPU execute our code much faster when used in an appropriate place.", nullptr },
-  { "Let's try multiplication: [1, 2, 3, 4] * [2, 2, 2, 2]", "[2, 4, 6, 8]" },
-  { "It's as easy as this! The more trickier part is how to apply it.", nullptr },
-};
-
-
-void init(void) {
-  console_create_or_bind_existing();
-  
-#if 0
-  EntityId ent1 = scene_summon_entity(&game_scene, { { 0, 0, 1 } });
-  EntityId ent2 = scene_summon_entity(&game_scene, { { -6, 0, 1 } });
-
-  {
-    FlashbacksDialogMaker maker = FlashbacksDialogMaker::from(&flashbacks);
-  
-    for (auto dialog : ent_1_dialogs) {
-      maker.append_dialog(dialog);
-    }
-
-    scene_get_entity(&game_scene, ent1)->dialog_id = maker.starter_id;
-  }
-  {
-    FlashbacksDialogMaker maker = FlashbacksDialogMaker::from(&flashbacks);
-  
-    for (auto dialog : ent_2_dialogs) {
-      maker.append_dialog(dialog);
-    }
-    
-    scene_get_entity(&game_scene, ent2)->dialog_id = maker.starter_id;
-  }
-#endif
-
-
-  flashbacks_gui = FlashbacksGui::create(&flashbacks);
-
-
-    
-  // setup sokol-gfx, sokol-time and sokol-imgui
-  sg_desc desc = {};
-  desc.context = sapp_sgcontext();
-  desc.logger.func = slog_func;
-  sg_setup(&desc);
-
-  // use sokol-imgui with all default-options (we're not doing
-  // multi-sampled rendering or using non-default pixel formats)
-  simgui_desc_t simgui_desc = {};
-  simgui_setup(&simgui_desc);
-  ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-  boxdraw = boxdraw_create();
-
-  camera = Camera::init(45);
-  camera.move(10, 10, 10);
-}
-
-int bheight = 0;
-
+//--------------
 
 struct Building {
   int x, y, h;
@@ -111,12 +36,50 @@ struct PlacementGrid {
   PlacementGridTile tiles[32][32];
 };
 
-Vector4 placement_colorscheme[4] = {
+enum PlayingMode {
+  PLAYING_MODE_BUILD,
+  PLAYING_MODE_PLAY,
+};
+
+//--------------
+
+static Input inputs;
+static Camera camera;
+static Vector3 camera_velocity;
+static Scene game_scene;
+static Flashbacks flashbacks;
+static FlashbacksGui flashbacks_gui;
+static BoxdrawRenderer boxdraw;
+static int bheight = 0;
+static int cmdc = 0;
+static World global_world;
+static bool show_buildings = true;
+static PlayingMode g_playing_mode;
+
+static const FlashbacksDialogPrototype ent_1_dialogs[] = {
+  { "Hello, there. I am here to teach you how to interact with this world.", nullptr },
+  { "First off, you can move around with WASD, and press the mouse button to TALK. Like you've probably already figured out.", nullptr },
+  { "After this discussion ends, you can press BACKLOG button, on the top left corner, to repeat it.", nullptr },
+  { "Now let's try a simple exam. What controls would you use to move: ", "WASD and mouse button"},
+  { "How would you re-try a specific question or information sheet?", "BACKLOG button"},
+};
+
+static const FlashbacksDialogPrototype ent_2_dialogs[] = {
+  { "Hello I'm here to teach you SIMD.\nSIMD (Single Instruction - Multiple Data), is a programming approach where instead of performing an operation on one value, we perform operations on several values at once.", nullptr },
+  { "It's like operating on arrays.\nFor example what will be [1, 2, 3, 4] + [1, 1, 1, 1]?", "[2, 3, 4, 5]"},
+  { "We've just added 1 to each value on the left.\nNow why is this useful?\nWhile SIMD may not be convenient to write, it allows us to make CPU execute our code much faster when used in an appropriate place.", nullptr },
+  { "Let's try multiplication: [1, 2, 3, 4] * [2, 2, 2, 2]", "[2, 4, 6, 8]" },
+  { "It's as easy as this! The more trickier part is how to apply it.", nullptr },
+};
+
+static const Vector4 placement_colorscheme[4] = {
   { 0.0f, 0.0f, 0.0f, 0.0f },
   { 1.0f, 0.0f, 0.5f, 1.0f },
   { 1.0f, 0.0f, 0.0f, 1.0f },
   { 0.0f, 1.0f, 0.0f, 1.0f },
 };
+
+//--------------
 
 float map_ray_to_grid(Ray3 ray, int *x, int *y) {
   float ground_t;
@@ -216,9 +179,121 @@ void render_building(int x, int y, int h) {
   }
 }
 
-int cmdc = 0;
-World global_world;
-bool show_buildings = true;
+void set_mode(PlayingMode mode) {
+  g_playing_mode = mode;
+
+  switch (mode) {
+    case PLAYING_MODE_PLAY:
+      camera_velocity = {0, 0, 0};
+      break;
+    case PLAYING_MODE_BUILD:
+      break;
+  }
+}
+
+void handle_input(Input inputs) {
+  switch (g_playing_mode) {
+    case PLAYING_MODE_PLAY:
+      if (inputs.key_states[SAPP_KEYCODE_SPACE].pressed && camera.position.y < 2.1) {
+        camera_velocity.y = 10;
+      }
+      camera_input_apply(&camera, &inputs, false);
+      break;
+    case PLAYING_MODE_BUILD:
+      camera_input_apply(&camera, &inputs);
+      break;
+  }
+}
+
+void check_collisions() {
+  Rect camera_rect = {{camera.position.x-1, camera.position.z-1}, {2, 2}};
+  Vector2 snap = {0, 0};
+
+  for (int i = 0; i < global_world.buildings_count; i++) {
+    Vector2 building_pos = {(float)global_world.buildings[i].x, (float)global_world.buildings[i].y};
+    Rect building_rect = {{building_pos.x-4, building_pos.y-4},  {8, 8}};
+
+    if (rect_vs_rect(camera_rect, building_rect)) {
+      snap = rect_vs_rect_snap(camera_rect, building_rect);
+      break;
+    }
+  }
+
+  camera.position.x += snap.x;
+  camera.position.z += snap.y;
+}
+
+void update_mode() {
+  switch (g_playing_mode) {
+    case PLAYING_MODE_PLAY: {
+      camera_velocity.y -= 20*sapp_frame_duration();
+      if (camera_velocity.y < -40) {
+        camera_velocity.y = -40;
+      }
+      camera.position += camera_velocity*sapp_frame_duration();
+
+      if (camera.position.y < 2) {
+        camera.position.y = 2;
+      }
+      check_collisions();
+    } break;
+    case PLAYING_MODE_BUILD:
+      break;
+  }
+}
+
+//--------------
+
+void init(void) {
+  console_create_or_bind_existing();
+  
+#if 1
+  EntityId ent1 = scene_summon_entity(&game_scene, { { 0, 1, 1 } });
+  EntityId ent2 = scene_summon_entity(&game_scene, { { -6, 1, 1 } });
+
+  {
+    FlashbacksDialogMaker maker = FlashbacksDialogMaker::from(&flashbacks);
+  
+    for (auto dialog : ent_1_dialogs) {
+      maker.append_dialog(dialog);
+    }
+
+    scene_get_entity(&game_scene, ent1)->dialog_id = maker.starter_id;
+  }
+  {
+    FlashbacksDialogMaker maker = FlashbacksDialogMaker::from(&flashbacks);
+  
+    for (auto dialog : ent_2_dialogs) {
+      maker.append_dialog(dialog);
+    }
+    
+    scene_get_entity(&game_scene, ent2)->dialog_id = maker.starter_id;
+  }
+#endif
+
+
+  flashbacks_gui = FlashbacksGui::create(&flashbacks);
+
+
+    
+  // setup sokol-gfx, sokol-time and sokol-imgui
+  sg_desc desc = {};
+  desc.context = sapp_sgcontext();
+  desc.logger.func = slog_func;
+  sg_setup(&desc);
+
+  // use sokol-imgui with all default-options (we're not doing
+  // multi-sampled rendering or using non-default pixel formats)
+  simgui_desc_t simgui_desc = {};
+  simgui_setup(&simgui_desc);
+  ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+  boxdraw = boxdraw_create();
+
+  camera = Camera::init(45);
+  camera.move(10, 10, 10);
+}
+
 
 void frame(void) {
   const int width = sapp_width();
@@ -226,7 +301,14 @@ void frame(void) {
 
   camera.set_aspect((float)width / height);
   if (sapp_mouse_locked()) {
-    camera_input_apply(&camera, &inputs);
+    handle_input(inputs);
+  }
+  update_mode();
+  if (inputs.key_states[SAPP_KEYCODE_1].pressed) {
+    set_mode(PLAYING_MODE_BUILD);
+  }
+  if (inputs.key_states[SAPP_KEYCODE_2].pressed) {
+    set_mode(PLAYING_MODE_PLAY);
   }
 
   if (inputs.key_states[SAPP_KEYCODE_X].pressed) {
@@ -242,12 +324,28 @@ void frame(void) {
   
   simgui_new_frame( { width, height, sapp_frame_duration(), sapp_dpi_scale() });
 
-  static Vector3 p = { 0.0, 0.0, 0.0 };
-  
   int rx, ry;
   float rt = map_ray_to_grid(camera.ray(), &rx, &ry);
 
+  ImGui::GetIO().FontGlobalScale = 1.5;
+
   // the imgui UI pass
+  if (ImGui::BeginMainMenuBar()) {
+    if (g_playing_mode == PLAYING_MODE_BUILD) {
+      if (ImGui::Button("PLAY")) {
+        set_mode(PLAYING_MODE_PLAY);
+      }
+      if (ImGui::Button("Backlog")) {
+        flashbacks_gui.toggle_backlog();
+      }
+    } else {
+      if (ImGui::Button("BUILD")) {
+        set_mode(PLAYING_MODE_BUILD);
+      }
+    }
+    ImGui::EndMainMenuBar();
+  }
+
   flashbacks_gui.show();
 
   ImGui::SetNextWindowPos( { 0, 400 });
@@ -259,8 +357,9 @@ void frame(void) {
   ImGui::DragFloat("pitch", &camera.pitch);
   ImGui::DragFloat("rt", &rt);
   ImGui::DragInt("cmdc", &cmdc);
-  ImGui::Text("oof %d", flashbacks.dialogs[0].taken);
+  ImGui::Text("pmode %d", g_playing_mode);
   ImGui::End();
+
 
   ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
 
@@ -272,44 +371,47 @@ void frame(void) {
 
   bool can_place = rt < 50;
 
-  PlacementGrid grids[5][5];
+  if (g_playing_mode == PLAYING_MODE_BUILD) {
+    PlacementGrid grids[5][5];
 
-  for (int chunkx = -2; chunkx <= 2; chunkx++) {
-    for (int chunky = -2; chunky <= 2; chunky++) {
-      PlacementGrid *grid = &grids[chunkx + 2][chunky + 2];
-      *grid = {};
-      int ofsx = camera.position.x / 32;
-      int ofsy = camera.position.z / 32;
+    for (int chunkx = -2; chunkx <= 2; chunkx++) {
+      for (int chunky = -2; chunky <= 2; chunky++) {
+        PlacementGrid *grid = &grids[chunkx + 2][chunky + 2];
+        *grid = {};
+        int ofsx = camera.position.x / 32;
+        int ofsy = camera.position.z / 32;
 
-      for (int i = 0; i < global_world.buildings_count; i++) {
-        Building building = global_world.buildings[i];
-        place_building(chunkx+ofsx, chunky+ofsy, grid, building.x + 16, building.y + 16, true, true);
+        for (int i = 0; i < global_world.buildings_count; i++) {
+          Building building = global_world.buildings[i];
+          place_building(chunkx+ofsx, chunky+ofsy, grid, building.x + 16, building.y + 16, true, true);
+        }
+
+         can_place = can_place_building(chunkx+ofsx, chunky+ofsy, grid, rx, ry) && can_place;
       }
-
-       can_place = can_place_building(chunkx+ofsx, chunky+ofsy, grid, rx, ry) && can_place;
     }
-  }
-  
-  for (int chunkx = -2; chunkx <= 2; chunkx++) {
-    for (int chunky = -2; chunky <= 2; chunky++) {
-      PlacementGrid *grid = &grids[chunkx + 2][chunky + 2];
-      int ofsx = camera.position.x / 32;
-      int ofsy = camera.position.z / 32;
-      float alpha = 1.0f-sqrt(chunkx*chunkx + chunky*chunky) / 2.0f + 0.2;
+    
+    for (int chunkx = -2; chunkx <= 2; chunkx++) {
+      for (int chunky = -2; chunky <= 2; chunky++) {
+        PlacementGrid *grid = &grids[chunkx + 2][chunky + 2];
+        int ofsx = camera.position.x / 32;
+        int ofsy = camera.position.z / 32;
+        float alpha = 1.0f-sqrt(chunkx*chunkx + chunky*chunky) / 2.0f + 0.2;
 
-      if (rt < 50) {
-        place_building(chunkx + ofsx, chunky + ofsy, grid, rx, ry, false, can_place);
+        if (rt < 50) {
+          place_building(chunkx + ofsx, chunky + ofsy, grid, rx, ry, false, can_place);
+        }
+
+        render_grid(chunkx+ofsx, chunky+ofsy, grid, alpha);
       }
+    }
 
-      render_grid(chunkx+ofsx, chunky+ofsy, grid, alpha);
-    }
-  }
-  if (can_place) {
-    if (show_buildings) {
-      render_building(rx - 16, ry - 16, bheight);
-    }
-    if (inputs.mouse_states[0].pressed) {
-      world_place_building(&global_world, Building { rx - 16, ry - 16, bheight });
+    if (can_place) {
+      if (show_buildings) {
+        render_building(rx - 16, ry - 16, bheight);
+      }
+      if (inputs.mouse_states[0].pressed) {
+        world_place_building(&global_world, Building { rx - 16, ry - 16, bheight });
+      }
     }
   }
 
@@ -333,7 +435,7 @@ void frame(void) {
     Ray3 camera_ray = camera.ray();
     
 
-    if (ray3_vs_box3_slow(camera_ray, object_box, 5)) {
+    if (g_playing_mode == PLAYING_MODE_PLAY && ray3_vs_box3(camera_ray, object_box, 5)) {
       if (inputs.mouse_states[0].released) {
         sapp_lock_mouse(false);
         flashbacks_gui.begin_sequence(iterator.item.entity->dialog_id);

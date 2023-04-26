@@ -59,6 +59,10 @@ struct Box3 {
   Vector3 max;
 };
 
+struct Rect {
+  Vector2 pos;
+  Vector2 siz;
+};
 
 inline Vector3 operator+(Vector3 a, Vector3 b) {
   return {a.x+b.x, a.y+b.y, a.z+b.z};
@@ -166,7 +170,81 @@ inline bool vector3_vs_box3(Vector3 vector, Box3 box) {
   return x_plane && y_plane && z_plane;
 }
 
-inline bool ray3_vs_box3_slow(Ray3 r, Box3 b, float max_distance) {
+inline Box3 box3_translate(Box3 box, Vector3 vector) {
+  box.min.x += vector.x;
+  box.min.y += vector.y;
+  box.min.z += vector.z;
+
+  box.max.x += vector.x;
+  box.max.y += vector.y;
+  box.max.z += vector.z;
+
+  return box;
+}
+
+// NOTE: The "foot" of the player
+inline Vector3 box3_base_midpoint(Box3 box) {
+  Vector3 pos = {};
+  pos.x = (box.max.x - box.min.x) / 2;
+  pos.y = box.min.y;
+  pos.z = (box.max.z - box.min.z) / 2;
+
+  return pos;
+}
+
+// NOTE: The "eyes" of the player
+inline Vector3 box3_eyes_midpoint(Box3 box) {
+  Vector3 pos = {};
+  pos.x = (box.max.x - box.min.x) / 2;
+  pos.y = box.max.y;
+  pos.z = (box.max.z - box.min.z) / 2;
+
+  return pos;
+}
+
+
+inline bool rect_vs_vector2(Rect rect, Vector2 point) {
+  return
+    point.x >= rect.pos.x && point.y >= rect.pos.y &&
+    point.x < (rect.pos.x+rect.siz.x) && point.y < (rect.pos.y+rect.siz.y);
+}
+
+
+inline bool rect_vs_rect(Rect r1, Rect r2) {
+  return (r1.pos.x + r1.siz.x) > (r2.pos.x) && (r1.pos.y + r1.siz.y) > (r2.pos.y)
+      && (r1.pos.x) < (r2.pos.x + r2.siz.x) && (r1.pos.y) < (r2.pos.y + r2.siz.y);
+}
+
+
+inline Vector2 rect_vs_rect_snap(Rect r, Rect along) {
+  float x_left = r.pos.x + r.siz.x - along.pos.x;
+  float y_up = r.pos.y + r.siz.y - along.pos.y;
+
+  float x_right = along.pos.x + along.siz.x - r.pos.x;
+  float y_down = along.pos.y + along.siz.y - r.pos.y;
+
+  float min_x = 0, min_y = 0;
+
+  if (fabs(x_left) < fabs(x_right)) {
+    min_x = -x_left;
+  } else {
+    min_x = x_right;
+  }
+
+  if (fabs(y_up) < fabs(y_down)) {
+    min_y = -y_up;
+  } else {
+    min_y = y_down;
+  }
+
+  if (fabs(min_x) < fabs(min_y)) {
+    return {min_x, 0};
+  } 
+  return {0, min_y};
+}
+
+
+inline bool ray3_vs_box3(Ray3 r, Box3 b, float max_distance) {
   r.direction = vector3_normalize(r.direction);
   Vector3 dirfrac;
   dirfrac.x = 1.0f / r.direction.x;

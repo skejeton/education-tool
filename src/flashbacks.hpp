@@ -74,6 +74,7 @@ struct FlashbacksGui {
 
   static FlashbacksGui create(Flashbacks *flashbacks);
   void begin_sequence(FlashbacksDialogId start);
+  void toggle_backlog();
   
   FlashbacksDialogId sequence_current;
 
