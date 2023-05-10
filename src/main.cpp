@@ -137,6 +137,13 @@ void world_place_building(World *world, Building building) {
   world->buildings[world->buildings_count++] = building;
 }
 
+void world_remove_building(World *world, size_t index) {
+  assert(index < world->buildings_count);
+
+  memmove(world->buildings+index, world->buildings+index+1, sizeof(Building) * (world->buildings_count-index-1));
+  world->buildings_count -= 1;
+}
+
 void render_grid(int chunkx, int chunky, PlacementGrid *grid, float alpha) {
   Vector4 grid_color = {1.0, 1.0, 0.0, alpha};
 
@@ -160,10 +167,15 @@ void render_grid(int chunkx, int chunky, PlacementGrid *grid, float alpha) {
   }
 }
 
+Box3 building_box(int x, int y, int h) {
+  float building_height = h * 2 + 2;
+  return box3_extrude_from_point({ (float)x, building_height/2, (float)y }, { 4, building_height/2, 4 });;
+}
+
 void render_building(int x, int y, int h) {
   Vector2 position = { (float)x, (float)y };
   float building_height = h * 2 + 2;
-  Box3 building = box3_extrude_from_point({ position.x, building_height/2, position.y }, { 4, building_height/2, 4 });
+  Box3 building = building_box(x, y, h);
   boxdraw_push(&boxdraw, boxdraw_cmdgradient(building, { 0.5, 0.5, 0.5, 1.0 }, { 0.4, 0.3, 0.3, 1.0 }));
   for (int t = 0; t < h; t++) {
     for (int x = -1; x <= 1; x++) {
@@ -303,6 +315,9 @@ void frame(void) {
   if (sapp_mouse_locked()) {
     handle_input(inputs);
   }
+  if (camera.position.y < 0.2) {
+    camera.position.y = 0.2;
+  }
   update_mode();
   if (inputs.key_states[SAPP_KEYCODE_1].pressed) {
     set_mode(PLAYING_MODE_BUILD);
@@ -335,12 +350,12 @@ void frame(void) {
       if (ImGui::Button("PLAY")) {
         set_mode(PLAYING_MODE_PLAY);
       }
-      if (ImGui::Button("Backlog")) {
-        flashbacks_gui.toggle_backlog();
-      }
     } else {
       if (ImGui::Button("BUILD")) {
         set_mode(PLAYING_MODE_BUILD);
+      }
+      if (ImGui::Button("Backlog")) {
+        flashbacks_gui.toggle_backlog();
       }
     }
     ImGui::EndMainMenuBar();
@@ -370,14 +385,44 @@ void frame(void) {
   boxdraw_push(&boxdraw, boxdraw_cmdcolored(floor, { 0.6, 0.6, 0.3, 1.0 }));
 
   bool can_place = rt < 50;
+  bool may_place = rt < 50;
 
   if (g_playing_mode == PLAYING_MODE_BUILD) {
-    PlacementGrid grids[5][5];
+    int pointing_at_building = -1;
+    float min_distance = 1000000;
+    for (int i = 0; i < global_world.buildings_count; i++) {
+      Building building = global_world.buildings[i];
+      Box3 box = building_box(building.x, building.y, building.h);
+      float distance;
+
+      if (ray3_vs_box3(camera.ray(), box, 50, &distance)) {
+        if (distance < min_distance) {
+          min_distance = distance;
+          pointing_at_building = i;
+        }
+      }
+    }
+
+    if (pointing_at_building != -1) {
+      may_place = false;
+      
+      Building building = global_world.buildings[pointing_at_building];
+
+      Box3 box = building_box(building.x, building.y, building.h);
+      box.max.y = box.min.y + 0.3;
+      box.min.x -= 0.3;
+      box.min.z -= 0.3;
+      box.max.x += 0.3;
+      box.max.z += 0.3;
+
+      boxdraw_push(&boxdraw, boxdraw_cmdcolored(box, {0, 0, 1, 1}));
+    }
+
+    PlacementGrid grids[5][5] = {};
 
     for (int chunkx = -2; chunkx <= 2; chunkx++) {
       for (int chunky = -2; chunky <= 2; chunky++) {
         PlacementGrid *grid = &grids[chunkx + 2][chunky + 2];
-        *grid = {};
         int ofsx = camera.position.x / 32;
         int ofsy = camera.position.z / 32;
 
@@ -386,7 +431,7 @@ void frame(void) {
           place_building(chunkx+ofsx, chunky+ofsy, grid, building.x + 16, building.y + 16, true, true);
         }
 
-         can_place = can_place_building(chunkx+ofsx, chunky+ofsy, grid, rx, ry) && can_place;
+        can_place = can_place_building(chunkx+ofsx, chunky+ofsy, grid, rx, ry) && can_place && may_place;
       }
     }
     
@@ -397,7 +442,7 @@ void frame(void) {
         int ofsy = camera.position.z / 32;
         float alpha = 1.0f-sqrt(chunkx*chunkx + chunky*chunky) / 2.0f + 0.2;
 
-        if (rt < 50) {
+        if (may_place) {
           place_building(chunkx + ofsx, chunky + ofsy, grid, rx, ry, false, can_place);
         }
 
@@ -409,9 +454,12 @@ void frame(void) {
       if (show_buildings) {
         render_building(rx - 16, ry - 16, bheight);
       }
-      if (inputs.mouse_states[0].pressed) {
+      if (inputs.mouse_states[0].pressed && sapp_mouse_locked()) {
         world_place_building(&global_world, Building { rx - 16, ry - 16, bheight });
       }
+    }
+    if (pointing_at_building != -1 && inputs.mouse_states[1].pressed) {
+      world_remove_building(&global_world, pointing_at_building);
     }
   }
 
@@ -435,7 +483,8 @@ void frame(void) {
     Ray3 camera_ray = camera.ray();
     
 
-    if (g_playing_mode == PLAYING_MODE_PLAY && ray3_vs_box3(camera_ray, object_box, 5)) {
+    float distance;
+    if (g_playing_mode == PLAYING_MODE_PLAY && ray3_vs_box3(camera_ray, object_box, 5, &distance)) {
       if (inputs.mouse_states[0].released) {
         sapp_lock_mouse(false);
         flashbacks_gui.begin_sequence(iterator.item.entity->dialog_id);

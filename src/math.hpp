@@ -244,7 +244,7 @@ inline Vector2 rect_vs_rect_snap(Rect r, Rect along) {
 }
 
 
-inline bool ray3_vs_box3(Ray3 r, Box3 b, float max_distance) {
+inline bool ray3_vs_box3(Ray3 r, Box3 b, float max_distance, float *distance) {
   r.direction = vector3_normalize(r.direction);
   Vector3 dirfrac;
   dirfrac.x = 1.0f / r.direction.x;
@@ -261,12 +261,16 @@ inline bool ray3_vs_box3(Ray3 r, Box3 b, float max_distance) {
   float tmax = fmin(fminf(fmaxf(t1, t2), fmaxf(t3, t4)), fmaxf(t5, t6));
 
   if (tmax < 0) {
+    *distance = tmax;
     return false;
   }
 
   if (tmin > tmax) {
+    *distance = tmax;
     return false;
   }
+
+  *distance = tmin;
 
   return true;
 }
