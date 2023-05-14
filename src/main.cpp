@@ -12,6 +12,7 @@
 #include "scene.hpp"
 #include "flashbacks.hpp"
 #include "boxdraw.hpp"
+#include "box_ray_collision_pool.hpp"
 #include <stdio.h>
 
 //--------------
@@ -470,7 +471,6 @@ void frame(void) {
     }
   }
 
- 
   for (
     SceneIterator iterator = scene_iterator_begin(&game_scene);
     scene_iterator_going(&iterator);
