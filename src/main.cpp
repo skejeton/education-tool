@@ -12,7 +12,9 @@
 #include "scene.hpp"
 #include "flashbacks.hpp"
 #include "boxdraw.hpp"
-#include "box_ray_collision_pool.hpp"
+#include "pointing_at_resolve.hpp"
+#include "temp_id_binder.hpp"
+#include <memory>
 #include <stdio.h>
 
 //--------------
@@ -40,6 +42,14 @@ struct PlacementGrid {
 enum PlayingMode {
   PLAYING_MODE_BUILD,
   PLAYING_MODE_PLAY,
+};
+
+struct ObjectLocator {
+  // Which pool the location belongs to
+  enum class Pool {
+    BUILDING, ENTITY
+  } pool;
+  int id;
 };
 
 //--------------
@@ -307,6 +317,8 @@ void init(void) {
   camera.move(10, 10, 10);
 }
 
+ObjectLocator last_object_locator = {};
+
 
 void frame(void) {
   const int width = sapp_width();
@@ -387,38 +399,22 @@ void frame(void) {
 
   bool can_place = rt < 50;
   bool may_place = rt < 50;
+  if (last_object_locator.id != -1) {
+    may_place = false;
+  }
+
+  auto pointing_at = PointingAtResolve::init(camera.ray());
+  auto pointing_at_bindings = TempIdBinder<ObjectLocator>::init();
+
+  for (int i = 0; i < global_world.buildings_count; i++) {
+    Building building = global_world.buildings[i];
+    Box3 box = building_box(building.x, building.y, building.h);
+
+    int id = pointing_at_bindings.allocate({ ObjectLocator::Pool::BUILDING, i });
+    pointing_at.push_box(box, id);
+  }
 
   if (g_playing_mode == PLAYING_MODE_BUILD) {
-    int pointing_at_building = -1;
-    float min_distance = 1000000;
-    for (int i = 0; i < global_world.buildings_count; i++) {
-      Building building = global_world.buildings[i];
-      Box3 box = building_box(building.x, building.y, building.h);
-      float distance;
-
-      if (ray3_vs_box3(camera.ray(), box, 50, &distance)) {
-        if (distance < min_distance) {
-          min_distance = distance;
-          pointing_at_building = i;
-        }
-      }
-    }
-
-    if (pointing_at_building != -1) {
-      may_place = false;
-      
-      Building building = global_world.buildings[pointing_at_building];
-
-      Box3 box = building_box(building.x, building.y, building.h);
-      box.max.y = box.min.y + 0.3;
-      box.min.x -= 0.3;
-      box.min.z -= 0.3;
-      box.max.x += 0.3;
-      box.max.z += 0.3;
-
-      boxdraw_push(&boxdraw, boxdraw_cmdcolored(box, {0, 0, 1, 1}));
-    }
-
     PlacementGrid grids[5][5] = {};
 
     for (int chunkx = -2; chunkx <= 2; chunkx++) {
@@ -459,9 +455,6 @@ void frame(void) {
         world_place_building(&global_world, Building { rx - 16, ry - 16, bheight });
       }
     }
-    if (pointing_at_building != -1 && inputs.mouse_states[1].pressed) {
-      world_remove_building(&global_world, pointing_at_building);
-    }
   }
 
   if (show_buildings) {
@@ -480,17 +473,13 @@ void frame(void) {
 
     Box3 object_box = box3_extrude_from_point(position, {1, 1, 1});
     Vector4 color_multiple = {1, 1, 1, 1};
-    Ray3 camera_ray = camera.ray();
     
-
-    float distance;
-    if (g_playing_mode == PLAYING_MODE_PLAY && ray3_vs_box3(camera_ray, object_box, 5, &distance)) {
-      if (inputs.mouse_states[0].released) {
-        sapp_lock_mouse(false);
-        flashbacks_gui.begin_sequence(iterator.item.entity->dialog_id);
-      }
-      color_multiple = {.2, .2, .2, 1};
+    if (last_object_locator.pool == ObjectLocator::Pool::ENTITY && (int)iterator.index == last_object_locator.id) {
+      color_multiple = {0.5, 0.5, 0.5, 1.0};
     }
+
+    int id = pointing_at_bindings.allocate({ ObjectLocator::Pool::ENTITY, (int)iterator.index });
+    pointing_at.push_box(object_box, id);
 
     Vector4 color_top = Vector4{ 0, 0, 1, 1 } * color_multiple;
     Vector4 color_bottom = Vector4{ 1, 0, 1, 1 } * color_multiple;
@@ -498,6 +487,48 @@ void frame(void) {
     boxdraw_push(&boxdraw, boxdraw_cmdgradient(object_box, color_top, color_bottom));
   }
   
+
+  // Resolve "pointing at building"
+  ObjectLocator *locator = pointing_at_bindings.get(pointing_at.closest_id());
+  last_object_locator.id = -1;
+  if (locator != nullptr) {
+    last_object_locator = *locator;
+    int id = locator->id;
+    if (id >= 0) {
+      switch (locator->pool) {
+        case ObjectLocator::Pool::BUILDING: {
+          if (g_playing_mode == PLAYING_MODE_BUILD) {
+            Building building = global_world.buildings[id];
+
+            Box3 box = building_box(building.x, building.y, building.h);
+            box.max.y = box.min.y + 0.3;
+            box.min.x -= 0.3;
+            box.min.z -= 0.3;
+            box.max.x += 0.3;
+            box.max.z += 0.3;
+
+            boxdraw_push(&boxdraw, boxdraw_cmdcolored(box, {0, 0, 1, 1}));
+
+            if (inputs.mouse_states[1].pressed) {
+              world_remove_building(&global_world, id);
+            }  
+          }
+        } break;
+        case ObjectLocator::Pool::ENTITY: {
+          if (g_playing_mode == PLAYING_MODE_PLAY) {
+            Entity *entity = scene_get_entity(&game_scene, {(size_t)id+1});
+            if (inputs.mouse_states[0].released) {
+              sapp_lock_mouse(false);
+              flashbacks_gui.begin_sequence(entity->dialog_id);
+            }
+          }
+        } break;
+      }
+    }
+  }
+
+ 
+
   cmdc = boxdraw.commands_count;
   boxdraw_flush(&boxdraw, view_projection);
   {
