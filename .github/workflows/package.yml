@@ -2,22 +2,24 @@ name: EduTool Workflow
 on: [push]
 jobs:
   MakePkg-Msbuild:
+    name: Build for Windows
     runs-on: windows-latest
-    - name: build
-      uses: actions/checkout@v2
-      uses: ilammy/msvc-dev-cmd@v1
-      run: |
-        git submodule init
-        git submodule update --remote
-        python3 build.py build
-    - name: release
-      uses: actions/create-release@v1
-      id: create_release
-      with:
-        draft: false
-        prerelease: false
-        release_name: ${{ steps.version.outputs.version }}
-        tag_name: ${{ github.ref }}
-        body_path: CHANGELOG.md
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - name: build
+        uses: actions/checkout@v2
+        uses: ilammy/msvc-dev-cmd@v1
+        run: |
+          git submodule init
+          git submodule update --remote
+          python3 build.py build
+      - name: release
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.version.outputs.version }}
+          tag_name: ${{ github.ref }}
+          body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
