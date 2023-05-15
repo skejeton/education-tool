@@ -7,6 +7,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: ilammy/msvc-dev-cmd@v1
+      - uses: benjlevesque/short-sha@v2.2
+        id: short-sha
+        with:
+          length: 7
       - name: checkout
         run: |
           git submodule init
@@ -22,7 +26,7 @@ jobs:
           draft: false
           prerelease: false
           release_name: ${{ steps.version.outputs.version }}
-          tag_name: 0.1.0.${{ github.sha }}
+          tag_name: 0.1.0.${{ steps.short-sha.outputs.sha }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
       - name: upload windows artifact
