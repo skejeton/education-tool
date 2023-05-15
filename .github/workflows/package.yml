@@ -4,9 +4,9 @@ jobs:
   MakePkg-Msbuild:
     name: Build for Windows
     runs-on: windows-latest
-    - uses: actions/checkout@v2
-    - uses: ilammy/msvc-dev-cmd@v1
     steps:
+      - uses: actions/checkout@v2
+      - uses: ilammy/msvc-dev-cmd@v1
       - name: checkout
         run: |
           git submodule init
