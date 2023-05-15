@@ -22,7 +22,7 @@ jobs:
           draft: false
           prerelease: false
           release_name: ${{ steps.version.outputs.version }}
-          tag_name: ${{ github.ref }}
+          tag_name: 0.1.0.${{ github.sha }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
       - name: upload windows artifact
