@@ -4,14 +4,14 @@ jobs:
   MakePkg-Msbuild:
     name: Build for Windows
     runs-on: windows-latest
+    - uses: actions/checkout@v2
+    - uses: ilammy/msvc-dev-cmd@v1
     steps:
       - name: checkout
-        uses: actions/checkout@v2
         run: |
           git submodule init
           git submodule update --remote
       - name: build
-        uses: ilammy/msvc-dev-cmd@v1
         run: |
           python3 build.py build
       - name: release
