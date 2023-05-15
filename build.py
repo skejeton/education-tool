@@ -71,7 +71,9 @@ def main():
 
   lines = script.split('\n')
   for line in lines:
-    os.system(line)
+    status = os.system(line)
+    if status != 0:
+      exit(status)
 
 
 if __name__ == "__main__":
