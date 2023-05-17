@@ -14,6 +14,7 @@
 #include "boxdraw.hpp"
 #include "pointing_at_resolve.hpp"
 #include "temp_id_binder.hpp"
+#include "placement_grid.hpp"
 #include <memory>
 #include <stdio.h>
 
@@ -26,17 +27,6 @@ struct Building {
 struct World {
   Building buildings[256];
   size_t buildings_count;
-};
-
-enum PlacementGridTile {
-  PLACEMENT_GRID_TILE_EMPTY,
-  PLACEMENT_GRID_TILE_OCCUPIED,
-  PLACEMENT_GRID_TILE_CANTPLACE,
-  PLACEMENT_GRID_TILE_CANPLACE,
-};
-
-struct PlacementGrid {
-  PlacementGridTile tiles[32][32];
 };
 
 enum PlayingMode {
@@ -96,51 +86,11 @@ float map_ray_to_grid(Ray3 ray, int *x, int *y) {
   float ground_t;
   if (ray3_vs_horizontal_plane(ray, 0, &ground_t)) {
     Vector3 at = ray3_at(ray, ground_t);
-    *x = at.x+16;
-    *y = at.z+16;
+    *x = at.x;
+    *y = at.z;
     return ground_t;
   }
   return 100000;
-}
-
-bool tile_available(PlacementGrid *grid, int x, int y) {
-  return x >= 0 && x < 32 && y >= 0 && y < 32;
-}
-
-bool can_place_building(int chunkx, int chunky, PlacementGrid *grid, int x, int y) {
-  x -= chunkx*32;
-  y -= chunky*32;
-  for (int i = -4; i < 4; i++) {
-    for (int j = -4; j < 4; j++) {
-      if (tile_available(grid, i+x, j+y) && grid->tiles[i+x][j+y] == PLACEMENT_GRID_TILE_OCCUPIED) {
-        return false;
-      }
-    }
-  }
-
-  return true;
-}
-
-void place_building(int chunkx, int chunky, PlacementGrid *grid, int x, int y, bool placed, bool can_place) {
-  x -= chunkx*32;
-  y -= chunky*32;
-  if (placed) {
-    for (int i = -4; i < 4; i++) {
-      for (int j = -4; j < 4; j++) {
-        if (tile_available(grid, i+x, j+y)) {
-          grid->tiles[i+x][j+y] = PLACEMENT_GRID_TILE_OCCUPIED;
-        }
-      }
-    }
-  } else {
-    for (int i = -4; i < 4; i++) {
-      for (int j = -4; j < 4; j++) {
-        if (tile_available(grid, i+x, j+y)) {
-          grid->tiles[i+x][j+y] = can_place ? PLACEMENT_GRID_TILE_CANPLACE : PLACEMENT_GRID_TILE_CANTPLACE;
-        }
-      }
-    }
-  }
 }
 
 void world_place_building(World *world, Building building) {
@@ -153,29 +103,6 @@ void world_remove_building(World *world, size_t index) {
 
   memmove(world->buildings+index, world->buildings+index+1, sizeof(Building) * (world->buildings_count-index-1));
   world->buildings_count -= 1;
-}
-
-void render_grid(int chunkx, int chunky, PlacementGrid *grid, float alpha) {
-  Vector4 grid_color = {1.0, 1.0, 0.0, alpha};
-
-  for (int i = -16; i <= 16; i++) {
-    Box3 box = box3_extrude_from_point( { (float)i+chunkx*32, 0.0f, chunky*32.0f }, { 0.05f, 0.15f, 16.0f });
-    boxdraw_push(&boxdraw, boxdraw_cmdcolored(box, grid_color));
-  }
-  for (int i = -16; i <= 16; i++) {
-    Box3 box = box3_extrude_from_point( { chunkx*32.0f, 0.0f, (float)i+chunky*32 }, { 16.0f, 0.15f, 0.05f });
-    boxdraw_push(&boxdraw, boxdraw_cmdcolored(box, grid_color));
-  }
-  for (int i = 0; i < 32; i++) {
-    for (int j = 0; j < 32; j++) {
-      if (grid->tiles[i][j]) {
-        int x = (i - 16)+chunkx*32;
-        int y = (j - 16)+chunky*32;
-        Box3 box = box3_extrude_from_point( { (float)x+0.5f, 0.0f, (float)y+0.5f }, { 0.5f, 0.13f, 0.5f });
-        boxdraw_push(&boxdraw, boxdraw_cmdcolored(box, placement_colorscheme[grid->tiles[i][j]]));
-      }
-    }
-  }
 }
 
 Box3 building_box(int x, int y, int h) {
@@ -397,7 +324,6 @@ void frame(void) {
   Box3 floor = box3_extrude_from_point({ 0, 0, 0 }, { 5000, 0.05, 5000 });
   boxdraw_push(&boxdraw, boxdraw_cmdcolored(floor, { 0.6, 0.6, 0.3, 1.0 }));
 
-  bool can_place = rt < 50;
   bool may_place = rt < 50;
   if (last_object_locator.id != -1) {
     may_place = false;
@@ -415,44 +341,25 @@ void frame(void) {
   }
 
   if (g_playing_mode == PLAYING_MODE_BUILD) {
-    PlacementGrid grids[5][5] = {};
+    PlacementGrid grid = PlacementGrid::init(camera.position.x, camera.position.z);
 
-    for (int chunkx = -2; chunkx <= 2; chunkx++) {
-      for (int chunky = -2; chunky <= 2; chunky++) {
-        PlacementGrid *grid = &grids[chunkx + 2][chunky + 2];
-        int ofsx = camera.position.x / 32;
-        int ofsy = camera.position.z / 32;
+    for (int i = 0; i < global_world.buildings_count; i++) {
+      Building building = global_world.buildings[i];
+      PlacementRegion region = {building.x-4, building.y-4, 8, 8};
 
-        for (int i = 0; i < global_world.buildings_count; i++) {
-          Building building = global_world.buildings[i];
-          place_building(chunkx+ofsx, chunky+ofsy, grid, building.x + 16, building.y + 16, true, true);
-        }
-
-        can_place = can_place_building(chunkx+ofsx, chunky+ofsy, grid, rx, ry) && can_place && may_place;
-      }
+      grid.place_region(region);
     }
-    
-    for (int chunkx = -2; chunkx <= 2; chunkx++) {
-      for (int chunky = -2; chunky <= 2; chunky++) {
-        PlacementGrid *grid = &grids[chunkx + 2][chunky + 2];
-        int ofsx = camera.position.x / 32;
-        int ofsy = camera.position.z / 32;
-        float alpha = 1.0f-sqrt(chunkx*chunkx + chunky*chunky) / 2.0f + 0.2;
 
-        if (may_place) {
-          place_building(chunkx + ofsx, chunky + ofsy, grid, rx, ry, false, can_place);
-        }
+    bool can_place = may_place && grid.try_place_region({rx-4, ry-4, 8, 8});
 
-        render_grid(chunkx+ofsx, chunky+ofsy, grid, alpha);
-      }
-    }
+    grid.render(&boxdraw);
 
     if (can_place) {
       if (show_buildings) {
-        render_building(rx - 16, ry - 16, bheight);
+        render_building(rx, ry, bheight);
       }
       if (inputs.mouse_states[0].pressed && sapp_mouse_locked()) {
-        world_place_building(&global_world, Building { rx - 16, ry - 16, bheight });
+        world_place_building(&global_world, Building { rx, ry, bheight });
       }
     }
   }

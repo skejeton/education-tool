@@ -5,3 +5,4 @@ src/shaders.hxx
 # website which I don't want to reveal tokens or other details of.
 # TODO: Generalize it for everyone. (see issue #1)
 emscripten_build_and_publish.sh 
+user/
