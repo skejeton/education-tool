@@ -22,6 +22,10 @@
 
 struct Building {
   int x, y, h;
+
+  PlacementRegion region() {
+    return {x-4, y-4, 8, 8};
+  }
 };
 
 struct World {
@@ -281,6 +285,7 @@ void frame(void) {
 
   int rx, ry;
   float rt = map_ray_to_grid(camera.ray(), &rx, &ry);
+  Building potential_building = {rx, ry, height};
 
   ImGui::GetIO().FontGlobalScale = 1.5;
 
@@ -345,12 +350,10 @@ void frame(void) {
 
     for (int i = 0; i < global_world.buildings_count; i++) {
       Building building = global_world.buildings[i];
-      PlacementRegion region = {building.x-4, building.y-4, 8, 8};
-
-      grid.place_region(region);
+      grid.place_region(building.region());
     }
 
-    bool can_place = may_place && grid.try_place_region({rx-4, ry-4, 8, 8});
+    bool can_place = may_place && grid.try_place_region(potential_building.region());
 
     grid.render(&boxdraw);
 
@@ -359,7 +362,7 @@ void frame(void) {
         render_building(rx, ry, bheight);
       }
       if (inputs.mouse_states[0].pressed && sapp_mouse_locked()) {
-        world_place_building(&global_world, Building { rx, ry, bheight });
+        world_place_building(&global_world, potential_building);
       }
     }
   }

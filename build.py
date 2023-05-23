@@ -69,6 +69,7 @@ def main():
   else:
     raise Exception(f"Unknown target: {arguments.target}")
 
+  os.system("mkdir -p user")
   lines = script.split('\n')
   for line in lines:
     status = os.system(line)
