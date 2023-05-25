@@ -15,23 +15,11 @@
 #include "pointing_at_resolve.hpp"
 #include "temp_id_binder.hpp"
 #include "placement_grid.hpp"
+#include "world.hpp"
 #include <memory>
 #include <stdio.h>
 
 //--------------
-
-struct Building {
-  int x, y, h;
-
-  PlacementRegion region() {
-    return {x-4, y-4, 8, 8};
-  }
-};
-
-struct World {
-  Building buildings[256];
-  size_t buildings_count;
-};
 
 enum PlayingMode {
   PLAYING_MODE_BUILD,
@@ -86,52 +74,6 @@ static const Vector4 placement_colorscheme[4] = {
 
 //--------------
 
-float map_ray_to_grid(Ray3 ray, int *x, int *y) {
-  float ground_t;
-  if (ray3_vs_horizontal_plane(ray, 0, &ground_t)) {
-    Vector3 at = ray3_at(ray, ground_t);
-    *x = at.x;
-    *y = at.z;
-    return ground_t;
-  }
-  return 100000;
-}
-
-void world_place_building(World *world, Building building) {
-  assert(world->buildings_count < 256 && "Out of buildings");
-  world->buildings[world->buildings_count++] = building;
-}
-
-void world_remove_building(World *world, size_t index) {
-  assert(index < world->buildings_count);
-
-  memmove(world->buildings+index, world->buildings+index+1, sizeof(Building) * (world->buildings_count-index-1));
-  world->buildings_count -= 1;
-}
-
-Box3 building_box(int x, int y, int h) {
-  float building_height = h * 2 + 2;
-  return box3_extrude_from_point({ (float)x, building_height/2, (float)y }, { 4, building_height/2, 4 });;
-}
-
-void render_building(int x, int y, int h) {
-  Vector2 position = { (float)x, (float)y };
-  float building_height = h * 2 + 2;
-  Box3 building = building_box(x, y, h);
-  boxdraw_push(&boxdraw, boxdraw_cmdgradient(building, { 0.5, 0.5, 0.5, 1.0 }, { 0.4, 0.3, 0.3, 1.0 }));
-  for (int t = 0; t < h; t++) {
-    for (int x = -1; x <= 1; x++) {
-      float y = t * 2 + 2;
-      Box3 window = box3_extrude_from_point( { position.x+x*2.0f, y, position.y }, { 0.5, 0.75, 4.05 });
-      boxdraw_push(&boxdraw, boxdraw_cmdgradient(window, { 0.0, 0.0, 1.0, 1.0 }, { 1.0, 0.0, 0.1, 1.0 }));
-    }
-    for (int x = -1; x <= 1; x++) {
-      float y = t * 2 + 2;
-      Box3 window = box3_extrude_from_point( { position.x, y, position.y+x*2.0f }, { 4.05, 0.75, 0.5 });
-      boxdraw_push(&boxdraw, boxdraw_cmdgradient(window, { 0.0, 0.0, 1.0, 1.0 }, { 1.0, 0.0, 0.1, 1.0 }));
-    }
-  }
-}
 
 void set_mode(PlayingMode mode) {
   g_playing_mode = mode;
@@ -283,10 +225,6 @@ void frame(void) {
   
   simgui_new_frame( { width, height, sapp_frame_duration(), sapp_dpi_scale() });
 
-  int rx, ry;
-  float rt = map_ray_to_grid(camera.ray(), &rx, &ry);
-  Building potential_building = {rx, ry, height};
-
   ImGui::GetIO().FontGlobalScale = 1.5;
 
   // the imgui UI pass
@@ -315,7 +253,6 @@ void frame(void) {
   
   ImGui::DragFloat("yaw", &camera.yaw);
   ImGui::DragFloat("pitch", &camera.pitch);
-  ImGui::DragFloat("rt", &rt);
   ImGui::DragInt("cmdc", &cmdc);
   ImGui::Text("pmode %d", g_playing_mode);
   ImGui::End();
@@ -329,24 +266,27 @@ void frame(void) {
   Box3 floor = box3_extrude_from_point({ 0, 0, 0 }, { 5000, 0.05, 5000 });
   boxdraw_push(&boxdraw, boxdraw_cmdcolored(floor, { 0.6, 0.6, 0.3, 1.0 }));
 
-  bool may_place = rt < 50;
-  if (last_object_locator.id != -1) {
-    may_place = false;
-  }
 
   auto pointing_at = PointingAtResolve::init(camera.ray());
   auto pointing_at_bindings = TempIdBinder<ObjectLocator>::init();
 
   for (int i = 0; i < global_world.buildings_count; i++) {
     Building building = global_world.buildings[i];
-    Box3 box = building_box(building.x, building.y, building.h);
-
     int id = pointing_at_bindings.allocate({ ObjectLocator::Pool::BUILDING, i });
-    pointing_at.push_box(box, id);
+    pointing_at.push_box(building.box(), id);
   }
 
   if (g_playing_mode == PLAYING_MODE_BUILD) {
     PlacementGrid grid = PlacementGrid::init(camera.position.x, camera.position.z);
+ 
+    int rx, ry;
+    float rt = grid.map_ray(camera.ray(), &rx, &ry);
+    Building potential_building = {rx, ry, bheight};
+
+    bool may_place = rt < 50;
+    if (last_object_locator.id != -1) {
+      may_place = false;
+    }
 
     for (int i = 0; i < global_world.buildings_count; i++) {
       Building building = global_world.buildings[i];
@@ -359,10 +299,10 @@ void frame(void) {
 
     if (can_place) {
       if (show_buildings) {
-        render_building(rx, ry, bheight);
+        potential_building.render(&boxdraw);
       }
       if (inputs.mouse_states[0].pressed && sapp_mouse_locked()) {
-        world_place_building(&global_world, potential_building);
+        global_world.add_building(potential_building);
       }
     }
   }
@@ -370,7 +310,7 @@ void frame(void) {
   if (show_buildings) {
     for (int i = 0; i < global_world.buildings_count; i++) {
       Building building = global_world.buildings[i];
-      render_building(building.x, building.y, building.h);
+      building.render(&boxdraw);
     }
   }
 
@@ -410,7 +350,7 @@ void frame(void) {
           if (g_playing_mode == PLAYING_MODE_BUILD) {
             Building building = global_world.buildings[id];
 
-            Box3 box = building_box(building.x, building.y, building.h);
+            Box3 box = building.box();
             box.max.y = box.min.y + 0.3;
             box.min.x -= 0.3;
             box.min.z -= 0.3;
@@ -420,7 +360,7 @@ void frame(void) {
             boxdraw_push(&boxdraw, boxdraw_cmdcolored(box, {0, 0, 1, 1}));
 
             if (inputs.mouse_states[1].pressed) {
-              world_remove_building(&global_world, id);
+              global_world.remove_building(id);
             }  
           }
         } break;
@@ -436,9 +376,7 @@ void frame(void) {
       }
     }
   }
-
  
-
   cmdc = boxdraw.commands_count;
   boxdraw_flush(&boxdraw, view_projection);
   {
