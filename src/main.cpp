@@ -249,7 +249,7 @@ void frame(void) {
   ImGui::SetNextWindowPos( { 0, 400 });
   ImGui::Begin("debug");
   ImGui::Text("%g\n", 1 / sapp_frame_duration());
-  ImGui::ColorPicker4("Colour", (float*)&boxdraw.pass_action.colors[0].value, ImGuiColorEditFlags_PickerHueWheel);
+  ImGui::ColorPicker4("Colour", (float*)&boxdraw.pass_action.colors[0].clear_value, ImGuiColorEditFlags_PickerHueWheel);
   
   ImGui::DragFloat("yaw", &camera.yaw);
   ImGui::DragFloat("pitch", &camera.pitch);
@@ -381,8 +381,9 @@ void frame(void) {
   boxdraw_flush(&boxdraw, view_projection);
   {
     sg_pass_action pass_action = {};
-    pass_action.colors[0].action = SG_ACTION_LOAD;
-    pass_action.colors[0].value = { 0.3f, 0.7f, 0.5f, 1.0f };
+    pass_action.colors[0].load_action = SG_LOADACTION_LOAD;
+    pass_action.colors[0].store_action = SG_STOREACTION_STORE;
+    pass_action.colors[0].clear_value = { 0.3f, 0.7f, 0.5f, 1.0f };
   
     sg_begin_default_pass(&pass_action, width, height);
     simgui_render(); 

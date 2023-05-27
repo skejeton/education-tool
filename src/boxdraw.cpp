@@ -83,8 +83,9 @@ BoxdrawRenderer boxdraw_create() {
   result.bindings.index_buffer = result.index_buffer;
 
   // initial clear color
-  result.pass_action.colors[0].action = SG_ACTION_CLEAR;
-  result.pass_action.colors[0].value = { 0.0f, 0.0f, 0.5f, 1.0f };
+  result.pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
+  result.pass_action.colors[0].store_action = SG_STOREACTION_STORE;
+  result.pass_action.colors[0].clear_value = { 0.0f, 0.0f, 0.5f, 1.0f };
 
   return result;
 }

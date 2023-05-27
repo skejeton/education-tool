@@ -69,7 +69,10 @@ def main():
   else:
     raise Exception(f"Unknown target: {arguments.target}")
 
-  os.system("mkdir -p user")
+  if os.name == "nt":
+    os.system("if not exist user mkdir user")
+  else:
+    os.system("mkdir -p user")
   lines = script.split('\n')
   for line in lines:
     status = os.system(line)
