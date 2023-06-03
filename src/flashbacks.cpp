@@ -3,6 +3,7 @@
 #include "imgui_utilities.hpp"
 #include "flashbacks.hpp"
 #include <cstdio>
+#include "util.hpp"
 
 FlashbacksAllocatedDialog Flashbacks::alloc_dialog() {
   for (size_t i = 0; i < FLASHBACKS_DIALOGS_MAX; i++) {
@@ -51,28 +52,33 @@ void Flashbacks::touch(FlashbacksDialogId id, FlashbacksDialogChoice choice) {
   }
 }
 
+static FlashbacksDialogId allocate_dialog_sequential(Flashbacks *flashbacks, FlashbacksDialogPrototype proto, FlashbacksDialogId previous_id) {
+	FlashbacksAllocatedDialog allocated = flashbacks->alloc_dialog();
+	assert(allocated.id && "Couldn't allocate!");
+
+	if (allocated.id) {
+		allocated.pointer->text = string_duplicate(proto.text);
+		allocated.pointer->answer = string_duplicate(proto.answer);
+ 
+		if (previous_id != 0) {
+			FlashbacksDialog *previous = flashbacks->get_from_id(previous_id);
+      
+			previous->next = allocated.id;
+			allocated.pointer->prev = previous_id;
+		}
+	}
+
+	return allocated.id;
+}
 
 void FlashbacksDialogMaker::append_dialog(FlashbacksDialogPrototype proto) {
-  FlashbacksAllocatedDialog allocated = this->flashbacks->alloc_dialog();
-  assert(allocated.id && "Couldn't allocate!");
+	FlashbacksDialogId id = allocate_dialog_sequential(flashbacks, proto, previous_id);
 
   if (starter_id == 0) {
-    this->starter_id = allocated.id;
+    this->starter_id = id;
   }
 
-  if (allocated.id) {
-    allocated.pointer->text = proto.text;
-    allocated.pointer->answer = proto.answer;
- 
-    if (this->previous_id != 0) {
-      FlashbacksDialog *previous = this->flashbacks->get_from_id(this->previous_id);
-      
-      previous->next = allocated.id;
-      allocated.pointer->prev = this->previous_id;
-    }
-
-    this->previous_id = allocated.id;
-  }
+	previous_id = id;
 }
 
 
@@ -213,7 +219,21 @@ void FlashbacksGui::show() {
         }
       }
       ImGui::End();
-      // TODO
       break;
   }
+}
+
+void Flashbacks::free_sequence(FlashbacksDialogId id) {
+	FlashbacksDialog *dialog = get_from_id(id);
+	
+	while (dialog) {
+		FlashbacksDialog *next = get_from_id(dialog->next);
+    free((void*)dialog->text);
+    free((void*)dialog->answer);
+		*dialog = { 0 };
+		dialog = next;
+	}
+
+	// FIXME: Quick and dirty fix, backlog should be separate from flashbacks.
+	backlog = {};
 }

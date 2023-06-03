@@ -5,6 +5,8 @@
 #ifndef H_WORLD_CATEDU
 #define H_WORLD_CATEDU
 
+#define WORLD_BUILDINGS_MAX 256
+
 #include "boxdraw.hpp"
 #include "scene.hpp"
 #include "camera.hpp"
@@ -31,7 +33,7 @@ struct Building {
 
 struct World {
   Scene entities;
-  Building buildings[256];
+  Building buildings[WORLD_BUILDINGS_MAX];
   size_t buildings_count;
 
   void add_building(Building building);

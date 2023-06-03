@@ -6,3 +6,5 @@ src/shaders.hxx
 # TODO: Generalize it for everyone. (see issue #1)
 emscripten_build_and_publish.sh 
 user/
+.vs
+out

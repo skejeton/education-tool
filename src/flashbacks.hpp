@@ -5,7 +5,7 @@
 #ifndef H_FLASHBACKS_CATEDU
 #define H_FLASHBACKS_CATEDU
 
-#define FLASHBACKS_DIALOGS_MAX 128
+#define FLASHBACKS_DIALOGS_MAX 512
 
 #include <vector>
 
@@ -36,12 +36,13 @@ struct Flashbacks {
   std::vector<FlashbacksDialogId> backlog;
   
   FlashbacksAllocatedDialog alloc_dialog();
+	void free_sequence(FlashbacksDialogId id);
   FlashbacksDialog *get_from_id(FlashbacksDialogId id);
   void touch(FlashbacksDialogId id, FlashbacksDialogChoice choice);
 };
 
 struct FlashbacksDialogPrototype {
-  const char *text, *answer;
+  char *text, *answer;
 };
 
 struct FlashbacksDialogMaker {
@@ -52,7 +53,6 @@ struct FlashbacksDialogMaker {
   static FlashbacksDialogMaker from(Flashbacks *flashbacks);
   void append_dialog(FlashbacksDialogPrototype proto);
 };
-
 
 struct FlashbacksGui {
   Flashbacks *flashbacks;

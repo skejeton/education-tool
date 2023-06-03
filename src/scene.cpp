@@ -21,11 +21,11 @@ EntityId scene_allocate_entity(Scene *scene) {
 }
 
 Entity *scene_get_entity(Scene *scene, EntityId id) {
-  assert(id_to_index(id) < SCENE_ENTITY_BUFFER_SIZE && "Out of bounds access");
-
   if (id.index == 0) {
     return nullptr;
   }
+
+  assert(id_to_index(id) < SCENE_ENTITY_BUFFER_SIZE && "Out of bounds access");
 
   return &scene->entities[id_to_index(id)];
 }
