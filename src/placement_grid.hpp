@@ -4,7 +4,6 @@
 
 #ifndef H_PLACEMENT_GRID_CATEDU
 #define H_PLACEMENT_GRID_CATEDU
-
 #include "boxdraw.hpp"
 #include "stadef.h"
 

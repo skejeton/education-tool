@@ -6,14 +6,24 @@
 #define H_CATEDU_ENTITY_EDITOR
 
 #include "flashbacks.hpp"
+#include "scene.hpp"
 #include "vector"
 
 struct EntityEditor {
+  Flashbacks *flashbacks;
+  Entity *entity;
   std::vector<FlashbacksDialogPrototype> prototypes;
+  size_t stage;
 
+
+  static EntityEditor init(Flashbacks* flashbacks) {
+    EntityEditor editor = {};
+    editor.flashbacks = flashbacks;
+    return editor;
+  }
   void show();
-	static EntityEditor derive_from(Flashbacks *flashbacks, FlashbacksDialogId start);
-  void emplace(Flashbacks *flashbacks, FlashbacksDialogId *start);
+	void derive_from(Entity *entity);
+  void emplace();
 };
 
 #endif

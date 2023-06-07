@@ -5,9 +5,11 @@ static EntityId index_to_id(size_t idx) {
   return { idx + 1 };
 }
 
+
 static size_t id_to_index(EntityId id) {
   return id.index - 1;
 }
+
 
 EntityId scene_allocate_entity(Scene *scene) {
   for (size_t i = 0; i < SCENE_ENTITY_BUFFER_SIZE; i++) {
@@ -20,6 +22,7 @@ EntityId scene_allocate_entity(Scene *scene) {
   return { 0 };
 }
 
+
 Entity *scene_get_entity(Scene *scene, EntityId id) {
   if (id.index == 0) {
     return nullptr;
@@ -29,6 +32,7 @@ Entity *scene_get_entity(Scene *scene, EntityId id) {
 
   return &scene->entities[id_to_index(id)];
 }
+
 
 EntityId scene_summon_entity(Scene *scene, Entity ent) {
   EntityId id = scene_allocate_entity(scene);
@@ -40,6 +44,14 @@ EntityId scene_summon_entity(Scene *scene, Entity ent) {
 
   return id;
 }
+
+
+void scene_remove_entity(Scene *scene, EntityId id) {
+  if (scene_get_entity(scene, id)) {
+    scene->entities_taken[id_to_index(id)] = 0;
+  }
+}
+
 
 static void scene_iterator_step_forth(SceneIterator *iterator) {
   while (iterator->scene->entities_taken[iterator->index] == false) {
@@ -57,6 +69,7 @@ SceneIterator scene_iterator_begin(Scene *scene) {
   return scene_iterator;
 }
 
+
 bool scene_iterator_going(SceneIterator *iterator) {
   scene_iterator_step_forth(iterator);
   bool going = iterator->index < SCENE_ENTITY_BUFFER_SIZE;
@@ -72,6 +85,11 @@ bool scene_iterator_going(SceneIterator *iterator) {
   return going;
 }
 
+
 void scene_iterator_next(SceneIterator *iterator) {
   iterator->index++;
+}
+
+PlacementRegion entity_placement_region(Entity *ent) {
+  return { (int)ent->position.x-1, (int)ent->position.z-1, 2, 2 };
 }

@@ -41,6 +41,14 @@ struct ObjectLocator {
   int id;
 };
 
+enum class SelectionOption {
+  ENTITY,
+  BUILDING,
+  PAVEMENT,
+  TREE,
+  COUNT
+};
+
 struct Entry {
   Input inputs;
   Camera camera;
@@ -52,16 +60,16 @@ struct Entry {
   int bheight = 0;
   int cmdc = 0;
   World world;
-  bool show_buildings = true;
+  bool show_objects = true;
   PlayingMode playing_mode;
   ObjectLocator last_object_locator = {};
   EntityId entity_selected;
   EntityEditor entity_editor;
+  SelectionOption selection_option;
+  int stage;
 
-  
   void init(); 
   void input(const sapp_event* event);
-  sapp_desc sokol_main(int argc, char* argv[]);
   void cleanup();
   void frame();
 };

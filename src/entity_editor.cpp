@@ -15,12 +15,34 @@ void deallocate_prototype(FlashbacksDialogPrototype *prototype) {
 }
 
 void EntityEditor::show() {
+  size_t old_stage = stage;
   int i = 0;
   int delete_index = -1;
   int swap_index_first = -1;
   int swap_index_last = -1;
   ImGui::SetNextWindowSize({640, 480});
   ImGui::Begin("Entity Editor");
+    ImGui::Text("Stage");
+    for (int i = 0; i < 9; i++) {
+      char text[] = {i + '1', 0};
+      ImGui::SameLine();
+      
+
+      if (stage == i) {
+        ImGui::PushStyleColor(ImGuiCol_Button, 0x4400FF00);
+        if (ImGui::Button(text)) {
+          stage = i;
+        }
+        ImGui::PopStyleColor();
+      }
+      else {
+        if (ImGui::Button(text)) {
+          stage = i;
+        }
+      }
+    }
+
+    ImGui::SeparatorText("Dialogues");
     for (auto dialog : this->prototypes) {
       ImGui::PushID(i);
       ImGui::InputTextMultiline("Description", dialog.text, MAX_LENGTH);
@@ -58,6 +80,14 @@ void EntityEditor::show() {
       this->prototypes.push_back(allocate_prototype());
     }
   ImGui::End();
+
+  if (stage != old_stage) {
+    size_t new_stage = stage;
+    stage = old_stage;
+    emplace();
+    stage = new_stage;
+    derive_from(entity);
+  }
 }
 
 void copy_string_safe_n(char *dest, const char *src, size_t max) {
@@ -78,27 +108,32 @@ static FlashbacksDialogPrototype derive_prototype_from(FlashbacksDialog dialog) 
   return prototype;
 }
 
-EntityEditor EntityEditor::derive_from(Flashbacks *flashbacks, FlashbacksDialogId start) {
-  EntityEditor editor = {};
+void EntityEditor::derive_from(Entity* entity) {
+  prototypes = {};
 
-  printf("Id: %zu\n", start);
+  this->entity = entity;
 
-  FlashbacksDialogId id = start;
+  FlashbacksDialogId id = entity->dialog_stages_id[stage];
   while (id) {
     FlashbacksDialog *dialog = flashbacks->get_from_id(id);
     if (!dialog) {
       break;
     }
-    editor.prototypes.push_back(derive_prototype_from(*dialog));
+    prototypes.push_back(derive_prototype_from(*dialog));
     id = dialog->next;
   }
-
-  return editor;
 }
 
-void EntityEditor::emplace(Flashbacks *flashbacks, FlashbacksDialogId *start) {
-	flashbacks->free_sequence(*start);
-	FlashbacksDialogMaker maker = FlashbacksDialogMaker::from(flashbacks);
+void EntityEditor::emplace() {
+  if (entity == nullptr) {
+    return;
+  }
+  
+  FlashbacksDialogId* start = &entity->dialog_stages_id[stage];
+
+  flashbacks->free_sequence(*start);
+  
+  FlashbacksDialogMaker maker = FlashbacksDialogMaker::from(flashbacks);
 	
   for (auto dialog : this->prototypes) {
     if (dialog.answer && *dialog.answer == 0) {

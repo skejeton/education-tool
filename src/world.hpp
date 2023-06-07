@@ -12,20 +12,53 @@
 #include "camera.hpp"
 #include "placement_grid.hpp"
 
+enum struct BuildingType {
+  APARTMENT,
+  PAVEMENT,
+  TREE
+};
+
 struct Building {
   int x, y, h;
+
+  BuildingType type;
 
   inline float height() {
     return h * 2 + 2;
   }
 
   inline PlacementRegion region() {
-    return {x-4, y-4, 8, 8};
+    switch (type) {
+    case BuildingType::APARTMENT:
+    case BuildingType::TREE:
+      return {x-4, y-4, 8, 8};
+    case BuildingType::PAVEMENT:
+      return {x-2, y-2, 4, 4};
+    }
+  }
+
+  inline Rect collision_rect() {
+    float building_height = height();
+    switch (type) {
+    case BuildingType::APARTMENT:
+      return {(float)x-4, (float)y-4, 8, 8};
+    case BuildingType::TREE:
+      return {(float)x-0.5f, (float)y-0.5f, 1, 1};
+    case BuildingType::PAVEMENT:
+      return {};
+    }
   }
 
   inline Box3 box() {
     float building_height = height();
-    return box3_extrude_from_point({ (float)x, building_height/2, (float)y }, { 4, building_height/2, 4 });
+    switch (type) {
+    case BuildingType::APARTMENT:
+      return box3_extrude_from_point({ (float)x, building_height/2, (float)y }, { 4, building_height/2, 4 });
+    case BuildingType::TREE:
+      return box3_extrude_from_point({ (float)x, building_height/2, (float)y }, { 4, building_height/2, 4 });
+    case BuildingType::PAVEMENT:
+      return box3_extrude_from_point({ (float)x, 0.0, (float)y }, { 2, 0.2, 2 });
+    }
   }
 
   void render(BoxdrawRenderer *renderer);

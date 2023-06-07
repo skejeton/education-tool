@@ -233,7 +233,4 @@ void Flashbacks::free_sequence(FlashbacksDialogId id) {
 		*dialog = { 0 };
 		dialog = next;
 	}
-
-	// FIXME: Quick and dirty fix, backlog should be separate from flashbacks.
-	backlog = {};
 }
