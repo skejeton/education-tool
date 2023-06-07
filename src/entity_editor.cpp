@@ -24,7 +24,8 @@ void EntityEditor::show() {
   ImGui::Begin("Entity Editor");
     ImGui::Text("Stage");
     for (int i = 0; i < 9; i++) {
-      char text[] = {i + '1', 0};
+      char ch = static_cast<char>(i) + '1';
+      char text[] = {ch, 0};
       ImGui::SameLine();
       
 
