@@ -1,6 +1,7 @@
 #include "entry.hpp"
 #include "boxdraw.hpp"
 #include "entity_editor.hpp"
+#include "imgui/imgui.h"
 #include "math.hpp"
 #include "placement_grid.hpp"
 #include "scene.hpp"
@@ -69,6 +70,36 @@ void update_mode(Entry *entry) {
   }
 }
 
+static void set_imgui_rounding(float rounding) {
+  ImGui::GetStyle().TabRounding = rounding;
+  ImGui::GetStyle().ChildRounding = rounding;
+  ImGui::GetStyle().FrameRounding = rounding;
+  ImGui::GetStyle().GrabRounding = rounding-1;
+  ImGui::GetStyle().WindowRounding = rounding;
+  ImGui::GetStyle().ScrollbarRounding = rounding;
+  ImGui::GetStyle().PopupRounding = rounding;
+}
+
+static void init_imgui_font(Entry *entry, const char *path, float size) {
+  auto io = ImGui::GetIO();
+  entry->main_font = io.Fonts->AddFontFromFileTTF(path, sapp_dpi_scale()*size);
+  uint8_t *font_pixels;
+  int font_width, font_height;
+
+  io.Fonts->GetTexDataAsRGBA32(&font_pixels, &font_width, &font_height);
+  sg_image_desc img_desc = {};
+  img_desc.width = font_width;
+  img_desc.height = font_height;
+  img_desc.pixel_format = SG_PIXELFORMAT_RGBA8;
+  img_desc.wrap_u = SG_WRAP_CLAMP_TO_EDGE;
+  img_desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
+  img_desc.min_filter = SG_FILTER_LINEAR;
+  img_desc.mag_filter = SG_FILTER_LINEAR;
+  img_desc.data.subimage[0][0].ptr = font_pixels;
+  img_desc.data.subimage[0][0].size = font_width * font_height * 4;
+  io.Fonts->TexID = (ImTextureID)(uintptr_t) sg_make_image(&img_desc).id;
+}
+
 //--------------
 
 void Entry::init(void) {
@@ -91,6 +122,11 @@ void Entry::init(void) {
   simgui_desc_t simgui_desc = {};
   simgui_setup(&simgui_desc);
   ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+  init_imgui_font(this, "assets/Roboto-Regular.ttf", 16);
+  set_imgui_rounding(5);
+  ImGui::GetStyle().WindowPadding = {3, 3};
+  ImGui::GetStyle().CellPadding = {3, 3};
+  ImGui::GetStyle().FramePadding = {3, 3};
 
   boxdraw = boxdraw_create();
 
@@ -190,6 +226,61 @@ void render_entity(BoxdrawRenderer *renderer, Entity *entity, bool selected, boo
   boxdraw_push(renderer, boxdraw_cmdgradient(box, color_top, color_bottom));
 }
 
+static void show_ui(Entry *entry) {
+  const int width = sapp_width();
+  const int height = sapp_height();
+
+  ImGui::PushFont(entry->main_font);
+
+  // the imgui UI pass
+  if (ImGui::BeginMainMenuBar()) {
+    if (entry->playing_mode == PLAYING_MODE_BUILD) {
+      if (ImGui::Button("PLAY")) {
+        save_entity_in_editor(entry);
+        set_mode(entry, PLAYING_MODE_PLAY);
+      }
+    } else {
+      if (ImGui::Button("BUILD")) {
+        set_mode(entry, PLAYING_MODE_BUILD);
+      }
+      if (ImGui::Button("Backlog")) {
+        entry->flashbacks_gui.toggle_backlog();
+      }
+    }
+    ImGui::EndMainMenuBar();
+  }
+
+  switch (entry->playing_mode) {
+  case PLAYING_MODE_PLAY:
+    entry->flashbacks_gui.show();
+    break;
+  case PLAYING_MODE_BUILD:
+    put_information_window({ entry->selection_option });
+    if (entry->entity_selected.index != 0) {
+      entry->entity_editor.show();
+    }
+    break;
+  }
+
+  ImGui::SetNextWindowPos( { 0, 400 });
+  ImGui::Begin("debug");
+  ImGui::Text("%g\n", 1 / sapp_frame_duration());
+  ImGui::ColorPicker4("Colour", (float*)&entry->boxdraw.pass_action.colors[0].clear_value, ImGuiColorEditFlags_PickerHueWheel);
+  
+  ImGui::DragFloat("yaw", &entry->camera.yaw);
+  ImGui::DragFloat("pitch", &entry->camera.pitch);
+  ImGui::LabelText("stage", "%d", entry->stage+1);
+
+  ImGui::DragInt("cmdc", &entry->cmdc);
+  ImGui::Text("pmode %d", entry->playing_mode);
+  ImGui::End();
+
+  ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
+  draw_list->AddCircle( { width / 2.0f, height / 2.0f }, 4, 0xFFFFFFFF);
+
+  ImGui::PopFont();
+}
+
 void Entry::frame(void) {
   const int width = sapp_width();
   const int height = sapp_height();
@@ -230,57 +321,8 @@ void Entry::frame(void) {
   Matrix4 view_projection = camera.vp;
   
   simgui_new_frame({ width, height, sapp_frame_duration(), 1 });
+  show_ui(this);
 
-  ImGui::GetIO().FontGlobalScale = sapp_dpi_scale();
-
-  // the imgui UI pass
-  if (ImGui::BeginMainMenuBar()) {
-    if (playing_mode == PLAYING_MODE_BUILD) {
-      if (ImGui::Button("PLAY")) {
-        save_entity_in_editor(this);
-        set_mode(this, PLAYING_MODE_PLAY);
-      }
-    } else {
-      if (ImGui::Button("BUILD")) {
-        set_mode(this, PLAYING_MODE_BUILD);
-      }
-      if (ImGui::Button("Backlog")) {
-        flashbacks_gui.toggle_backlog();
-      }
-    }
-    ImGui::EndMainMenuBar();
-  }
-
-  switch (playing_mode) {
-  case PLAYING_MODE_PLAY:
-    flashbacks_gui.show();
-    break;
-  case PLAYING_MODE_BUILD:
-    put_information_window({ selection_option });
-    if (entity_selected.index != 0) {
-      entity_editor.show();
-    }
-    break;
-  }
-
-  ImGui::SetNextWindowPos( { 0, 400 });
-  ImGui::Begin("debug");
-  ImGui::Text("%g\n", 1 / sapp_frame_duration());
-  ImGui::ColorPicker4("Colour", (float*)&boxdraw.pass_action.colors[0].clear_value, ImGuiColorEditFlags_PickerHueWheel);
-  
-  ImGui::DragFloat("yaw", &camera.yaw);
-  ImGui::DragFloat("pitch", &camera.pitch);
-  ImGui::LabelText("window_width", "%d", width);
-  ImGui::LabelText("window_height", "%d", height);
-  ImGui::LabelText("stage", "%d", stage+1);
-
-  ImGui::DragInt("cmdc", &cmdc);
-  ImGui::Text("pmode %d", playing_mode);
-  ImGui::End();
-
-  ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
-
-  draw_list->AddCircle( { width / 2.0f, height / 2.0f }, 4, 0xFFFFFFFF);
 
 	// Draw Ground
   Box3 floor = box3_extrude_from_point({ 0, 0, 0 }, { 5000, 0.05, 5000 });

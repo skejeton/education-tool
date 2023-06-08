@@ -67,6 +67,7 @@ struct Entry {
   EntityEditor entity_editor;
   SelectionOption selection_option;
   int stage;
+  ImFont *main_font;
 
   void init(); 
   void input(const sapp_event* event);
