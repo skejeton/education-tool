@@ -6,7 +6,6 @@
 #define H_SCENE_CATEDU
 #include "math.hpp"
 #include "placement_grid.hpp"
-#include <cstdbool>
 #define SCENE_ENTITY_BUFFER_SIZE 128
 
 struct Entity {

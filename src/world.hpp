@@ -5,12 +5,13 @@
 #ifndef H_WORLD_CATEDU
 #define H_WORLD_CATEDU
 
-#define WORLD_BUILDINGS_MAX 256
-
 #include "boxdraw.hpp"
 #include "scene.hpp"
 #include "camera.hpp"
 #include "placement_grid.hpp"
+#include <stdlib.h>
+
+#define WORLD_BUILDINGS_MAX 256
 
 enum struct BuildingType {
   APARTMENT,
@@ -35,6 +36,7 @@ struct Building {
     case BuildingType::PAVEMENT:
       return {x-2, y-2, 4, 4};
     }
+    abort();
   }
 
   inline Rect collision_rect() {
@@ -46,6 +48,7 @@ struct Building {
     case BuildingType::PAVEMENT:
       return {};
     }
+    abort();
   }
 
   inline Box3 box() {
@@ -58,6 +61,7 @@ struct Building {
     case BuildingType::PAVEMENT:
       return box3_extrude_from_point({ (float)x, 0.0, (float)y }, { 2, 0.2, 2 });
     }
+    abort();
   }
 
   void render(BoxdrawRenderer *renderer);
