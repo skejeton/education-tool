@@ -122,9 +122,9 @@ void Entry::init(void) {
   simgui_desc_t simgui_desc = {};
   simgui_setup(&simgui_desc);
   ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-  init_imgui_font(this, "assets/Roboto-Regular.ttf", 16);
+  init_imgui_font(this, "./assets/Roboto-Regular.ttf", 16);
   set_imgui_rounding(5);
-  ImGui::GetStyle().WindowPadding = {3, 3};
+  ImGui::GetStyle().WindowPadding = {15, 15};
   ImGui::GetStyle().CellPadding = {3, 3};
   ImGui::GetStyle().FramePadding = {3, 3};
 
@@ -247,6 +247,11 @@ static void show_ui(Entry *entry) {
         entry->flashbacks_gui.toggle_backlog();
       }
     }
+    ImGui::SameLine(ImGui::GetWindowWidth()-100);
+    if (ImGui::Button("HELP")) {
+      entry->help_menu.shown = !entry->help_menu.shown;
+      printf("Hello\n");
+    }
     ImGui::EndMainMenuBar();
   }
 
@@ -274,6 +279,8 @@ static void show_ui(Entry *entry) {
   ImGui::DragInt("cmdc", &entry->cmdc);
   ImGui::Text("pmode %d", entry->playing_mode);
   ImGui::End();
+
+  entry->help_menu.show();
 
   ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
   draw_list->AddCircle( { width / 2.0f, height / 2.0f }, 4, 0xFFFFFFFF);

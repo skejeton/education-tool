@@ -23,6 +23,7 @@
 #include "temp_id_binder.hpp"
 #include "placement_grid.hpp"
 #include "world.hpp"
+#include "help_menu.hpp"
 #include <memory>
 #include <stdio.h>
 
@@ -68,6 +69,7 @@ struct Entry {
   SelectionOption selection_option;
   int stage;
   ImFont *main_font;
+  HelpMenu help_menu;
 
   void init(); 
   void input(const sapp_event* event);
