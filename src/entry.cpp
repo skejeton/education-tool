@@ -6,6 +6,7 @@
 #include "placement_grid.hpp"
 #include "scene.hpp"
 #include "world.hpp"
+#include "character.hpp"
 
 static void set_mode(Entry *entry, PlayingMode mode) {
   entry->playing_mode = mode;
@@ -220,10 +221,7 @@ void render_entity(BoxdrawRenderer *renderer, Entity *entity, bool selected, boo
     render_selection_box_base(renderer, box);
   }
 
-  Vector4 color_top = Vector4{ 0, 0, 1, 1 } * color_multiple;
-  Vector4 color_bottom = Vector4{ 1, 0, 1, 1 } * color_multiple;
-
-  boxdraw_push(renderer, boxdraw_cmdgradient(box, color_top, color_bottom));
+  Character{entity->position}.draw(renderer, color_multiple);
 }
 
 static void show_ui(Entry *entry) {

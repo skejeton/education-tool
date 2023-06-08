@@ -8,3 +8,6 @@ emscripten_build_and_publish.sh
 user/
 .vs
 out
+
+# MacOS
+.DS_Store
