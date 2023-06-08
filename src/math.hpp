@@ -314,9 +314,7 @@ struct Matrix4 {
   static Matrix4 perspective(float fov, float aspect, float near, float far) {
     float height = 1 / tanf(fov / 2);
     float width = height / aspect;
-    float f_range = far / (far - near);
 
-    Matrix4 result = {};
     return {
       width, 0,      0,              0,
       0,     height, 0,              0,

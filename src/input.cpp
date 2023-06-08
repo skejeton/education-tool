@@ -26,7 +26,6 @@ void Input::update()
 
 void Input::pass_event(const sapp_event *event)
 {
-  int mouse_wheel;
   switch (event->type) {
     case SAPP_EVENTTYPE_MOUSE_SCROLL:
       this->mouse_wheel = event->scroll_y == 0 ? 0 : (event->scroll_y < 0 ? -1 : 1);

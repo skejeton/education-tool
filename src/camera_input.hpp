@@ -7,8 +7,7 @@ namespace {
 #include "input.hpp"
 #include "camera.hpp"
 
-
-void camera_input_apply(Camera *camera, Input *input, bool fly = true) {
+inline void camera_input_apply(Camera *camera, Input *input, bool fly = true) {
   camera->rotate(-input->mouse_delta.y/6*(MATH_TAU/360), -input->mouse_delta.x/6*(MATH_TAU/360));
   float speed = sapp_frame_duration()*10;
 

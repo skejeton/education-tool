@@ -38,7 +38,6 @@ struct Building {
   }
 
   inline Rect collision_rect() {
-    float building_height = height();
     switch (type) {
     case BuildingType::APARTMENT:
       return {(float)x-4, (float)y-4, 8, 8};

@@ -105,7 +105,7 @@ void show_sequence(FlashbacksGui *gui) {
   FlashbacksDialog *dialog = gui->flashbacks->get_from_id(gui->sequence_current);
   assert(dialog && "Invalid dialog ID");
 
-  ImGui::SetNextWindowPos({ (1024-400)/2, (786-300)/2 });
+  ImGui::SetNextWindowPos({ (1024-400)/2.0f, (786-300)/2.0f });
   ImGui::SetNextWindowSize({ 400, 300 });
   ImGui::Begin("Dialogue");
   {
@@ -183,7 +183,7 @@ void FlashbacksGui::show() {
     case Mode::BACKLOG:
       this->prev_mode = Mode::BACKLOG;
 
-      ImGui::SetNextWindowPos({ (1024-400)/2, (786-500)/2 });
+      ImGui::SetNextWindowPos({ (1024-400)/2.0f, (786-500)/2.0f });
       ImGui::SetNextWindowSize({ 400, 500 });
       ImGui::Begin("Backlog");
       {

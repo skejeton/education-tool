@@ -38,7 +38,6 @@ void check_collisions(Entry *entry) {
   Vector2 snap = {0, 0};
 
   for (int i = 0; i < entry->world.buildings_count; i++) {
-    Vector2 building_pos = {(float)entry->world.buildings[i].x, (float)entry->world.buildings[i].y};
     Rect collision_rect = entry->world.buildings[i].collision_rect();
 
     if (rect_vs_rect(camera_rect, collision_rect)) {
@@ -126,7 +125,6 @@ const char* selection_option_name(SelectionOption selection) {
 
 void put_information_window(InformationWindowData data) {
   const int width = sapp_width();
-  const int height = sapp_height();
 
   ImGui::SetNextWindowPos({ (float)width - 300, 21 * sapp_dpi_scale() });
   ImGui::SetNextWindowSize({ 295, 300 });
@@ -311,8 +309,6 @@ void Entry::frame(void) {
       }
     }
 
-    PlacementRegion region;
-
     int rx, ry;
     float rt = grid.map_ray(camera.ray(), &rx, &ry);
 
@@ -380,11 +376,8 @@ void Entry::frame(void) {
     scene_iterator_going(&iterator);
     scene_iterator_next(&iterator))
   {
-    Vector3 position = iterator.item.entity->position;
     bool selected = false, hovered = false;
 
-    Vector4 color_multiple = {1, 1, 1, 1};
-    
     if (last_object_locator.pool == ObjectLocator::Pool::ENTITY && (int)iterator.index == last_object_locator.id) {
       hovered = true;
     }
