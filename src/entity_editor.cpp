@@ -22,26 +22,7 @@ void EntityEditor::show() {
   int swap_index_last = -1;
   ImGui::SetNextWindowSize({640, 480});
   ImGui::Begin("Entity Editor");
-    ImGui::Text("Stage");
-    for (int i = 0; i < 9; i++) {
-      char ch = i + '1';
-      char text[] = {ch, 0};
-      ImGui::SameLine();
-      
-
-      if (stage == i) {
-        ImGui::PushStyleColor(ImGuiCol_Button, 0x4400FF00);
-        if (ImGui::Button(text)) {
-          stage = i;
-        }
-        ImGui::PopStyleColor();
-      }
-      else {
-        if (ImGui::Button(text)) {
-          stage = i;
-        }
-      }
-    }
+    ImGui::InputText("Complete objective", entity->objective_complete, sizeof entity->objective_complete);
 
     ImGui::SeparatorText("Dialogues");
     for (auto dialog : this->prototypes) {

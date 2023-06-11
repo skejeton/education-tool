@@ -9,6 +9,7 @@
 #define SCENE_ENTITY_BUFFER_SIZE 128
 
 struct Entity {
+  char objective_complete[128];
   Vector3 position;
   size_t dialog_stages_id[9];
 };

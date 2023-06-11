@@ -10,7 +10,7 @@ endif()
 
 file(GLOB CATEDU_SRC_FILES "src/*.cpp" ${ADDITIONAL_FILES} lib/imgui/imgui.cpp lib/imgui/imgui_draw.cpp lib/imgui/imgui_demo.cpp lib/imgui/imgui_widgets.cpp lib/imgui/imgui_tables.cpp)
 
-add_executable(catedu ${CATEDU_SRC_FILES})
+add_executable(catedu ${CATEDU_SRC_FILES} "src/quest.cpp")
 
 set_property(TARGET catedu PROPERTY CXX_STANDARD 17)
 

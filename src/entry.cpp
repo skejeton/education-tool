@@ -108,7 +108,7 @@ void Entry::init(void) {
   
 #if 1
   scene_summon_entity(&scene, { { 0, 1, 1 } });
-  scene_summon_entity(&scene, { { 0, 1, 9 } });
+  scene_summon_entity(&scene, { { 0, 1, 8 } });
 #endif
   flashbacks_gui = FlashbacksGui::create(&flashbacks);
     
@@ -135,6 +135,11 @@ void Entry::init(void) {
   camera.move(10, 10, 10);
 
   this->entity_editor = EntityEditor::init(&flashbacks);
+
+  this->objective_list.push_objective("talk_a", "Talk to character A");
+  this->objective_list.push_objective("talk_b", "Talk to character B");
+  this->objective_list.push_objective("talk_c", "Talk to character C");
+  this->objective_list.push_objective("get_red_key", "Get red key");
 }
 
 static void save_entity_in_editor(Entry *entry) {
@@ -255,7 +260,17 @@ static void show_ui(Entry *entry) {
 
   switch (entry->playing_mode) {
   case PLAYING_MODE_PLAY:
-    entry->flashbacks_gui.show();
+    switch (entry->flashbacks_gui.show()) {
+    case FlashbacksEvent::COMPLETED:
+    {
+      Entity* target_entity = scene_get_entity(&entry->scene, entry->last_entity_interacted);
+      assert(target_entity);
+      entry->objective_list.complete_objective(target_entity->objective_complete);
+    }
+    break;
+    default:
+      ;
+    }
     break;
   case PLAYING_MODE_BUILD:
     put_information_window({ entry->selection_option });
@@ -279,6 +294,7 @@ static void show_ui(Entry *entry) {
   ImGui::End();
 
   entry->help_menu.show();
+  ObjectiveListUi{ &entry->objective_list }.show();
 
   ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
   draw_list->AddCircle( { width / 2.0f, height / 2.0f }, 4, 0xFFFFFFFF);
@@ -463,16 +479,18 @@ void Entry::frame(void) {
         } break;
       case ObjectLocator::Pool::ENTITY:
         {
-          Entity *entity = scene_get_entity(&scene, {(size_t)id+1});
+          EntityId entity_id = { (size_t)id + 1 };
+          Entity *entity = scene_get_entity(&scene, entity_id);
           if (playing_mode == PLAYING_MODE_PLAY) {
             if (inputs.mouse_states[0].released) {
               sapp_lock_mouse(false);
+              this->last_entity_interacted = entity_id;
               flashbacks_gui.begin_sequence(entity->dialog_stages_id[stage]);
             }
           } else if (playing_mode == PLAYING_MODE_BUILD) {
             if (inputs.mouse_states[0].released) {
               save_entity_in_editor(this);
-              this->entity_selected = {(size_t)id+1};
+              this->entity_selected = entity_id;
               this->entity_editor.derive_from(entity);
             } else if (inputs.mouse_states[1].pressed) {
               if (this->entity_selected.index == id+1) {
@@ -480,7 +498,7 @@ void Entry::frame(void) {
                 this->entity_editor = EntityEditor::init(&flashbacks);
               }
 
-              scene_remove_entity(&scene, {(size_t)id+1});
+              scene_remove_entity(&scene, entity_id);
             }
           }
         } break;

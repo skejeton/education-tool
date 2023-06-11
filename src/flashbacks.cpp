@@ -94,6 +94,7 @@ void FlashbacksGui::begin_sequence(FlashbacksDialogId start) {
   // if ID is 0, resort to inactive state
   if (start == 0) {
     this->mode = this->prev_mode;
+    this->sequence_current = 0;
   } else {
     this->mode = Mode::SEQUENCE;
     this->sequence_current = start;
@@ -101,13 +102,14 @@ void FlashbacksGui::begin_sequence(FlashbacksDialogId start) {
   }
 }
 
-void show_sequence(FlashbacksGui *gui) {
+FlashbacksEvent show_sequence(FlashbacksGui *gui) {
   FlashbacksDialog *dialog = gui->flashbacks->get_from_id(gui->sequence_current);
   assert(dialog && "Invalid dialog ID");
 
   ImGui::SetNextWindowPos({ (1024-400)/2.0f, (786-300)/2.0f });
   ImGui::SetNextWindowSize({ 400, 300 });
   ImGui::Begin("Dialogue");
+
   {
     ImGui::TextWrapped("%s", dialog->text);
     
@@ -155,6 +157,12 @@ void show_sequence(FlashbacksGui *gui) {
     }
   }
   ImGui::End();
+
+  if (gui->sequence_current == 0) {
+    return FlashbacksEvent::COMPLETED;
+  }
+
+  return FlashbacksEvent::NONE;
 }
 
 FlashbacksGui FlashbacksGui::create(Flashbacks *flashbacks) {
@@ -172,13 +180,15 @@ void FlashbacksGui::toggle_backlog() {
   }
 }
 
-void FlashbacksGui::show() {
+FlashbacksEvent FlashbacksGui::show() {
+  FlashbacksEvent event = FlashbacksEvent::NONE;
+
   switch (mode) {
     case Mode::INACTIVE:
       this->prev_mode = Mode::INACTIVE;
       break;
     case Mode::SEQUENCE:
-      show_sequence(this);
+      event = show_sequence(this);
       break;
     case Mode::BACKLOG:
       this->prev_mode = Mode::BACKLOG;
@@ -221,6 +231,8 @@ void FlashbacksGui::show() {
       ImGui::End();
       break;
   }
+
+  return event;
 }
 
 void Flashbacks::free_sequence(FlashbacksDialogId id) {

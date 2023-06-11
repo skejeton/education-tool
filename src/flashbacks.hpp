@@ -54,6 +54,11 @@ struct FlashbacksDialogMaker {
   void append_dialog(FlashbacksDialogPrototype proto);
 };
 
+enum struct FlashbacksEvent {
+  NONE,
+  COMPLETED
+};
+
 struct FlashbacksGui {
   Flashbacks *flashbacks;
   enum class Mode {
@@ -79,7 +84,7 @@ struct FlashbacksGui {
   FlashbacksDialogId sequence_current;
 
 
-  void show();
+  FlashbacksEvent show();
 };
 
 

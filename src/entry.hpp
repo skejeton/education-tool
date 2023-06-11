@@ -26,6 +26,7 @@
 #include "help_menu.hpp"
 #include <memory>
 #include <stdio.h>
+#include "quest.hpp"
 
 #include "entity_editor.hpp"
 
@@ -70,6 +71,8 @@ struct Entry {
   int stage;
   ImFont *main_font;
   HelpMenu help_menu;
+  ObjectiveList objective_list;
+  EntityId last_entity_interacted;
 
   void init(); 
   void input(const sapp_event* event);
