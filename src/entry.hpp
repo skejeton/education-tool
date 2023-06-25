@@ -22,7 +22,6 @@
 #include "pointing_at_resolve.hpp"
 #include "temp_id_binder.hpp"
 #include "placement_grid.hpp"
-#include "world.hpp"
 #include "help_menu.hpp"
 #include <memory>
 #include <stdio.h>
@@ -33,14 +32,6 @@
 enum PlayingMode {
   PLAYING_MODE_BUILD,
   PLAYING_MODE_PLAY,
-};
-
-struct ObjectLocator {
-  // Which pool the location belongs to
-  enum class Pool {
-    BUILDING, ENTITY
-  } pool;
-  int id;
 };
 
 enum class SelectionOption {
@@ -61,10 +52,9 @@ struct Entry {
   BoxdrawRenderer boxdraw;
   int bheight = 0;
   int cmdc = 0;
-  World world;
   bool show_objects = true;
   PlayingMode playing_mode;
-  ObjectLocator last_object_locator = {};
+  EntityId last_object_locator = {};
   EntityId entity_selected;
   EntityEditor entity_editor;
   SelectionOption selection_option;

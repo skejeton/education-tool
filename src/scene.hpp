@@ -8,7 +8,7 @@
 #include "placement_grid.hpp"
 #define SCENE_ENTITY_BUFFER_SIZE 128
 
-enum ShapeType {
+enum class ShapeType {
   CHARACTER,
   BUILDING,
   TREE,
@@ -17,12 +17,20 @@ enum ShapeType {
 
 struct Shape {
   ShapeType type;
+  // FIXME: For testing
   Vector4 color;
+  int height;
+};
+
+enum EntityInteractionType {
+  STATIC,   // Buildings, Trees e.t.c.
+  CHARACTER // Interactible with dialogues.
 };
 
 struct Entity {
   Vector3 position;
   Shape shape;
+  EntityInteractionType interaction_type;
   char objective_complete[128];
   size_t dialog_stages_id[9];
 };
@@ -56,5 +64,8 @@ SceneIterator scene_iterator_begin(Scene *scene);
 bool scene_iterator_going(SceneIterator *iterator);
 void scene_iterator_next(SceneIterator *iterator);
 PlacementRegion entity_placement_region(Entity* ent);
+Box3 entity_get_box(Entity *ent);
+void entity_render(BoxdrawRenderer *renderer, Entity *entity);
+Rect entity_collision_rect(Entity *ent);
 
 #endif

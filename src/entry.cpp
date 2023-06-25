@@ -5,7 +5,6 @@
 #include "math.hpp"
 #include "placement_grid.hpp"
 #include "scene.hpp"
-#include "world.hpp"
 #include "character.hpp"
 #include "save.hpp"
 
@@ -91,8 +90,8 @@ void check_collisions(Entry *entry) {
   Rect camera_rect = {{entry->camera.position.x-1, entry->camera.position.z-1}, {2, 2}};
   Vector2 snap = {0, 0};
 
-  for (int i = 0; i < entry->world.buildings_count; i++) {
-    Rect collision_rect = entry->world.buildings[i].collision_rect();
+  for (int i = 0; i < 128; i++) {
+    Rect collision_rect = entity_collision_rect(&entry->scene.entities[i]);
 
     if (rect_vs_rect(camera_rect, collision_rect)) {
       snap = rect_vs_rect_snap(camera_rect, collision_rect);
@@ -158,10 +157,6 @@ static void init_imgui_font(Entry *entry, const char *path, float size) {
 void Entry::init(void) {
   console_create_or_bind_existing();
   
-#if 1
-  scene_summon_entity(&scene, { { 0, 1, 1 } });
-  scene_summon_entity(&scene, { { 0, 1, 8 } });
-#endif
   flashbacks_gui = FlashbacksGui::create(&flashbacks);
     
   // setup sokol-gfx, sokol-time and sokol-imgui
@@ -217,6 +212,34 @@ const char* selection_option_name(SelectionOption selection) {
   }
 }
 
+static Entity generate_selection_option_entity(SelectionOption selection, Vector3 position, int height)
+{
+  Entity ent = {};
+  ent.interaction_type = EntityInteractionType::STATIC;
+
+  switch (selection) {
+    case SelectionOption::BUILDING:
+      ent.shape.type = ShapeType::BUILDING;
+      break;
+    case SelectionOption::ENTITY:
+      ent.shape.type = ShapeType::CHARACTER;
+      ent.interaction_type = EntityInteractionType::CHARACTER;
+      break;
+    case SelectionOption::PAVEMENT:
+      ent.shape.type = ShapeType::PAVEMENT;
+      break;
+    case SelectionOption::TREE:
+      ent.shape.type = ShapeType::TREE;
+      break;
+    default:;
+  }
+
+  ent.position = position;
+  ent.shape.height = height;
+  ent.shape.color = {1.0, 1.0, 1.0, 1.0};
+  return ent;
+}
+
 void put_information_window(InformationWindowData data) {
   const int width = sapp_width();
 
@@ -262,12 +285,7 @@ void render_selection_box_base(BoxdrawRenderer *renderer, Box3 box) {
   boxdraw_push(renderer, boxdraw_cmdcolored(box, {0, 0, 1, 1}));
 }
 
-Box3 entity_box(Entity *entity) {
-  return box3_extrude_from_point(entity->position+Vector3{0, 0.5, 0}, {1, 1.5, 1});
-}
-
 void render_entity(BoxdrawRenderer *renderer, Entity *entity, bool selected, bool hovered) {
-  Box3 box = entity_box(entity);
   Vector4 color_multiple = {1, 1, 1, 1};
 
   if (selected) {
@@ -275,10 +293,10 @@ void render_entity(BoxdrawRenderer *renderer, Entity *entity, bool selected, boo
   }
 
   if (hovered) {
-    render_selection_box_base(renderer, box);
+    render_selection_box_base(renderer, entity_get_box(entity));
   }
 
-  Character{entity->position}.draw(renderer, color_multiple);
+  entity_render(renderer, entity);
 }
 
 static void show_ui(Entry *entry) {
@@ -410,22 +428,11 @@ void Entry::frame(void) {
   boxdraw_push(&boxdraw, boxdraw_cmdcolored(floor, { 0.1, 0.8, 0.15, 1.0 }));
 
   auto pointing_at = PointingAtResolve::init(camera.ray());
-  auto pointing_at_bindings = TempIdBinder<ObjectLocator>::init();
-
-  for (int i = 0; i < world.buildings_count; i++) {
-    Building building = world.buildings[i];
-    int id = pointing_at_bindings.allocate({ ObjectLocator::Pool::BUILDING, i });
-    pointing_at.push_box(building.box(), id);
-  }
+  auto pointing_at_bindings = TempIdBinder<EntityId>::init();
 
   if (playing_mode == PLAYING_MODE_BUILD) {
     PlacementGrid grid = PlacementGrid::init(camera.position.x, camera.position.z);
  
-    for (int i = 0; i < world.buildings_count; i++) {
-      Building building = world.buildings[i];
-      grid.place_region(building.region());
-    }
-
     for (int i = 0; i < SCENE_ENTITY_BUFFER_SIZE; i++) {
       if (scene.entities_taken[i]) {
         grid.place_region(entity_placement_region(&scene.entities[i]));
@@ -436,62 +443,24 @@ void Entry::frame(void) {
     float rt = grid.map_ray(camera.ray(), &rx, &ry);
 
     bool may_place = rt < 50;
-    if (last_object_locator.id != -1) {
+    if (last_object_locator.index > 0) {
       may_place = false;
     }
 
-    switch (this->selection_option) {
-    case SelectionOption::ENTITY:
-      {
-        Entity potential_entity = {};
-        potential_entity.position = { (float)rx, 1, (float)ry };
+    Entity potential_entity = generate_selection_option_entity(selection_option, { (float)rx, 0, (float)ry }, bheight);
 
-        bool can_place = may_place && grid.try_place_region(entity_placement_region(&potential_entity));
+    bool can_place = may_place && grid.try_place_region(entity_placement_region(&potential_entity));
 
-        grid.render(&boxdraw);
+    grid.render(&boxdraw);
 
-        if (can_place) {
-          if (show_objects) {
-            render_entity(&boxdraw, &potential_entity, false, false);
-          }
-          if (inputs.mouse_states[0].pressed && sapp_mouse_locked()) {
-            scene_summon_entity(&scene, potential_entity);
-          }
-        }  
-      } break;
-    case SelectionOption::BUILDING: 
-    case SelectionOption::PAVEMENT: 
-    case SelectionOption::TREE: 
-      {
-        BuildingType building_type = BuildingType::APARTMENT;
-        if (selection_option == SelectionOption::PAVEMENT) building_type = BuildingType::PAVEMENT;
-        if (selection_option == SelectionOption::TREE) building_type = BuildingType::TREE;
-
-        Building potential_building = {rx, ry, bheight, building_type};
-
-        bool can_place = may_place && grid.try_place_region(potential_building.region());
-
-        grid.render(&boxdraw);
-
-        if (can_place) {
-          if (show_objects) {
-            potential_building.render(&boxdraw);
-          }
-          if (inputs.mouse_states[0].pressed && sapp_mouse_locked()) {
-            world.add_building(potential_building);
-          }
-        }  
-      } break;
-    default:;
-    }
-
-  }
-
-  if (show_objects) {
-    for (int i = 0; i < world.buildings_count; i++) {
-      Building building = world.buildings[i];
-      building.render(&boxdraw);
-    }
+    if (can_place) {
+      if (show_objects) {
+        render_entity(&boxdraw, &potential_entity, false, false);
+      }
+      if (inputs.mouse_states[0].pressed && sapp_mouse_locked()) {
+        scene_summon_entity(&scene, potential_entity);
+      }
+    }  
   }
 
   for (
@@ -501,7 +470,7 @@ void Entry::frame(void) {
   {
     bool selected = false, hovered = false;
 
-    if (last_object_locator.pool == ObjectLocator::Pool::ENTITY && (int)iterator.index == last_object_locator.id) {
+    if (iterator.index == last_object_locator.index-1) {
       hovered = true;
     }
 
@@ -509,59 +478,41 @@ void Entry::frame(void) {
       selected = true;
     }
 
-    int id = pointing_at_bindings.allocate({ ObjectLocator::Pool::ENTITY, (int)iterator.index });
-    pointing_at.push_box(entity_box(iterator.item.entity), id);
+    int id = pointing_at_bindings.allocate({ iterator.index+1 });
+    pointing_at.push_box(entity_get_box(iterator.item.entity), id);
 
     if (show_objects) {
       render_entity(&boxdraw, iterator.item.entity, selected, hovered);
     }
   }
 
-  // Resolve "pointing at building" 
-  ObjectLocator *locator = pointing_at_bindings.get(pointing_at.closest_id());
-  last_object_locator.id = -1;
+  EntityId *locator = pointing_at_bindings.get(pointing_at.closest_id());
+  last_object_locator.index = 0;
   if (locator != nullptr) {
     last_object_locator = *locator;
-    int id = locator->id;
+    int id = locator->index;
     if (id >= 0) {
-      switch (locator->pool) {
-      case ObjectLocator::Pool::BUILDING:
-        {
-          if (playing_mode == PLAYING_MODE_BUILD) {
-            Building building = world.buildings[id];
-
-            render_selection_box_base(&boxdraw, building.box());
-
-            if (inputs.mouse_states[1].pressed) {
-              world.remove_building(id);
-            }  
+      EntityId entity_id = last_object_locator;
+      Entity *entity = scene_get_entity(&scene, entity_id);
+      if (playing_mode == PLAYING_MODE_PLAY) {
+        if (inputs.mouse_states[0].released) {
+          sapp_lock_mouse(false);
+          this->last_entity_interacted = entity_id;
+          flashbacks_gui.begin_sequence(entity->dialog_stages_id[stage]);
+        }
+      } else if (playing_mode == PLAYING_MODE_BUILD) {
+        if (inputs.mouse_states[0].released) {
+          save_entity_in_editor(this);
+          this->entity_selected = entity_id;
+          this->entity_editor.derive_from(entity);
+        } else if (inputs.mouse_states[1].pressed) {
+          if (this->entity_selected.index == id+1) {
+            entity_selected.index = 0;
+            this->entity_editor = EntityEditor::init(&flashbacks);
           }
-        } break;
-      case ObjectLocator::Pool::ENTITY:
-        {
-          EntityId entity_id = { (size_t)id + 1 };
-          Entity *entity = scene_get_entity(&scene, entity_id);
-          if (playing_mode == PLAYING_MODE_PLAY) {
-            if (inputs.mouse_states[0].released) {
-              sapp_lock_mouse(false);
-              this->last_entity_interacted = entity_id;
-              flashbacks_gui.begin_sequence(entity->dialog_stages_id[stage]);
-            }
-          } else if (playing_mode == PLAYING_MODE_BUILD) {
-            if (inputs.mouse_states[0].released) {
-              save_entity_in_editor(this);
-              this->entity_selected = entity_id;
-              this->entity_editor.derive_from(entity);
-            } else if (inputs.mouse_states[1].pressed) {
-              if (this->entity_selected.index == id+1) {
-                entity_selected.index = 0;
-                this->entity_editor = EntityEditor::init(&flashbacks);
-              }
 
-              scene_remove_entity(&scene, entity_id);
-            }
-          }
-        } break;
+          scene_remove_entity(&scene, entity_id);
+        }
       }
     }
   }

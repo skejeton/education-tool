@@ -1,12 +1,13 @@
 #include "character.hpp"
 
-
-
 #define PART_COUNT 4
 
 void Character::draw(BoxdrawRenderer *renderer, Vector4 color_multiple) {
   Vector4 COLOR_TOP = Vector4{ 0, 0, 1, 1 } * color_multiple;
   Vector4 COLOR_BOTTOM = Vector4{ 1, 0, 1, 1 } * color_multiple;
+
+  // Use the position parameter as base
+  Vector3 position = this->position + Vector3{0, 1, 0};
 
   Box3 parts[PART_COUNT] = {
     box3_extrude_from_point(position, {0.5, 1, 0.5}),

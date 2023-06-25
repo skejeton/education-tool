@@ -148,6 +148,21 @@ inline Vector4 operator*(Vector4 a, Vector4 b) {
   return {a.x*b.x, a.y*b.y, a.z*b.z, a.w*b.w};
 }
 
+inline Box3 box3_extrude_from_point_volume(Vector3 point, Vector3 extrude) {
+  extrude /= 2;
+
+  Vector3 min = point;
+  min.x -= extrude.x;
+  min.y -= extrude.y;
+  min.z -= extrude.z;
+  Vector3 max = point;
+  max.x += extrude.x;
+  max.y += extrude.y;
+  max.z += extrude.z;
+
+  return {min, max};
+}
+
 
 inline Box3 box3_extrude_from_point(Vector3 point, Vector3 extrude) {
   Vector3 min = point;
@@ -191,6 +206,16 @@ inline Vector3 box3_base_midpoint(Box3 box) {
 
   return pos;
 }
+
+inline Vector3 box3_center(Box3 box) {
+  Vector3 pos = {};
+  pos.x = (box.max.x - box.min.x) / 2;
+  pos.y = (box.max.y - box.min.y) / 2;
+  pos.z = (box.max.z - box.min.z) / 2;
+
+  return pos;
+}
+
 
 // NOTE: The "eyes" of the player
 inline Vector3 box3_eyes_midpoint(Box3 box) {
