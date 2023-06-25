@@ -39,7 +39,7 @@ static void saveload_game(Entry *entry, BinaryFormat *format)
   }
 
   size_t entity_count = 0;
-  for (int i = 0; i < 128; i++) {
+  for (int i = 0; i < SCENE_ENTITY_BUFFER_SIZE; i++) {
     Entity* entity = &entry->scene.entities[i];
     if (entry->scene.entities_taken[i]) {
       entity_count += 1;
@@ -48,7 +48,7 @@ static void saveload_game(Entry *entry, BinaryFormat *format)
 
   format->pass_value(&entity_count);
 
-  for (int i = 0; i < 128; i++) {
+  for (int i = 0; i < SCENE_ENTITY_BUFFER_SIZE; i++) {
     Entity* entity = &entry->scene.entities[i];
     if (entry->scene.entities_taken[i]) {
       format->pass_value(&entity->dialog_stages_id);
@@ -90,12 +90,14 @@ void check_collisions(Entry *entry) {
   Rect camera_rect = {{entry->camera.position.x-1, entry->camera.position.z-1}, {2, 2}};
   Vector2 snap = {0, 0};
 
-  for (int i = 0; i < 128; i++) {
-    Rect collision_rect = entity_collision_rect(&entry->scene.entities[i]);
+  for (int i = 0; i < SCENE_ENTITY_BUFFER_SIZE; i++) {
+    if (entry->scene.entities_taken[i]) {
+      Rect collision_rect = entity_collision_rect(&entry->scene.entities[i]);
 
-    if (rect_vs_rect(camera_rect, collision_rect)) {
-      snap = rect_vs_rect_snap(camera_rect, collision_rect);
-      break;
+      if (rect_vs_rect(camera_rect, collision_rect)) {
+        snap = rect_vs_rect_snap(camera_rect, collision_rect);
+        break;
+      }
     }
   }
 
@@ -212,11 +214,12 @@ const char* selection_option_name(SelectionOption selection) {
   }
 }
 
-static Entity generate_selection_option_entity(SelectionOption selection, Vector3 position, int height)
+static Entity generate_entity_from_type(SelectionOption selection, Vector3 position, int height)
 {
   Entity ent = {};
   ent.interaction_type = EntityInteractionType::STATIC;
 
+  // TODO: Instead of using enums everywhere, have models and for selection options use data.
   switch (selection) {
     case SelectionOption::BUILDING:
       ent.shape.type = ShapeType::BUILDING;
@@ -447,7 +450,7 @@ void Entry::frame(void) {
       may_place = false;
     }
 
-    Entity potential_entity = generate_selection_option_entity(selection_option, { (float)rx, 0, (float)ry }, bheight);
+    Entity potential_entity = generate_entity_from_type(selection_option, { (float)rx, 0, (float)ry }, bheight);
 
     bool can_place = may_place && grid.try_place_region(entity_placement_region(&potential_entity));
 

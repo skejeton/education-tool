@@ -96,7 +96,8 @@ static Box3 create_box_from_base(float width, float depth, float height, Vector3
   return box3_extrude_from_point_volume(position+Vector3{0, height/2, 0}, Vector3{width, height, depth});
 }
 
-static Box3 shape_get_box(Shape shape, Vector3 position)
+static Box3 shape_boundaries(Shape shape, Vector3 position)
+// TODO: we want to keep this data with each Shape 
 {
   float width, depth, height;
 
@@ -125,10 +126,11 @@ static Box3 shape_get_box(Shape shape, Vector3 position)
 
 static void render_shape_at(Shape shape, Vector3 position, BoxdrawRenderer *renderer)
 {
-  Box3 box = shape_get_box(shape, position);
+  Box3 box = shape_boundaries(shape, position);
 
   float height = box.max.y-box.min.y;
 
+  // TODO: refactor. Each shape should be defined in it's model/data file. 
   switch (shape.type) {
   case ShapeType::BUILDING:
     boxdraw_push(renderer, boxdraw_cmdgradient(box, { 0.5, 0.5, 0.5, 1.0 }, { 0.4, 0.3, 0.3, 1.0 }));
@@ -164,7 +166,7 @@ void entity_render(BoxdrawRenderer *renderer, Entity *entity)
 
 Box3 entity_get_box(Entity *ent)
 {
-  return shape_get_box(ent->shape, ent->position);
+  return shape_boundaries(ent->shape, ent->position);
 }
 
 PlacementRegion entity_placement_region(Entity *ent)
@@ -184,6 +186,7 @@ PlacementRegion entity_placement_region(Entity *ent)
   }
 }
 
+// TODO: also move to entity model files
 Rect entity_collision_rect(Entity *ent)
 {
   float x = ent->position.x;
