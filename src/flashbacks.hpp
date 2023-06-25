@@ -19,6 +19,7 @@ enum class FlashbacksDialogChoice {
 
 struct FlashbacksDialog {
   bool taken;
+  bool numeric;
   const char *text, *answer;
   FlashbacksDialogChoice choice;
   FlashbacksDialogId next, prev;
@@ -36,13 +37,14 @@ struct Flashbacks {
   std::vector<FlashbacksDialogId> backlog;
   
   FlashbacksAllocatedDialog alloc_dialog();
-	void free_sequence(FlashbacksDialogId id);
+    void free_sequence(FlashbacksDialogId id);
   FlashbacksDialog *get_from_id(FlashbacksDialogId id);
   void touch(FlashbacksDialogId id, FlashbacksDialogChoice choice);
 };
 
 struct FlashbacksDialogPrototype {
   char *text, *answer;
+  bool numeric;
 };
 
 struct FlashbacksDialogMaker {
@@ -76,6 +78,7 @@ struct FlashbacksGui {
   };
   
   AnswerMode answer_mode;
+  char answer[512];
 
   static FlashbacksGui create(Flashbacks *flashbacks);
   void begin_sequence(FlashbacksDialogId start);

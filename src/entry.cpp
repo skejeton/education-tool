@@ -7,8 +7,60 @@
 #include "scene.hpp"
 #include "world.hpp"
 #include "character.hpp"
+#include "save.hpp"
 
-static void set_mode(Entry *entry, PlayingMode mode) {
+static void saveload_game(Entry *entry, BinaryFormat *format)
+{
+  size_t dialog_count = 0;
+  for (int i = 0; i < 512; i++) {
+    FlashbacksDialog *dialog = &entry->flashbacks.dialogs[i];
+
+    if (dialog->taken) {
+      dialog_count++;
+    }
+  }
+
+  printf("%d", dialog_count);
+  format->pass_value(&dialog_count);
+
+  for (int i = 0; i < 512; i++) {
+    FlashbacksDialog *dialog = &entry->flashbacks.dialogs[i];
+
+    if (dialog->taken) {
+      if (dialog->answer == 0) {
+        char* answer = "";
+        format->pass_c_string((char**)&answer);
+      }
+      else {
+        format->pass_c_string((char**)&dialog->answer);
+      }
+      format->pass_c_string((char**)&dialog->text);
+      format->pass_value(&dialog->numeric);
+    }
+  }
+
+  size_t entity_count = 0;
+  for (int i = 0; i < 128; i++) {
+    Entity* entity = &entry->scene.entities[i];
+    if (entry->scene.entities_taken[i]) {
+      entity_count += 1;
+    }
+  }
+
+  format->pass_value(&entity_count);
+
+  for (int i = 0; i < 128; i++) {
+    Entity* entity = &entry->scene.entities[i];
+    if (entry->scene.entities_taken[i]) {
+      format->pass_value(&entity->dialog_stages_id);
+      format->pass_value(&entity->objective_complete);
+      format->pass_value(&entity->position);
+    }
+  }
+}
+
+static void set_mode(Entry *entry, PlayingMode mode)
+{
   entry->playing_mode = mode;
 
   switch (mode) {
@@ -327,6 +379,14 @@ void Entry::frame(void) {
   }
   if (inputs.key_states[SAPP_KEYCODE_RIGHT_BRACKET].pressed) {
     set_mode(this, PLAYING_MODE_PLAY);
+  }
+
+  if (inputs.key_states[SAPP_KEYCODE_F1].pressed) {
+    BinaryFormat format = BinaryFormat::begin_write();
+    saveload_game(this, &format);
+    FILE* f = fopen("savestate.sav", "wb");
+    fwrite(format.origin, 1, format.data - format.origin, f);
+    fclose(f);
   }
 
   if (inputs.key_states[SAPP_KEYCODE_X].pressed) {

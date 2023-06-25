@@ -8,9 +8,22 @@
 #include "placement_grid.hpp"
 #define SCENE_ENTITY_BUFFER_SIZE 128
 
+enum ShapeType {
+  CHARACTER,
+  BUILDING,
+  TREE,
+  PAVEMENT
+};
+
+struct Shape {
+  ShapeType type;
+  Vector4 color;
+};
+
 struct Entity {
-  char objective_complete[128];
   Vector3 position;
+  Shape shape;
+  char objective_complete[128];
   size_t dialog_stages_id[9];
 };
 

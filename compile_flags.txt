@@ -1,6 +1,5 @@
 -Ilib
 -Wall
 
-
 -Wno-missing-braces
 -Werror

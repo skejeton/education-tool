@@ -25,13 +25,15 @@ void EntityEditor::show() {
     ImGui::InputText("Complete objective", entity->objective_complete, sizeof entity->objective_complete);
 
     ImGui::SeparatorText("Dialogues");
-    for (auto dialog : this->prototypes) {
+    for (auto &dialog : this->prototypes) {
       ImGui::PushID(i);
       ImGui::InputTextMultiline("Description", dialog.text, MAX_LENGTH);
       ImGui::InputText("Answer", dialog.answer, MAX_LENGTH);
       if (ImGui::Button("Delete")) {
         delete_index = i;
       }
+      ImGui::SameLine();
+      ImGui::Checkbox("Numeric Guess", &dialog.numeric);
       ImGui::SameLine();
       if (ImGui::Button("^")) {
         swap_index_first = i;

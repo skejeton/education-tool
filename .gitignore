@@ -12,3 +12,7 @@ build
 
 # MacOS
 .DS_Store
+
+# user data
+savestate.sav
+.cache

@@ -15,7 +15,7 @@ struct Objective {
 
 struct ObjectiveList {
   std::vector<Objective> objectives;
-
+  
   Objective *get_objective_by_id(char* id);
   void push_objective(char *id, char* name);
   void complete_objective(char *id);
