@@ -7,9 +7,16 @@
 #include "scene.hpp"
 #include "character.hpp"
 #include "save.hpp"
+#include <unistd.h>
+#include <cstdlib>
 
 static void saveload_game(Entry *entry, BinaryFormat *format)
 {
+  if (format->mode == BinaryIOMode::READ) {
+    entry->scene.entities = {};
+    entry->flashbacks = {};
+  }
+
   TableSaver flashbacks_saver = TableSaver<FlashbacksDialog>::init(format, &entry->flashbacks.dialogs);
   for (; flashbacks_saver.going(); flashbacks_saver.next()) {
     FlashbacksDialog *dialog = flashbacks_saver.save();
@@ -19,18 +26,18 @@ static void saveload_game(Entry *entry, BinaryFormat *format)
     format->pass_value(&dialog->numeric);
   }
 
-/*
-  for (SceneIterator iterator = scene_iterator_begin(&entry->scene);
-    scene_iterator_going(&iterator);
-    scene_iterator_next(&iterator))
-  {
-    Entity* entity = scene_get_entity(&entry->scene, iterator.id);
+  TableSaver entities_saver = TableSaver<Entity>::init(format, &entry->scene.entities);
 
-    flashbacks_saver.get_id(&entity->dialog_id);
-    format->pass_value(&entity->objective_complete);
+  for (;entities_saver.going(); entities_saver.next())
+  {
+    Entity* entity = entities_saver.save();
+
     format->pass_value(&entity->position);
+    format->pass_value(&entity->shape);
+    format->pass_value(&entity->interaction_type);
+    format->pass_value(&entity->objective_complete);
+    flashbacks_saver.pass_id(&entity->dialog_id);
   }
-  */
 }
 
 static void set_mode(Entry *entry, PlayingMode mode)
@@ -135,7 +142,7 @@ static void init_imgui_font(Entry *entry, const char *path, float size) {
 
 void Entry::init(void) {
   console_create_or_bind_existing();
-  
+
   flashbacks_gui = FlashbacksGui::create(&flashbacks);
     
   // setup sokol-gfx, sokol-time and sokol-imgui
@@ -369,6 +376,25 @@ void Entry::frame(void) {
   }
   if (inputs.key_states[SAPP_KEYCODE_RIGHT_BRACKET].pressed) {
     set_mode(this, PLAYING_MODE_PLAY);
+  }
+
+  if (inputs.key_states[SAPP_KEYCODE_F2].pressed) {
+    FILE* f = fopen("savestate.sav", "rb");
+    if (f) {
+      fseek(f, 0, SEEK_END);
+      size_t file_size = ftell(f);
+      fseek(f, 0, SEEK_SET);
+
+      uint8_t *contents = (uint8_t*)malloc(file_size);
+      
+      fread(contents, 1, file_size, f);
+      fclose(f);
+
+      BinaryFormat format = BinaryFormat::begin_read(contents, file_size);
+      saveload_game(this, &format);
+      free(contents);
+    }
+
   }
 
   if (inputs.key_states[SAPP_KEYCODE_F1].pressed) {

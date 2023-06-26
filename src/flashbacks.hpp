@@ -19,7 +19,6 @@ enum class FlashbacksDialogChoice {
 };
 
 struct FlashbacksDialog {
-  bool taken;
   bool numeric;
   const char *text, *answer;
   FlashbacksDialogChoice choice;

@@ -1,4 +1,9 @@
 #include "util.hpp"
+#if defined(_WIN32)
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 
 // Returns a malloc-allocated string 
 char *string_duplicate(const char *string) {

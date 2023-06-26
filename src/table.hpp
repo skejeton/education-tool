@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 struct TableId {
   size_t id;
@@ -100,7 +101,6 @@ struct TableIterator {
       }
       id.id += 1;
     }
-
   }
 
   bool going() {

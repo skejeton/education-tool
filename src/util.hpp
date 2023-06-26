@@ -8,6 +8,7 @@
 #include <cstring>
 #include <cstdlib>
 
+
 char *string_duplicate(const char *);
 
 #endif // H_CATEDU_UTIL

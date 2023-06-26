@@ -46,7 +46,7 @@ struct BinaryFormat {
 
   bool can_fit(size_t n)
   {
-    return (this->data - origin)+n < cap;
+    return (this->data - origin)+n <= cap;
   }
 
   void resize(size_t n) {
@@ -80,6 +80,14 @@ struct BinaryFormat {
   void pass_value(T *data)
   {
     pass_bytes(data, sizeof *data);
+   
+    printf("%5s ", mode == BinaryIOMode::READ ? "READ" : "WRITE");
+
+    uint8_t *data_raw = (uint8_t*)data;
+    for (size_t i = 0; i < sizeof(*data); i++) {
+      printf("%02x ", data_raw[i]);
+    }
+    printf("\n");
   }
 
   inline void pass_pointer(void **data, size_t n)
@@ -121,18 +129,20 @@ struct IdMapper {
 
   void push_id(BinaryFormat *format, size_t id)
   {
+    format->pass_value(&id_increment);
     if (format->mode == BinaryIOMode::WRITE) {
-      format->pass_value(&id_increment);
+      printf("WRITE-REG %zu %zu\n", id, id_increment);
       id_map[id] = id_increment++;
     }
     else {
-      format->pass_value(&id_increment);
+      printf("READ-REG %zu %zu\n", id_increment, id);
       id_map[id_increment] = id;
     }
+    printf("SIZ %zu\n", id_map.size());
   }
 
   size_t get_id(size_t original) {
-    return id_map[original];
+    return id_map.at(original);
   }
 };
 
@@ -141,30 +151,60 @@ struct TableSaver {
   BinaryFormat *format;
   TableIterator<T> iter;
   IdMapper id_mapper;
+  size_t count;
 
   static TableSaver init(BinaryFormat *format, Table<T> *table)
   {
-    return {format, TableIterator<T>::init(table)};
+    TableSaver saver = {format, TableIterator<T>::init(table)};
+
+    saver.count = table->count;
+    format->pass_value(&saver.count);
+    
+    return saver;
   }
 
   bool going()
   {
-    return iter.going();
+    if (format->mode == BinaryIOMode::READ) {
+      return count;
+    } else {
+      return iter.going();
+    }
   }
 
   void next()
   {
-    iter.next();
+    if (format->mode == BinaryIOMode::READ) {
+      assert(count && "Too much .next() calls");
+      count--;
+    } else {
+      iter.next();
+    }
   }
 
   T* save()
   {
-    id_mapper.push_id(format, iter.id.id);
-
     if (format->mode == BinaryIOMode::WRITE) {
+      id_mapper.push_id(format, iter.id.id);
       return iter.table->get(iter.id);
     } else {
-      return iter.table->get(iter.table->allocate({}));
+      TableId id = iter.table->allocate({});
+      id_mapper.push_id(format, id.id);
+      return iter.table->get(id);
+    }
+  }
+
+  void pass_id(TableId *id) 
+  {
+    printf("pass id");
+    if (format->mode == BinaryIOMode::WRITE) {
+      size_t write_id = id_mapper.get_id(id->id);
+      format->pass_value(&write_id);
+    } else {
+      size_t read_id;
+      format->pass_value(&read_id);
+      *id = {id_mapper.get_id(read_id)};
+      printf("READ-ID: %zu %zu\n", read_id, id->id);
     }
   }
 };

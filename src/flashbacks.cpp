@@ -254,13 +254,13 @@ FlashbacksEvent FlashbacksGui::show() {
 }
 
 void Flashbacks::free_sequence(FlashbacksDialogId id) {
-    FlashbacksDialog *dialog = get_from_id(id);
-    
-    while (dialog) {
-        FlashbacksDialog *next = get_from_id(dialog->next);
+  FlashbacksDialog *dialog = get_from_id(id);
+  
+  while (dialog) {
+    FlashbacksDialog *next = get_from_id(dialog->next);
     free((void*)dialog->text);
     free((void*)dialog->answer);
-        *dialog = { 0 };
-        dialog = next;
-    }
+    *dialog = { 0 };
+    dialog = next;
+  }
 }
