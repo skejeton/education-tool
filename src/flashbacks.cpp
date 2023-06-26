@@ -6,25 +6,13 @@
 #include "util.hpp"
 
 FlashbacksAllocatedDialog Flashbacks::alloc_dialog() {
-  for (size_t i = 0; i < FLASHBACKS_DIALOGS_MAX; i++) {
-    if (this->dialogs[i].taken == false) {
-      this->dialogs[i] = {};
-      this->dialogs[i].taken = true;
-      return { i + 1, &this->dialogs[i] };
-    }
-  }
-
-  return { 0 };
+  FlashbacksDialogId id = this->dialogs.allocate({});
+  return { id, this->dialogs.get(id) };
 }
 
 
 FlashbacksDialog *Flashbacks::get_from_id(FlashbacksDialogId id) {
-  size_t index = id - 1;
-  if (index >= FLASHBACKS_DIALOGS_MAX) {
-    return nullptr;
-  }
-  
-  return &this->dialogs[index];
+  return this->dialogs.get(id);
 }
 
 
@@ -54,14 +42,14 @@ void Flashbacks::touch(FlashbacksDialogId id, FlashbacksDialogChoice choice) {
 
 static FlashbacksDialogId allocate_dialog_sequential(Flashbacks *flashbacks, FlashbacksDialogPrototype proto, FlashbacksDialogId previous_id) {
   FlashbacksAllocatedDialog allocated = flashbacks->alloc_dialog();
-  assert(allocated.id && "Couldn't allocate!");
+  assert(allocated.id.id && "Couldn't allocate!");
 
-  if (allocated.id) {
+  if (allocated.id.id) {
     allocated.pointer->text = string_duplicate(proto.text);
     allocated.pointer->answer = string_duplicate(proto.answer);
     allocated.pointer->numeric = proto.numeric;
 
-    if (previous_id != 0) {
+    if (previous_id.id != 0) {
       FlashbacksDialog *previous = flashbacks->get_from_id(previous_id);
 
       previous->next = allocated.id;
@@ -75,7 +63,7 @@ static FlashbacksDialogId allocate_dialog_sequential(Flashbacks *flashbacks, Fla
 void FlashbacksDialogMaker::append_dialog(FlashbacksDialogPrototype proto) {
   FlashbacksDialogId id = allocate_dialog_sequential(flashbacks, proto, previous_id);
 
-  if (starter_id == 0) {
+  if (starter_id.id == 0) {
     this->starter_id = id;
   }
 
@@ -93,9 +81,9 @@ FlashbacksDialogMaker FlashbacksDialogMaker::from(Flashbacks *flashbacks) {
 
 void FlashbacksGui::begin_sequence(FlashbacksDialogId start) {
   // if ID is 0, resort to inactive state
-  if (start == 0) {
+  if (start.id == 0) {
     this->mode = this->prev_mode;
-    this->sequence_current = 0;
+    this->sequence_current.id = 0;
   } else {
     this->mode = Mode::SEQUENCE;
     this->sequence_current = start;
@@ -188,7 +176,7 @@ FlashbacksEvent show_sequence(FlashbacksGui *gui) {
   }
   ImGui::End();
 
-  if (gui->sequence_current == 0) {
+  if (gui->sequence_current.id == 0) {
     return FlashbacksEvent::COMPLETED;
   }
 
@@ -249,7 +237,7 @@ FlashbacksEvent FlashbacksGui::show() {
             ImGui::Text("%s", dialog->text);
             ImGui::PopStyleColor();
             ImGui::TableSetColumnIndex(1);
-            ImGui::PushID(item);
+            ImGui::PushID(item.id);
             if (ImGui::Button("Retry")) {
               this->begin_sequence(item);
             }

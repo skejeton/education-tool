@@ -54,15 +54,14 @@ struct Entry {
   int cmdc = 0;
   bool show_objects = true;
   PlayingMode playing_mode;
-  EntityId last_object_locator = {};
-  EntityId entity_selected;
+  TableId last_object_locator = {};
+  TableId entity_selected;
   EntityEditor entity_editor;
   SelectionOption selection_option;
-  int stage;
   ImFont *main_font;
   HelpMenu help_menu;
   ObjectiveList objective_list;
-  EntityId last_entity_interacted;
+  TableId last_entity_interacted;
 
   void init(); 
   void input(const sapp_event* event);

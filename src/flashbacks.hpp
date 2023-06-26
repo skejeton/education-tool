@@ -8,8 +8,9 @@
 #define FLASHBACKS_DIALOGS_MAX 512
 
 #include <vector>
+#include "table.hpp"
 
-typedef size_t FlashbacksDialogId;
+typedef TableId FlashbacksDialogId;
 
 enum class FlashbacksDialogChoice {
   UNDEFINED,
@@ -33,11 +34,11 @@ struct FlashbacksAllocatedDialog {
 };
 
 struct Flashbacks {
-  FlashbacksDialog dialogs[FLASHBACKS_DIALOGS_MAX];
+  Table<FlashbacksDialog> dialogs;
   std::vector<FlashbacksDialogId> backlog;
   
   FlashbacksAllocatedDialog alloc_dialog();
-    void free_sequence(FlashbacksDialogId id);
+  void free_sequence(FlashbacksDialogId id);
   FlashbacksDialog *get_from_id(FlashbacksDialogId id);
   void touch(FlashbacksDialogId id, FlashbacksDialogChoice choice);
 };

@@ -2,99 +2,45 @@
 #include "character.hpp"
 #include <cassert>
 
-static EntityId index_to_id(size_t idx) {
-  return { idx + 1 };
+Entity *scene_get_entity(Scene *scene, TableId id)
+{
+  return scene->entities.get(id);
 }
 
 
-static size_t id_to_index(EntityId id) {
-  return id.index - 1;
+TableId scene_summon_entity(Scene *scene, Entity ent)
+{
+  return scene->entities.allocate(ent);
 }
 
 
-EntityId scene_allocate_entity(Scene *scene) {
-  for (size_t i = 0; i < SCENE_ENTITY_BUFFER_SIZE; i++) {
-    if (scene->entities_taken[i] == false) {
-      scene->entities_taken[i] = true;
-      return index_to_id(i);
-    }
-  }
-
-  return { 0 };
+void scene_remove_entity(Scene *scene, TableId id) {
+  assert(scene->entities.remove(id) && "Invalid entity ID");
 }
 
 
-Entity *scene_get_entity(Scene *scene, EntityId id) {
-  if (id.index == 0) {
-    return nullptr;
-  }
-
-  assert(id_to_index(id) < SCENE_ENTITY_BUFFER_SIZE && "Out of bounds access");
-
-  return &scene->entities[id_to_index(id)];
+SceneIterator scene_iterator_begin(Scene *scene)
+{
+  return TableIterator<Entity>::init(&scene->entities);
 }
 
 
-EntityId scene_summon_entity(Scene *scene, Entity ent) {
-  EntityId id = scene_allocate_entity(scene);
-  Entity *ent_allocated = scene_get_entity(scene, id);
-
-  if (ent_allocated) {
-    *ent_allocated = ent;
-  }
-
-  return id;
+bool scene_iterator_going(SceneIterator* iterator)
+{
+  return iterator->going();
 }
 
-
-void scene_remove_entity(Scene *scene, EntityId id) {
-  if (scene_get_entity(scene, id)) {
-    scene->entities_taken[id_to_index(id)] = 0;
-  }
+void scene_iterator_next(SceneIterator *iterator)
+{
+  iterator->next();
 }
 
-
-static void scene_iterator_step_forth(SceneIterator *iterator) {
-  while (iterator->scene->entities_taken[iterator->index] == false) {
-    iterator->index += 1;
-  }
-}
-
-
-SceneIterator scene_iterator_begin(Scene *scene) {
-  SceneIterator scene_iterator = {};
-
-  scene_iterator.scene = scene;
-  scene_iterator.index = 0;
-  
-  return scene_iterator;
-}
-
-
-bool scene_iterator_going(SceneIterator *iterator) {
-  scene_iterator_step_forth(iterator);
-  bool going = iterator->index < SCENE_ENTITY_BUFFER_SIZE;
-
-  if (going) {
-    SceneIteratorItem item = {};
-    item.id = index_to_id(iterator->index);
-    item.entity = scene_get_entity(iterator->scene, item.id);
-
-    iterator->item = item;
-  }
-
-  return going;
-}
-
-
-void scene_iterator_next(SceneIterator *iterator) {
-  iterator->index++;
-}
 
 static Box3 create_box_from_base(float width, float depth, float height, Vector3 position)
 {
   return box3_extrude_from_point_volume(position+Vector3{0, height/2, 0}, Vector3{width, height, depth});
 }
+
 
 static Box3 shape_boundaries(Shape shape, Vector3 position)
 // TODO: we want to keep this data with each Shape 
@@ -123,6 +69,7 @@ static Box3 shape_boundaries(Shape shape, Vector3 position)
 
   return create_box_from_base(width, depth, height, position);
 }
+
 
 static void render_shape_at(Shape shape, Vector3 position, BoxdrawRenderer *renderer)
 {
@@ -159,15 +106,18 @@ static void render_shape_at(Shape shape, Vector3 position, BoxdrawRenderer *rend
   }
 }
 
+
 void entity_render(BoxdrawRenderer *renderer, Entity *entity)
 {
   render_shape_at(entity->shape, entity->position, renderer);
 }
 
+
 Box3 entity_get_box(Entity *ent)
 {
   return shape_boundaries(ent->shape, ent->position);
 }
+
 
 PlacementRegion entity_placement_region(Entity *ent)
 {
@@ -185,6 +135,7 @@ PlacementRegion entity_placement_region(Entity *ent)
       return { x-1, z-1, 2, 2 };
   }
 }
+
 
 // TODO: also move to entity model files
 Rect entity_collision_rect(Entity *ent)

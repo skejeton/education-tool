@@ -13,7 +13,6 @@ struct EntityEditor {
   Flashbacks *flashbacks;
   Entity *entity;
   std::vector<FlashbacksDialogPrototype> prototypes;
-  size_t stage;
 
 
   static EntityEditor init(Flashbacks* flashbacks) {

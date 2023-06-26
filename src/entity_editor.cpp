@@ -15,7 +15,6 @@ void deallocate_prototype(FlashbacksDialogPrototype *prototype) {
 }
 
 void EntityEditor::show() {
-  size_t old_stage = stage;
   int i = 0;
   int delete_index = -1;
   int swap_index_first = -1;
@@ -64,14 +63,6 @@ void EntityEditor::show() {
       this->prototypes.push_back(allocate_prototype());
     }
   ImGui::End();
-
-  if (stage != old_stage) {
-    size_t new_stage = stage;
-    stage = old_stage;
-    emplace();
-    stage = new_stage;
-    derive_from(entity);
-  }
 }
 
 void copy_string_safe_n(char *dest, const char *src, size_t max) {
@@ -97,8 +88,8 @@ void EntityEditor::derive_from(Entity* entity) {
 
   this->entity = entity;
 
-  FlashbacksDialogId id = entity->dialog_stages_id[stage];
-  while (id) {
+  FlashbacksDialogId id = entity->dialog_id;
+  while (id.id) {
     FlashbacksDialog *dialog = flashbacks->get_from_id(id);
     if (!dialog) {
       break;
@@ -113,7 +104,7 @@ void EntityEditor::emplace() {
     return;
   }
   
-  FlashbacksDialogId* start = &entity->dialog_stages_id[stage];
+  FlashbacksDialogId* start = &entity->dialog_id;
 
   flashbacks->free_sequence(*start);
   

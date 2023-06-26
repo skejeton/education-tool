@@ -10,52 +10,27 @@
 
 static void saveload_game(Entry *entry, BinaryFormat *format)
 {
-  size_t dialog_count = 0;
-  for (int i = 0; i < 512; i++) {
-    FlashbacksDialog *dialog = &entry->flashbacks.dialogs[i];
+  TableSaver flashbacks_saver = TableSaver<FlashbacksDialog>::init(format, &entry->flashbacks.dialogs);
+  for (; flashbacks_saver.going(); flashbacks_saver.next()) {
+    FlashbacksDialog *dialog = flashbacks_saver.save();
 
-    if (dialog->taken) {
-      dialog_count++;
-    }
+    format->pass_c_string((char**)&dialog->answer);
+    format->pass_c_string((char**)&dialog->text);
+    format->pass_value(&dialog->numeric);
   }
 
-  printf("%d", dialog_count);
-  format->pass_value(&dialog_count);
+/*
+  for (SceneIterator iterator = scene_iterator_begin(&entry->scene);
+    scene_iterator_going(&iterator);
+    scene_iterator_next(&iterator))
+  {
+    Entity* entity = scene_get_entity(&entry->scene, iterator.id);
 
-  for (int i = 0; i < 512; i++) {
-    FlashbacksDialog *dialog = &entry->flashbacks.dialogs[i];
-
-    if (dialog->taken) {
-      if (dialog->answer == 0) {
-        char* answer = "";
-        format->pass_c_string((char**)&answer);
-      }
-      else {
-        format->pass_c_string((char**)&dialog->answer);
-      }
-      format->pass_c_string((char**)&dialog->text);
-      format->pass_value(&dialog->numeric);
-    }
+    flashbacks_saver.get_id(&entity->dialog_id);
+    format->pass_value(&entity->objective_complete);
+    format->pass_value(&entity->position);
   }
-
-  size_t entity_count = 0;
-  for (int i = 0; i < SCENE_ENTITY_BUFFER_SIZE; i++) {
-    Entity* entity = &entry->scene.entities[i];
-    if (entry->scene.entities_taken[i]) {
-      entity_count += 1;
-    }
-  }
-
-  format->pass_value(&entity_count);
-
-  for (int i = 0; i < SCENE_ENTITY_BUFFER_SIZE; i++) {
-    Entity* entity = &entry->scene.entities[i];
-    if (entry->scene.entities_taken[i]) {
-      format->pass_value(&entity->dialog_stages_id);
-      format->pass_value(&entity->objective_complete);
-      format->pass_value(&entity->position);
-    }
-  }
+  */
 }
 
 static void set_mode(Entry *entry, PlayingMode mode)
@@ -90,14 +65,16 @@ void check_collisions(Entry *entry) {
   Rect camera_rect = {{entry->camera.position.x-1, entry->camera.position.z-1}, {2, 2}};
   Vector2 snap = {0, 0};
 
-  for (int i = 0; i < SCENE_ENTITY_BUFFER_SIZE; i++) {
-    if (entry->scene.entities_taken[i]) {
-      Rect collision_rect = entity_collision_rect(&entry->scene.entities[i]);
+  for (SceneIterator iterator = scene_iterator_begin(&entry->scene);
+    scene_iterator_going(&iterator);
+    scene_iterator_next(&iterator))
+  {
+    Entity* entity = scene_get_entity(&entry->scene, iterator.id);
+    Rect collision_rect = entity_collision_rect(entity);
 
-      if (rect_vs_rect(camera_rect, collision_rect)) {
-        snap = rect_vs_rect_snap(camera_rect, collision_rect);
-        break;
-      }
+    if (rect_vs_rect(camera_rect, collision_rect)) {
+      snap = rect_vs_rect_snap(camera_rect, collision_rect);
+      break;
     }
   }
 
@@ -347,7 +324,7 @@ static void show_ui(Entry *entry) {
     break;
   case PLAYING_MODE_BUILD:
     put_information_window({ entry->selection_option });
-    if (entry->entity_selected.index != 0) {
+    if (entry->entity_selected.id != 0) {
       entry->entity_editor.show();
     }
     break;
@@ -360,7 +337,6 @@ static void show_ui(Entry *entry) {
   
   ImGui::DragFloat("yaw", &entry->camera.yaw);
   ImGui::DragFloat("pitch", &entry->camera.pitch);
-  ImGui::LabelText("stage", "%d", entry->stage+1);
 
   ImGui::DragInt("cmdc", &entry->cmdc);
   ImGui::Text("pmode %d", entry->playing_mode);
@@ -387,14 +363,7 @@ void Entry::frame(void) {
     camera.position.y = 0.2;
   }
   update_mode(this);
-  if (inputs.key_states[SAPP_KEYCODE_EQUAL].pressed) {
-    stage++;
-  }
-  if (inputs.key_states[SAPP_KEYCODE_MINUS].pressed) {
-    stage--;
-  }
-  if (stage < 0) stage = 0;
-  if (stage > 8) stage = 8;
+
   if (inputs.key_states[SAPP_KEYCODE_LEFT_BRACKET].pressed) {
     set_mode(this, PLAYING_MODE_BUILD);
   }
@@ -406,8 +375,10 @@ void Entry::frame(void) {
     BinaryFormat format = BinaryFormat::begin_write();
     saveload_game(this, &format);
     FILE* f = fopen("savestate.sav", "wb");
-    fwrite(format.origin, 1, format.data - format.origin, f);
-    fclose(f);
+    if (f) {
+      fwrite(format.origin, 1, format.data - format.origin, f);
+      fclose(f);
+    }
   }
 
   if (inputs.key_states[SAPP_KEYCODE_X].pressed) {
@@ -431,22 +402,25 @@ void Entry::frame(void) {
   boxdraw_push(&boxdraw, boxdraw_cmdcolored(floor, { 0.1, 0.8, 0.15, 1.0 }));
 
   auto pointing_at = PointingAtResolve::init(camera.ray());
-  auto pointing_at_bindings = TempIdBinder<EntityId>::init();
+  auto pointing_at_bindings = TempIdBinder<TableId>::init();
 
   if (playing_mode == PLAYING_MODE_BUILD) {
     PlacementGrid grid = PlacementGrid::init(camera.position.x, camera.position.z);
- 
-    for (int i = 0; i < SCENE_ENTITY_BUFFER_SIZE; i++) {
-      if (scene.entities_taken[i]) {
-        grid.place_region(entity_placement_region(&scene.entities[i]));
-      }
+
+
+    for (
+      SceneIterator iterator = scene_iterator_begin(&scene);
+      scene_iterator_going(&iterator);
+      scene_iterator_next(&iterator))
+    {
+      grid.place_region(entity_placement_region(scene_get_entity(&this->scene, iterator.id)));
     }
 
     int rx, ry;
     float rt = grid.map_ray(camera.ray(), &rx, &ry);
 
     bool may_place = rt < 50;
-    if (last_object_locator.index > 0) {
+    if (last_object_locator.id > 0) {
       may_place = false;
     }
 
@@ -471,37 +445,38 @@ void Entry::frame(void) {
     scene_iterator_going(&iterator);
     scene_iterator_next(&iterator))
   {
+    Entity* entity = scene_get_entity(&this->scene, iterator.id);
     bool selected = false, hovered = false;
 
-    if (iterator.index == last_object_locator.index-1) {
+    if (iterator.id.id == last_object_locator.id) {
       hovered = true;
     }
 
-    if (entity_selected.index == iterator.item.id.index) {
+    if (entity_selected.id == iterator.id.id) {
       selected = true;
     }
 
-    int id = pointing_at_bindings.allocate({ iterator.index+1 });
-    pointing_at.push_box(entity_get_box(iterator.item.entity), id);
+    int id = pointing_at_bindings.allocate(iterator.id);
+    pointing_at.push_box(entity_get_box(entity), id);
 
     if (show_objects) {
-      render_entity(&boxdraw, iterator.item.entity, selected, hovered);
+      render_entity(&boxdraw, entity, selected, hovered);
     }
   }
 
-  EntityId *locator = pointing_at_bindings.get(pointing_at.closest_id());
-  last_object_locator.index = 0;
+  TableId *locator = pointing_at_bindings.get(pointing_at.closest_id());
+  last_object_locator.id = 0;
   if (locator != nullptr) {
     last_object_locator = *locator;
-    int id = locator->index;
+    int id = locator->id;
     if (id >= 0) {
-      EntityId entity_id = last_object_locator;
+      TableId entity_id = last_object_locator;
       Entity *entity = scene_get_entity(&scene, entity_id);
       if (playing_mode == PLAYING_MODE_PLAY) {
         if (inputs.mouse_states[0].released) {
           sapp_lock_mouse(false);
           this->last_entity_interacted = entity_id;
-          flashbacks_gui.begin_sequence(entity->dialog_stages_id[stage]);
+          flashbacks_gui.begin_sequence(entity->dialog_id);
         }
       } else if (playing_mode == PLAYING_MODE_BUILD) {
         if (inputs.mouse_states[0].released) {
@@ -509,8 +484,8 @@ void Entry::frame(void) {
           this->entity_selected = entity_id;
           this->entity_editor.derive_from(entity);
         } else if (inputs.mouse_states[1].pressed) {
-          if (this->entity_selected.index == id+1) {
-            entity_selected.index = 0;
+          if (this->entity_selected.id == id) {
+            entity_selected.id = 0;
             this->entity_editor = EntityEditor::init(&flashbacks);
           }
 

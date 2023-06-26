@@ -6,6 +6,7 @@
 #define H_SCENE_CATEDU
 #include "math.hpp"
 #include "placement_grid.hpp"
+#include "table.hpp"
 #define SCENE_ENTITY_BUFFER_SIZE 128
 
 enum class ShapeType {
@@ -32,34 +33,23 @@ struct Entity {
   Shape shape;
   EntityInteractionType interaction_type;
   char objective_complete[128];
-  size_t dialog_stages_id[9];
-};
-
-/// NOTE: EntityId of 0 indicates a NULL entry
-struct EntityId {
-  size_t index;
+  TableId dialog_id;
 };
 
 struct Scene {
-  Entity entities[SCENE_ENTITY_BUFFER_SIZE];
-  bool entities_taken[SCENE_ENTITY_BUFFER_SIZE];
+  Table<Entity> entities;
 };
 
 struct SceneIteratorItem {
-  EntityId id;
+  TableId id;
   Entity *entity;
 };
 
-struct SceneIterator {
-  Scene *scene;
-  size_t index;
+typedef TableIterator<Entity> SceneIterator;
 
-  SceneIteratorItem item;
-};
-
-Entity *scene_get_entity(Scene *scene, EntityId id);
-EntityId scene_summon_entity(Scene *scene, Entity ent);
-void scene_remove_entity(Scene *scene, EntityId id);
+Entity *scene_get_entity(Scene *scene, TableId id);
+TableId scene_summon_entity(Scene *scene, Entity ent);
+void scene_remove_entity(Scene *scene, TableId id);
 SceneIterator scene_iterator_begin(Scene *scene);
 bool scene_iterator_going(SceneIterator *iterator);
 void scene_iterator_next(SceneIterator *iterator);
