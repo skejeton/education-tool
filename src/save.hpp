@@ -30,6 +30,7 @@ struct BinaryFormat {
     format.mode = BinaryIOMode::WRITE;
     format.cap = 128;
     format.origin = (uint8_t*)malloc(128);
+    assert(format.origin && "Failed to alloc");
     format.data = format.origin;
     return format;
   }
@@ -54,6 +55,7 @@ struct BinaryFormat {
     while (!can_fit(n)) {
       cap *= 2;
       origin = (uint8_t*)realloc(origin, cap);
+      assert(origin && "Failed to realloc");
       data = origin + offs;
     }
   }
@@ -95,12 +97,14 @@ struct BinaryFormat {
     if (mode == BinaryIOMode::WRITE && *data == nullptr) {
       n = (size_t)-1;
       pass_value(&n);
+      return;
     } 
 
     pass_value(&n);
     if (mode == BinaryIOMode::READ) {
       if (n == (size_t)-1) {
         *data = nullptr;
+        return;
       }
 
       uint8_t *bytes = (uint8_t*)malloc(n);
@@ -131,14 +135,11 @@ struct IdMapper {
   {
     format->pass_value(&id_increment);
     if (format->mode == BinaryIOMode::WRITE) {
-      printf("WRITE-REG %zu %zu\n", id, id_increment);
       id_map[id] = id_increment++;
     }
     else {
-      printf("READ-REG %zu %zu\n", id_increment, id);
       id_map[id_increment] = id;
     }
-    printf("SIZ %zu\n", id_map.size());
   }
 
   size_t get_id(size_t original) {
@@ -155,48 +156,50 @@ struct TableSaver {
 
   static TableSaver init(BinaryFormat *format, Table<T> *table)
   {
-    TableSaver saver = {format, TableIterator<T>::init(table)};
+    TableSaver saver = {};
 
     saver.count = table->count;
     format->pass_value(&saver.count);
-    
+
+    saver.id_mapper.id_map[0] = 0;
+    saver.id_mapper.id_increment++;
+
+    if (format->mode == BinaryIOMode::WRITE) {
+      TableIterator<T> iter = TableIterator<T>::init(table);
+
+      for (; iter.going(); iter.next()) {
+        saver.id_mapper.push_id(format, iter.id.id);
+      }
+    } 
+    else {
+      for (size_t i = 0; i < saver.count; i++) {
+        saver.id_mapper.push_id(format, table->allocate({}).id);
+      }
+    }
+
+    saver.format = format;
+    saver.iter = TableIterator<T>::init(table);
+
     return saver;
   }
 
   bool going()
   {
-    if (format->mode == BinaryIOMode::READ) {
-      return count;
-    } else {
-      return iter.going();
-    }
+    return iter.going();
   }
 
   void next()
   {
-    if (format->mode == BinaryIOMode::READ) {
-      assert(count && "Too much .next() calls");
-      count--;
-    } else {
-      iter.next();
-    }
+    iter.next();
   }
 
   T* save()
   {
-    if (format->mode == BinaryIOMode::WRITE) {
-      id_mapper.push_id(format, iter.id.id);
-      return iter.table->get(iter.id);
-    } else {
-      TableId id = iter.table->allocate({});
-      id_mapper.push_id(format, id.id);
-      return iter.table->get(id);
-    }
+    return iter.table->get(iter.id);
   }
 
   void pass_id(TableId *id) 
   {
-    printf("pass id");
     if (format->mode == BinaryIOMode::WRITE) {
       size_t write_id = id_mapper.get_id(id->id);
       format->pass_value(&write_id);
@@ -204,7 +207,6 @@ struct TableSaver {
       size_t read_id;
       format->pass_value(&read_id);
       *id = {id_mapper.get_id(read_id)};
-      printf("READ-ID: %zu %zu\n", read_id, id->id);
     }
   }
 };

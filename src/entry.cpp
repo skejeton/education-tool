@@ -7,7 +7,6 @@
 #include "scene.hpp"
 #include "character.hpp"
 #include "save.hpp"
-#include <unistd.h>
 #include <cstdlib>
 
 static void saveload_game(Entry *entry, BinaryFormat *format)
@@ -24,10 +23,11 @@ static void saveload_game(Entry *entry, BinaryFormat *format)
     format->pass_c_string((char**)&dialog->answer);
     format->pass_c_string((char**)&dialog->text);
     format->pass_value(&dialog->numeric);
+    flashbacks_saver.pass_id(&dialog->prev);
+    flashbacks_saver.pass_id(&dialog->next);
   }
 
   TableSaver entities_saver = TableSaver<Entity>::init(format, &entry->scene.entities);
-
   for (;entities_saver.going(); entities_saver.next())
   {
     Entity* entity = entities_saver.save();
