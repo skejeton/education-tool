@@ -26,12 +26,14 @@
 #include <memory>
 #include <stdio.h>
 #include "quest.hpp"
+#include "main_menu.hpp"
 
 #include "entity_editor.hpp"
 
 enum PlayingMode {
   PLAYING_MODE_BUILD,
   PLAYING_MODE_PLAY,
+  PLAYING_MODE_MENU,
 };
 
 enum class SelectionOption {
@@ -62,6 +64,7 @@ struct Entry {
   HelpMenu help_menu;
   ObjectiveList objective_list;
   TableId last_entity_interacted;
+  MainMenu main_menu;
 
   void init(); 
   void input(const sapp_event* event);

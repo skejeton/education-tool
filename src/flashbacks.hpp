@@ -86,7 +86,6 @@ struct FlashbacksGui {
   
   FlashbacksDialogId sequence_current;
 
-
   FlashbacksEvent show();
 };
 

@@ -8,6 +8,7 @@
 #include "character.hpp"
 #include "save.hpp"
 #include <cstdlib>
+#include <filesystem>
 
 static void saveload_game(Entry *entry, BinaryFormat *format)
 {
@@ -45,6 +46,9 @@ static void set_mode(Entry *entry, PlayingMode mode)
   entry->playing_mode = mode;
 
   switch (mode) {
+    case PLAYING_MODE_MENU:
+      entry->main_menu = MainMenu::init(std::filesystem::current_path() / "user");
+      break;
     case PLAYING_MODE_PLAY:
       entry->flashbacks.backlog = {};
       entry->camera_velocity = {0, 0, 0};
@@ -56,6 +60,8 @@ static void set_mode(Entry *entry, PlayingMode mode)
 
 static void handle_input(Entry *entry, Input inputs) {
   switch (entry->playing_mode) {
+    case PLAYING_MODE_MENU:
+      break;
     case PLAYING_MODE_PLAY:
       if (inputs.key_states[SAPP_KEYCODE_SPACE].pressed && entry->camera.position.y < 2.1) {
         entry->camera_velocity.y = 10;
@@ -358,9 +364,26 @@ static void show_ui(Entry *entry) {
   ImGui::PopFont();
 }
 
+static void handle_game_input(Entry *entry)
+{
+
+}
+
 void Entry::frame(void) {
   const int width = sapp_width();
   const int height = sapp_height();
+
+  switch (playing_mode) {
+  case PLAYING_MODE_MENU:
+    main_menu.show();
+    break;
+  case PLAYING_MODE_BUILD:
+    //
+    break;
+  case PLAYING_MODE_PLAY:
+    //
+    break;
+  }
 
   camera.set_aspect((float)width / height);
   if (sapp_mouse_locked()) {
@@ -416,11 +439,22 @@ void Entry::frame(void) {
   if (bheight < 1) bheight = 1;
   if (bheight > 9) bheight = 9;
 
-
   Matrix4 view_projection = camera.vp;
   
   simgui_new_frame({ width, height, sapp_frame_duration(), 1 });
   show_ui(this);
+  {
+    sg_pass_action pass_action = {};
+    pass_action.colors[0].load_action = SG_LOADACTION_LOAD;
+    pass_action.colors[0].store_action = SG_STOREACTION_STORE;
+    pass_action.colors[0].clear_value = { 0.3f, 0.7f, 0.5f, 1.0f };
+
+    sg_begin_default_pass(&pass_action, width, height);
+    simgui_render(); 
+    sg_end_pass();
+  }
+  
+
 
 
 	// Draw Ground
@@ -523,17 +557,6 @@ void Entry::frame(void) {
  
   cmdc = boxdraw.commands_count;
   boxdraw_flush(&boxdraw, view_projection);
-  {
-    sg_pass_action pass_action = {};
-    pass_action.colors[0].load_action = SG_LOADACTION_LOAD;
-    pass_action.colors[0].store_action = SG_STOREACTION_STORE;
-    pass_action.colors[0].clear_value = { 0.3f, 0.7f, 0.5f, 1.0f };
-
-    sg_begin_default_pass(&pass_action, width, height);
-    simgui_render(); 
-    sg_end_pass();
-  }
-  
   sg_commit();
 
   inputs.update();
