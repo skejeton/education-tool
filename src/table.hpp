@@ -13,7 +13,7 @@ struct TableId {
   size_t id;
 
   bool operator==(TableId other) {
-    return id;
+    return id == other.id;
   }
 };
 

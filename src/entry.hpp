@@ -65,6 +65,7 @@ struct Entry {
   ObjectiveList objective_list;
   TableId last_entity_interacted;
   MainMenu main_menu;
+  OpenProject open_project;
 
   void init(); 
   void input(const sapp_event* event);

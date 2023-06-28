@@ -10,11 +10,18 @@
 #include <cstdlib>
 #include <filesystem>
 
+
+static void reset_state(Entry *entry)
+{
+  entry->scene.entities = {};
+  entry->flashbacks = {};
+}
+
+
 static void saveload_game(Entry *entry, BinaryFormat *format)
 {
   if (format->mode == BinaryIOMode::READ) {
-    entry->scene.entities = {};
-    entry->flashbacks = {};
+    reset_state(entry);
   }
 
   TableSaver flashbacks_saver = TableSaver<FlashbacksDialog>::init(format, &entry->flashbacks.dialogs);
@@ -41,12 +48,18 @@ static void saveload_game(Entry *entry, BinaryFormat *format)
   }
 }
 
+static void save_entity_in_editor(Entry *entry) {
+  entry->entity_editor.emplace();
+}
+
 static void set_mode(Entry *entry, PlayingMode mode)
 {
   entry->playing_mode = mode;
 
   switch (mode) {
     case PLAYING_MODE_MENU:
+      reset_state(entry);
+      entry->open_project.is_open = false;
       entry->main_menu = MainMenu::init(std::filesystem::current_path() / "user");
       break;
     case PLAYING_MODE_PLAY:
@@ -58,21 +71,101 @@ static void set_mode(Entry *entry, PlayingMode mode)
   }
 }
 
-static void handle_input(Entry *entry, Input inputs) {
-  switch (entry->playing_mode) {
-    case PLAYING_MODE_MENU:
-      break;
-    case PLAYING_MODE_PLAY:
-      if (inputs.key_states[SAPP_KEYCODE_SPACE].pressed && entry->camera.position.y < 2.1) {
-        entry->camera_velocity.y = 10;
-      }
-      camera_input_apply(&entry->camera, &inputs, false);
-      break;
-    case PLAYING_MODE_BUILD:
-      camera_input_apply(&entry->camera, &inputs);
-      break;
+static void write_open_save(Entry *entry)
+{
+  BinaryFormat format = BinaryFormat::begin_write();
+  saveload_game(entry, &format);
+  FILE* f = fopen(entry->open_project.path.c_str(), "wb");
+  if (f) {
+    fwrite(format.origin, 1, format.data - format.origin, f);
+    fclose(f);
   }
 }
+
+static void load_open_save(Entry *entry)
+{
+  FILE* f = fopen(entry->open_project.path.c_str(), "rb");
+  printf("Read: %s\n", entry->open_project.path.c_str());
+  if (f) {
+    fseek(f, 0, SEEK_END);
+    size_t file_size = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    if (file_size == 0) {
+      return;
+    }
+
+    uint8_t *contents = (uint8_t*)malloc(file_size);
+    
+    fread(contents, 1, file_size, f);
+    fclose(f);
+
+    BinaryFormat format = BinaryFormat::begin_read(contents, file_size);
+    saveload_game(entry, &format);
+    free(contents);
+  }
+}
+
+static void handle_game_mode_input(Entry *entry, Input *inputs)
+{
+  if (inputs->key_states[SAPP_KEYCODE_LEFT_BRACKET].pressed) {
+    save_entity_in_editor(entry);
+    set_mode(entry, PLAYING_MODE_BUILD);
+  }
+  if (inputs->key_states[SAPP_KEYCODE_RIGHT_BRACKET].pressed) {
+    set_mode(entry, PLAYING_MODE_PLAY);
+  }
+
+  if (inputs->key_states[SAPP_KEYCODE_F2].pressed) {
+    load_open_save(entry);
+  }
+
+  if (inputs->key_states[SAPP_KEYCODE_F1].pressed) {
+    save_entity_in_editor(entry);
+    write_open_save(entry);
+  }
+
+  if (inputs->key_states[SAPP_KEYCODE_X].pressed) {
+    entry->show_objects = !entry->show_objects;
+  }
+}
+
+
+static bool is_game_mode(PlayingMode playing_mode)
+{
+  return playing_mode == PLAYING_MODE_BUILD || playing_mode == PLAYING_MODE_PLAY;
+}
+
+
+static void handle_in_game_input(Entry *entry, Input *inputs)
+{
+  switch (entry->playing_mode) {
+  case PLAYING_MODE_PLAY:
+    if (inputs->key_states[SAPP_KEYCODE_SPACE].pressed && entry->camera.position.y < 2.1) {
+      entry->camera_velocity.y = 10;
+    }
+    camera_input_apply(&entry->camera, inputs, false);
+    break;
+  case PLAYING_MODE_BUILD:
+    camera_input_apply(&entry->camera, inputs);
+    break;
+  default:
+    // Not an in-game mode.
+    break;
+  }
+
+}
+
+
+static void handle_input(Entry *entry, Input *inputs) {
+  if (is_game_mode(entry->playing_mode)) {
+    handle_game_mode_input(entry, inputs);
+  }
+ 
+  if (sapp_mouse_locked()) {
+    handle_in_game_input(entry, inputs);
+  }
+}
+
 
 void check_collisions(Entry *entry) {
   Rect camera_rect = {{entry->camera.position.x-1, entry->camera.position.z-1}, {2, 2}};
@@ -93,25 +186,6 @@ void check_collisions(Entry *entry) {
 
   entry->camera.position.x += snap.x;
   entry->camera.position.z += snap.y;
-}
-
-void update_mode(Entry *entry) {
-  switch (entry->playing_mode) {
-    case PLAYING_MODE_PLAY: {
-      entry->camera_velocity.y -= 20*sapp_frame_duration();
-      if (entry->camera_velocity.y < -40) {
-        entry->camera_velocity.y = -40;
-      }
-      entry->camera.position += entry->camera_velocity*sapp_frame_duration();
-
-      if (entry->camera.position.y < 2) {
-        entry->camera.position.y = 2;
-      }
-      check_collisions(entry);
-    } break;
-    case PLAYING_MODE_BUILD:
-      break;
-  }
 }
 
 static void set_imgui_rounding(float rounding) {
@@ -149,6 +223,8 @@ static void init_imgui_font(Entry *entry, const char *path, float size) {
 void Entry::init(void) {
   console_create_or_bind_existing();
 
+  set_mode(this, PLAYING_MODE_MENU);
+
   flashbacks_gui = FlashbacksGui::create(&flashbacks);
     
   // setup sokol-gfx, sokol-time and sokol-imgui
@@ -179,10 +255,6 @@ void Entry::init(void) {
   this->objective_list.push_objective("talk_b", "Talk to character B");
   this->objective_list.push_objective("talk_c", "Talk to character C");
   this->objective_list.push_objective("get_red_key", "Get red key");
-}
-
-static void save_entity_in_editor(Entry *entry) {
-  entry->entity_editor.emplace();
 }
 
 struct InformationWindowData {
@@ -292,14 +364,16 @@ void render_entity(BoxdrawRenderer *renderer, Entity *entity, bool selected, boo
   entity_render(renderer, entity);
 }
 
-static void show_ui(Entry *entry) {
+static void show_ui_game_mode(Entry *entry)
+{
   const int width = sapp_width();
   const int height = sapp_height();
 
-  ImGui::PushFont(entry->main_font);
-
   // the imgui UI pass
   if (ImGui::BeginMainMenuBar()) {
+    if (ImGui::Button("EXIT")) {
+      set_mode(entry, PLAYING_MODE_MENU);
+    }
     if (entry->playing_mode == PLAYING_MODE_BUILD) {
       if (ImGui::Button("PLAY")) {
         save_entity_in_editor(entry);
@@ -341,106 +415,190 @@ static void show_ui(Entry *entry) {
       entry->entity_editor.show();
     }
     break;
+  default:
+    break;
   }
-
-  ImGui::SetNextWindowPos( { 0, 400 });
-  ImGui::Begin("debug");
-  ImGui::Text("%g\n", 1 / sapp_frame_duration());
-  ImGui::ColorPicker4("Colour", (float*)&entry->boxdraw.pass_action.colors[0].clear_value, ImGuiColorEditFlags_PickerHueWheel);
-  
-  ImGui::DragFloat("yaw", &entry->camera.yaw);
-  ImGui::DragFloat("pitch", &entry->camera.pitch);
-
-  ImGui::DragInt("cmdc", &entry->cmdc);
-  ImGui::Text("pmode %d", entry->playing_mode);
-  ImGui::End();
 
   entry->help_menu.show();
   ObjectiveListUi{ &entry->objective_list }.show();
 
   ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
-  draw_list->AddCircle( { width / 2.0f, height / 2.0f }, 4, 0xFFFFFFFF);
+  draw_list->AddCircle({ width / 2.0f, height / 2.0f }, 4, 0xFFFFFFFF);
+}
+
+static void draw_background(ImU32 color)
+{
+  ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
+  draw_list->AddRectFilled({0, 0}, {sapp_widthf(), sapp_heightf()}, color);
+}
+
+static void show_ui(Entry *entry)
+{
+  ImGui::PushFont(entry->main_font);
+
+  if (is_game_mode(entry->playing_mode)) {
+    show_ui_game_mode(entry);
+  } else if (entry->playing_mode == PLAYING_MODE_MENU) {
+    draw_background(0xFFFFFFFF);
+    entry->main_menu.show(&entry->open_project);
+    if (entry->open_project.is_open) {
+      load_open_save(entry);
+      set_mode(entry, PLAYING_MODE_BUILD);
+    }
+  }
 
   ImGui::PopFont();
 }
 
-static void handle_game_input(Entry *entry)
-{
 
+static void handle_game_mode(Entry *entry)
+{
+  const int width = sapp_width();
+  const int height = sapp_height();
+
+  entry->camera.set_aspect((float)width / height);
+  if (entry->camera.position.y < 0.2) {
+    entry->camera.position.y = 0.2;
+  }
+
+  entry->selection_option = input_selection_option(entry->inputs, entry->selection_option);
+  entry->bheight += entry->inputs.mouse_wheel;
+
+  if (entry->bheight < 1) entry->bheight = 1;
+  if (entry->bheight > 9) entry->bheight = 9;
+
+  Matrix4 view_projection = entry->camera.vp;
+  
+  // Draw Ground
+  Box3 floor = box3_extrude_from_point({ 0, 0, 0 }, { 5000, 0.05, 5000 });
+  boxdraw_push(&entry->boxdraw, boxdraw_cmdcolored(floor, { 0.1, 0.8, 0.15, 1.0 }));
+
+  auto pointing_at = PointingAtResolve::init(entry->camera.ray());
+  auto pointing_at_bindings = TempIdBinder<TableId>::init();
+
+  if (entry->playing_mode == PLAYING_MODE_BUILD) {
+    PlacementGrid grid = PlacementGrid::init(entry->camera.position.x, entry->camera.position.z);
+
+    for (
+      SceneIterator iterator = scene_iterator_begin(&entry->scene);
+      scene_iterator_going(&iterator);
+      scene_iterator_next(&iterator))
+    {
+      grid.place_region(entity_placement_region(scene_get_entity(&entry->scene, iterator.id)));
+    }
+
+    int rx, ry;
+    float rt = grid.map_ray(entry->camera.ray(), &rx, &ry);
+
+    bool may_place = rt < 50;
+    if (entry->last_object_locator.id > 0) {
+      may_place = false;
+    }
+
+    Entity potential_entity = generate_entity_from_type(entry->selection_option, { (float)rx, 0, (float)ry }, entry->bheight);
+
+    bool can_place = may_place && grid.try_place_region(entity_placement_region(&potential_entity));
+
+    grid.render(&entry->boxdraw);
+
+    if (can_place) {
+      if (entry->show_objects) {
+        render_entity(&entry->boxdraw, &potential_entity, false, false);
+      }
+      if (entry->inputs.mouse_states[0].pressed && sapp_mouse_locked()) {
+        scene_summon_entity(&entry->scene, potential_entity);
+      }
+    }  
+  }
+
+  for (
+    SceneIterator iterator = scene_iterator_begin(&entry->scene);
+    scene_iterator_going(&iterator);
+    scene_iterator_next(&iterator))
+  {
+    Entity* entity = scene_get_entity(&entry->scene, iterator.id);
+    bool selected = false, hovered = false;
+
+    if (iterator.id.id == entry->last_object_locator.id) {
+      hovered = true;
+    }
+
+    if (entry->entity_selected.id == iterator.id.id) {
+      selected = true;
+    }
+
+    int id = pointing_at_bindings.allocate(iterator.id);
+    pointing_at.push_box(entity_get_box(entity), id);
+
+    if (entry->show_objects) {
+      render_entity(&entry->boxdraw, entity, selected, hovered);
+    }
+  }
+
+  TableId *locator = pointing_at_bindings.get(pointing_at.closest_id());
+  entry->last_object_locator.id = 0;
+  if (locator != nullptr) {
+    entry->last_object_locator = *locator;
+    int id = locator->id;
+    if (id >= 0) {
+      TableId entity_id = entry->last_object_locator;
+      Entity *entity = scene_get_entity(&entry->scene, entity_id);
+      if (entry->playing_mode == PLAYING_MODE_PLAY) {
+        if (entry->inputs.mouse_states[0].released) {
+          sapp_lock_mouse(false);
+          entry->last_entity_interacted = entity_id;
+          entry->flashbacks_gui.begin_sequence(entity->dialog_id);
+        }
+      } else if (entry->playing_mode == PLAYING_MODE_BUILD) {
+        if (entry->inputs.mouse_states[0].released) {
+          save_entity_in_editor(entry);
+          entry->entity_selected = entity_id;
+          entry->entity_editor.derive_from(entity);
+        } else if (entry->inputs.mouse_states[1].pressed) {
+          if (entry->entity_selected.id == id) {
+            entry->entity_selected.id = 0;
+            entry->entity_editor = EntityEditor::init(&entry->flashbacks);
+          }
+
+          scene_remove_entity(&entry->scene, entity_id);
+        }
+      }
+    }
+  }
+ 
+  entry->cmdc = entry->boxdraw.commands_count;
+  boxdraw_flush(&entry->boxdraw, view_projection);
+}
+
+void update_mode(Entry *entry) {
+  switch (entry->playing_mode) {
+    case PLAYING_MODE_PLAY: {
+      handle_game_mode(entry);
+      entry->camera_velocity.y -= 20*sapp_frame_duration();
+      if (entry->camera_velocity.y < -40) {
+        entry->camera_velocity.y = -40;
+      }
+      entry->camera.position += entry->camera_velocity*sapp_frame_duration();
+
+      if (entry->camera.position.y < 2) {
+        entry->camera.position.y = 2;
+      }
+      check_collisions(entry);
+    } break;
+    case PLAYING_MODE_BUILD:
+      handle_game_mode(entry);
+      break;
+    case PLAYING_MODE_MENU:
+      break;
+  }
 }
 
 void Entry::frame(void) {
   const int width = sapp_width();
   const int height = sapp_height();
 
-  switch (playing_mode) {
-  case PLAYING_MODE_MENU:
-    main_menu.show();
-    break;
-  case PLAYING_MODE_BUILD:
-    //
-    break;
-  case PLAYING_MODE_PLAY:
-    //
-    break;
-  }
-
-  camera.set_aspect((float)width / height);
-  if (sapp_mouse_locked()) {
-    handle_input(this, inputs);
-  }
-  if (camera.position.y < 0.2) {
-    camera.position.y = 0.2;
-  }
+  handle_input(this, &inputs);
   update_mode(this);
-
-  if (inputs.key_states[SAPP_KEYCODE_LEFT_BRACKET].pressed) {
-    set_mode(this, PLAYING_MODE_BUILD);
-  }
-  if (inputs.key_states[SAPP_KEYCODE_RIGHT_BRACKET].pressed) {
-    set_mode(this, PLAYING_MODE_PLAY);
-  }
-
-  if (inputs.key_states[SAPP_KEYCODE_F2].pressed) {
-    FILE* f = fopen("savestate.sav", "rb");
-    if (f) {
-      fseek(f, 0, SEEK_END);
-      size_t file_size = ftell(f);
-      fseek(f, 0, SEEK_SET);
-
-      uint8_t *contents = (uint8_t*)malloc(file_size);
-      
-      fread(contents, 1, file_size, f);
-      fclose(f);
-
-      BinaryFormat format = BinaryFormat::begin_read(contents, file_size);
-      saveload_game(this, &format);
-      free(contents);
-    }
-
-  }
-
-  if (inputs.key_states[SAPP_KEYCODE_F1].pressed) {
-    BinaryFormat format = BinaryFormat::begin_write();
-    saveload_game(this, &format);
-    FILE* f = fopen("savestate.sav", "wb");
-    if (f) {
-      fwrite(format.origin, 1, format.data - format.origin, f);
-      fclose(f);
-    }
-  }
-
-  if (inputs.key_states[SAPP_KEYCODE_X].pressed) {
-    show_objects = !show_objects;
-  }
-  selection_option = input_selection_option(inputs, selection_option);
-  bheight += inputs.mouse_wheel;
-
-  if (bheight < 1) bheight = 1;
-  if (bheight > 9) bheight = 9;
-
-  Matrix4 view_projection = camera.vp;
-  
   simgui_new_frame({ width, height, sapp_frame_duration(), 1 });
   show_ui(this);
   {
@@ -453,110 +611,6 @@ void Entry::frame(void) {
     simgui_render(); 
     sg_end_pass();
   }
-  
-
-
-
-	// Draw Ground
-  Box3 floor = box3_extrude_from_point({ 0, 0, 0 }, { 5000, 0.05, 5000 });
-  boxdraw_push(&boxdraw, boxdraw_cmdcolored(floor, { 0.1, 0.8, 0.15, 1.0 }));
-
-  auto pointing_at = PointingAtResolve::init(camera.ray());
-  auto pointing_at_bindings = TempIdBinder<TableId>::init();
-
-  if (playing_mode == PLAYING_MODE_BUILD) {
-    PlacementGrid grid = PlacementGrid::init(camera.position.x, camera.position.z);
-
-
-    for (
-      SceneIterator iterator = scene_iterator_begin(&scene);
-      scene_iterator_going(&iterator);
-      scene_iterator_next(&iterator))
-    {
-      grid.place_region(entity_placement_region(scene_get_entity(&this->scene, iterator.id)));
-    }
-
-    int rx, ry;
-    float rt = grid.map_ray(camera.ray(), &rx, &ry);
-
-    bool may_place = rt < 50;
-    if (last_object_locator.id > 0) {
-      may_place = false;
-    }
-
-    Entity potential_entity = generate_entity_from_type(selection_option, { (float)rx, 0, (float)ry }, bheight);
-
-    bool can_place = may_place && grid.try_place_region(entity_placement_region(&potential_entity));
-
-    grid.render(&boxdraw);
-
-    if (can_place) {
-      if (show_objects) {
-        render_entity(&boxdraw, &potential_entity, false, false);
-      }
-      if (inputs.mouse_states[0].pressed && sapp_mouse_locked()) {
-        scene_summon_entity(&scene, potential_entity);
-      }
-    }  
-  }
-
-  for (
-    SceneIterator iterator = scene_iterator_begin(&scene);
-    scene_iterator_going(&iterator);
-    scene_iterator_next(&iterator))
-  {
-    Entity* entity = scene_get_entity(&this->scene, iterator.id);
-    bool selected = false, hovered = false;
-
-    if (iterator.id.id == last_object_locator.id) {
-      hovered = true;
-    }
-
-    if (entity_selected.id == iterator.id.id) {
-      selected = true;
-    }
-
-    int id = pointing_at_bindings.allocate(iterator.id);
-    pointing_at.push_box(entity_get_box(entity), id);
-
-    if (show_objects) {
-      render_entity(&boxdraw, entity, selected, hovered);
-    }
-  }
-
-  TableId *locator = pointing_at_bindings.get(pointing_at.closest_id());
-  last_object_locator.id = 0;
-  if (locator != nullptr) {
-    last_object_locator = *locator;
-    int id = locator->id;
-    if (id >= 0) {
-      TableId entity_id = last_object_locator;
-      Entity *entity = scene_get_entity(&scene, entity_id);
-      if (playing_mode == PLAYING_MODE_PLAY) {
-        if (inputs.mouse_states[0].released) {
-          sapp_lock_mouse(false);
-          this->last_entity_interacted = entity_id;
-          flashbacks_gui.begin_sequence(entity->dialog_id);
-        }
-      } else if (playing_mode == PLAYING_MODE_BUILD) {
-        if (inputs.mouse_states[0].released) {
-          save_entity_in_editor(this);
-          this->entity_selected = entity_id;
-          this->entity_editor.derive_from(entity);
-        } else if (inputs.mouse_states[1].pressed) {
-          if (this->entity_selected.id == id) {
-            entity_selected.id = 0;
-            this->entity_editor = EntityEditor::init(&flashbacks);
-          }
-
-          scene_remove_entity(&scene, entity_id);
-        }
-      }
-    }
-  }
- 
-  cmdc = boxdraw.commands_count;
-  boxdraw_flush(&boxdraw, view_projection);
   sg_commit();
 
   inputs.update();
@@ -576,7 +630,9 @@ void Entry::input(const sapp_event* event) {
       sapp_lock_mouse(false);
     }
     if (!sapp_mouse_locked() && event->type == SAPP_EVENTTYPE_MOUSE_UP && event->mouse_button == 0) {
-      sapp_lock_mouse(true);
+      if (is_game_mode(this->playing_mode)) {
+        sapp_lock_mouse(true);
+      }
     } else {
       inputs.pass_event(event);
     }
