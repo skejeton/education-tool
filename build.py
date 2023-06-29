@@ -38,21 +38,25 @@ def target_build_wasm():
     if not system_features["has_emcc"]:
       raise Exception("Can not build WASM because you need to install Emscripten SDK")
  
-def target_build():
-  if os.name == "nt":
-    return "if not exist bin mkdir bin\nlib\\sokol-tools-bin\\bin\\win32\\sokol-shdc.exe --input src/shaders/amalgamation.glsl --output src/shaders.hxx --slang hlsl5 && cd bin && cmake -DCMAKE_BUILD_TYPE=Debug .. && msbuild catedu.sln /property:Configuration=Debug && cd .."
-  elif sys.platform == "darwin":
-    return "mkdir -p bin\nlib/sokol-tools-bin/bin/osx/sokol-shdc --input src/shaders/amalgamation.glsl --output src/shaders.hxx --slang metal_macos && cd bin && cmake -DCMAKE_BUILD_TYPE=Debug .. && make && cd .."
-  else:
-    return "mkdir -p bin\nlib/sokol-tools-bin/bin/linux/sokol-shdc --input src/shaders/amalgamation.glsl --output src/shaders.hxx --slang glsl330 && cd bin && cmake -DCMAKE_BUILD_TYPE=Debug .. && make && cd .."
+def target_build(is_test = False):
+  test_string = ""
+  if is_test:
+    test_string += "-DRUN_TESTS=YES"
 
-def target_run():
   if os.name == "nt":
-    return target_build() + " && .\\bin\\debug\\catedu.exe\n"
+    return f"if not exist bin mkdir bin\nlib\\sokol-tools-bin\\bin\\win32\\sokol-shdc.exe --input src/shaders/amalgamation.glsl --output src/shaders.hxx --slang hlsl5 && cd bin && cmake -DCMAKE_BUILD_TYPE=Debug {test_string} .. && msbuild catedu.sln /property:Configuration=Debug && cd .."
   elif sys.platform == "darwin":
-    return target_build() + " && ./bin/catedu\n"
+    return f"mkdir -p bin\nlib/sokol-tools-bin/bin/osx/sokol-shdc --input src/shaders/amalgamation.glsl --output src/shaders.hxx --slang metal_macos && cd bin && cmake -DCMAKE_BUILD_TYPE=Debug {test_string} .. && make && cd .."
   else:
-    return target_build() + " && ./bin/debug/catedu\n"
+    return f"mkdir -p bin\nlib/sokol-tools-bin/bin/linux/sokol-shdc --input src/shaders/amalgamation.glsl --output src/shaders.hxx --slang glsl330 && cd bin && cmake -DCMAKE_BUILD_TYPE=Debug {test_string} .. && make && cd .."
+
+def target_run(is_test = False):
+  if os.name == "nt":
+    return target_build(is_test) + " && .\\bin\\debug\\catedu.exe\n"
+  elif sys.platform == "darwin":
+    return target_build(is_test) + " && ./bin/catedu\n"
+  else:
+    return target_build(is_test) + " && ./bin/debug/catedu\n"
 
 def init_system_features():
   if shutil.which("emcc") is not None:
@@ -68,6 +72,8 @@ def main():
     script = target_build_wasm()
   elif arguments.target == "build":
     script = target_build()
+  elif arguments.target == "test":
+    script = target_run(True)
   elif arguments.target == "run":
     script = target_run()
   else:

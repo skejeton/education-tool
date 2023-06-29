@@ -13,6 +13,9 @@
 #define SOKOL_METAL
 #endif
 
+#ifdef RUN_TESTS
+#define SOKOL_NO_ENTRY
+#endif
 
 #include "sokol/sokol_app.h"
 #include "sokol/sokol_gfx.h"

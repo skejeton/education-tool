@@ -1,4 +1,5 @@
 -Ilib
+-Ilib/tau
 -Wall
 
 -Wno-missing-braces

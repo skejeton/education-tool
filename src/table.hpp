@@ -11,6 +11,7 @@
 
 struct TableId {
   size_t id;
+  size_t generation;
 
   bool operator==(TableId other) {
     return id == other.id;
@@ -20,7 +21,10 @@ struct TableId {
 template <class T>
 struct Table {
   T* values;
-  bool* values_taken;
+  struct Slot {
+    bool taken;
+    size_t generation;
+  } *slots;
   size_t capacity;
   size_t count;
 
@@ -28,7 +32,7 @@ struct Table {
   {
     TableId id = { 0 };
     for (size_t i = 0; i < capacity; i++) {
-      if (!values_taken[i]) {
+      if (!slots[i].taken) {
         id = { i + 1 };
       }
     }
@@ -46,19 +50,20 @@ struct Table {
       }
       values = new_values;
 
-      bool *new_values_taken = (bool*)realloc(values_taken, sizeof(size_t)*capacity);
+      Slot *new_slots = (Slot*)realloc(slots, sizeof(Slot)*capacity);
       // NOTE: Allocation error
-      if (new_values_taken == NULL) {
+      if (new_slots == NULL) {
         return { 0 };
       }
-      values_taken = new_values_taken;
+      slots = new_slots;
 
-      memset(values_taken + old_capacity, 0, (capacity - old_capacity) * sizeof(size_t));
+      memset(slots + old_capacity, 0, (capacity - old_capacity) * sizeof(size_t));
       id = { old_capacity+1 };
     }
 
     count++;
-    values_taken[id.id - 1] = true;
+    slots[id.id - 1].taken = true;
+    id.generation = slots[id.id - 1].generation;
     values[id.id - 1] = value;
     return id;
   }
@@ -67,17 +72,16 @@ struct Table {
   bool remove(TableId id)
   {
     bool status = false;
-    if (id.id - 1 < capacity) {
-      status = values_taken[id.id - 1];
-      values_taken[id.id - 1] = false;
-      count--;
+    if (id.id - 1 < capacity && slots[id.id - 1].taken) {
+      slots[id.id - 1].generation++;
+      return true;
     }
-    return status;
+    return false;
   }
 
   T* get(TableId id)
   {
-    if (id.id - 1 < capacity) {
+    if (id.id - 1 < capacity && slots[id.id - 1].taken && slots[id.id - 1].generation == id.generation) {
       return &values[id.id - 1];
     }
     return nullptr;
@@ -95,7 +99,7 @@ struct TableIterator {
 
     id.id += 1;
     while ((id.id - 1) < table->capacity) {
-      if (table->values_taken[id.id - 1]) {
+      if (table->slots[id.id - 1].taken) {
         is_going = true;
         break;
       }

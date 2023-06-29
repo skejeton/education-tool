@@ -10,6 +10,14 @@ endif()
 
 file(GLOB CATEDU_SRC_FILES "src/*.cpp" ${ADDITIONAL_FILES} lib/imgui/imgui.cpp lib/imgui/imgui_draw.cpp lib/imgui/imgui_demo.cpp lib/imgui/imgui_widgets.cpp lib/imgui/imgui_tables.cpp)
 
+if (DEFINED RUN_TESTS)
+    add_compile_definitions(RUN_TESTS)
+    list(REMOVE_ITEM CATEDU_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+    list(APPEND CATEDU_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_main.cpp)
+endif()
+
+message(${CATEDU_SRC_FILES})
+
 add_executable(catedu ${CATEDU_SRC_FILES})
 
 set_property(TARGET catedu PROPERTY CXX_STANDARD 17)
@@ -23,3 +31,4 @@ if (APPLE)
 endif()
 
 target_include_directories(catedu PUBLIC lib/)
+target_include_directories(catedu PUBLIC lib/tau)
