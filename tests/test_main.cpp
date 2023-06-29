@@ -16,9 +16,20 @@ TEST(Table) {
 
   CHECK_EQ(test_table.get(item1), nullptr);
 
-  TableId item3 = test_table.allocate(42); 
+  TableId item3 = test_table.allocate(123); 
 
   CHECK_EQ(test_table.get(item1), nullptr);
 
+  test_table.remove(item3);
+
+  TableId item4 = test_table.allocate(456); 
+
+  CHECK_EQ(*test_table.get(item4), 456);
+
+  CHECK_EQ(test_table.get(item1), nullptr);
+
+  CHECK_EQ(test_table.get(item3), nullptr);
+
   CHECK_EQ(test_table.get({ 2 }), NULL);
 }
+

@@ -62,7 +62,7 @@ struct Entry {
   SelectionOption selection_option;
   ImFont *main_font;
   HelpMenu help_menu;
-  ObjectiveList objective_list;
+  ObjectiveSystem objective_system;
   TableId last_entity_interacted;
   MainMenu main_menu;
   OpenProject open_project;

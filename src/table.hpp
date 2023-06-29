@@ -14,9 +14,15 @@ struct TableId {
   size_t generation;
 
   bool operator==(TableId other) {
-    return id == other.id;
+    return (id ? generation == other.generation : true) && id == other.id;
+  }
+
+  bool operator!=(TableId other) {
+    return !(*this==other);
   }
 };
+
+#define NULL_ID (TableId{ 0 })
 
 template <class T>
 struct Table {

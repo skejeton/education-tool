@@ -251,10 +251,16 @@ void Entry::init(void) {
 
   this->entity_editor = EntityEditor::init(&flashbacks);
 
-  this->objective_list.push_objective("talk_a", "Talk to character A");
-  this->objective_list.push_objective("talk_b", "Talk to character B");
-  this->objective_list.push_objective("talk_c", "Talk to character C");
-  this->objective_list.push_objective("get_red_key", "Get red key");
+  ObjectiveId first_quest = this->objective_system.push_objective(NULL_ID, "first_quest", "First Quest"); 
+  {
+    ObjectiveId get_key = this->objective_system.push_objective(first_quest, "get_red_key", "Get red key");
+    this->objective_system.push_objective(first_quest, "talk_a", "Talk to character A");
+    {
+      this->objective_system.push_objective(get_key, "talk_b", "Talk to character B");
+      this->objective_system.push_objective(get_key, "talk_c", "Talk to character C");
+    }
+  }
+
 }
 
 struct InformationWindowData {
@@ -402,7 +408,8 @@ static void show_ui_game_mode(Entry *entry)
     {
       Entity* target_entity = scene_get_entity(&entry->scene, entry->last_entity_interacted);
       assert(target_entity);
-      entry->objective_list.complete_objective(target_entity->objective_complete);
+      #pragma warning("DO THE OBJECTIVES NOW")
+      //entry->objective_list.complete_objective(target_entity->objective_complete);
     }
     break;
     default:
@@ -420,7 +427,7 @@ static void show_ui_game_mode(Entry *entry)
   }
 
   entry->help_menu.show();
-  ObjectiveListUi{ &entry->objective_list }.show();
+  ObjectivesUi{ &entry->objective_system }.show();
 
   ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
   draw_list->AddCircle({ width / 2.0f, height / 2.0f }, 4, 0xFFFFFFFF);

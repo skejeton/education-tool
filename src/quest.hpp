@@ -6,23 +6,29 @@
 #define H_CATEDU_QUEST
 
 #include <vector>
+#include <string>
+#include "table.hpp"
+
+typedef TableId ObjectiveId;
 
 struct Objective {
   bool completed;
-  char* id;
-  char* name;
+  const char *id;
+  const char *name;
+  ObjectiveId parent;
+  ObjectiveId sibling;
+  ObjectiveId child;
 };
 
-struct ObjectiveList {
-  std::vector<Objective> objectives;
-  
-  Objective *get_objective_by_id(char* id);
-  void push_objective(char *id, char* name);
-  void complete_objective(char *id);
+struct ObjectiveSystem {
+  Table<Objective> objectives;
+  ObjectiveId first_element;
+
+  ObjectiveId push_objective(ObjectiveId parent_id, const char *id, const char *name);
 };
 
-struct ObjectiveListUi {
-  ObjectiveList* list;
+struct ObjectivesUi {
+  ObjectiveSystem *system;
 
   void show();
 };
