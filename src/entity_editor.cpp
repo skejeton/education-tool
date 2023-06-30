@@ -21,8 +21,6 @@ void EntityEditor::show() {
   int swap_index_last = -1;
   ImGui::SetNextWindowSize({640, 480});
   ImGui::Begin("Entity Editor");
-    ImGui::InputText("Complete objective", entity->objective_complete, sizeof entity->objective_complete);
-
     ImGui::SeparatorText("Dialogues");
     for (auto &dialog : this->prototypes) {
       ImGui::PushID(i);

@@ -32,7 +32,6 @@ struct Entity {
   Vector3 position;
   Shape shape;
   EntityInteractionType interaction_type;
-  char objective_complete[128];
   TableId dialog_id;
 };
 

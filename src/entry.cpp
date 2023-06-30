@@ -43,7 +43,6 @@ static void saveload_game(Entry *entry, BinaryFormat *format)
     format->pass_value(&entity->position);
     format->pass_value(&entity->shape);
     format->pass_value(&entity->interaction_type);
-    format->pass_value(&entity->objective_complete);
     flashbacks_saver.pass_id(&entity->dialog_id);
   }
 }
@@ -250,17 +249,6 @@ void Entry::init(void) {
   camera.move(10, 10, 10);
 
   this->entity_editor = EntityEditor::init(&flashbacks);
-
-  ObjectiveId first_quest = this->objective_system.push_objective(NULL_ID, "first_quest", "First Quest"); 
-  {
-    ObjectiveId get_key = this->objective_system.push_objective(first_quest, "get_red_key", "Get red key");
-    this->objective_system.push_objective(first_quest, "talk_a", "Talk to character A");
-    {
-      this->objective_system.push_objective(get_key, "talk_b", "Talk to character B");
-      this->objective_system.push_objective(get_key, "talk_c", "Talk to character C");
-    }
-  }
-
 }
 
 struct InformationWindowData {
@@ -403,18 +391,6 @@ static void show_ui_game_mode(Entry *entry)
 
   switch (entry->playing_mode) {
   case PLAYING_MODE_PLAY:
-    switch (entry->flashbacks_gui.show()) {
-    case FlashbacksEvent::COMPLETED:
-    {
-      Entity* target_entity = scene_get_entity(&entry->scene, entry->last_entity_interacted);
-      assert(target_entity);
-      #pragma warning("DO THE OBJECTIVES NOW")
-      //entry->objective_list.complete_objective(target_entity->objective_complete);
-    }
-    break;
-    default:
-      ;
-    }
     break;
   case PLAYING_MODE_BUILD:
     put_information_window({ entry->selection_option });
@@ -427,7 +403,6 @@ static void show_ui_game_mode(Entry *entry)
   }
 
   entry->help_menu.show();
-  ObjectivesUi{ &entry->objective_system }.show();
 
   ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
   draw_list->AddCircle({ width / 2.0f, height / 2.0f }, 4, 0xFFFFFFFF);
@@ -553,7 +528,6 @@ static void handle_game_mode(Entry *entry)
       if (entry->playing_mode == PLAYING_MODE_PLAY) {
         if (entry->inputs.mouse_states[0].released) {
           sapp_lock_mouse(false);
-          entry->last_entity_interacted = entity_id;
           entry->flashbacks_gui.begin_sequence(entity->dialog_id);
         }
       } else if (entry->playing_mode == PLAYING_MODE_BUILD) {

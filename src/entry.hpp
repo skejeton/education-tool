@@ -25,7 +25,6 @@
 #include "help_menu.hpp"
 #include <memory>
 #include <stdio.h>
-#include "quest.hpp"
 #include "main_menu.hpp"
 
 #include "entity_editor.hpp"
@@ -62,8 +61,6 @@ struct Entry {
   SelectionOption selection_option;
   ImFont *main_font;
   HelpMenu help_menu;
-  ObjectiveSystem objective_system;
-  TableId last_entity_interacted;
   MainMenu main_menu;
   OpenProject open_project;
 
