@@ -63,7 +63,7 @@ struct Table {
       }
       slots = new_slots;
 
-      memset(slots + old_capacity, 0, (capacity - old_capacity) * sizeof(size_t));
+      memset(slots + old_capacity, 0, (capacity - old_capacity) * sizeof(Slot));
       id = { old_capacity+1 };
     }
 
@@ -78,7 +78,8 @@ struct Table {
   bool remove(TableId id)
   {
     bool status = false;
-    if (id.id - 1 < capacity && slots[id.id - 1].taken) {
+    if (id.id - 1 < capacity && slots[id.id - 1].taken && slots[id.id - 1].generation == id.generation) {
+      slots[id.id - 1].taken = false;
       slots[id.id - 1].generation++;
       return true;
     }

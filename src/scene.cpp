@@ -14,7 +14,8 @@ TableId scene_summon_entity(Scene *scene, Entity ent)
 }
 
 
-void scene_remove_entity(Scene *scene, TableId id) {
+void scene_remove_entity(Scene *scene, TableId id)
+{
   assert(scene->entities.remove(id) && "Invalid entity ID");
 }
 
