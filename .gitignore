@@ -6,9 +6,13 @@ src/shaders.hxx
 # TODO: Generalize it for everyone. (see issue #1)
 emscripten_build_and_publish.sh 
 user/
-.vs
+.vs/*
 out
 build
+
+# VS Build info
+!launch.vs.json
+!tasks.vs.json
 
 # MacOS
 .DS_Store
