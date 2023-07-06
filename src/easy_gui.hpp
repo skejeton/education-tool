@@ -19,15 +19,24 @@ struct Layout {
     float offset_r;
 };
 
+enum Side {
+    LEFT,
+    RIGHT,
+    TOP,
+    BOTTOM
+};
+
 struct EasyGui {
     std::vector<Layout> layouts;
     float margin;
     float padding;
     bool right_to_left;
+    bool stretch;
 
     void begin(Vector2 window_size);
     void end();
 
+    void begin_layout_cut(Layout::Type type, Side side, float size);
     void begin_layout(Layout::Type type);
     void end_layout();
 

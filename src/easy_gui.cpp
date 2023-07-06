@@ -12,6 +12,8 @@ void push_layout(EasyGui *easy_gui, Layout::Type type, Rect rect) {
     layout.rect = rect;
 
     easy_gui->layouts.push_back(layout);
+
+    ImGui::GetForegroundDrawList()->AddRect({rect.pos.x, rect.pos.y}, {rect.pos.x+rect.siz.x, rect.pos.y+rect.siz.y}, 0xFF0000FF, 0, 0, 5);
 }
 
 Layout *get_last_layout(EasyGui *easy_gui) {
@@ -26,20 +28,28 @@ Rect push_element(EasyGui *easy_gui, Vector2 size) {
     assert(last_layout && "You don't have an existing layout to push your elements");
     Rect result = {};
 
+    size += Vector2{easy_gui->padding, easy_gui->padding};
+
     switch (last_layout->type) {
         case Layout::COLUMN:
-            result.pos = {last_layout->rect.pos + Vector2{0, last_layout->offset_l}};
+            if (easy_gui->stretch) {
+                size.x = last_layout->rect.siz.x-easy_gui->margin*2;
+            }
+            result.pos = {last_layout->rect.pos + Vector2{easy_gui->margin, last_layout->offset_l+easy_gui->margin}};
             result.siz = size;
             last_layout->offset_l += size.y+easy_gui->margin;
             break;
         case Layout::ROW:
+            if (easy_gui->stretch) {
+                size.y = last_layout->rect.siz.y-easy_gui->margin*2;
+            }
             if (easy_gui->right_to_left) {
                 last_layout->offset_r -= size.x;
-                result.pos = {last_layout->rect.pos + Vector2{last_layout->offset_r+last_layout->rect.pos.x+last_layout->rect.siz.x, 0}};
+                result.pos = {last_layout->rect.pos + Vector2{last_layout->offset_r+last_layout->rect.pos.x+last_layout->rect.siz.x-easy_gui->margin, easy_gui->margin}};
                 result.siz = size;
                 last_layout->offset_r -= easy_gui->margin;
             } else {
-                result.pos = {last_layout->rect.pos + Vector2{last_layout->offset_l, 0}};
+                result.pos = {last_layout->rect.pos + Vector2{last_layout->offset_l+easy_gui->margin, easy_gui->margin}};
                 result.siz = size;
                 last_layout->offset_l += size.x+easy_gui->margin;
             }
@@ -61,9 +71,55 @@ void EasyGui::begin(Vector2 window_size) {
     push_layout(this, Layout::Type::COLUMN, rect);
 
     ImGui::SetNextWindowPos({0, 0});
-    ImGui::SetNextWindowSize({0, 0});
+    ImGui::SetNextWindowSize({window_size.x, window_size.y});
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
-    ImGui::Begin("Main", NULL, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
+    ImGui::Begin("Main", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar);
+}
+
+void EasyGui::begin_layout_cut(Layout::Type type, Side side, float size) {
+    Layout *last_layout = get_last_layout(this);
+    assert(last_layout && "You need to call begin before begin_layout_cut");
+
+    Rect *prev_rect = &last_layout->rect;
+    Rect curr_rect = {};
+    switch (side) {
+        case LEFT:
+        case RIGHT:
+            curr_rect.pos.y = prev_rect->pos.y;
+            curr_rect.siz.y = prev_rect->siz.y;
+            curr_rect.siz.x = size;
+            break;
+
+        case TOP:
+        case BOTTOM:
+            curr_rect.pos.x = prev_rect->pos.x;
+            curr_rect.siz.x = prev_rect->siz.x;
+            curr_rect.siz.y = size;
+            break;
+    }
+    switch (side) {
+        case LEFT:
+            curr_rect.pos.x = prev_rect->pos.x;
+            prev_rect->pos.x += size;
+            prev_rect->siz.x -= size;
+            break;
+        case RIGHT:
+            curr_rect.pos.x = prev_rect->pos.x+prev_rect->siz.x-size;
+            prev_rect->siz.x -= size;
+            break;
+        case TOP:
+            curr_rect.pos.y = prev_rect->pos.y;
+            prev_rect->pos.y += size;
+            prev_rect->siz.y -= size;
+            break;
+        case BOTTOM:
+            curr_rect.pos.y = prev_rect->pos.y+prev_rect->siz.y-size;
+            prev_rect->siz.y -= size;
+            break;
+    }
+
+
+    push_layout(this, type, curr_rect);
 }
 
 void EasyGui::begin_layout(Layout::Type type) {
@@ -80,7 +136,7 @@ void EasyGui::end_layout() {
 bool EasyGui::button(const char *text) {
     ImVec2 text_size = ImGui::CalcTextSize(text);
 
-    Rect button_rect = push_element(this, Vector2{text_size.x, text_size.y} + Vector2{padding, padding});
+    Rect button_rect = push_element(this, Vector2{text_size.x, text_size.y});
 
     ImGui::SetCursorScreenPos({button_rect.pos.x, button_rect.pos.y});
     return ImGui::Button(text, {button_rect.siz.x, button_rect.siz.y});

@@ -15,7 +15,6 @@ jobs:
         run: |
           git submodule init
           git submodule update --remote
-          cd lib/imgui && git checkout docking
       - name: build
         run: |
           python3 build.py build

@@ -197,7 +197,6 @@ void Entry::init(void) {
     // multi-sampled rendering or using non-default pixel formats)
     simgui_desc_t simgui_desc = {};
     simgui_setup(&simgui_desc);
-    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     init_imgui_font(this, "./assets/Roboto-Regular.ttf", 16);
     set_imgui_rounding(5);
     ImGui::GetStyle().WindowPadding = {15, 15};
@@ -327,11 +326,18 @@ static void show_ui_game_mode(Entry *entry)
 
     EasyGui gui = {};
 
-    gui.begin({width, height});
-    gui.begin_layout(Layout::ROW);
-
-    gui.margin = 20;
+    gui.margin = 10;
     gui.padding = 20;
+
+    gui.begin({width, height});
+    gui.begin_layout_cut(Layout::COLUMN, Side::RIGHT, 400);
+    gui.stretch = true;
+    gui.button("TEST1");
+    gui.button("TEST2");
+    gui.button("TEST3");
+    gui.stretch = false;
+    gui.end_layout();
+    gui.begin_layout(Layout::ROW);
 
     if (gui.button("EXIT")) {
         set_mode(entry, PLAYING_MODE_MENU);
@@ -358,6 +364,7 @@ static void show_ui_game_mode(Entry *entry)
     gui.end_layout();
     gui.end();
 
+    /*
     switch (entry->playing_mode) {
         case PLAYING_MODE_PLAY:
             break;
@@ -372,6 +379,7 @@ static void show_ui_game_mode(Entry *entry)
     }
 
     entry->help_menu.show();
+     */
 
     ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
     draw_list->AddCircle({ width / 2.0f, height / 2.0f }, 4, 0xFFFFFFFF);
