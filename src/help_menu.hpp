@@ -6,10 +6,10 @@
 #define H_CATEDU_HELP_MENU
 
 struct HelpMenu {
-  bool was_init;
-  bool shown;
+    bool was_init;
+    bool shown;
 
-  void show();
+    void show();
 };
 
 #endif // H_CATEDU_HELP_MENU

@@ -9,6 +9,9 @@ user/
 .vs/*
 out
 build
+.idea
+cmake-build-debug
+cmake-build-release
 
 # VS Build info
 !launch.vs.json

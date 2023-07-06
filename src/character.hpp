@@ -9,9 +9,9 @@
 #include "boxdraw.hpp"
 
 struct Character {
-  Vector3 position;
+    Vector3 position;
 
-  void draw(BoxdrawRenderer *renderer, Vector4 color_multiple);
+    void draw(BoxdrawRenderer *renderer, Vector4 color_multiple);
 };
 
 #endif

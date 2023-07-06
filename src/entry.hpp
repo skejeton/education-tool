@@ -30,44 +30,44 @@
 #include "entity_editor.hpp"
 
 enum PlayingMode {
-  PLAYING_MODE_BUILD,
-  PLAYING_MODE_PLAY,
-  PLAYING_MODE_MENU,
+    PLAYING_MODE_BUILD,
+    PLAYING_MODE_PLAY,
+    PLAYING_MODE_MENU,
 };
 
 enum class SelectionOption {
-  ENTITY,
-  BUILDING,
-  PAVEMENT,
-  TREE,
-  COUNT
+    ENTITY,
+    BUILDING,
+    PAVEMENT,
+    TREE,
+    COUNT
 };
 
 struct Entry {
-  Input inputs;
-  Camera camera;
-  Vector3 camera_velocity;
-  Scene scene;
-  Flashbacks flashbacks;
-  FlashbacksGui flashbacks_gui;
-  BoxdrawRenderer boxdraw;
-  int bheight = 0;
-  int cmdc = 0;
-  bool show_objects = true;
-  PlayingMode playing_mode;
-  TableId last_object_locator = {};
-  TableId entity_selected;
-  EntityEditor entity_editor;
-  SelectionOption selection_option;
-  ImFont *main_font;
-  HelpMenu help_menu;
-  MainMenu main_menu;
-  OpenProject open_project;
+    Input inputs;
+    Camera camera;
+    Vector3 camera_velocity;
+    Scene scene;
+    Flashbacks flashbacks;
+    FlashbacksGui flashbacks_gui;
+    BoxdrawRenderer boxdraw;
+    int bheight = 0;
+    int cmdc = 0;
+    bool show_objects = true;
+    PlayingMode playing_mode;
+    TableId last_object_locator = {};
+    TableId entity_selected;
+    EntityEditor entity_editor;
+    SelectionOption selection_option;
+    ImFont *main_font;
+    HelpMenu help_menu;
+    MainMenu main_menu;
+    OpenProject open_project;
 
-  void init(); 
-  void input(const sapp_event* event);
-  void cleanup();
-  void frame();
+    void init();
+    void input(const sapp_event* event);
+    void cleanup();
+    void frame();
 };
 
 #endif // H_CATEDU_ENTRY

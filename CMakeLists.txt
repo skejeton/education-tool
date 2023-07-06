@@ -18,9 +18,13 @@ endif()
 
 message(${CATEDU_SRC_FILES})
 
-add_executable(catedu ${CATEDU_SRC_FILES})
+add_executable(${PROJECT_NAME} ${CATEDU_SRC_FILES} src/easy_gui.cpp src/easy_gui.hpp)
 
-set_property(TARGET catedu PROPERTY CXX_STANDARD 17)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
+
+if (WIN32)
+    target_link_libraries(${PROJECT_NAME} PUBLIC d3d11)
+endif()
 
 if (APPLE)
     find_library(QUARTZ_CORE QuartzCore)
@@ -30,5 +34,5 @@ if (APPLE)
     target_link_libraries(${PROJECT_NAME} PRIVATE ${COCOA_LIBRARY} ${METAL} ${METAL_KIT} ${QUARTZ_CORE})
 endif()
 
-target_include_directories(catedu PUBLIC lib/)
-target_include_directories(catedu PUBLIC lib/tau)
+target_include_directories(${PROJECT_NAME} PUBLIC lib/)
+target_include_directories(${PROJECT_NAME} PUBLIC lib/tau)

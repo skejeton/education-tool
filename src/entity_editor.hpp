@@ -10,19 +10,19 @@
 #include "vector"
 
 struct EntityEditor {
-  Flashbacks *flashbacks;
-  Entity *entity;
-  std::vector<FlashbacksDialogPrototype> prototypes;
+    Flashbacks *flashbacks;
+    Entity *entity;
+    std::vector<FlashbacksDialogPrototype> prototypes;
 
 
-  static EntityEditor init(Flashbacks* flashbacks) {
-    EntityEditor editor = {};
-    editor.flashbacks = flashbacks;
-    return editor;
-  }
-  void show();
-	void derive_from(Entity *entity);
-  void emplace();
+    static EntityEditor init(Flashbacks* flashbacks) {
+        EntityEditor editor = {};
+        editor.flashbacks = flashbacks;
+        return editor;
+    }
+    void show();
+    void derive_from(Entity *entity);
+    void emplace();
 };
 
 #endif

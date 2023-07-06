@@ -8,14 +8,14 @@
 #define H_POINTING_AT_RESOLVE_CATEDU
 
 struct PointingAtResolve {
-  Ray3 ray;
-  double dist;
-  int id;
+    Ray3 ray;
+    double dist;
+    int id;
 
-  static PointingAtResolve init(Ray3 ray);
+    static PointingAtResolve init(Ray3 ray);
 
-  void push_box(Box3 box, int binding_id);
-  int closest_id();
+    void push_box(Box3 box, int binding_id);
+    int closest_id();
 };
 
 #endif

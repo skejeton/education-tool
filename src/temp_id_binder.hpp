@@ -7,37 +7,37 @@
 
 template <class T>
 struct TempIdBinder {
-  T *items;
-  size_t items_count;
-  size_t items_cap;
+    T *items;
+    size_t items_count;
+    size_t items_cap;
 
-  static TempIdBinder init() {
-    return {};
-  }
-
-  int allocate(T value) {
-    if (items == nullptr) {
-      items_cap = 128;
-      items = (T*)realloc(items, items_cap * sizeof(T));
+    static TempIdBinder init() {
+        return {};
     }
 
-    if (items_count == items_cap) {
-      items_cap *= 2;
-      items = (T*)realloc(items, items_cap * sizeof(T));
+    int allocate(T value) {
+        if (items == nullptr) {
+            items_cap = 128;
+            items = (T*)realloc(items, items_cap * sizeof(T));
+        }
+
+        if (items_count == items_cap) {
+            items_cap *= 2;
+            items = (T*)realloc(items, items_cap * sizeof(T));
+        }
+
+        items[items_count++] = value;
+
+        return items_count-1;
     }
 
-    items[items_count++] = value;
+    T *get(int id) {
+        if (id < 0 || id >= items_count) {
+            return nullptr;
+        }
 
-    return items_count-1;
-  }
-
-  T *get(int id) {
-    if (id < 0 || id >= items_count) {
-      return nullptr;
+        return &items[id];
     }
-
-    return &items[id];
-  }
 };
 
 #endif

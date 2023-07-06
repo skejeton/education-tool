@@ -10,38 +10,38 @@
 #define SCENE_ENTITY_BUFFER_SIZE 128
 
 enum class ShapeType {
-  CHARACTER,
-  BUILDING,
-  TREE,
-  PAVEMENT
+    CHARACTER,
+    BUILDING,
+    TREE,
+    PAVEMENT
 };
 
 struct Shape {
-  ShapeType type;
-  // FIXME: For testing
-  Vector4 color;
-  int height;
+    ShapeType type;
+    // FIXME: For testing
+    Vector4 color;
+    int height;
 };
 
 enum EntityInteractionType {
-  STATIC,   // Buildings, Trees e.t.c.
-  CHARACTER // Interactible with dialogues.
+    STATIC,   // Buildings, Trees e.t.c.
+    CHARACTER // Interactible with dialogues.
 };
 
 struct Entity {
-  Vector3 position;
-  Shape shape;
-  EntityInteractionType interaction_type;
-  TableId dialog_id;
+    Vector3 position;
+    Shape shape;
+    EntityInteractionType interaction_type;
+    TableId dialog_id;
 };
 
 struct Scene {
-  Table<Entity> entities;
+    Table<Entity> entities;
 };
 
 struct SceneIteratorItem {
-  TableId id;
-  Entity *entity;
+    TableId id;
+    Entity *entity;
 };
 
 typedef TableIterator<Entity> SceneIterator;
