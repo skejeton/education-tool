@@ -326,15 +326,14 @@ static void show_ui_game_mode(Entry *entry)
 
     EasyGui gui = {};
 
-    gui.margin = 10;
+//    gui.margin = 10;
     gui.padding = 20;
 
     gui.begin({width, height});
     gui.begin_layout_cut(Layout::COLUMN, Side::RIGHT, 400);
     gui.stretch = true;
-    gui.button("TEST1");
-    gui.button("TEST2");
-    gui.button("TEST3");
+    entry->help_menu.show(&gui);
+    gui.label("hi");
     gui.stretch = false;
     gui.end_layout();
     gui.begin_layout(Layout::ROW);
@@ -356,7 +355,6 @@ static void show_ui_game_mode(Entry *entry)
         }
     }
     gui.right_to_left = true;
-    ImGui::SameLine(ImGui::GetWindowWidth()-100);
     if (gui.button("HELP")) {
         entry->help_menu.shown = !entry->help_menu.shown;
     }
@@ -364,12 +362,11 @@ static void show_ui_game_mode(Entry *entry)
     gui.end_layout();
     gui.end();
 
-    /*
     switch (entry->playing_mode) {
         case PLAYING_MODE_PLAY:
             break;
         case PLAYING_MODE_BUILD:
-            put_information_window({ entry->selection_option });
+//            put_information_window({ entry->selection_option });
             if (entry->entity_selected.id != 0) {
                 entry->entity_editor.show();
             }
@@ -377,9 +374,6 @@ static void show_ui_game_mode(Entry *entry)
         default:
             break;
     }
-
-    entry->help_menu.show();
-     */
 
     ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
     draw_list->AddCircle({ width / 2.0f, height / 2.0f }, 4, 0xFFFFFFFF);

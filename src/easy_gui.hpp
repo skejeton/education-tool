@@ -41,6 +41,8 @@ struct EasyGui {
     void end_layout();
 
     bool button(const char *text);
+    void label(const char *text, ...);
+    void background();
 };
 
 #endif // H_CATEDU_EASY_GUI
