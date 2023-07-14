@@ -14,35 +14,38 @@ void deallocate_prototype(FlashbacksDialogPrototype *prototype) {
     free(prototype->answer);
 }
 
-void EntityEditor::show() {
+void EntityEditor::show(EasyGui *gui) {
     int i = 0;
     int delete_index = -1;
     int swap_index_first = -1;
     int swap_index_last = -1;
-    ImGui::SetNextWindowSize({640, 480});
-    ImGui::Begin("Entity Editor");
-    ImGui::SeparatorText("Dialogues");
+    gui->margin = 5;
+    gui->padding = 10;
+
+    gui->stretch = true;
     for (auto &dialog : this->prototypes) {
-        ImGui::PushID(i);
-        ImGui::InputTextMultiline("Description", dialog.text, MAX_LENGTH);
-        ImGui::InputText("Answer", dialog.answer, MAX_LENGTH);
-        if (ImGui::Button("Delete")) {
+        gui->push_id(i);
+        gui->input_text_multiline("Description", dialog.text, MAX_LENGTH);
+        gui->input_text("Answer", dialog.answer, MAX_LENGTH);
+        if (gui->button("Delete")) {
             delete_index = i;
         }
-        ImGui::SameLine();
-        ImGui::Checkbox("Numeric Guess", &dialog.numeric);
-        ImGui::SameLine();
-        if (ImGui::Button("^")) {
-            swap_index_first = i;
-            swap_index_last = i-1;
+        gui->begin_layout(Layout::ROW);
+        {
+            gui->stretch = false;
+            if (gui->button("^")) {
+                swap_index_first = i;
+                swap_index_last = i-1;
+            }
+            if (gui->button("v")) {
+                swap_index_first = i;
+                swap_index_last = i+1;
+            }
+            gui->checkbox("Numeric Guess", &dialog.numeric);
+            gui->stretch = true;
         }
-        ImGui::SameLine();
-        if (ImGui::Button("v")) {
-            swap_index_first = i;
-            swap_index_last = i+1;
-        }
-        ImGui::Separator();
-        ImGui::PopID();
+        gui->end_layout();
+        gui->pop_id();
         i++;
     }
 
@@ -57,10 +60,9 @@ void EntityEditor::show() {
         this->prototypes.erase(this->prototypes.begin()+delete_index);
     }
 
-    if (ImGui::Button("+")) {
+    if (gui->button("+")) {
         this->prototypes.push_back(allocate_prototype());
     }
-    ImGui::End();
 }
 
 void copy_string_safe_n(char *dest, const char *src, size_t max) {

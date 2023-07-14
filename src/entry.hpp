@@ -35,6 +35,11 @@ enum PlayingMode {
     PLAYING_MODE_MENU,
 };
 
+enum OpenMenu {
+    HELP,
+    DIALOG_EDITOR
+};
+
 enum class SelectionOption {
     ENTITY,
     BUILDING,
@@ -63,6 +68,7 @@ struct Entry {
     HelpMenu help_menu;
     MainMenu main_menu;
     OpenProject open_project;
+    OpenMenu menu;
 
     void init();
     void input(const sapp_event* event);

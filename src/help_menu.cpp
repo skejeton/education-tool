@@ -8,16 +8,23 @@ struct HelpEntry {
 };
 
 void show_document(EasyGui *gui, HelpEntry *entries, size_t entries_count) {
+    gui->padding = 0;
     for (size_t i = 0; i < entries_count; i++) {
         HelpEntry entry = entries[i];
         switch (entry.kind) {
             case 'h':
+                gui->margin = 5;
+                gui->font_scale = 1.2;
                 gui->label("%s", entry.text);
+                gui->font_scale = 1;
                 break;
             case 't':
             default:
+                gui->margin = 10;
                 // This is margin
+                ImGui::PushStyleColor(ImGuiCol_Text, 0x77FFFFFF);
                 gui->label("%s", entry.text);
+                ImGui::PopStyleColor();
                 break;
         }
     }
@@ -42,8 +49,5 @@ HelpEntry entries[] = {
 };
 
 void HelpMenu::show(EasyGui *gui) {
-    if (!this->shown) return;
-
     show_document(gui, entries, sizeof entries / sizeof entries[0]);
-    gui->background();
 }

@@ -6,6 +6,7 @@
 #define H_CATEDU_EASY_GUI
 
 #include "math.hpp"
+#include "imgui_tricks.hpp"
 #include <vector>
 
 struct Layout {
@@ -14,9 +15,11 @@ struct Layout {
         ROW
     } type;
 
+    bool push;
     Rect rect;
     float offset_l;
     float offset_r;
+    float secn_size;
 };
 
 enum Side {
@@ -27,9 +30,14 @@ enum Side {
 };
 
 struct EasyGui {
+    ImGuiTricks tricks;
     std::vector<Layout> layouts;
+    // Because we have to place each ImGUI element into a separate window, we need to make a counter for static
+    // elements like labels, so their ID's don't collide with each other.
+    int static_counter;
     float margin;
     float padding;
+    float font_scale;
     bool right_to_left;
     bool stretch;
 
@@ -41,8 +49,16 @@ struct EasyGui {
     void end_layout();
 
     bool button(const char *text);
+    void input_text_multiline(const char *name, char *buf, size_t max);
+    void input_text(const char *name, char *buf, size_t max);
+    void checkbox(const char *name, bool *value);
     void label(const char *text, ...);
-    void background();
+
+    void begin_window(const char *name);
+    void end_window();
+
+    void push_id(int id);
+    void pop_id();
 };
 
 #endif // H_CATEDU_EASY_GUI

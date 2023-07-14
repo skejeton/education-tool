@@ -8,6 +8,7 @@
 #include "flashbacks.hpp"
 #include "scene.hpp"
 #include "vector"
+#include "easy_gui.hpp"
 
 struct EntityEditor {
     Flashbacks *flashbacks;
@@ -20,7 +21,7 @@ struct EntityEditor {
         editor.flashbacks = flashbacks;
         return editor;
     }
-    void show();
+    void show(EasyGui *gui);
     void derive_from(Entity *entity);
     void emplace();
 };

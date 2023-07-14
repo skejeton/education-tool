@@ -7,23 +7,20 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 
-#define WIDGET(rect, name, code) do { \
-    Rect rect_internal = (rect); ImGui::GetStyle().WindowRounding = 0; \
-    ImGui::SetNextWindowPos({rect_internal.pos.x-2, rect_internal.pos.y-2}); \
-    ImGui::SetNextWindowSize({rect_internal.siz.x+4, rect_internal.siz.y+4}); \
-    ImGui::Begin(name, NULL, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus); \
+#define WIDGET(easy_gui, rect, name, code) do { \
+    EasyGui *eg_ptr__ = easy_gui;                                            \
+    eg_ptr__->tricks.begin_widget(rect, name);\
     { code } \
-    ImGui::End();            \
+    eg_ptr__->tricks.end_widget();                                           \
     } while(0)
 
-void push_layout(EasyGui *easy_gui, Layout::Type type, Rect rect) {
+void push_layout(EasyGui *easy_gui, Layout::Type type, Rect rect, bool push) {
     Layout layout = {};
     layout.type = type;
     layout.rect = rect;
+    layout.push = push;
 
     easy_gui->layouts.push_back(layout);
-
-//    ImGui::GetForegroundDrawList()->AddRect({rect.pos.x, rect.pos.y}, {rect.pos.x+rect.siz.x, rect.pos.y+rect.siz.y}, 0xFF0000FF, 0, 0, 5);
 }
 
 Layout *get_last_layout(EasyGui *easy_gui) {
@@ -48,6 +45,7 @@ Rect push_element(EasyGui *easy_gui, Vector2 size) {
             result.pos = {last_layout->rect.pos + Vector2{easy_gui->margin, last_layout->offset_l+easy_gui->margin}};
             result.siz = size;
             last_layout->offset_l += size.y+easy_gui->margin;
+            last_layout->secn_size = std::max(last_layout->secn_size, result.siz.x);
             break;
         case Layout::ROW:
             if (easy_gui->stretch) {
@@ -63,13 +61,34 @@ Rect push_element(EasyGui *easy_gui, Vector2 size) {
                 result.siz = size;
                 last_layout->offset_l += size.x+easy_gui->margin;
             }
+            last_layout->secn_size = std::max(last_layout->secn_size, result.siz.y);
             break;
     }
+
+//    ImGui::GetForegroundDrawList()->AddRect({result.pos.x, result.pos.y}, {result.pos.x+result.siz.x, result.pos.y+result.siz.y}, 0xFF5500FF, 0, 0, 1);
+
 
     return result;
 }
 
+Vector2 calc_layout_content_size(Layout *layout) {
+    float prim_size = layout->offset_l;
+    float secn_size = layout->secn_size;
+
+    if (layout->offset_r < 0) {
+        prim_size = layout->rect.siz.x;
+    }
+
+    switch (layout->type) {
+        case Layout::ROW:
+            return {prim_size, secn_size};
+        case Layout::COLUMN:
+            return {secn_size, prim_size};
+    }
+}
+
 void EasyGui::end() {
+    tricks.check_end();
     end_layout();
     assert(layouts.empty() && "Layout overflow");
     ImGui::PopStyleVar();
@@ -77,7 +96,9 @@ void EasyGui::end() {
 
 void EasyGui::begin(Vector2 window_size) {
     Rect rect = {0, 0, window_size.x, window_size.y };
-    push_layout(this, Layout::Type::COLUMN, rect);
+    push_layout(this, Layout::Type::COLUMN, rect, false);
+    this->static_counter = 0;
+    this->font_scale = 1;
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
 }
@@ -95,7 +116,6 @@ void EasyGui::begin_layout_cut(Layout::Type type, Side side, float size) {
             curr_rect.siz.y = prev_rect->siz.y;
             curr_rect.siz.x = size;
             break;
-
         case TOP:
         case BOTTOM:
             curr_rect.pos.x = prev_rect->pos.x;
@@ -125,28 +145,43 @@ void EasyGui::begin_layout_cut(Layout::Type type, Side side, float size) {
     }
 
 
-    push_layout(this, type, curr_rect);
+    push_layout(this, type, curr_rect, false);
 }
 
 void EasyGui::begin_layout(Layout::Type type) {
     Layout *last_layout = get_last_layout(this);
     assert(last_layout && "You need to call begin before begin_layout");
-    push_layout(this, type, last_layout->rect);
+
+    switch (last_layout->type) {
+        case Layout::COLUMN:
+            push_layout(this, type, {last_layout->rect.pos.x, last_layout->rect.pos.y+last_layout->offset_l, last_layout->rect.siz.x, 0}, true);
+            break;
+        case Layout::ROW:
+            push_layout(this, type, {last_layout->rect.pos.x+last_layout->offset_l, last_layout->rect.pos.y, 0, last_layout->rect.siz.y}, true);
+            break;
+    }
 }
 
 void EasyGui::end_layout() {
     assert(!layouts.empty() && "Layout underflow");
+    Layout last_layout = *get_last_layout(this);
     layouts.pop_back();
+    if (last_layout.push) {
+        push_element(this, calc_layout_content_size(&last_layout));
+    }
 }
 
 bool EasyGui::button(const char *text) {
     ImVec2 text_size = ImGui::CalcTextSize(text);
+    text_size.x *= font_scale;
+    text_size.y *= font_scale;
 
     Rect rect = push_element(this, Vector2{text_size.x, text_size.y});
 
 
     bool clicked = false;
-    WIDGET(rect, text, {
+    WIDGET(this, rect, text, {
+        ImGui::SetWindowFontScale(font_scale);
         ImGui::SetCursorScreenPos({rect.pos.x, rect.pos.y});
         clicked = ImGui::Button(text, {rect.siz.x, rect.siz.y});
     });
@@ -155,24 +190,94 @@ bool EasyGui::button(const char *text) {
 }
 
 void EasyGui::label(const char *text, ...) {
-    ImVec2 text_size = ImGui::CalcTextSize(text);
+    char buf[512];
+
+    va_list va;
+    Layout *last_layout = get_last_layout(this);
+
+    va_start(va, text);
+    vsnprintf(buf, 512, text, va);
+    va_end(va);
+
+    ImVec2 text_size = ImGui::CalcTextSize(buf);
+    text_size.x *= font_scale;
+    text_size.y *= font_scale;
+
+    // NOTE: Wrapping workaround
+    if (last_layout->type == Layout::COLUMN) {
+        float parent_width = last_layout->rect.siz.x;
+        float increment = text_size.y;
+        float width = text_size.x;
+
+        while (width > parent_width) {
+            text_size.y += increment;
+            width -= parent_width;
+        }
+    }
 
     Rect rect = push_element(this, Vector2{text_size.x, text_size.y});
 
-    va_list va;
-    va_start(va, text);
-    char str[512];
-    vsnprintf(str, 512, text, va);
-    va_end(va);
+    char id[32];
+    snprintf(id, 32, "LABEL%d", static_counter++);
 
-    ImGui::GetForegroundDrawList()->AddText({rect.pos.x, rect.pos.y}, ImGui::GetColorU32(ImGuiCol_Text), str);
+    WIDGET(this, rect, id, {
+        ImGui::SetWindowFontScale(font_scale);
+        ImGui::SetCursorScreenPos({rect.pos.x, rect.pos.y});
+        ImGui::TextWrapped("%s", buf);
+    });
+
+    static_counter++;
 }
 
-void EasyGui::background() {
-    Rect rect = get_last_layout(this)->rect;
+void EasyGui::input_text_multiline(const char *name, char *buf, size_t max) {
+    ImVec2 element_size = {300, 400};
 
-    ImGui::SetNextWindowPos({rect.pos.x-2, rect.pos.y-2});
-    ImGui::SetNextWindowSize({rect.siz.x+4, rect.siz.y+4});
-    ImGui::Begin("background", nullptr, ImGuiWindowFlags_NoDecoration  | ImGuiWindowFlags_NoBringToFrontOnFocus);
-    ImGui::End();
+    Rect rect = push_element(this, Vector2{element_size.x, element_size.y});
+
+    WIDGET(this, rect, name, {
+        ImGui::SetWindowFontScale(font_scale);
+        ImGui::SetCursorScreenPos({rect.pos.x, rect.pos.y});
+        ImGui::InputTextMultiline(name, buf, max, {rect.siz.x, rect.siz.y});
+    });
+}
+
+void EasyGui::input_text(const char *name, char *buf, size_t max) {
+    ImVec2 element_size = {100, ImGui::CalcTextSize(" ").y};
+
+    Rect rect = push_element(this, Vector2{element_size.x, element_size.y});
+
+    WIDGET(this, rect, name, {
+        ImGui::SetWindowFontScale(font_scale);
+        ImGui::SetCursorScreenPos({rect.pos.x, rect.pos.y});
+        ImGui::InputTextEx(name, "", buf, max, {rect.siz.x, rect.siz.y}, 0);
+    });
+}
+
+void EasyGui::checkbox(const char *name, bool *value) {
+    ImVec2 element_size = {300, ImGui::CalcTextSize(" ").y};
+
+    Rect rect = push_element(this, Vector2{element_size.x, element_size.y});
+
+    WIDGET(this, rect, name, {
+        ImGui::SetWindowFontScale(font_scale);
+        ImGui::SetCursorScreenPos({rect.pos.x, rect.pos.y});
+        ImGui::Checkbox(name, value);
+    });
+}
+
+void EasyGui::push_id(int id) {
+    tricks.push_id(id);
+}
+
+void EasyGui::pop_id() {
+    tricks.pop_id();
+}
+
+void EasyGui::begin_window(const char *name) {
+    Layout *last_layout = get_last_layout(this);
+    last_layout->rect = this->tricks.begin_window(last_layout->rect, name);
+}
+
+void EasyGui::end_window() {
+    this->tricks.end_widget();
 }

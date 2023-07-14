@@ -241,6 +241,11 @@ inline bool rect_vs_rect(Rect r1, Rect r2) {
 }
 
 
+inline Rect rect_from_min_max(Vector2 min, Vector2 max) {
+    return {min.x, min.y, max.x-min.x, max.y-min.y};
+}
+
+
 inline Vector2 rect_vs_rect_snap(Rect r, Rect along) {
     float x_left = r.pos.x + r.siz.x - along.pos.x;
     float y_up = r.pos.y + r.siz.y - along.pos.y;

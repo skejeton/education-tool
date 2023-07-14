@@ -8,7 +8,7 @@ if (APPLE)
     set(ADDITIONAL_FILES src/impl.m)
 endif()
 
-file(GLOB CATEDU_SRC_FILES "src/*.cpp" ${ADDITIONAL_FILES} lib/imgui/imgui.cpp lib/imgui/imgui_draw.cpp lib/imgui/imgui_demo.cpp lib/imgui/imgui_widgets.cpp lib/imgui/imgui_tables.cpp)
+file(GLOB CATEDU_SRC_FILES "src/*.cpp" "src/*/*.cpp" ${ADDITIONAL_FILES} lib/imgui/imgui.cpp lib/imgui/imgui_draw.cpp lib/imgui/imgui_demo.cpp lib/imgui/imgui_widgets.cpp lib/imgui/imgui_tables.cpp)
 
 if (RUN_TESTS EQUAL YES)
     add_compile_definitions(RUN_TESTS)

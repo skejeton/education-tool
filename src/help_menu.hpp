@@ -8,9 +8,6 @@
 #include "easy_gui.hpp"
 
 struct HelpMenu {
-    bool was_init;
-    bool shown;
-
     void show(EasyGui *gui);
 };
 

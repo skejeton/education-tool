@@ -59,7 +59,7 @@ static void write_open_save(Entry *entry)
 static void load_open_save(Entry *entry)
 {
     Project project = {};
-    load_project_entry(entry, &project);
+    load_entry_project(entry, &project);
     auto project_file = ProjectFile::init_from_path(entry->open_project.path.c_str());
     project.save(project_file);
     project_file.deinit();
@@ -326,17 +326,30 @@ static void show_ui_game_mode(Entry *entry)
 
     EasyGui gui = {};
 
-//    gui.margin = 10;
-    gui.padding = 20;
-
     gui.begin({width, height});
     gui.begin_layout_cut(Layout::COLUMN, Side::RIGHT, 400);
-    gui.stretch = true;
-    entry->help_menu.show(&gui);
-    gui.label("hi");
-    gui.stretch = false;
+    switch (entry->menu) {
+        case HELP:
+            gui.begin_window("Help");
+            entry->help_menu.show(&gui);
+            gui.end_window();
+            break;
+        case DIALOG_EDITOR:
+            if (entry->playing_mode == PLAYING_MODE_BUILD) {
+                gui.begin_window("Entity Editor");
+                if (entry->entity_selected.id != 0) {
+                    entry->entity_editor.show(&gui);
+                }
+                gui.end_window();
+            }
+            break;
+    }
     gui.end_layout();
     gui.begin_layout(Layout::ROW);
+    gui.margin = 10;
+    gui.padding = 20;
+    gui.stretch = false;
+
 
     if (gui.button("EXIT")) {
         set_mode(entry, PLAYING_MODE_MENU);
@@ -356,23 +369,14 @@ static void show_ui_game_mode(Entry *entry)
     }
     gui.right_to_left = true;
     if (gui.button("HELP")) {
-        entry->help_menu.shown = !entry->help_menu.shown;
+        entry->menu = OpenMenu::HELP;
     }
 
     gui.end_layout();
     gui.end();
 
-    switch (entry->playing_mode) {
-        case PLAYING_MODE_PLAY:
-            break;
-        case PLAYING_MODE_BUILD:
-//            put_information_window({ entry->selection_option });
-            if (entry->entity_selected.id != 0) {
-                entry->entity_editor.show();
-            }
-            break;
-        default:
-            break;
+    if (entry->playing_mode == PLAYING_MODE_PLAY) {
+        entry->flashbacks_gui.show();
     }
 
     ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
@@ -505,6 +509,7 @@ static void handle_game_mode(Entry *entry)
                 if (entry->inputs.mouse_states[0].released) {
                     save_entity_in_editor(entry);
                     entry->entity_selected = entity_id;
+                    entry->menu = OpenMenu::DIALOG_EDITOR;
                     entry->entity_editor.derive_from(entity);
                 } else if (entry->inputs.mouse_states[1].pressed) {
                     if (entry->entity_selected.id == id) {
