@@ -70,6 +70,7 @@ struct Entry {
     MainMenu main_menu;
     OpenProject open_project;
     OpenMenu menu;
+    Rpc rpc;
     EnetChat chat;
 
     void init();

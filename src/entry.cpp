@@ -343,27 +343,33 @@ static void show_ui_game_mode(Entry *entry)
             gui.padding = 5;
             gui.margin = 5;
             gui.stretch = true;
-            if (entry->chat.connected) {
+            if (entry->rpc.connected) {
                 gui.input_text("Text", chat_buf, 512);
                 if (gui.button("Send")) {
-                    entry->chat.broadcast(chat_buf);
+                    entry->chat.broadcast(&entry->rpc, chat_buf);
                     chat_buf[0] = 0; // Empty message buffer
                 }
-                for (const auto& message : entry->chat.log) {
+                for (const auto& message : entry->chat.messages) {
                     gui.label(message.c_str());
                 }
             } else {
                 gui.label("Chat is disconnected");
 
                 if (gui.button("Host")) {
-                    (void)EnetChat::host(&entry->chat);
+                    ENetAddress addr;
+                    addr.host = ENET_HOST_ANY;
+                    addr.port = ENET_CHAT_PORT;
+                    enet_address_set_host(&addr, "127.0.0.1");
+                    (void)Rpc::host(&entry->rpc, addr);
+                    entry->chat.connect(&entry->rpc);
                 }
                 if (gui.button("Connect")) {
                     ENetAddress addr;
                     addr.host = ENET_HOST_ANY;
                     addr.port = ENET_CHAT_PORT;
                     enet_address_set_host(&addr, "127.0.0.1");
-                    (void)EnetChat::connect(&entry->chat, addr);
+                    (void)Rpc::connect(&entry->rpc, addr);
+                    entry->chat.connect(&entry->rpc);
                 }
             }
 
@@ -592,7 +598,7 @@ void Entry::frame(void) {
     const int width = sapp_width();
     const int height = sapp_height();
 
-    this->chat.service();
+    this->rpc.service();
     handle_input(this, &inputs);
     update_mode(this);
     simgui_new_frame({ width, height, sapp_frame_duration(), 1 });
