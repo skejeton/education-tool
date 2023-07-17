@@ -26,8 +26,8 @@
 #include <memory>
 #include <stdio.h>
 #include "main_menu.hpp"
-
 #include "entity_editor.hpp"
+#include "enet_chat.hpp"
 
 enum PlayingMode {
     PLAYING_MODE_BUILD,
@@ -37,7 +37,8 @@ enum PlayingMode {
 
 enum OpenMenu {
     HELP,
-    DIALOG_EDITOR
+    DIALOG_EDITOR,
+    CHAT
 };
 
 enum class SelectionOption {
@@ -69,6 +70,7 @@ struct Entry {
     MainMenu main_menu;
     OpenProject open_project;
     OpenMenu menu;
+    EnetChat chat;
 
     void init();
     void input(const sapp_event* event);

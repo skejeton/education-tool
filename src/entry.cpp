@@ -11,6 +11,7 @@
 #include <filesystem>
 #include "project.hpp"
 #include "easy_gui.hpp"
+#include "enet/include/enet/enet.h"
 
 static void save_entity_in_editor(Entry *entry)
 {
@@ -209,6 +210,8 @@ void Entry::init(void) {
     camera.move(10, 10, 10);
 
     this->entity_editor = EntityEditor::init(&flashbacks);
+
+    enet_initialize();
 }
 
 struct InformationWindowData {
@@ -325,6 +328,7 @@ static void show_ui_game_mode(Entry *entry)
 
 
     EasyGui gui = {};
+    static char chat_buf[512];
 
     gui.begin({width, height});
     gui.begin_layout_cut(Layout::COLUMN, Side::RIGHT, 400);
@@ -332,6 +336,37 @@ static void show_ui_game_mode(Entry *entry)
         case HELP:
             gui.begin_window("Help");
             entry->help_menu.show(&gui);
+            gui.end_window();
+            break;
+        case CHAT:
+            gui.begin_window("Chat");
+            gui.padding = 5;
+            gui.margin = 5;
+            gui.stretch = true;
+            if (entry->chat.connected) {
+                gui.input_text("Text", chat_buf, 512);
+                if (gui.button("Send")) {
+                    entry->chat.broadcast(chat_buf);
+                    chat_buf[0] = 0; // Empty message buffer
+                }
+                for (const auto& message : entry->chat.log) {
+                    gui.label(message.c_str());
+                }
+            } else {
+                gui.label("Chat is disconnected");
+
+                if (gui.button("Host")) {
+                    (void)EnetChat::host(&entry->chat);
+                }
+                if (gui.button("Connect")) {
+                    ENetAddress addr;
+                    addr.host = ENET_HOST_ANY;
+                    addr.port = ENET_CHAT_PORT;
+                    enet_address_set_host(&addr, "127.0.0.1");
+                    (void)EnetChat::connect(&entry->chat, addr);
+                }
+            }
+
             gui.end_window();
             break;
         case DIALOG_EDITOR:
@@ -370,6 +405,9 @@ static void show_ui_game_mode(Entry *entry)
     gui.right_to_left = true;
     if (gui.button("HELP")) {
         entry->menu = OpenMenu::HELP;
+    }
+    if (gui.button("CHAT")) {
+        entry->menu = OpenMenu::CHAT;
     }
 
     gui.end_layout();
@@ -554,6 +592,7 @@ void Entry::frame(void) {
     const int width = sapp_width();
     const int height = sapp_height();
 
+    this->chat.service();
     handle_input(this, &inputs);
     update_mode(this);
     simgui_new_frame({ width, height, sapp_frame_duration(), 1 });
@@ -578,6 +617,7 @@ void Entry::cleanup(void) {
     boxdraw_destroy(&boxdraw);
     simgui_shutdown();
     sg_shutdown();
+    enet_deinitialize();
 }
 
 

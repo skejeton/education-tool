@@ -13,7 +13,7 @@ static Rect begin_general_window(ImGuiTricks *tricks, Rect rect, const char *nam
     if (!tricks->id_stack.empty()) {
         snprintf(id, 512, "%s##tricks%d", name, tricks->id_stack[0]);
     } else {
-        snprintf(id, 512, "%s##tricks", name);
+        snprintf(id, 512, "%s##tricks ", name);
     }
 
     ImGui::GetStyle().WindowRounding = 0;
