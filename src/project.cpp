@@ -60,6 +60,9 @@ void ProjectFile::deinit()
 Project Project::load(ProjectFile f)
 {
     FileBuffer buf = f.read_project_data();
+    if (buf.size == 0) {
+        return {};
+    }
 
     BinaryFormat format = BinaryFormat::begin_read(buf.data, buf.size);
 

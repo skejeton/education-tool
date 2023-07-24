@@ -17,16 +17,41 @@ struct Vector2 {
     };
 };
 
-
-inline Vector2 operator+(Vector2 a, Vector2 b) {
-    return a = {a.x+b.x, a.y+b.y};
+inline Vector2 operator-(Vector2 a) {
+    return {-a.x, -a.y};
 }
 
+inline Vector2 operator+(Vector2 a, Vector2 b) {
+    return {a.x+b.x, a.y+b.y};
+}
 
 inline Vector2 operator+=(Vector2 &a, Vector2 b) {
     return a = {a.x+b.x, a.y+b.y};
 }
 
+inline Vector2 operator-(Vector2 a, Vector2 b) {
+    return {a.x-b.x, a.y-b.y};
+}
+
+inline Vector2 operator-=(Vector2 &a, Vector2 b) {
+    return a = {a.x-b.x, a.y-b.y};
+}
+
+inline Vector2 operator*(Vector2 a, Vector2 b) {
+    return {a.x*b.x, a.y*b.y};
+}
+
+inline Vector2 operator*=(Vector2 &a, Vector2 b) {
+    return a = {a.x*b.x, a.y*b.y};
+}
+
+inline Vector2 operator/(Vector2 a, Vector2 b) {
+    return {a.x/b.x, a.y/b.y};
+}
+
+inline Vector2 operator/=(Vector2 &a, Vector2 b) {
+    return a = {a.x/b.x, a.y/b.y};
+}
 
 struct Vector3 {
     union {
@@ -58,6 +83,7 @@ struct Box3 {
     Vector3 min;
     Vector3 max;
 };
+
 
 struct Rect {
     Vector2 pos;
@@ -274,7 +300,8 @@ inline Vector2 rect_vs_rect_snap(Rect r, Rect along) {
 }
 
 
-inline bool ray3_vs_box3(Ray3 r, Box3 b, float max_distance, float *distance) {
+inline bool ray3_vs_box3(Ray3 r, Box3 b, float max_distance, float *distance)
+{
     r.direction = vector3_normalize(r.direction);
     Vector3 dirfrac;
     dirfrac.x = 1.0f / r.direction.x;
@@ -303,6 +330,10 @@ inline bool ray3_vs_box3(Ray3 r, Box3 b, float max_distance, float *distance) {
     *distance = tmin;
 
     return true;
+}
+
+inline bool ray3_vs_box3_side(Ray3 r, Box3 b) {
+
 }
 
 inline bool ray3_vs_horizontal_plane(Ray3 r, float y, float *t)

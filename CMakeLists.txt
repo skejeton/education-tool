@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 3.20.0)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 
 project(catedu)
 
@@ -8,7 +10,7 @@ if (APPLE)
     set(ADDITIONAL_FILES src/impl.m)
 endif()
 
-file(GLOB CATEDU_SRC_FILES "src/*.cpp" "src/*/*.cpp" ${ADDITIONAL_FILES} "lib/enet/*.c" lib/imgui/imgui.cpp lib/imgui/imgui_draw.cpp lib/imgui/imgui_demo.cpp lib/imgui/imgui_widgets.cpp lib/imgui/imgui_tables.cpp)
+file(GLOB CATEDU_SRC_FILES "src/*.cpp" "src/*/*.cpp" ${ADDITIONAL_FILES} "lib/lib-enet/*.c" lib/imgui/imgui.cpp lib/imgui/imgui_draw.cpp lib/imgui/imgui_demo.cpp lib/imgui/imgui_widgets.cpp lib/imgui/imgui_tables.cpp)
 
 if (RUN_TESTS EQUAL YES)
     add_compile_definitions(RUN_TESTS)
@@ -18,7 +20,7 @@ endif()
 
 message(${CATEDU_SRC_FILES})
 
-add_executable(${PROJECT_NAME} ${CATEDU_SRC_FILES} src/easy_gui.cpp src/easy_gui.hpp src/enet_chat.hpp)
+add_executable(${PROJECT_NAME} ${CATEDU_SRC_FILES})
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
@@ -36,4 +38,4 @@ endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC lib/)
 target_include_directories(${PROJECT_NAME} PUBLIC lib/tau)
-target_include_directories(${PROJECT_NAME} PUBLIC lib/enet/include)
+target_include_directories(${PROJECT_NAME} PUBLIC lib/lib-enet/include)

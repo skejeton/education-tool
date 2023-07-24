@@ -10,6 +10,6 @@
 [submodule "lib/tau"]
 	path = lib/tau
 	url = https://github.com/jasmcaus/tau/
-[submodule "lib/enet"]
-	path = lib/enet
+[submodule "lib/lib-enet"]
+	path = lib/lib-enet
 	url = https://github.com/lsalzman/enet

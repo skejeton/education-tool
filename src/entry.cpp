@@ -11,7 +11,7 @@
 #include <filesystem>
 #include "project.hpp"
 #include "easy_gui.hpp"
-#include "enet/include/enet/enet.h"
+#include "enet/enet.h"
 
 static void save_entity_in_editor(Entry *entry)
 {
@@ -20,50 +20,15 @@ static void save_entity_in_editor(Entry *entry)
 
 static void set_mode(Entry *entry, PlayingMode mode)
 {
-    entry->playing_mode = mode;
-
-    switch (mode) {
-        case PLAYING_MODE_MENU:
-            entry->open_project.is_open = false;
-            entry->main_menu = MainMenu::init(std::filesystem::current_path() / "user");
-            break;
-        case PLAYING_MODE_PLAY:
-            entry->flashbacks.backlog = {};
-            entry->camera_velocity = {0, 0, 0};
-            break;
-        case PLAYING_MODE_BUILD:
-            break;
+    if (mode == PLAYING_MODE_MENU) {
+        entry->env.playing_mode = mode;
+        entry->nc.disconnect();
+        entry->open_project.is_open = false;
+        entry->main_menu = MainMenu::init(std::filesystem::current_path() / "user");
+        return;
     }
-}
 
-static void load_entry_project(Entry *entry, Project *project)
-{
-    entry->scene = std::move(project->scene);
-    entry->flashbacks = std::move(project->flashbacks);
-}
-
-static void load_project_entry(Entry *entry, Project *project)
-{
-    project->scene = std::move(entry->scene);
-    project->flashbacks = std::move(entry->flashbacks);
-}
-
-static void write_open_save(Entry *entry)
-{
-    Project project = {};
-    load_project_entry(entry, &project);
-    auto project_file = ProjectFile::init_from_path(entry->open_project.path.c_str());
-    project.save(project_file);
-    project_file.deinit();
-}
-
-static void load_open_save(Entry *entry)
-{
-    Project project = {};
-    load_entry_project(entry, &project);
-    auto project_file = ProjectFile::init_from_path(entry->open_project.path.c_str());
-    project.save(project_file);
-    project_file.deinit();
+    entry->nc.set_playing_mode(mode);
 }
 
 static void handle_game_mode_input(Entry *entry, Input *inputs)
@@ -76,6 +41,9 @@ static void handle_game_mode_input(Entry *entry, Input *inputs)
         set_mode(entry, PLAYING_MODE_PLAY);
     }
 
+
+    // FIXME: Save/Load singleplayer
+#if 0
     if (inputs->key_states[SAPP_KEYCODE_F2].pressed) {
         load_open_save(entry);
     }
@@ -84,6 +52,7 @@ static void handle_game_mode_input(Entry *entry, Input *inputs)
         save_entity_in_editor(entry);
         write_open_save(entry);
     }
+#endif
 
     if (inputs->key_states[SAPP_KEYCODE_X].pressed) {
         entry->show_objects = !entry->show_objects;
@@ -99,7 +68,9 @@ static bool is_game_mode(PlayingMode playing_mode)
 
 static void handle_in_game_input(Entry *entry, Input *inputs)
 {
-    switch (entry->playing_mode) {
+    /* FIXME: player handling */
+#if 0
+    switch (entry->env.playing_mode) {
         case PLAYING_MODE_PLAY:
             if (inputs->key_states[SAPP_KEYCODE_SPACE].pressed && entry->camera.position.y < 2.1) {
                 entry->camera_velocity.y = 10;
@@ -113,12 +84,12 @@ static void handle_in_game_input(Entry *entry, Input *inputs)
             // Not an in-game mode.
             break;
     }
-
+#endif
 }
 
 
 static void handle_input(Entry *entry, Input *inputs) {
-    if (is_game_mode(entry->playing_mode)) {
+    if (is_game_mode(entry->env.playing_mode)) {
         handle_game_mode_input(entry, inputs);
     }
 
@@ -129,6 +100,8 @@ static void handle_input(Entry *entry, Input *inputs) {
 
 
 void check_collisions(Entry *entry) {
+    /* FIXME: PLAYER */
+#if 0
     Rect camera_rect = {{entry->camera.position.x-1, entry->camera.position.z-1}, {2, 2}};
     Vector2 snap = {0, 0};
 
@@ -147,6 +120,7 @@ void check_collisions(Entry *entry) {
 
     entry->camera.position.x += snap.x;
     entry->camera.position.z += snap.y;
+#endif
 }
 
 static void set_imgui_rounding(float rounding) {
@@ -186,7 +160,7 @@ void Entry::init(void) {
 
     set_mode(this, PLAYING_MODE_MENU);
 
-    flashbacks_gui = FlashbacksGui::create(&flashbacks);
+    flashbacks_gui = FlashbacksGui::create(&env.flashbacks);
 
     // setup sokol-gfx, sokol-time and sokol-imgui
     sg_desc desc = {};
@@ -206,10 +180,7 @@ void Entry::init(void) {
 
     boxdraw = boxdraw_create();
 
-    camera = Camera::init(45);
-    camera.move(10, 10, 10);
-
-    this->entity_editor = EntityEditor::init(&flashbacks);
+    this->entity_editor = EntityEditor::init(&env.flashbacks);
 
     enet_initialize();
 }
@@ -233,6 +204,7 @@ const char* selection_option_name(SelectionOption selection) {
     }
 }
 
+#if 0
 static Entity generate_entity_from_type(SelectionOption selection, Vector3 position, int height)
 {
     Entity ent = {};
@@ -261,6 +233,7 @@ static Entity generate_entity_from_type(SelectionOption selection, Vector3 posit
     ent.shape.color = {1.0, 1.0, 1.0, 1.0};
     return ent;
 }
+#endif
 
 void put_information_window(InformationWindowData data) {
     const int width = sapp_width();
@@ -328,63 +301,31 @@ static void show_ui_game_mode(Entry *entry)
 
 
     EasyGui gui = {};
-    static char chat_buf[512];
 
     gui.begin({width, height});
     gui.begin_layout_cut(Layout::COLUMN, Side::RIGHT, 400);
     switch (entry->menu) {
-        case HELP:
-            gui.begin_window("Help");
-            entry->help_menu.show(&gui);
-            gui.end_window();
-            break;
-        case CHAT:
-            gui.begin_window("Chat");
-            gui.padding = 5;
-            gui.margin = 5;
-            gui.stretch = true;
-            if (entry->rpc.connected) {
-                gui.input_text("Text", chat_buf, 512);
-                if (gui.button("Send")) {
-                    entry->chat.broadcast(&entry->rpc, chat_buf);
-                    chat_buf[0] = 0; // Empty message buffer
-                }
-                for (const auto& message : entry->chat.messages) {
-                    gui.label(message.c_str());
-                }
-            } else {
-                gui.label("Chat is disconnected");
+    case HELP:
+        gui.begin_window("Help");
+        entry->help_menu.show(&gui);
+        TableIterator iter = TableIterator<Player>::init(&entry->env.player_pool.players);
+        for (;iter.going(); iter.next()) {
+            gui.label("%zu/%zu", iter.id.id, iter.id.generation);
+        }
 
-                if (gui.button("Host")) {
-                    ENetAddress addr;
-                    addr.host = ENET_HOST_ANY;
-                    addr.port = ENET_CHAT_PORT;
-                    enet_address_set_host(&addr, "127.0.0.1");
-                    (void)Rpc::host(&entry->rpc, addr);
-                    entry->chat.connect(&entry->rpc);
-                }
-                if (gui.button("Connect")) {
-                    ENetAddress addr;
-                    addr.host = ENET_HOST_ANY;
-                    addr.port = ENET_CHAT_PORT;
-                    enet_address_set_host(&addr, "127.0.0.1");
-                    (void)Rpc::connect(&entry->rpc, addr);
-                    entry->chat.connect(&entry->rpc);
-                }
+        gui.end_window();
+        break;
+    case DIALOG_EDITOR:
+        if (entry->env.playing_mode == PLAYING_MODE_BUILD) {
+            gui.begin_window("Entity Editor");
+            if (entry->entity_selected.id != 0) {
+                entry->entity_editor.show(&gui);
             }
-
             gui.end_window();
-            break;
-        case DIALOG_EDITOR:
-            if (entry->playing_mode == PLAYING_MODE_BUILD) {
-                gui.begin_window("Entity Editor");
-                if (entry->entity_selected.id != 0) {
-                    entry->entity_editor.show(&gui);
-                }
-                gui.end_window();
-            }
-            break;
+        }
+        break;
     }
+
     gui.end_layout();
     gui.begin_layout(Layout::ROW);
     gui.margin = 10;
@@ -395,7 +336,7 @@ static void show_ui_game_mode(Entry *entry)
     if (gui.button("EXIT")) {
         set_mode(entry, PLAYING_MODE_MENU);
     }
-    if (entry->playing_mode == PLAYING_MODE_BUILD) {
+    if (entry->env.playing_mode == PLAYING_MODE_BUILD) {
         if (gui.button("PLAY")) {
             save_entity_in_editor(entry);
             set_mode(entry, PLAYING_MODE_PLAY);
@@ -412,14 +353,11 @@ static void show_ui_game_mode(Entry *entry)
     if (gui.button("HELP")) {
         entry->menu = OpenMenu::HELP;
     }
-    if (gui.button("CHAT")) {
-        entry->menu = OpenMenu::CHAT;
-    }
 
     gui.end_layout();
     gui.end();
 
-    if (entry->playing_mode == PLAYING_MODE_PLAY) {
+    if (entry->env.playing_mode == PLAYING_MODE_PLAY) {
         entry->flashbacks_gui.show();
     }
 
@@ -437,30 +375,35 @@ static void show_ui(Entry *entry)
 {
     ImGui::PushFont(entry->main_font);
 
-    if (is_game_mode(entry->playing_mode)) {
+    if (is_game_mode(entry->env.playing_mode)) {
         show_ui_game_mode(entry);
-    } else if (entry->playing_mode == PLAYING_MODE_MENU) {
+    } else if (entry->env.playing_mode == PLAYING_MODE_MENU) {
         draw_background(0xFFFFFFFF);
-        entry->main_menu.show(&entry->open_project);
-        if (entry->open_project.is_open) {
-            load_open_save(entry);
+
+        if (entry->main_menu.show(&entry->open_project)) {
+            entry->dialog_queue.push("Playing", DialogType::Info);
+            entry->nc = Netcode::connect(&entry->env, entry->open_project);
             set_mode(entry, PLAYING_MODE_BUILD);
         }
     }
 
+    entry->dialog_queue.show();
+
     ImGui::PopFont();
 }
 
-
 static void handle_game_mode(Entry *entry)
 {
-    const int width = sapp_width();
-    const int height = sapp_height();
+    // const int width = sapp_width();
+    // const int height = sapp_height();
 
+    // FIXME: Player handling
+#if 0
     entry->camera.set_aspect((float)width / height);
     if (entry->camera.position.y < 0.2) {
         entry->camera.position.y = 0.2;
     }
+#endif
 
     entry->selection_option = input_selection_option(entry->inputs, entry->selection_option);
     entry->bheight += entry->inputs.mouse_wheel;
@@ -468,7 +411,8 @@ static void handle_game_mode(Entry *entry)
     if (entry->bheight < 1) entry->bheight = 1;
     if (entry->bheight > 9) entry->bheight = 9;
 
-    Matrix4 view_projection = entry->camera.vp;
+#if 0
+    Matrix4 view_projection = entry-`>camera.vp;
 
     // Draw Ground
     Box3 floor = box3_extrude_from_point({ 0, 0, 0 }, { 5000, 0.05, 5000 });
@@ -477,7 +421,7 @@ static void handle_game_mode(Entry *entry)
     auto pointing_at = PointingAtResolve::init(entry->camera.ray());
     auto pointing_at_bindings = TempIdBinder<TableId>::init();
 
-    if (entry->playing_mode == PLAYING_MODE_BUILD) {
+    if (entry->env.playing_mode == PLAYING_MODE_BUILD) {
         PlacementGrid grid = PlacementGrid::init(entry->camera.position.x, entry->camera.position.z);
 
         for (
@@ -513,11 +457,11 @@ static void handle_game_mode(Entry *entry)
     }
 
     for (
-            SceneIterator iterator = scene_iterator_begin(&entry->scene);
+            SceneIterator iterator = scene_iterator_begin(&entry->env.scene);
             scene_iterator_going(&iterator);
             scene_iterator_next(&iterator))
     {
-        Entity* entity = scene_get_entity(&entry->scene, iterator.id);
+        Entity* entity = scene_get_entity(&entry->env.scene, iterator.id);
         bool selected = false, hovered = false;
 
         if (iterator.id.id == entry->last_object_locator.id) {
@@ -544,12 +488,12 @@ static void handle_game_mode(Entry *entry)
         if (id >= 0) {
             TableId entity_id = entry->last_object_locator;
             Entity *entity = scene_get_entity(&entry->scene, entity_id);
-            if (entry->playing_mode == PLAYING_MODE_PLAY) {
+            if (entry->env.playing_mode == PLAYING_MODE_PLAY) {
                 if (entry->inputs.mouse_states[0].released) {
                     sapp_lock_mouse(false);
                     entry->flashbacks_gui.begin_sequence(entity->dialog_id);
                 }
-            } else if (entry->playing_mode == PLAYING_MODE_BUILD) {
+            } else if (entry->env.playing_mode == PLAYING_MODE_BUILD) {
                 if (entry->inputs.mouse_states[0].released) {
                     save_entity_in_editor(entry);
                     entry->entity_selected = entity_id;
@@ -558,7 +502,7 @@ static void handle_game_mode(Entry *entry)
                 } else if (entry->inputs.mouse_states[1].pressed) {
                     if (entry->entity_selected.id == id) {
                         entry->entity_selected.id = 0;
-                        entry->entity_editor = EntityEditor::init(&entry->flashbacks);
+                        entry->entity_editor = EntityEditor::init(&entry->env.flashbacks);
                     }
 
                     scene_remove_entity(&entry->scene, entity_id);
@@ -569,12 +513,14 @@ static void handle_game_mode(Entry *entry)
 
     entry->cmdc = entry->boxdraw.commands_count;
     boxdraw_flush(&entry->boxdraw, view_projection);
+#endif
 }
 
 void update_mode(Entry *entry) {
-    switch (entry->playing_mode) {
+    switch (entry->env.playing_mode) {
         case PLAYING_MODE_PLAY: {
             handle_game_mode(entry);
+#if 0
             entry->camera_velocity.y -= 20*sapp_frame_duration();
             if (entry->camera_velocity.y < -40) {
                 entry->camera_velocity.y = -40;
@@ -585,6 +531,7 @@ void update_mode(Entry *entry) {
                 entry->camera.position.y = 2;
             }
             check_collisions(entry);
+#endif
         } break;
         case PLAYING_MODE_BUILD:
             handle_game_mode(entry);
@@ -598,7 +545,7 @@ void Entry::frame(void) {
     const int width = sapp_width();
     const int height = sapp_height();
 
-    this->rpc.service();
+    this->nc.service();
     handle_input(this, &inputs);
     update_mode(this);
     simgui_new_frame({ width, height, sapp_frame_duration(), 1 });
@@ -633,7 +580,7 @@ void Entry::input(const sapp_event* event) {
             sapp_lock_mouse(false);
         }
         if (!sapp_mouse_locked() && event->type == SAPP_EVENTTYPE_MOUSE_UP && event->mouse_button == 0) {
-            if (is_game_mode(this->playing_mode)) {
+            if (is_game_mode(this->env.playing_mode)) {
                 sapp_lock_mouse(true);
             }
         } else {

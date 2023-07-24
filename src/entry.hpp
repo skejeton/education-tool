@@ -27,18 +27,15 @@
 #include <stdio.h>
 #include "main_menu.hpp"
 #include "entity_editor.hpp"
-#include "enet_chat.hpp"
-
-enum PlayingMode {
-    PLAYING_MODE_BUILD,
-    PLAYING_MODE_PLAY,
-    PLAYING_MODE_MENU,
-};
+#include "rpc.hpp"
+#include "dialog.hpp"
+#include "player.hpp"
+#include "environment.hpp"
+#include "netcode.hpp"
 
 enum OpenMenu {
     HELP,
-    DIALOG_EDITOR,
-    CHAT
+    DIALOG_EDITOR
 };
 
 enum class SelectionOption {
@@ -51,16 +48,14 @@ enum class SelectionOption {
 
 struct Entry {
     Input inputs;
-    Camera camera;
-    Vector3 camera_velocity;
-    Scene scene;
-    Flashbacks flashbacks;
+    Environment env;
+    Netcode nc;
+
     FlashbacksGui flashbacks_gui;
     BoxdrawRenderer boxdraw;
     int bheight = 0;
     int cmdc = 0;
     bool show_objects = true;
-    PlayingMode playing_mode;
     TableId last_object_locator = {};
     TableId entity_selected;
     EntityEditor entity_editor;
@@ -70,8 +65,7 @@ struct Entry {
     MainMenu main_menu;
     OpenProject open_project;
     OpenMenu menu;
-    Rpc rpc;
-    EnetChat chat;
+    DialogQueue dialog_queue;
 
     void init();
     void input(const sapp_event* event);

@@ -1,6 +1,10 @@
--Ilib
--Ilib/tau
+-I
+lib
+-I
+lib/tau
+-I
+lib/lib-enet/include
 -Wall
-
 -Wno-missing-braces
 -Werror
+-std=c++17

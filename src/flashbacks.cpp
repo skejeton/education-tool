@@ -131,41 +131,41 @@ FlashbacksEvent show_sequence(FlashbacksGui *gui) {
 
         if (dialog->answer) {
             switch (gui->answer_mode) {
-                case FlashbacksGui::AnswerMode::UNKNOWN:
-                    if (dialog->numeric) {
-                        if (ImGui::Button("Guess")) {
-                            if (compare_numeric_answer_equal(gui->answer, dialog->answer))  {
-                                gui->flashbacks->touch(gui->sequence_current, FlashbacksDialogChoice::CORRECT);
-                                gui->answer_mode = FlashbacksGui::AnswerMode::CHOSE_ANSWER;
-                            } else {
-                                gui->flashbacks->touch(gui->sequence_current, FlashbacksDialogChoice::WRONG);
-                                gui->answer_mode = FlashbacksGui::AnswerMode::CHOSE_ANSWER;
-                            }
+            case FlashbacksGui::AnswerMode::UNKNOWN:
+                if (dialog->numeric) {
+                    if (ImGui::Button("Guess")) {
+                        if (compare_numeric_answer_equal(gui->answer, dialog->answer))  {
+                            gui->flashbacks->touch(gui->sequence_current, FlashbacksDialogChoice::CORRECT);
+                            gui->answer_mode = FlashbacksGui::AnswerMode::CHOSE_ANSWER;
+                        } else {
+                            gui->flashbacks->touch(gui->sequence_current, FlashbacksDialogChoice::WRONG);
+                            gui->answer_mode = FlashbacksGui::AnswerMode::CHOSE_ANSWER;
                         }
-                        ImGui::SameLine();
-                        ImGui::InputText("Answer", gui->answer, sizeof gui->answer);
-                    } else {
-                        if (ImGui::Button("Show Answer")) {
-                            gui->answer_mode = FlashbacksGui::AnswerMode::SEEN_ANSWER;
-                        }
-                    }
-                    break;
-                case FlashbacksGui::AnswerMode::SEEN_ANSWER:
-                    if (ImGui::Button("Guessed Wrong")) {
-                        gui->flashbacks->touch(gui->sequence_current, FlashbacksDialogChoice::WRONG);
-                        gui->answer_mode = FlashbacksGui::AnswerMode::CHOSE_ANSWER;
                     }
                     ImGui::SameLine();
-                    if (ImGui::Button("Guessed Correct")) {
-                        gui->flashbacks->touch(gui->sequence_current, FlashbacksDialogChoice::CORRECT);
-                        gui->answer_mode = FlashbacksGui::AnswerMode::CHOSE_ANSWER;
+                    ImGui::InputText("Answer", gui->answer, sizeof gui->answer);
+                } else {
+                    if (ImGui::Button("Show Answer")) {
+                        gui->answer_mode = FlashbacksGui::AnswerMode::SEEN_ANSWER;
                     }
-                    break;
-                case FlashbacksGui::AnswerMode::CHOSE_ANSWER:
-                    if (ImGui::Button("Next")) {
-                        gui->begin_sequence(dialog->next);
-                    }
-                    break;
+                }
+                break;
+            case FlashbacksGui::AnswerMode::SEEN_ANSWER:
+                if (ImGui::Button("Guessed Wrong")) {
+                    gui->flashbacks->touch(gui->sequence_current, FlashbacksDialogChoice::WRONG);
+                    gui->answer_mode = FlashbacksGui::AnswerMode::CHOSE_ANSWER;
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Guessed Correct")) {
+                    gui->flashbacks->touch(gui->sequence_current, FlashbacksDialogChoice::CORRECT);
+                    gui->answer_mode = FlashbacksGui::AnswerMode::CHOSE_ANSWER;
+                }
+                break;
+            case FlashbacksGui::AnswerMode::CHOSE_ANSWER:
+                if (ImGui::Button("Next")) {
+                    gui->begin_sequence(dialog->next);
+                }
+                break;
             }
         } else {
             if (ImGui::Button("Next")) {
@@ -202,52 +202,52 @@ FlashbacksEvent FlashbacksGui::show() {
     FlashbacksEvent event = FlashbacksEvent::NONE;
 
     switch (mode) {
-        case Mode::INACTIVE:
-            this->prev_mode = Mode::INACTIVE;
-            break;
-        case Mode::SEQUENCE:
-            event = show_sequence(this);
-            break;
-        case Mode::BACKLOG:
-            this->prev_mode = Mode::BACKLOG;
+    case Mode::INACTIVE:
+        this->prev_mode = Mode::INACTIVE;
+        break;
+    case Mode::SEQUENCE:
+        event = show_sequence(this);
+        break;
+    case Mode::BACKLOG:
+        this->prev_mode = Mode::BACKLOG;
 
-            ImGui::SetNextWindowPos({ (1024-400)/2.0f, (786-500)/2.0f });
-            ImGui::SetNextWindowSize({ 400, 500 });
-            ImGui::Begin("Backlog");
+        ImGui::SetNextWindowPos({ (1024-400)/2.0f, (786-500)/2.0f });
+        ImGui::SetNextWindowSize({ 400, 500 });
+        ImGui::Begin("Backlog");
+        {
+            if (ImGui::BeginTable("Backlog-Table", 2))
             {
-                if (ImGui::BeginTable("Backlog-Table", 2))
-                {
-                    ImGui::TableSetupColumn("c1", ImGuiTableColumnFlags_WidthStretch, 1);
-                    ImGui::TableSetupColumn("c2", ImGuiTableColumnFlags_WidthFixed, 50);
-                    for (auto item : this->flashbacks->backlog) {
-                        FlashbacksDialog *dialog = this->flashbacks->get_from_id(item);
-                        assert(dialog && "Invalid dialog ID");
+                ImGui::TableSetupColumn("c1", ImGuiTableColumnFlags_WidthStretch, 1);
+                ImGui::TableSetupColumn("c2", ImGuiTableColumnFlags_WidthFixed, 50);
+                for (auto item : this->flashbacks->backlog) {
+                    FlashbacksDialog *dialog = this->flashbacks->get_from_id(item);
+                    assert(dialog && "Invalid dialog ID");
 
-                        ImVec4 color = { 1, 1, 1, 1 };
-                        if (dialog->choice == FlashbacksDialogChoice::WRONG) {
-                            color = { 1, 0, 0, 1 };
-                        }
-                        if (dialog->choice == FlashbacksDialogChoice::CORRECT) {
-                            color = { 0, 1, 0, 1 };
-                        }
-
-                        ImGui::TableNextRow();
-                        ImGui::TableSetColumnIndex(0);
-                        ImGui::PushStyleColor(ImGuiCol_Text, color);
-                        ImGui::Text("%s", dialog->text);
-                        ImGui::PopStyleColor();
-                        ImGui::TableSetColumnIndex(1);
-                        ImGui::PushID(item.id);
-                        if (ImGui::Button("Retry")) {
-                            this->begin_sequence(item);
-                        }
-                        ImGui::PopID();
+                    ImVec4 color = { 1, 1, 1, 1 };
+                    if (dialog->choice == FlashbacksDialogChoice::WRONG) {
+                        color = { 1, 0, 0, 1 };
                     }
-                    ImGui::EndTable();
+                    if (dialog->choice == FlashbacksDialogChoice::CORRECT) {
+                        color = { 0, 1, 0, 1 };
+                    }
+
+                    ImGui::TableNextRow();
+                    ImGui::TableSetColumnIndex(0);
+                    ImGui::PushStyleColor(ImGuiCol_Text, color);
+                    ImGui::Text("%s", dialog->text);
+                    ImGui::PopStyleColor();
+                    ImGui::TableSetColumnIndex(1);
+                    ImGui::PushID(item.id);
+                    if (ImGui::Button("Retry")) {
+                        this->begin_sequence(item);
+                    }
+                    ImGui::PopID();
                 }
+                ImGui::EndTable();
             }
-            ImGui::End();
-            break;
+        }
+        ImGui::End();
+        break;
     }
 
     return event;

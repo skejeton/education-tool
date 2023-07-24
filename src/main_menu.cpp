@@ -1,8 +1,10 @@
 #include "main_menu.hpp"
+#include "imgui/imgui.h"
+#include "sokol/sokol_app.h"
+#include <corecrt_math.h>
 #include <filesystem>
-#include <imgui/imgui.h>
-#include <sokol/sokol_app.h>
 #include <stdio.h>
+#include "util.hpp"
 
 void show_file_list(MainMenu *main_menu, ImVec2 size)
 {
@@ -29,13 +31,6 @@ void synchronize_file_list(MainMenu *main_menu)
     for (const auto &entry : std::filesystem::directory_iterator(main_menu->directory_path)) {
         main_menu->files.push_back(entry.path().filename().generic_string());
     }
-}
-
-
-void center_next_window_window(ImVec2 size)
-{
-    ImGui::SetNextWindowPos({(sapp_widthf()-size.x)/2.0f, (sapp_heightf()-size.y)/2.0f});
-    ImGui::SetNextWindowSize(size);
 }
 
 
@@ -74,6 +69,21 @@ void open_selected_file(MainMenu *main_menu, OpenProject *project)
 }
 
 
+void host_selected_file(MainMenu *main_menu, OpenProject *project)
+{
+    open_selected_file(main_menu, project);
+    project->host_name = main_menu->host_name;
+    project->hosting_type = HostingType::HOST;
+}
+
+
+void join_selected_ip(MainMenu *main_menu, OpenProject *project)
+{
+    project->host_name = main_menu->host_name;
+    project->hosting_type = HostingType::JOIN;
+}
+
+
 MainMenu MainMenu::init(std::filesystem::path directory_path)
 {
     MainMenu menu = {};
@@ -84,17 +94,39 @@ MainMenu MainMenu::init(std::filesystem::path directory_path)
     return menu;
 }
 
-void MainMenu::show(OpenProject *project)
+bool MainMenu::show(OpenProject *project)
 {
-    center_next_window_window({400, 300});
-    if (ImGui::Begin("Main Menu")) {
+    bool opened = false;
+
+    center_next_window({400, 300});
+    if (ImGui::Begin("Main Menu v1")) {
         show_file_list(this, {200, 240});
 
         float y = 45;
 
         ImGui::SetCursorPos({230, y});
         ImGui::SetNextItemWidth(150);
-        ImGui::InputText("##File Name", this->file_name, MENU_FILE_NAME_SIZE);
+        ImGui::InputTextWithHint("##Host", "Host", this->host_name, MENU_STRING_SIZE);
+
+        y += 40;
+
+        ImGui::SetCursorPos({230, y});
+        ImGui::SetNextItemWidth(150);
+        ImGui::InputTextWithHint("##File Name", "File Name", this->file_name, MENU_STRING_SIZE);
+
+        y += 40;
+
+        ImGui::SetCursorPos({230, y});
+        if (ImGui::Button("Host", {150/2-5, 30})) {
+            host_selected_file(this, project);
+            opened = true;
+        }
+
+        ImGui::SetCursorPos({230+150/2+5, y});
+        if (ImGui::Button("Join", {150/2-5, 30})) {
+            join_selected_ip(this, project);
+            opened = true;
+        }
 
         y += 40;
 
@@ -109,6 +141,7 @@ void MainMenu::show(OpenProject *project)
         ImGui::SetCursorPos({230, y});
         if (ImGui::Button("Open", {150, 30})) {
             open_selected_file(this, project);
+            opened = true;
         }
 
         y += 40;
@@ -120,4 +153,6 @@ void MainMenu::show(OpenProject *project)
     }
 
     ImGui::End();
+
+    return opened;
 }

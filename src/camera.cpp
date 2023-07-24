@@ -14,6 +14,7 @@ static Matrix4 make_vp(Camera *camera) {
     return proj * view;
 }
 
+
 Camera Camera::init(float fov_deg) {
     Camera result = {};
     result.fov_deg = fov_deg;

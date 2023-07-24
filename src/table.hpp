@@ -34,6 +34,44 @@ struct Table {
     size_t capacity;
     size_t count;
 
+    bool scale()
+    {
+        size_t new_capacity = capacity;
+        if (new_capacity == 0) new_capacity = 32;
+        else new_capacity *= 2;
+
+        T* new_values = (T*)realloc(values, sizeof(T)*new_capacity);
+        // NOTE: Allocation error
+        if (new_values == NULL) {
+            return false;
+        }
+        values = new_values;
+
+        Slot *new_slots = (Slot*)realloc(slots, sizeof(Slot)*new_capacity);
+        // NOTE: Allocation error
+        if (new_slots == NULL) {
+            return false;
+        }
+        slots = new_slots;
+
+        memset(slots + capacity, 0, (capacity - new_capacity) * sizeof(Slot));
+
+        capacity = new_capacity;
+        return true;
+    }
+
+    TableId allocate_at(TableId id, T value)
+    {
+        while (capacity < id.id) {
+            if (!scale()) return NULL_ID;
+        }
+
+        count++;
+        slots[id.id - 1].generation = id.generation;
+        slots[id.id - 1].taken = true;
+        values[id.id - 1] = value;
+    }
+
     TableId allocate(T value)
     {
         TableId id = { 0 };
@@ -43,27 +81,8 @@ struct Table {
             }
         }
 
-
         if (id.id == 0) {
             size_t old_capacity = capacity;
-            if (capacity == 0) capacity = 32;
-            else capacity *= 2;
-
-            T* new_values = (T*)realloc(values, sizeof(T)*capacity);
-            // NOTE: Allocation error
-            if (new_values == NULL) {
-                return { 0 };
-            }
-            values = new_values;
-
-            Slot *new_slots = (Slot*)realloc(slots, sizeof(Slot)*capacity);
-            // NOTE: Allocation error
-            if (new_slots == NULL) {
-                return { 0 };
-            }
-            slots = new_slots;
-
-            memset(slots + old_capacity, 0, (capacity - old_capacity) * sizeof(Slot));
             id = { old_capacity+1 };
         }
 
@@ -77,10 +96,10 @@ struct Table {
     /// RETURNS: Status value indicating whether the element was freed correctly
     bool remove(TableId id)
     {
-        bool status = false;
         if (id.id - 1 < capacity && slots[id.id - 1].taken && slots[id.id - 1].generation == id.generation) {
             slots[id.id - 1].taken = false;
             slots[id.id - 1].generation++;
+            count--;
             return true;
         }
         return false;
@@ -101,12 +120,17 @@ struct TableIterator {
     TableId id;
     bool is_going;
 
-    void seek_next_value() {
+    bool going() {
+        return is_going;
+    }
+
+    void next() {
         is_going = false;
 
         id.id += 1;
         while ((id.id - 1) < table->capacity) {
             if (table->slots[id.id - 1].taken) {
+                id.generation = table->slots[id.id - 1].generation;
                 is_going = true;
                 break;
             }
@@ -114,17 +138,9 @@ struct TableIterator {
         }
     }
 
-    bool going() {
-        return is_going;
-    }
-
-    void next() {
-        seek_next_value();
-    }
-
     static TableIterator init(Table<T>* table) {
         TableIterator iterator = { table, { 0 }, false };
-        iterator.seek_next_value();
+        iterator.next();
         return iterator;
     }
 };

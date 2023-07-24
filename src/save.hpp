@@ -36,13 +36,13 @@ struct BinaryFormat {
         return format;
     }
 
-    static BinaryFormat begin_read(void *origin, size_t max)
+    static BinaryFormat begin_read(const void *origin, size_t max)
     {
         BinaryFormat format = {};
         format.mode = BinaryIOMode::READ;
         format.cap = max;
         format.origin = (uint8_t*)origin;
-        format.data = format.origin;
+        format.data = (void*)format.origin;
         return format;
     }
 
@@ -127,9 +127,19 @@ struct BinaryFormat {
         pass_pointer((void**)string, len);
     }
 
+    inline size_t size()
+    {
+        return (size_t)((uint8_t*)data-(uint8_t*)origin);
+    }
+
+    inline FileBuffer get_rest()
+    {
+        return {data, cap-size()};
+    }
+
     inline FileBuffer leak_file_buffer()
     {
-        return {origin, (size_t)((uint8_t*)data-(uint8_t*)origin)};
+        return {origin, size()};
     }
 };
 
