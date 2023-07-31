@@ -61,7 +61,13 @@ RPC_HANDLER(nc_set_player_state)
 {
     auto nc = (Netcode*)userdata;
 
-    net_table_set_apply<Player>(FileBuffer{(uint8_t*)data, data_size}, &nc->env->player_pool.players, ncfmt_player);
+    TableId id;
+    BinaryFormat format = BinaryFormat::begin_read(data, data_size);
+    format.pass_value(&id);
+
+    if (nc->player_id != id) {
+        net_table_set_apply<Player>(FileBuffer{(uint8_t*)data, data_size}, &nc->env->player_pool.players, ncfmt_player);
+    }
 }
 
 RPC_HANDLER(nc_summon_entity)
