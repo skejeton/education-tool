@@ -12,9 +12,20 @@ void ncfmt_player(BinaryFormat *fmt, Player *p)
     fmt->pass_value(p);
 }
 
+
 void ncfmt_entity(BinaryFormat *fmt, Entity *e)
 {
     fmt->pass_value(e);
+}
+
+
+void ncfmt_dialog(BinaryFormat *fmt, FlashbacksDialog *d)
+{
+    fmt->pass_c_string((char**)&d->answer);
+    fmt->pass_c_string((char**)&d->text);
+    fmt->pass_value(&d->numeric);
+    fmt->pass_value(&d->prev);
+    fmt->pass_value(&d->next);
 }
 
 
@@ -71,6 +82,32 @@ RPC_HANDLER(nc_remove_entity)
 }
 
 
+RPC_HANDLER(nc_add_dialog)
+{
+    auto nc = (Netcode*)userdata;
+
+    BinaryFormat format = BinaryFormat::begin_read(data, data_size);
+    FlashbacksDialog dialog;
+    net_table_alloc<FlashbacksDialog>(&format, &nc->env->flashbacks.dialogs, &dialog, ncfmt_dialog);
+}
+
+
+RPC_HANDLER(nc_remove_dialog)
+{
+    auto nc = (Netcode*)userdata;
+
+    net_table_remove_apply<FlashbacksDialog>({(uint8_t*)data, data_size}, &nc->env->flashbacks.dialogs);
+}
+
+
+RPC_HANDLER(nc_set_dialog)
+{
+    auto nc = (Netcode*)userdata;
+
+    net_table_set_apply<FlashbacksDialog>({(uint8_t*)data, data_size}, &nc->env->flashbacks.dialogs, ncfmt_dialog);
+}
+
+
 RPC_HANDLER(nc_connect)
 {
     printf("someone connected\n");
@@ -85,6 +122,7 @@ RPC_HANDLER(nc_connect)
             format.pass_value(&nc->env->playing_mode);
             net_table_init<Player>(&format, &nc->env->player_pool.players, ncfmt_player);
             net_table_init<Entity>(&format, &nc->env->scene.entities, ncfmt_entity);
+            net_table_init<FlashbacksDialog>(&format, &nc->env->flashbacks.dialogs, ncfmt_dialog);
             FileBuffer buf = format.leak_file_buffer();
 
             (void)rpc->send(source, "nc_init_connection", buf.size, buf.data);
@@ -116,6 +154,7 @@ RPC_HANDLER(nc_init_connection)
     fmt.pass_value(&nc->env->playing_mode);
     net_table_init<Player>(&fmt, &nc->env->player_pool.players, ncfmt_player);
     net_table_init<Entity>(&fmt, &nc->env->scene.entities, ncfmt_entity);
+    net_table_init<FlashbacksDialog>(&fmt, &nc->env->flashbacks.dialogs, ncfmt_dialog);
 
     printf("init connection: success, playing mode: %d\n", nc->env->playing_mode);
 }

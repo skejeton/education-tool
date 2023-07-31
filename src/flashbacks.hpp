@@ -9,7 +9,8 @@
 
 #include <vector>
 #include "table.hpp"
-#include "netcode.hpp"
+
+struct Netcode;
 
 typedef TableId FlashbacksDialogId;
 

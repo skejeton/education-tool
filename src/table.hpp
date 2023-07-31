@@ -72,6 +72,26 @@ struct Table {
         values[id.id - 1] = value;
     }
 
+
+    TableId find_next_id()
+    {
+        TableId id = { 0 };
+        for (size_t i = 0; i < capacity; i++) {
+            if (!slots[i].taken) {
+                id = { i + 1 };
+                id.generation = slots[i].generation;
+                break;
+            }
+        }
+
+        if (id.id == 0) {
+            id = { capacity+1 };
+        }
+
+        return id;
+    }
+
+
     void mark_generation_at(TableId id)
     {
         while (capacity < id.id) {

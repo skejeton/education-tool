@@ -85,6 +85,9 @@ void Netcode::register_all()
     rpc.register_function("net_set_player_state", this, nc_set_player_state);
     rpc.register_function("net_summon_entity", this, nc_summon_entity);
     rpc.register_function("net_remove_entity", this, nc_remove_entity);
+    rpc.register_function("net_add_dialog", this, nc_add_dialog);
+    rpc.register_function("net_remove_dialog", this, nc_remove_dialog);
+    rpc.register_function("net_set_dialog", this, nc_set_dialog);
 
     rpc.register_function("_connect", this, nc_connect);
     rpc.register_function("nc_init_connection", this, nc_init_connection);
@@ -132,6 +135,38 @@ void Netcode::remove_entity(TableId entity_id)
     FileBuffer buf = net_table_remove_write<Entity>(entity_id);
 
     (void)rpc.broadcast("net_remove_entity", buf.size, buf.data);
+
+    buf.deinit();
+}
+
+TableId Netcode::add_dialog(FlashbacksDialog dialog)
+{
+    TableId next_id = env->flashbacks.dialogs.find_next_id();
+
+    BinaryFormat format = BinaryFormat::begin_write();
+    net_table_alloc<FlashbacksDialog>(&format, &env->flashbacks.dialogs, &dialog, ncfmt_dialog);
+
+    (void)rpc.broadcast("net_add_dialog", format.size(), format.origin);
+
+    format.leak_file_buffer().deinit();
+
+    return next_id;
+}
+
+void Netcode::remove_dialog(TableId id)
+{
+    FileBuffer buf = net_table_remove_write<FlashbacksDialog>(id);
+
+    (void)rpc.broadcast("net_remove_dialog", buf.size, buf.data);
+
+    buf.deinit();
+}
+
+void Netcode::set_dialog(TableId id, FlashbacksDialog dialog)
+{
+    FileBuffer buf = net_table_set_write<FlashbacksDialog>(id, dialog, ncfmt_dialog);
+
+    (void)rpc.broadcast("net_set_dialog", buf.size, buf.data);
 
     buf.deinit();
 }

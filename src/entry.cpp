@@ -518,6 +518,7 @@ static void handle_game_mode(Entry *entry)
         }
     }
 
+    save_entity_in_editor(entry);
     entry->nc.set_player_state(*player);
 
     // Draw all players.
@@ -536,21 +537,21 @@ static void handle_game_mode(Entry *entry)
 }
 
 void update_mode(Entry *entry) {
+    Player *player = get_player(entry);
+
     switch (entry->env.playing_mode) {
         case PLAYING_MODE_PLAY: {
             handle_game_mode(entry);
-#if 0
-            entry->camera_velocity.y -= 20*sapp_frame_duration();
-            if (entry->camera_velocity.y < -40) {
-                entry->camera_velocity.y = -40;
+            player->camera_velocity.y -= 20*sapp_frame_duration();
+            if (player->camera_velocity.y < -40) {
+                player->camera_velocity.y = -40;
             }
-            entry->camera.position += entry->camera_velocity*sapp_frame_duration();
+            player->camera.position += player->camera_velocity*sapp_frame_duration();
 
-            if (entry->camera.position.y < 2) {
-                entry->camera.position.y = 2;
+            if (player->camera.position.y < 2) {
+                player->camera.position.y = 2;
             }
             check_collisions(entry);
-#endif
         } break;
         case PLAYING_MODE_BUILD:
             handle_game_mode(entry);

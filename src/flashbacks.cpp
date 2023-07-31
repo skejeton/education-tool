@@ -4,6 +4,7 @@
 #include "flashbacks.hpp"
 #include <cstdio>
 #include "util.hpp"
+#include "netcode.hpp"
 
 FlashbacksAllocatedDialog Flashbacks::alloc_dialog() {
     FlashbacksDialogId id = this->dialogs.allocate({});
@@ -41,23 +42,21 @@ void Flashbacks::touch(FlashbacksDialogId id, FlashbacksDialogChoice choice) {
 }
 
 static FlashbacksDialogId allocate_dialog_sequential(Netcode *nc, Flashbacks *flashbacks, FlashbacksDialogPrototype proto, FlashbacksDialogId previous_id) {
-    FlashbacksAllocatedDialog allocated = flashbacks->alloc_dialog();
-    assert(allocated.id.id && "Couldn't allocate!");
+    FlashbacksDialog current = {};
+    current.text = proto.text;
+    current.answer = proto.answer;
+    current.numeric = proto.numeric;
+    current.prev = previous_id;
 
-    if (allocated.id.id) {
-        allocated.pointer->text = string_duplicate(proto.text);
-        allocated.pointer->answer = string_duplicate(proto.answer);
-        allocated.pointer->numeric = proto.numeric;
 
-        if (previous_id.id != 0) {
-            FlashbacksDialog *previous = flashbacks->get_from_id(previous_id);
-
-            previous->next = allocated.id;
-            allocated.pointer->prev = previous_id;
-        }
+    TableId id = nc->add_dialog(current);
+    if (previous_id.id != 0) {
+        FlashbacksDialog *previous = flashbacks->get_from_id(previous_id);
+        previous->next = id;
+        nc->set_dialog(previous_id, *previous);
     }
 
-    return allocated.id;
+    return id;
 }
 
 void FlashbacksDialogMaker::append_dialog(Netcode *nc, FlashbacksDialogPrototype proto) {
@@ -258,9 +257,14 @@ void Flashbacks::free_sequence(Netcode *nc, FlashbacksDialogId id) {
 
     while (dialog) {
         FlashbacksDialog *next = get_from_id(dialog->next);
+
         free((void*)dialog->text);
         free((void*)dialog->answer);
         *dialog = { 0 };
+
+        nc->remove_dialog(id);
+        id = dialog->next;
+
         dialog = next;
     }
 }

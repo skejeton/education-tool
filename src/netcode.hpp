@@ -5,6 +5,8 @@
 #include "rpc.hpp"
 #include "main_menu.hpp"
 
+struct FlashbacksDialog;
+
 struct Netcode {
     Rpc rpc;
     Environment *env;
@@ -26,6 +28,10 @@ struct Netcode {
 
     void summon_entity(Entity entity);
     void remove_entity(TableId entity_id);
+
+    TableId add_dialog(FlashbacksDialog dialog);
+    void remove_dialog(TableId id);
+    void set_dialog(TableId id, FlashbacksDialog dialog);
 
 private:
     void register_all();
