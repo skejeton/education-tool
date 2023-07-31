@@ -13,9 +13,9 @@ struct Netcode {
     /**
      * Map between client ID's and player table ID's.
      */
-    std::unordered_map<uint32_t, TableId> player_id_map;
+    std::unordered_map<uint32_t, TableId> player_ids;
 
-    static Netcode connect(Environment *env, OpenProject open_project);
+    void connect(Environment *env, OpenProject open_project);
     void disconnect();
 
     void service();
@@ -23,6 +23,9 @@ struct Netcode {
     void set_playing_mode(PlayingMode playing_mode);
 
     void set_player_state(Player player);
+
+    void summon_entity(Entity entity);
+    void remove_entity(TableId entity_id);
 
 private:
     void register_all();

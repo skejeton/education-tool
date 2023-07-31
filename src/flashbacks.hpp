@@ -9,6 +9,7 @@
 
 #include <vector>
 #include "table.hpp"
+#include "netcode.hpp"
 
 typedef TableId FlashbacksDialogId;
 
@@ -26,7 +27,7 @@ struct FlashbacksDialog {
 };
 
 
-/// NOTE: Must be extremely short lived 
+/// NOTE: Must be extremely short lived
 struct FlashbacksAllocatedDialog {
     FlashbacksDialogId id;
     FlashbacksDialog *pointer;
@@ -37,7 +38,7 @@ struct Flashbacks {
     std::vector<FlashbacksDialogId> backlog;
 
     FlashbacksAllocatedDialog alloc_dialog();
-    void free_sequence(FlashbacksDialogId id);
+    void free_sequence(Netcode *nc, FlashbacksDialogId id);
     FlashbacksDialog *get_from_id(FlashbacksDialogId id);
     void touch(FlashbacksDialogId id, FlashbacksDialogChoice choice);
 };
@@ -53,7 +54,7 @@ struct FlashbacksDialogMaker {
     FlashbacksDialogId starter_id;
 
     static FlashbacksDialogMaker from(Flashbacks *flashbacks);
-    void append_dialog(FlashbacksDialogPrototype proto);
+    void append_dialog(Netcode *nc, FlashbacksDialogPrototype proto);
 };
 
 enum struct FlashbacksEvent {

@@ -28,12 +28,20 @@ struct RpcRawPacket {
 
 static RpcCallPacket read_rpc_call_packet(void *data)
 {
-    bool broadcast = *(bool*)(((uint8_t*)data)+offsetof(RpcCallPacket, broadcast));
-    RpcClient client = *(RpcClient*)(((uint8_t*)data)+offsetof(RpcCallPacket, client));
-
+    size_t offset = 0;
     size_t function_name_len = strlen((const char*)data);
-    size_t data_size = *(size_t*)(((uint8_t*)data)+function_name_len+1);
-    void *data_value = (((uint8_t*)data)+function_name_len+1+sizeof(size_t));
+    offset += function_name_len+1;
+
+    bool broadcast = *(bool*)(((uint8_t*)data)+offset);
+    offset += sizeof(bool);
+
+    RpcClient client = *(RpcClient*)(((uint8_t*)data)+offset);
+    offset += sizeof(RpcClient);
+
+    size_t data_size = *(size_t*)(((uint8_t*)data)+offset);
+    offset += sizeof(size_t);
+
+    void *data_value = (((uint8_t*)data)+offset);
 
     return {
         (const char *)data,
@@ -97,6 +105,7 @@ bool Rpc::host(Rpc *out_rpc, ENetAddress address)
         return false;
     }
 
+    rpc.just_connected = true;
     rpc.connected = true;
     *out_rpc = rpc;
 
@@ -127,6 +136,7 @@ bool Rpc::connect(Rpc* out_rpc, ENetAddress address)
     }
     */
 
+    rpc.just_connected = true;
     rpc.connected = true;
     *out_rpc = rpc;
 
@@ -140,21 +150,30 @@ void Rpc::service()
         return;
     }
 
+    if (this->just_connected && this->is_server()) {
+        (void)broadcast("_connect", 0, nullptr);
+    }
+
+    this->just_connected = false;
+
+
     ENetEvent event;
+
 
     while (enet_host_service(this->enet_host, &event, 0) > 0) {
         switch (event.type) {
         case ENET_EVENT_TYPE_CONNECT:
+            printf("Connect %u\n", event.peer->connectID);
             this->map.peers[event.peer->connectID] = event.peer;
-            printf("Connect %d\n", is_server());
             if (is_server()) {
                 (void)broadcast("_connect", 0, nullptr, event.peer->connectID);
             }
             break;
         case ENET_EVENT_TYPE_DISCONNECT:
-            printf("Disconnect %d\n", is_server());
+            printf("Disconnect %u\n", event.peer->connectID);
             this->map.peers.erase(event.peer->connectID);
             if (!is_server()) {
+                call_rpc_function(this, { "_disconnect", false, 0, 0, nullptr});
                 this->connected = false;
             }
             else {
@@ -222,7 +241,12 @@ bool Rpc::send(RpcClient client, const char *fn_name, const size_t data_size, co
     free(raw_packet.data);
 
     if (is_server()) {
-        enet_peer_send(this->map.peers.at(client.id), 0, packet);
+        if (client.id == 0) {
+            // - Send to server itself.
+            call_rpc_function(this, call_packet);
+        } else {
+            enet_peer_send(this->map.peers.at(client.id), 0, packet);
+        }
     } else {
         enet_peer_send(enet_peer, 0, packet);
     }
@@ -244,13 +268,28 @@ void Rpc::disconnect()
     }
 
     this->connected = false;
-    enet_host_destroy(enet_host);
-    if (!is_server()) {
-        enet_peer_reset(enet_peer);
+    if (is_server()) {
+        for (auto peer : this->map.peers) {
+            enet_peer_disconnect(std::get<1>(peer), 0);
+        }
+        ENetEvent event;
+        enet_host_service(enet_host, &event, 0);
     }
+    else {
+        enet_peer_disconnect(enet_peer, 0);
+        ENetEvent event;
+        enet_host_service(enet_host, &event, 0);
+    }
+    enet_host_destroy(enet_host);
 }
+
 
 bool Rpc::is_server()
 {
     return this->enet_peer == nullptr;
+}
+
+uint32_t Rpc::own_id()
+{
+    return is_server() ? 0 : this->enet_peer->connectID;
 }

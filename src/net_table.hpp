@@ -43,60 +43,63 @@ struct NetTableRemove {
 
 
 template <class T>
-FileBuffer net_table_init_write(Table<T> *table, std::function<void(BinaryFormat *fmt, T *element)> encoder) {
-    BinaryFormat format = BinaryFormat::begin_write();
-    TableIterator<T> iter = TableIterator<T>::init(table);
+void net_table_init(BinaryFormat *format, Table<T> *table, std::function<void(BinaryFormat *fmt, T *element)> encoder) {
 
-    format.pass_value(&table->count);
+    if (format->mode == BinaryIOMode::WRITE) {
+        size_t count = 0;
+        for (size_t i = 0; i < table->capacity; i++) {
+            if (table->slots[i].taken || table->slots[i].generation) {
+                count++;
+            }
+        }
 
-    for (; iter.going(); iter.next()) {
-        format.pass_value(iter.id);
-        encoder(&format, iter.value);
+        format->pass_value(&count);
+        for (size_t i = 0; i < table->capacity; i++) {
+            if (table->slots[i].taken || table->slots[i].generation) {
+                TableId id;
+                id.generation = table->slots[i].generation;
+                id.id = i+1;
+                format->pass_value(&id);
+                format->pass_value(&table->slots[i].taken);
+                if (table->slots[i].taken) {
+                    encoder(format, table->get(id));
+                }
+            }
+        }
+    } else {
+        *table = {};
+
+        size_t count;
+        format->pass_value(&count);
+
+        for (size_t i = 0; i < count; i++) {
+            TableId id;
+            format->pass_value(&id);
+            bool taken;
+            format->pass_value(&taken);
+
+            if (taken) {
+                T element;
+                encoder(format, &element);
+                table->allocate_at(id, element);
+            } else {
+                table->mark_generation_at(id);
+            }
+        }
     }
-
-    return format.leak_file_buffer();
 }
 
 template <class T>
-void net_table_init_apply(FileBuffer input, Table<T> *dest, std::function<void(BinaryFormat *fmt, T *element)> decoder) {
-    BinaryFormat format = BinaryFormat::begin_read(input.data, input.size);
+TableId net_table_alloc(BinaryFormat *format, Table<T> *dest, T *value, std::function<void(BinaryFormat *fmt, T *element)> encoder) {
+    if (format->mode == BinaryIOMode::READ) {
+        encoder(format, value);
 
-    size_t count;
-    format.pass_value(&count);
-
-    NetTableInit<T> init;
-
-    *dest = {};
-
-    for (size_t i = 0; i < count; i++) {
-        size_t id;
-        format.pass_value(&id);
-        T element;
-        decoder(&format, &element);
-
-        init.pairs.push_back({id, element});
+        return dest->allocate(*value);
+    } else {
+        encoder(format, value);
     }
 
-    for (auto &initializer : init) {
-        dest->allocate_at(initializer.id, initializer.value);
-    }
-}
-
-template <class T>
-FileBuffer net_table_alloc_write(T value, std::function<void(BinaryFormat *fmt, T *element)> encoder) {
-    BinaryFormat format = BinaryFormat::begin_write();
-    encoder(&format, &value);
-    return format.leak_file_buffer();
-}
-
-template <class T>
-void net_table_alloc_apply(FileBuffer input, Table<T> *dest, std::function<void(BinaryFormat *fmt, T *element)> decoder) {
-    BinaryFormat format = BinaryFormat::begin_read(input.data, input.size);
-
-    T value;
-    decoder(&format, &value);
-
-    dest->allocate(value);
+    return NULL_ID;
 }
 
 template <class T>
@@ -126,7 +129,7 @@ FileBuffer net_table_remove_write(TableId id) {
 }
 
 template <class T>
-bool net_table_set_apply(FileBuffer input, Table<T> *dest) {
+bool net_table_remove_apply(FileBuffer input, Table<T> *dest) {
     BinaryFormat format = BinaryFormat::begin_read(input.data, input.size);
 
     NetTableRemove<T> remove;

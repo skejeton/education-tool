@@ -54,7 +54,7 @@ struct Table {
         }
         slots = new_slots;
 
-        memset(slots + capacity, 0, (capacity - new_capacity) * sizeof(Slot));
+        memset(slots + capacity, 0, (new_capacity - capacity) * sizeof(Slot));
 
         capacity = new_capacity;
         return true;
@@ -72,17 +72,31 @@ struct Table {
         values[id.id - 1] = value;
     }
 
+    void mark_generation_at(TableId id)
+    {
+        while (capacity < id.id) {
+            assert(scale());
+        }
+
+        slots[id.id - 1].generation = id.generation;
+    }
+
+
     TableId allocate(T value)
     {
         TableId id = { 0 };
         for (size_t i = 0; i < capacity; i++) {
             if (!slots[i].taken) {
                 id = { i + 1 };
+                break;
             }
         }
 
         if (id.id == 0) {
             size_t old_capacity = capacity;
+            if (!scale()) {
+                return NULL_ID;
+            }
             id = { old_capacity+1 };
         }
 

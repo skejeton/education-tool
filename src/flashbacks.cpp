@@ -40,7 +40,7 @@ void Flashbacks::touch(FlashbacksDialogId id, FlashbacksDialogChoice choice) {
     }
 }
 
-static FlashbacksDialogId allocate_dialog_sequential(Flashbacks *flashbacks, FlashbacksDialogPrototype proto, FlashbacksDialogId previous_id) {
+static FlashbacksDialogId allocate_dialog_sequential(Netcode *nc, Flashbacks *flashbacks, FlashbacksDialogPrototype proto, FlashbacksDialogId previous_id) {
     FlashbacksAllocatedDialog allocated = flashbacks->alloc_dialog();
     assert(allocated.id.id && "Couldn't allocate!");
 
@@ -60,8 +60,8 @@ static FlashbacksDialogId allocate_dialog_sequential(Flashbacks *flashbacks, Fla
     return allocated.id;
 }
 
-void FlashbacksDialogMaker::append_dialog(FlashbacksDialogPrototype proto) {
-    FlashbacksDialogId id = allocate_dialog_sequential(flashbacks, proto, previous_id);
+void FlashbacksDialogMaker::append_dialog(Netcode *nc, FlashbacksDialogPrototype proto) {
+    FlashbacksDialogId id = allocate_dialog_sequential(nc, flashbacks, proto, previous_id);
 
     if (starter_id.id == 0) {
         this->starter_id = id;
@@ -253,7 +253,7 @@ FlashbacksEvent FlashbacksGui::show() {
     return event;
 }
 
-void Flashbacks::free_sequence(FlashbacksDialogId id) {
+void Flashbacks::free_sequence(Netcode *nc, FlashbacksDialogId id) {
     FlashbacksDialog *dialog = get_from_id(id);
 
     while (dialog) {

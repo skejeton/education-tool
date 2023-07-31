@@ -1,8 +1,8 @@
 #include "netcode.hpp"
-#include "netcode_callbacks.inl"
 #include "main_menu.hpp"
 #include "project.hpp"
 #include "net_table.hpp"
+#include "netcode_callbacks.inl"
 
 #define DEFAULT_PORT 5621
 
@@ -41,13 +41,12 @@ static void load_open_save(Environment *env, OpenProject open_project)
 }
 
 
-Netcode Netcode::connect(Environment *env, OpenProject open_project)
+void Netcode::connect(Environment *env, OpenProject open_project)
 {
-    Rpc rpc = {};
-    Netcode nc = { rpc, env };
-
     ENetAddress addr;
     addr.port = DEFAULT_PORT;
+
+    this->env = env;
 
     if (enet_address_set_host(&addr, open_project.host_name.c_str()) < 0) {
         // Invalid address
@@ -56,16 +55,14 @@ Netcode Netcode::connect(Environment *env, OpenProject open_project)
 
 
     if (open_project.hosting_type == HostingType::JOIN) {
-        assert(nc.rpc.connect(&nc.rpc, addr));
+        assert(rpc.connect(&rpc, addr));
     }
     else {
         load_open_save(env, open_project);
-        assert(nc.rpc.host(&nc.rpc, addr));
+        assert(rpc.host(&rpc, addr));
     }
 
-    nc.register_all();
-
-    return nc;
+    register_all();
 }
 
 
@@ -83,14 +80,17 @@ void Netcode::service()
 
 void Netcode::register_all()
 {
-    rpc.register_function("net_broadcast_ping", env, nc_broadcast_ping);
-    rpc.register_function("net_set_playing_mode", env, nc_set_playing_mode);
-    // rpc.register_function("net_set_player_state", env, nc_set_player_state);
+    rpc.register_function("net_broadcast_ping", this, nc_broadcast_ping);
+    rpc.register_function("net_set_playing_mode", this, nc_set_playing_mode);
+    rpc.register_function("net_set_player_state", this, nc_set_player_state);
+    rpc.register_function("net_summon_entity", this, nc_summon_entity);
+    rpc.register_function("net_remove_entity", this, nc_remove_entity);
 
-    rpc.register_function("_connect", env, nc_connect);
-    rpc.register_function("nc_init_connection", env, nc_init_connection);
-    rpc.register_function("_disconnect", env, nc_disconnect);
-    rpc.register_function("nc_deinit_connection", env, nc_deinit_connection);
+    rpc.register_function("_connect", this, nc_connect);
+    rpc.register_function("nc_init_connection", this, nc_init_connection);
+    rpc.register_function("nc_add_connection", this, nc_add_connection);
+    rpc.register_function("_disconnect", this, nc_disconnect);
+    rpc.register_function("nc_remove_connection", this, nc_remove_connection);
 }
 
 
@@ -110,9 +110,28 @@ void Netcode::set_playing_mode(PlayingMode playing_mode)
 
 void Netcode::set_player_state(Player player)
 {
-    FileBuffer buf = net_table_init_write<Player>(&this->env->player_pool.players, ncfmt_player);
+    FileBuffer buf = net_table_set_write<Player>(this->player_id, player, ncfmt_player);
 
-    (void)rpc.broadcast("nc_set_player_state", buf.size, buf.data);
+    (void)rpc.broadcast("net_set_player_state", buf.size, buf.data);
+
+    buf.deinit();
+}
+
+void Netcode::summon_entity(Entity entity)
+{
+    BinaryFormat format = BinaryFormat::begin_write();
+    net_table_alloc<Entity>(&format, &env->scene.entities, &entity, ncfmt_entity);
+
+    (void)rpc.broadcast("net_summon_entity", format.size(), format.origin);
+
+    format.leak_file_buffer().deinit();
+}
+
+void Netcode::remove_entity(TableId entity_id)
+{
+    FileBuffer buf = net_table_remove_write<Entity>(entity_id);
+
+    (void)rpc.broadcast("net_remove_entity", buf.size, buf.data);
 
     buf.deinit();
 }

@@ -99,14 +99,14 @@ void EntityEditor::derive_from(Entity* entity) {
     }
 }
 
-void EntityEditor::emplace() {
+void EntityEditor::emplace(Netcode *nc) {
     if (entity == nullptr) {
         return;
     }
 
     FlashbacksDialogId* start = &entity->dialog_id;
 
-    flashbacks->free_sequence(*start);
+    flashbacks->free_sequence(nc, *start);
 
     FlashbacksDialogMaker maker = FlashbacksDialogMaker::from(flashbacks);
 
@@ -114,7 +114,7 @@ void EntityEditor::emplace() {
         if (dialog.answer && *dialog.answer == 0) {
             dialog.answer = nullptr;
         }
-        maker.append_dialog(dialog);
+        maker.append_dialog(nc, dialog);
     }
 
     *start = maker.starter_id;

@@ -35,6 +35,11 @@ struct PeerMap {
 
 struct Rpc {
     /**
+     * Called if just connected before any serving operations.
+     */
+    bool just_connected;
+
+    /**
      * Map between peer ID's and ENet Peers.
      */
     PeerMap map;
@@ -123,6 +128,8 @@ struct Rpc {
     void disconnect();
 
     bool is_server();
+
+    uint32_t own_id();
 };
 
 #endif //HPP_CATEDU_RPC

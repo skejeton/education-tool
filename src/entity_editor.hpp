@@ -9,6 +9,7 @@
 #include "scene.hpp"
 #include "vector"
 #include "easy_gui.hpp"
+#include "netcode.hpp"
 
 struct EntityEditor {
     Flashbacks *flashbacks;
@@ -23,7 +24,7 @@ struct EntityEditor {
     }
     void show(EasyGui *gui);
     void derive_from(Entity *entity);
-    void emplace();
+    void emplace(Netcode *nc);
 };
 
 #endif

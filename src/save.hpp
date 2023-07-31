@@ -1,6 +1,6 @@
 ///
 /// BRIEF: Saving/Loading of levels.
-/// 
+///
 
 #ifndef H_CATEDU_SAVE
 #define H_CATEDU_SAVE
@@ -42,7 +42,7 @@ struct BinaryFormat {
         format.mode = BinaryIOMode::READ;
         format.cap = max;
         format.origin = (uint8_t*)origin;
-        format.data = (void*)format.origin;
+        format.data = (uint8_t*)format.origin;
         return format;
     }
 
@@ -84,6 +84,7 @@ struct BinaryFormat {
     {
         pass_bytes(data, sizeof *data);
 
+#if 0
         printf("%5s ", mode == BinaryIOMode::READ ? "READ" : "WRITE");
 
         uint8_t *data_raw = (uint8_t*)data;
@@ -91,6 +92,7 @@ struct BinaryFormat {
             printf("%02x ", data_raw[i]);
         }
         printf("\n");
+#endif
     }
 
     inline void pass_pointer(void **data, size_t n)

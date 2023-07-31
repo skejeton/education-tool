@@ -1,5 +1,27 @@
 {
   "files.associations": {
-    "__locale": "cpp"
+    "__locale": "cpp",
+    "iterator": "cpp",
+    "array": "cpp",
+    "deque": "cpp",
+    "format": "cpp",
+    "initializer_list": "cpp",
+    "list": "cpp",
+    "queue": "cpp",
+    "ranges": "cpp",
+    "span": "cpp",
+    "type_traits": "cpp",
+    "vector": "cpp",
+    "xhash": "cpp",
+    "xstring": "cpp",
+    "xutility": "cpp",
+    "istream": "cpp",
+    "memory": "cpp",
+    "tuple": "cpp",
+    "utility": "cpp",
+    "xlocmes": "cpp",
+    "xlocmon": "cpp",
+    "xlocnum": "cpp",
+    "xloctime": "cpp"
   }
 }

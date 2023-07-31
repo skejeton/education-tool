@@ -15,7 +15,7 @@
 
 static void save_entity_in_editor(Entry *entry)
 {
-    entry->entity_editor.emplace();
+    entry->entity_editor.emplace(&entry->nc);
 }
 
 static void set_mode(Entry *entry, PlayingMode mode)
@@ -60,6 +60,11 @@ static void handle_game_mode_input(Entry *entry, Input *inputs)
 }
 
 
+static Player *get_player(Entry *entry) {
+    return entry->env.player_pool.players.get(entry->nc.player_id);
+}
+
+
 static bool is_game_mode(PlayingMode playing_mode)
 {
     return playing_mode == PLAYING_MODE_BUILD || playing_mode == PLAYING_MODE_PLAY;
@@ -68,23 +73,22 @@ static bool is_game_mode(PlayingMode playing_mode)
 
 static void handle_in_game_input(Entry *entry, Input *inputs)
 {
-    /* FIXME: player handling */
-#if 0
+    Player *player = get_player(entry);
+
     switch (entry->env.playing_mode) {
         case PLAYING_MODE_PLAY:
-            if (inputs->key_states[SAPP_KEYCODE_SPACE].pressed && entry->camera.position.y < 2.1) {
-                entry->camera_velocity.y = 10;
+            if (inputs->key_states[SAPP_KEYCODE_SPACE].pressed && player->camera.position.y < 2.1) {
+                player->camera_velocity.y = 10;
             }
-            camera_input_apply(&entry->camera, inputs, false);
+            camera_input_apply(&player->camera, inputs, false);
             break;
         case PLAYING_MODE_BUILD:
-            camera_input_apply(&entry->camera, inputs);
+            camera_input_apply(&player->camera, inputs);
             break;
         default:
             // Not an in-game mode.
             break;
     }
-#endif
 }
 
 
@@ -100,16 +104,16 @@ static void handle_input(Entry *entry, Input *inputs) {
 
 
 void check_collisions(Entry *entry) {
-    /* FIXME: PLAYER */
-#if 0
-    Rect camera_rect = {{entry->camera.position.x-1, entry->camera.position.z-1}, {2, 2}};
+    Player *player = get_player(entry);
+
+    Rect camera_rect = {{player->camera.position.x-1, player->camera.position.z-1}, {2, 2}};
     Vector2 snap = {0, 0};
 
-    for (SceneIterator iterator = scene_iterator_begin(&entry->scene);
+    for (SceneIterator iterator = scene_iterator_begin(&entry->env.scene);
          scene_iterator_going(&iterator);
          scene_iterator_next(&iterator))
     {
-        Entity* entity = scene_get_entity(&entry->scene, iterator.id);
+        Entity* entity = scene_get_entity(&entry->env.scene, iterator.id);
         Rect collision_rect = entity_collision_rect(entity);
 
         if (rect_vs_rect(camera_rect, collision_rect)) {
@@ -118,9 +122,8 @@ void check_collisions(Entry *entry) {
         }
     }
 
-    entry->camera.position.x += snap.x;
-    entry->camera.position.z += snap.y;
-#endif
+    player->camera.position.x += snap.x;
+    player->camera.position.z += snap.y;
 }
 
 static void set_imgui_rounding(float rounding) {
@@ -140,17 +143,23 @@ static void init_imgui_font(Entry *entry, const char *path, float size) {
     int font_width, font_height;
 
     io.Fonts->GetTexDataAsRGBA32(&font_pixels, &font_width, &font_height);
-    sg_image_desc img_desc = {};
+    sg_image_desc img_desc = { };
     img_desc.width = font_width;
     img_desc.height = font_height;
     img_desc.pixel_format = SG_PIXELFORMAT_RGBA8;
-    img_desc.wrap_u = SG_WRAP_CLAMP_TO_EDGE;
-    img_desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
-    img_desc.min_filter = SG_FILTER_LINEAR;
-    img_desc.mag_filter = SG_FILTER_LINEAR;
     img_desc.data.subimage[0][0].ptr = font_pixels;
     img_desc.data.subimage[0][0].size = font_width * font_height * 4;
-    io.Fonts->TexID = (ImTextureID)(uintptr_t) sg_make_image(&img_desc).id;
+    sg_image font_img = sg_make_image(&img_desc);
+    sg_sampler_desc smp_desc = { };
+    smp_desc.min_filter = SG_FILTER_LINEAR;
+    smp_desc.mag_filter = SG_FILTER_LINEAR;
+    smp_desc.wrap_u = SG_WRAP_CLAMP_TO_EDGE;
+    smp_desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
+    sg_sampler font_smp = sg_make_sampler(&smp_desc);
+    simgui_image_desc_t font_desc = { };
+    font_desc.image = font_img;
+    font_desc.sampler = font_smp;
+    io.Fonts->TexID = simgui_imtextureid(simgui_make_image(&font_desc));
 }
 
 //--------------
@@ -204,7 +213,6 @@ const char* selection_option_name(SelectionOption selection) {
     }
 }
 
-#if 0
 static Entity generate_entity_from_type(SelectionOption selection, Vector3 position, int height)
 {
     Entity ent = {};
@@ -233,7 +241,6 @@ static Entity generate_entity_from_type(SelectionOption selection, Vector3 posit
     ent.shape.color = {1.0, 1.0, 1.0, 1.0};
     return ent;
 }
-#endif
 
 void put_information_window(InformationWindowData data) {
     const int width = sapp_width();
@@ -309,9 +316,11 @@ static void show_ui_game_mode(Entry *entry)
         gui.begin_window("Help");
         entry->help_menu.show(&gui);
         TableIterator iter = TableIterator<Player>::init(&entry->env.player_pool.players);
+        gui.label("player count: %zu", entry->env.player_pool.players.count);
         for (;iter.going(); iter.next()) {
             gui.label("%zu/%zu", iter.id.id, iter.id.generation);
         }
+        gui.label("%g", get_player(entry)->camera.yaw);
 
         gui.end_window();
         break;
@@ -382,7 +391,7 @@ static void show_ui(Entry *entry)
 
         if (entry->main_menu.show(&entry->open_project)) {
             entry->dialog_queue.push("Playing", DialogType::Info);
-            entry->nc = Netcode::connect(&entry->env, entry->open_project);
+            entry->nc.connect(&entry->env, entry->open_project);
             set_mode(entry, PLAYING_MODE_BUILD);
         }
     }
@@ -394,16 +403,15 @@ static void show_ui(Entry *entry)
 
 static void handle_game_mode(Entry *entry)
 {
-    // const int width = sapp_width();
-    // const int height = sapp_height();
+    const int width = sapp_width();
+    const int height = sapp_height();
 
-    // FIXME: Player handling
-#if 0
-    entry->camera.set_aspect((float)width / height);
-    if (entry->camera.position.y < 0.2) {
-        entry->camera.position.y = 0.2;
+    Player *player = get_player(entry);
+
+    player->camera.set_aspect((float)width / height);
+    if (player->camera.position.y < 0.2) {
+        player->camera.position.y = 0.2;
     }
-#endif
 
     entry->selection_option = input_selection_option(entry->inputs, entry->selection_option);
     entry->bheight += entry->inputs.mouse_wheel;
@@ -411,29 +419,28 @@ static void handle_game_mode(Entry *entry)
     if (entry->bheight < 1) entry->bheight = 1;
     if (entry->bheight > 9) entry->bheight = 9;
 
-#if 0
-    Matrix4 view_projection = entry-`>camera.vp;
+    Matrix4 view_projection = player->camera.vp;
 
     // Draw Ground
     Box3 floor = box3_extrude_from_point({ 0, 0, 0 }, { 5000, 0.05, 5000 });
     boxdraw_push(&entry->boxdraw, boxdraw_cmdcolored(floor, { 0.1, 0.8, 0.15, 1.0 }));
 
-    auto pointing_at = PointingAtResolve::init(entry->camera.ray());
+    auto pointing_at = PointingAtResolve::init(player->camera.ray());
     auto pointing_at_bindings = TempIdBinder<TableId>::init();
 
     if (entry->env.playing_mode == PLAYING_MODE_BUILD) {
-        PlacementGrid grid = PlacementGrid::init(entry->camera.position.x, entry->camera.position.z);
+        PlacementGrid grid = PlacementGrid::init(player->camera.position.x, player->camera.position.z);
 
         for (
-                SceneIterator iterator = scene_iterator_begin(&entry->scene);
+                SceneIterator iterator = scene_iterator_begin(&entry->env.scene);
                 scene_iterator_going(&iterator);
                 scene_iterator_next(&iterator))
         {
-            grid.place_region(entity_placement_region(scene_get_entity(&entry->scene, iterator.id)));
+            grid.place_region(entity_placement_region(scene_get_entity(&entry->env.scene, iterator.id)));
         }
 
         int rx, ry;
-        float rt = grid.map_ray(entry->camera.ray(), &rx, &ry);
+        float rt = grid.map_ray(player->camera.ray(), &rx, &ry);
 
         bool may_place = rt < 50;
         if (entry->last_object_locator.id > 0) {
@@ -451,7 +458,7 @@ static void handle_game_mode(Entry *entry)
                 render_entity(&entry->boxdraw, &potential_entity, false, false);
             }
             if (entry->inputs.mouse_states[0].pressed && sapp_mouse_locked()) {
-                scene_summon_entity(&entry->scene, potential_entity);
+                entry->nc.summon_entity(potential_entity);
             }
         }
     }
@@ -487,7 +494,7 @@ static void handle_game_mode(Entry *entry)
         int id = locator->id;
         if (id >= 0) {
             TableId entity_id = entry->last_object_locator;
-            Entity *entity = scene_get_entity(&entry->scene, entity_id);
+            Entity *entity = scene_get_entity(&entry->env.scene, entity_id);
             if (entry->env.playing_mode == PLAYING_MODE_PLAY) {
                 if (entry->inputs.mouse_states[0].released) {
                     sapp_lock_mouse(false);
@@ -505,15 +512,27 @@ static void handle_game_mode(Entry *entry)
                         entry->entity_editor = EntityEditor::init(&entry->env.flashbacks);
                     }
 
-                    scene_remove_entity(&entry->scene, entity_id);
+                    entry->nc.remove_entity(entity_id);
                 }
+            }
+        }
+    }
+
+    entry->nc.set_player_state(*player);
+
+    // Draw all players.
+    {
+        auto iter = TableIterator<Player>::init(&entry->env.player_pool.players);
+        for (; iter.going(); iter.next()) {
+            // NOTE: Do not render yourself
+            if (iter.id != entry->nc.player_id) {
+                Character{iter.table->get(iter.id)->camera.position-Vector3{0, 1, 0}}.draw(&entry->boxdraw, {1.0, 1.0, 0, 1.0});
             }
         }
     }
 
     entry->cmdc = entry->boxdraw.commands_count;
     boxdraw_flush(&entry->boxdraw, view_projection);
-#endif
 }
 
 void update_mode(Entry *entry) {
@@ -567,6 +586,7 @@ void Entry::frame(void) {
 
 
 void Entry::cleanup(void) {
+    nc.disconnect();
     boxdraw_destroy(&boxdraw);
     simgui_shutdown();
     sg_shutdown();
