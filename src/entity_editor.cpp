@@ -83,9 +83,10 @@ static FlashbacksDialogPrototype derive_prototype_from(FlashbacksDialog dialog) 
     return prototype;
 }
 
-void EntityEditor::derive_from(Entity* entity) {
+void EntityEditor::derive_from(TableId entity_id, Entity* entity) {
     prototypes = {};
 
+    this->entity_id = entity_id;
     this->entity = entity;
 
     FlashbacksDialogId id = entity->dialog_id;
@@ -118,4 +119,5 @@ void EntityEditor::emplace(Netcode *nc) {
     }
 
     *start = maker.starter_id;
+    nc->set_entity(entity_id, *entity);
 }

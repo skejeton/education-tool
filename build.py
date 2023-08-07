@@ -13,7 +13,7 @@ def parse_arguments(argv):
 
   for arg in argv:
     if arg.startswith("-"):
-      switches.append(arg[1:])  
+      switches.append(arg[1:])
     else:
       if target == "":
         target = arg
@@ -37,11 +37,15 @@ def target_build_wasm():
       raise Exception("Can not build WASM on Windows, please, install WSL2 with Emscripten SDK")
     if not system_features["has_emcc"]:
       raise Exception("Can not build WASM because you need to install Emscripten SDK")
- 
-def target_build(is_test = False):
+
+def target_build(test_mode = False, env_test = False, env_test_name = ""):
   test_string = ""
-  if is_test:
-    test_string += "-DRUN_TESTS=YES"
+  if test_mode and env_test:
+    test_string += f"-DENV_TYPE=ENVTEST -DENV_TEST_NAME={env_test_name}"
+  elif test_mode:
+    test_string += "-DENV_TYPE=UNITTEST"
+  else:
+    test_string += "-DENV_TYPE=NORMAL"
 
   if os.name == "nt":
     return f"if not exist bin mkdir bin\nlib\\sokol-tools-bin\\bin\\win32\\sokol-shdc.exe --input src/shaders/amalgamation.glsl --output src/shaders.hxx --slang hlsl5 && cd bin && cmake -DCMAKE_BUILD_TYPE=Debug {test_string} .. && msbuild catedu.sln /property:Configuration=Debug && cd .."
@@ -50,13 +54,19 @@ def target_build(is_test = False):
   else:
     return f"mkdir -p bin\nlib/sokol-tools-bin/bin/linux/sokol-shdc --input src/shaders/amalgamation.glsl --output src/shaders.hxx --slang glsl330 && cd bin && cmake -DCMAKE_BUILD_TYPE=Debug {test_string} .. && make && cd .."
 
-def target_run(is_test = False):
+def target_run(test_mode = False, env_test = False, env_test_name = ""):
   if os.name == "nt":
-    return target_build(is_test) + " && .\\bin\\debug\\catedu.exe\n"
+    return target_build(test_mode, env_test, env_test_name) + " && .\\bin\\debug\\catedu.exe\n"
   elif sys.platform == "darwin":
-    return target_build(is_test) + " && ./bin/catedu\n"
+    return target_build(test_mode, env_test, env_test_name) + " && ./bin/catedu\n"
   else:
-    return target_build(is_test) + " && ./bin/debug/catedu\n"
+    return target_build(test_mode, env_test, env_test_name) + " && ./bin/debug/catedu\n"
+
+def target_test_unit():
+  return target_run(True)
+
+def target_test_env(test: str):
+  return target_run(True, True, test)
 
 def init_system_features():
   if shutil.which("emcc") is not None:
@@ -72,13 +82,16 @@ def main():
     script = target_build_wasm()
   elif arguments.target == "build":
     script = target_build()
-  elif arguments.target == "test":
-    script = target_run(True)
+  elif arguments.target == "test-unit":
+    script = target_test_unit()
+  elif arguments.target == "test-env":
+    assert(len(arguments.switches) == 1)
+    script = target_test_env(arguments.switches[0])
   elif arguments.target == "run":
     script = target_run()
   else:
     raise Exception(f"Unknown target: {arguments.target}")
-
+  print(script)
   if os.name == "nt":
     os.system("if not exist user mkdir user")
   else:

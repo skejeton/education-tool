@@ -104,7 +104,7 @@ void boxdraw_push(BoxdrawRenderer *renderer, BoxdrawCommand cmd) {
 
 /*
  * This function creates a transform for cube_vertices, so that it's positioned
- * at the correct corners of the specified box. 
+ * at the correct corners of the specified box.
  */
 Matrix4 create_box_transform(Box3 box) {
     float width, height, depth;

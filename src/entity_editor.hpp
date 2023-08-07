@@ -13,6 +13,7 @@
 
 struct EntityEditor {
     Flashbacks *flashbacks;
+    TableId entity_id;
     Entity *entity;
     std::vector<FlashbacksDialogPrototype> prototypes;
 
@@ -23,7 +24,7 @@ struct EntityEditor {
         return editor;
     }
     void show(EasyGui *gui);
-    void derive_from(Entity *entity);
+    void derive_from(TableId entity_id, Entity *entity);
     void emplace(Netcode *nc);
 };
 

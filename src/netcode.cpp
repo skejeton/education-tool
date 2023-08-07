@@ -85,6 +85,7 @@ void Netcode::register_all()
     rpc.register_function("net_set_player_state", this, nc_set_player_state);
     rpc.register_function("net_summon_entity", this, nc_summon_entity);
     rpc.register_function("net_remove_entity", this, nc_remove_entity);
+    rpc.register_function("net_set_entity", this, nc_set_entity);
     rpc.register_function("net_add_dialog", this, nc_add_dialog);
     rpc.register_function("net_remove_dialog", this, nc_remove_dialog);
     rpc.register_function("net_set_dialog", this, nc_set_dialog);
@@ -135,6 +136,15 @@ void Netcode::remove_entity(TableId entity_id)
     FileBuffer buf = net_table_remove_write<Entity>(entity_id);
 
     (void)rpc.broadcast("net_remove_entity", buf.size, buf.data);
+
+    buf.deinit();
+}
+
+void Netcode::set_entity(TableId id, Entity entity)
+{
+    FileBuffer buf = net_table_set_write<Entity>(id, entity, ncfmt_entity);
+
+    (void)rpc.broadcast("net_set_entity", buf.size, buf.data);
 
     buf.deinit();
 }

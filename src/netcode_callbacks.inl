@@ -4,6 +4,7 @@
 #include "rpc.hpp"
 #include "environment.hpp"
 #include "net_table.hpp"
+#include "netcode.hpp"
 
 #define RPC_HANDLER(name) static void name(Rpc *rpc, RpcClient source, void *userdata, size_t data_size, const void *data)
 
@@ -85,6 +86,14 @@ RPC_HANDLER(nc_remove_entity)
     auto nc = (Netcode*)userdata;
 
     net_table_remove_apply<Entity>({(uint8_t*)data, data_size}, &nc->env->scene.entities);
+}
+
+
+RPC_HANDLER(nc_set_entity)
+{
+    auto nc = (Netcode*)userdata;
+
+    net_table_set_apply<Entity>({(uint8_t*)data, data_size}, &nc->env->scene.entities, ncfmt_entity);
 }
 
 

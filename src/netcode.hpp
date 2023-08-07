@@ -28,6 +28,7 @@ struct Netcode {
 
     void summon_entity(Entity entity);
     void remove_entity(TableId entity_id);
+    void set_entity(TableId id, Entity entity);
 
     TableId add_dialog(FlashbacksDialog dialog);
     void remove_dialog(TableId id);

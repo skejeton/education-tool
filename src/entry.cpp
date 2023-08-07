@@ -248,10 +248,8 @@ void put_information_window(InformationWindowData data) {
     ImGui::SetNextWindowPos({ (float)width - 300, 21 * sapp_dpi_scale() });
     ImGui::SetNextWindowSize({ 295, 300 });
     if (ImGui::Begin("Information")) {
-
         const char* selection = selection_option_name(data.item_selection);
         ImGui::LabelText("##sel", "Selected: %s", selection);
-
     }
     ImGui::End();
 }
@@ -315,10 +313,19 @@ static void show_ui_game_mode(Entry *entry)
     case HELP:
         gui.begin_window("Help");
         entry->help_menu.show(&gui);
-        TableIterator iter = TableIterator<Player>::init(&entry->env.player_pool.players);
-        gui.label("player count: %zu", entry->env.player_pool.players.count);
-        for (;iter.going(); iter.next()) {
-            gui.label("%zu/%zu", iter.id.id, iter.id.generation);
+        {
+            gui.label("dialog count: %zu", entry->env.flashbacks.dialogs.count);
+            TableIterator iter = TableIterator<FlashbacksDialog>::init(&entry->env.flashbacks.dialogs);
+            for (;iter.going(); iter.next()) {
+                gui.label("%zu/%zu", iter.id.id, iter.id.generation);
+            }
+        }
+        {
+            gui.label("player count: %zu", entry->env.player_pool.players.count);
+            TableIterator iter = TableIterator<Player>::init(&entry->env.player_pool.players);
+            for (;iter.going(); iter.next()) {
+                gui.label("%zu/%zu", iter.id.id, iter.id.generation);
+            }
         }
         gui.label("%g", get_player(entry)->camera.yaw);
 
@@ -505,7 +512,7 @@ static void handle_game_mode(Entry *entry)
                     save_entity_in_editor(entry);
                     entry->entity_selected = entity_id;
                     entry->menu = OpenMenu::DIALOG_EDITOR;
-                    entry->entity_editor.derive_from(entity);
+                    entry->entity_editor.derive_from(entity_id, entity);
                 } else if (entry->inputs.mouse_states[1].pressed) {
                     if (entry->entity_selected.id == id) {
                         entry->entity_selected.id = 0;
