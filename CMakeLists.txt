@@ -7,20 +7,20 @@ project(catedu)
 set(ADDITIONAL_FILES "")
 
 if (APPLE)
-    set(ADDITIONAL_FILES src/impl.m)
+    set(ADDITIONAL_FILES catedu/impl.m)
 endif()
 
-file(GLOB CATEDU_SRC_FILES "src/*.cpp" "src/*/*/*.cpp" "src/*/*/*/*.cpp" "src/*/*.cpp" ${ADDITIONAL_FILES} "lib/lib-enet/*.c" lib/imgui/imgui.cpp lib/imgui/imgui_draw.cpp lib/imgui/imgui_demo.cpp lib/imgui/imgui_widgets.cpp lib/imgui/imgui_tables.cpp)
+file(GLOB CATEDU_SRC_FILES "catedu/*.cpp" "catedu/*/*/*.cpp" "catedu/*/*/*/*.cpp" "catedu/*/*.cpp" ${ADDITIONAL_FILES} "lib/lib-enet/*.c" lib/imgui/imgui.cpp lib/imgui/imgui_draw.cpp lib/imgui/imgui_demo.cpp lib/imgui/imgui_widgets.cpp lib/imgui/imgui_tables.cpp)
 
 if (${ENV_TYPE} MATCHES "UNITTEST")
     add_compile_definitions(RUN_TESTS)
-    list(REMOVE_ITEM CATEDU_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+    list(REMOVE_ITEM CATEDU_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/catedu/main.cpp)
     list(APPEND CATEDU_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/test_main.cpp)
 endif()
 
 if (${ENV_TYPE} MATCHES "ENVTEST")
     add_compile_definitions(RUN_TESTS)
-    list(REMOVE_ITEM CATEDU_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+    list(REMOVE_ITEM CATEDU_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/catedu/main.cpp)
     list(APPEND CATEDU_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/environment/${ENV_TEST_NAME}/env_main.cpp)
 endif()
 
@@ -42,6 +42,7 @@ if (APPLE)
     target_link_libraries(${PROJECT_NAME} PRIVATE ${COCOA_LIBRARY} ${METAL} ${METAL_KIT} ${QUARTZ_CORE})
 endif()
 
+target_include_directories(${PROJECT_NAME} PUBLIC ./)
 target_include_directories(${PROJECT_NAME} PUBLIC lib/)
 target_include_directories(${PROJECT_NAME} PUBLIC lib/tau)
 target_include_directories(${PROJECT_NAME} PUBLIC lib/lib-enet/include)

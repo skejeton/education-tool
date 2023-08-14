@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "patch.hpp"
+#include "catedu/core/memory/buffer.hpp"
 #include "patch_explorer.hpp"
 
 /**

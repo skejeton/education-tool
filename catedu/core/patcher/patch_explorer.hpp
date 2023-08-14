@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "patch.hpp"
+#include "catedu/core/memory/serial_mem.hpp"
 
 /**
  * @brief For reading patches.
@@ -10,7 +11,12 @@
 struct PatchExplorer {
     Patch *patch;
 
-    Buffer get_section(const char *section);
+    static PatchExplorer from_patch(Patch *patch);
+
+    bool enter_section(const char *section);
+    bool leave_section();
+
+    PatchSection get_section(const char *section);
 };
 
 #endif

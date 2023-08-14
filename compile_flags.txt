@@ -4,6 +4,8 @@ lib
 lib/tau
 -I
 lib/lib-enet/include
+-I
+.
 -Wall
 -Wno-missing-braces
 -Werror
