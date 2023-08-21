@@ -177,6 +177,8 @@ void Entry::init(void) {
     desc.logger.func = slog_func;
     sg_setup(&desc);
 
+    this->ui_rendering = UiRendering::init();
+
     // use sokol-imgui with all default-options (we're not doing
     // multi-sampled rendering or using non-default pixel formats)
     simgui_desc_t simgui_desc = {};
@@ -587,13 +589,16 @@ void Entry::frame(void) {
         simgui_render();
         sg_end_pass();
     }
+
+    ui_rendering.render_object(UiBuffers::Rectangle);
     sg_commit();
 
-    inputs.update();
+    // inputs.update();
 }
 
 
 void Entry::cleanup(void) {
+    ui_rendering.deinit();
     nc.disconnect();
     boxdraw_destroy(&boxdraw);
     simgui_shutdown();

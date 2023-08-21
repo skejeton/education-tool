@@ -70,7 +70,8 @@
     "xlocinfo": "cpp",
     "xmemory": "cpp",
     "xstddef": "cpp",
-    "xtr1common": "cpp"
+    "xtr1common": "cpp",
+    "cassert": "cpp"
   },
   "C_Cpp.errorSquiggles": "enabled"
 }

@@ -49,7 +49,7 @@ BoxdrawRenderer boxdraw_create() {
     BoxdrawRenderer result = {};
     result.commands = (BoxdrawCommand*)calloc(BOXDRAW_CMD_MAX, sizeof(BoxdrawCommand));
 
-    result.shader = sg_make_shader(samalg_shader_desc(sg_query_backend()));
+    result.shader = sg_make_shader(boxdraw_prog_shader_desc(sg_query_backend()));
 
     sg_buffer_desc vertex_buffer_desc = {};
     vertex_buffer_desc.data = SG_RANGE(cube_vertices);
@@ -143,13 +143,13 @@ void boxdraw_flush(BoxdrawRenderer *renderer, Matrix4 view_projection) {
 
         Matrix4 model = create_box_transform(command.box);
 
-        samalg_vs_params_t vs_params;
+        boxdraw_vs_params_t vs_params;
         vs_params.mvp = view_projection * model;
         vs_params.top_color = command.top_color;
         vs_params.bottom_color = command.bottom_color;
 
         sg_range params_range = SG_RANGE(vs_params);
-        sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_samalg_vs_params, &params_range);
+        sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_boxdraw_vs_params, &params_range);
         sg_draw(0, 36, 1);
     }
 
