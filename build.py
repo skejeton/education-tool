@@ -38,6 +38,7 @@ def target_build_wasm():
     if not system_features["has_emcc"]:
       raise Exception("Can not build WASM because you need to install Emscripten SDK")
 
+
 def target_build(test_mode = False, env_test = False, env_test_name = ""):
   test_string = ""
   if test_mode and env_test:

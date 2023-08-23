@@ -591,6 +591,7 @@ void Entry::frame(void) {
         sg_end_pass();
     }
 
+#if 0
     ui_rendering.begin_pipeline();
 
     auto test_shape = [&](UiBuffers buffer, Rect rect){
@@ -619,10 +620,10 @@ void Entry::frame(void) {
     test_shape(UiBuffers::Circle, { { 120, 120 }, { 100, 100 } });
     test_shape(UiBuffers::Rectangle, { { 120, 10 }, { 100, 100 } });
     ui_rendering.end_pipeline();
-
+#endif
     sg_commit();
 
-    // inputs.update();
+    inputs.update();
 }
 
 
