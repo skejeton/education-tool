@@ -23,7 +23,8 @@ git submodule update
 
 We also use [git-lfs](https://git-lfs.com/)
 ```
-git lfs fetch --all
+git lfs install
+git lfs pull
 ```
 
 More system dependencies
