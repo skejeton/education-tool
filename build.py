@@ -60,7 +60,7 @@ def target_run(test_mode = False, env_test = False, env_test_name = ""):
   elif sys.platform == "darwin":
     return target_build(test_mode, env_test, env_test_name) + " && ./bin/catedu\n"
   else:
-    return target_build(test_mode, env_test, env_test_name) + " && ./bin/debug/catedu\n"
+    return target_build(test_mode, env_test, env_test_name) + " && ./bin/catedu\n"
 
 def target_test_unit():
   return target_run(True)
