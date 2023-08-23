@@ -6,10 +6,9 @@ We support multiplayer out of the box.
 ## Current Keymap
 (add editor shortcuts here)
 
-## Clone the repository
+## Development Installation
 
-Note: the repository is dependent on several submodules
-
+Clone the repository
 ```
 # if you don't care about contributing, you can use https version
 # https://github.com/skejeton/education-tool.git
@@ -22,11 +21,18 @@ git submodule init
 git submodule update
 ```
 
+We also use [git-lfs](https://git-lfs.com/)
+```
+git lfs fetch --all
+```
+
 More system dependencies
 - cmake
 - python3
+- some x11 libs on linux
 
-Run app
+## Build and Run
 ```
 python build.py build
+python build.py run
 ```
