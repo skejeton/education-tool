@@ -6,6 +6,7 @@
 
 namespace serial_mem_ext {
 
+
 inline size_t write_string(SerialMem *serial_mem, const char *string)
 {
     size_t remaining = 0;

@@ -12,6 +12,7 @@
 #include "project.hpp"
 #include "easy_gui.hpp"
 #include "enet/enet.h"
+#include "catedu/core/math/point_intersect.hpp"
 
 static void save_entity_in_editor(Entry *entry)
 {
@@ -590,7 +591,35 @@ void Entry::frame(void) {
         sg_end_pass();
     }
 
-    ui_rendering.render_object(UiBuffers::Rectangle);
+    ui_rendering.begin_pipeline();
+
+    auto test_shape = [&](UiBuffers buffer, Rect rect){
+        Vector4 key_color = {1, 1, 1, 1};
+        switch (buffer) {
+            case UiBuffers::Rectangle:
+                if (math_point_intersect_rect({ inputs.mouse_pos.x, inputs.mouse_pos.y }, rect)) {
+                    key_color = {1, 0, 0, 1};
+                }
+                break;
+            case UiBuffers::Circle:
+                if (math_point_intersect_ellipse({ inputs.mouse_pos.x, inputs.mouse_pos.y }, rect.pos+rect.siz/2, rect.siz/2)) {
+                    key_color = {1, 0, 0, 1};
+                }
+                break;
+            case UiBuffers::Squircle:
+                if (math_point_intersect_squircle({ inputs.mouse_pos.x, inputs.mouse_pos.y }, rect, 8)) {
+                    key_color = {1, 0, 0, 1};
+                }
+                break;
+        }
+        ui_rendering.render_object(buffer, rect, key_color);
+    };
+
+    test_shape(UiBuffers::Squircle, { { 10, 10 }, { 100, 100 } });
+    test_shape(UiBuffers::Circle, { { 120, 120 }, { 100, 100 } });
+    test_shape(UiBuffers::Rectangle, { { 120, 10 }, { 100, 100 } });
+    ui_rendering.end_pipeline();
+
     sg_commit();
 
     // inputs.update();

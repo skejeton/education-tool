@@ -2,16 +2,20 @@
 ////////////////////////////////////////////////////////////////////////////////
 @vs ui_vs
 uniform ui_vs_params {
-    float t;
+    mat4 mvp;
+    vec4 color_top;
+    vec4 color_bottom;
 };
 
 in vec2 position;
+in float gradient;
 out vec4 color;
 
 void main() {
-    gl_Position = vec4(position, -0.1, 1.0);
-    color = vec4(t, 0.0, 0.0, 1.0);
+    gl_Position = mvp * vec4(position, 0.0, 1.0);
+    color = mix(color_top, color_bottom, gradient);
 }
+
 @end
 ////////////////////////////////////////////////////////////////////////////////
 @fs ui_fs

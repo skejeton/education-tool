@@ -6,6 +6,7 @@
 #include "render_buffer.hpp"
 #include "catedu/math.hpp"
 
+/// @brief A generator for render meshes.
 struct RenderMeshGenerator {
     std::vector<float> vertices;
     std::vector<uint16_t> indices;
@@ -14,6 +15,7 @@ struct RenderMeshGenerator {
     static RenderMeshGenerator init(size_t vertex_stride);
 
     uint16_t push_vert(float *vertex, size_t count);
+
     void push_tri(uint16_t a, uint16_t b, uint16_t c);
 
     /// TODO: maybe return the buffer with the vertex stride and

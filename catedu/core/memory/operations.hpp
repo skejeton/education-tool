@@ -3,6 +3,7 @@
 
 #include <string.h>
 
+
 template <class T>
 T *memory_copy_via_malloc(T *elements, size_t count)
 {

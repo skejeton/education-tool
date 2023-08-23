@@ -1,6 +1,6 @@
 ///
 /// BRIEF: Collection of math types and functions
-/// 
+///
 
 #ifndef H_MATH_CATEDU
 #define H_MATH_CATEDU
@@ -47,6 +47,10 @@ inline Vector2 operator*=(Vector2 &a, Vector2 b) {
 
 inline Vector2 operator/(Vector2 a, Vector2 b) {
     return {a.x/b.x, a.y/b.y};
+}
+
+inline Vector2 operator/(Vector2 a, float b) {
+    return {a.x/b, a.y/b};
 }
 
 inline Vector2 operator/=(Vector2 &a, Vector2 b) {
@@ -167,6 +171,18 @@ inline Vector3 vector3_normalize(Vector3 a) {
 
 inline Vector3 vector3_cross(Vector3 a, Vector3 b) {
     return {a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x};
+}
+
+inline float vector2_dot(Vector2 a, Vector2 b) {
+    return a.x * b.x + a.y * b.y;
+}
+
+inline float vector2_length(Vector2 a) {
+    return sqrt(vector2_dot(a, a));
+}
+
+inline Vector2 vector2_normalize(Vector2 a) {
+    return a / vector2_length(a);
 }
 
 
@@ -384,6 +400,14 @@ struct Matrix4 {
         };
     }
 
+    static Matrix4 ortho(float left, float right, float bottom, float top, float near, float far) {
+        return {
+                2.0f / (right - left), 0,                     0,                    0,
+                0,                     2.0f / (top - bottom), 0,                    0,
+                0,                     0,                     2.0f / (near - far),  0,
+                (left + right) / (left - right), (bottom + top) / (bottom - top), (near + far) / (near - far), 1
+        };
+    }
 
     static Matrix4 look_at(Vector3 center, Vector3 eye, Vector3 up) {
         Vector3 z = vector3_normalize(center - eye);

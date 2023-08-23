@@ -2,6 +2,7 @@
 #define HPP_CATEDU_CORE_UI_RENDERING
 
 #include "sokol/sokol_gfx.h"
+#include "catedu/math.hpp"
 
 struct UiBuffer {
     sg_buffer vertex_buffer;
@@ -23,10 +24,15 @@ struct UiRendering {
     sg_pipeline pipeline;
     sg_shader shader;
 
+    // Per pipeline
+    Vector2 pip_size;
+
     static UiRendering init();
     void deinit();
 
-    void render_object(UiBuffers buffer);
+    void begin_pipeline();
+    void end_pipeline();
+    void render_object(UiBuffers buffer, Rect rect, Vector4 color);
 };
 
 #endif

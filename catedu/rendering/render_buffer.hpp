@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/// @brief Describes a write to a render buffer.
 struct RenderWriteDesc {
     /// @brief In float element count.
     size_t stride;
@@ -11,6 +12,7 @@ struct RenderWriteDesc {
     size_t offset;
 };
 
+/// @brief Describes a render buffer.
 struct RenderGeo {
     float *vbuf;
     /// @brief In float element count.
@@ -26,6 +28,14 @@ struct RenderGeo {
     bool validate();
 };
 
+/**
+ * @brief Populates a render buffer with the same data.
+ *
+ * @param geo The render buffer to populate.
+ * @param desc The description of the write.
+ * @param data The data to write.
+ * @param count The number of elements to write.
+ */
 void render_populate_all(RenderGeo *geo, RenderWriteDesc desc, float *data, size_t data_size);
 
 #endif
