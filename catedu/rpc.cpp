@@ -6,6 +6,7 @@
 #include <cstdint>
 #include "rpc.hpp"
 #include <cassert>
+#include <string.h>
 
 #define DEFAULT_CLIENT_CAP 32
 #define DEFAULT_CHAN_CAP   2

@@ -1,6 +1,7 @@
 #include "serial_mem.hpp"
 #include <algorithm>
 #include <assert.h>
+#include <string.h>
 
 static size_t remaining_memory(SerialMem *serial)
 {

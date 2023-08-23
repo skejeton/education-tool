@@ -4,7 +4,7 @@
 
 #include <cstddef>
 #include "imgui_tricks.hpp"
-
+#include <stdio.h>
 
 /// @returns Content rect
 static Rect begin_general_window(ImGuiTricks *tricks, Rect rect, const char *name, ImGuiWindowFlags flags)

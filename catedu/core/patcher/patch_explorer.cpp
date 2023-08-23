@@ -12,7 +12,8 @@ static PatchSectionData parse_data_section(SerialMem *serial, PatchExplorer *exp
 static PatchSectionScope parse_scope_section(SerialMem *serial, PatchExplorer *explorer)
 {
     PatchSectionScope scope;
-    serial->read_value(&scope.subsection_count);
+    // TODO: Check overflow
+    (void)serial->read_value(&scope.subsection_count);
     return scope;
 }
 

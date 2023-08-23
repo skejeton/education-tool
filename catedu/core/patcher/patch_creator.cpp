@@ -1,4 +1,6 @@
 #include "patch_creator.hpp"
+#include <stdlib.h>
+#include <string.h>
 
 static void write(PatchCreator *patch_creator, uint8_t byte)
 {

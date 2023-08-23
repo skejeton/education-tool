@@ -85,6 +85,7 @@ Vector2 calc_layout_content_size(Layout *layout) {
         case Layout::COLUMN:
             return {secn_size, prim_size};
     }
+    assert(false);
 }
 
 void EasyGui::end() {

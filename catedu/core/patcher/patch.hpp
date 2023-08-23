@@ -2,6 +2,7 @@
 #define HPP_CATEDU_CORE_PATCHER_PATCH
 
 #include <stddef.h>
+#include <stdint.h>
 #include "catedu/core/memory/buffer.hpp"
 
 /**

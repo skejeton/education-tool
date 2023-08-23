@@ -1,7 +1,7 @@
 #include "main_menu.hpp"
 #include "imgui/imgui.h"
 #include "sokol/sokol_app.h"
-#include <corecrt_math.h>
+#include <math.h>
 #include <filesystem>
 #include <stdio.h>
 #include "util.hpp"

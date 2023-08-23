@@ -1,6 +1,8 @@
 #ifndef HPP_CATEDU_CORE_MEMORY_BUFFER
 #define HPP_CATEDU_CORE_MEMORY_BUFFER
 
+#include <stddef.h>
+
 /**
  * @brief Generic data buffer with data and size.
  */

@@ -42,6 +42,10 @@ if (APPLE)
     target_link_libraries(${PROJECT_NAME} PRIVATE ${COCOA_LIBRARY} ${METAL} ${METAL_KIT} ${QUARTZ_CORE})
 endif()
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    target_link_libraries(${PROJECT_NAME} PUBLIC GL X11 pthread dl Xcursor Xi)
+endif()
+
 target_include_directories(${PROJECT_NAME} PUBLIC ./)
 target_include_directories(${PROJECT_NAME} PUBLIC lib/)
 target_include_directories(${PROJECT_NAME} PUBLIC lib/tau)

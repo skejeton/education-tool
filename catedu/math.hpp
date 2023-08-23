@@ -348,10 +348,6 @@ inline bool ray3_vs_box3(Ray3 r, Box3 b, float max_distance, float *distance)
     return true;
 }
 
-inline bool ray3_vs_box3_side(Ray3 r, Box3 b) {
-
-}
-
 inline bool ray3_vs_horizontal_plane(Ray3 r, float y, float *t)
 {
     if (r.origin.y < y) {

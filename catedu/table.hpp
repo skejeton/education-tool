@@ -70,6 +70,7 @@ struct Table {
         slots[id.id - 1].generation = id.generation;
         slots[id.id - 1].taken = true;
         values[id.id - 1] = value;
+        return id;
     }
 
 
