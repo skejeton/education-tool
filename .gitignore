@@ -1,5 +1,6 @@
 bin/
 src/shaders.hxx
+catedu/shaders.hxx
 
 # Right now only specialized for ske's computer, and publishes on the ske.land
 # website which I don't want to reveal tokens or other details of.
