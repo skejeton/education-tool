@@ -93,3 +93,5 @@ void Patcher::string(const char *name, char **string)
 {
     this->mode.pass_string(name, string);
 }
+
+

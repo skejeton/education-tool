@@ -32,7 +32,7 @@
 #include "player.hpp"
 #include "environment.hpp"
 #include "netcode.hpp"
-#include "ui/rendering.hpp"
+#include "ui/rendering/pass.hpp"
 
 enum OpenMenu {
     HELP,
@@ -67,7 +67,7 @@ struct Entry {
     OpenProject open_project;
     OpenMenu menu;
     DialogQueue dialog_queue;
-    UiRendering ui_rendering;
+    UiRenderingCore ui_rendering_core;
 
     void init();
     void input(const sapp_event* event);

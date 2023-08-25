@@ -5,8 +5,66 @@
 #ifndef H_MATH_CATEDU
 #define H_MATH_CATEDU
 #include <cmath>
+#include <stdint.h>
 #define MATH_TAU 6.283185307179586
 #define MATH_EPSILON 0.00001
+
+struct Vector2i {
+    union {
+        struct {
+            int32_t x, y;
+        };
+        int32_t values[2];
+    };
+};
+
+inline Vector2i operator+(Vector2i a, Vector2i b) {
+    return {a.x+b.x, a.y+b.y};
+}
+
+inline Vector2i operator-(Vector2i a, Vector2i b) {
+    return {a.x-b.x, a.y-b.y};
+}
+
+inline Vector2i operator*(Vector2i a, Vector2i b) {
+    return {a.x*b.x, a.y*b.y};
+}
+
+inline Vector2i operator/(Vector2i a, Vector2i b) {
+    return {a.x/b.x, a.y/b.y};
+}
+
+inline Vector2i operator*(Vector2i a, int32_t b) {
+    return {a.x*b, a.y*b};
+}
+
+inline Vector2i operator/(Vector2i a, int32_t b) {
+    return {a.x/b, a.y/b};
+}
+
+inline Vector2i operator+=(Vector2i &a, Vector2i b) {
+    return a = {a.x+b.x, a.y+b.y};
+}
+
+inline Vector2i operator-=(Vector2i &a, Vector2i b) {
+    return a = {a.x-b.x, a.y-b.y};
+}
+
+inline Vector2i operator*=(Vector2i &a, Vector2i b) {
+    return a = {a.x*b.x, a.y*b.y};
+}
+
+inline Vector2i operator/=(Vector2i &a, Vector2i b) {
+    return a = {a.x/b.x, a.y/b.y};
+}
+
+inline Vector2i operator*=(Vector2i &a, int32_t b) {
+    return a = {a.x*b, a.y*b};
+}
+
+inline Vector2i operator/=(Vector2i &a, int32_t b) {
+    return a = {a.x/b, a.y/b};
+}
 
 struct Vector2 {
     union {
@@ -516,6 +574,16 @@ inline Vector3 operator*(Matrix4 a, Vector3 b) {
     }
 
     return {ret[0], ret[1], ret[2]};
+}
+
+// Conversion Operations
+
+inline Vector2i vector2_to_vector2i(Vector2 v) {
+    return {(int32_t)v.x, (int32_t)v.y};
+}
+
+inline Vector2 vector2i_to_vector2(Vector2i v) {
+    return {(float)v.x, (float)v.y};
 }
 
 #endif // H_MATH_CATEDU

@@ -178,7 +178,7 @@ void Entry::init(void) {
     desc.logger.func = slog_func;
     sg_setup(&desc);
 
-    this->ui_rendering = UiRendering::init();
+    this->ui_rendering_core = UiRenderingCore::init();
 
     // use sokol-imgui with all default-options (we're not doing
     // multi-sampled rendering or using non-default pixel formats)
@@ -591,10 +591,9 @@ void Entry::frame(void) {
         sg_end_pass();
     }
 
-#if 0
-    ui_rendering.begin_pipeline();
 
-    auto test_shape = [&](UiBuffers buffer, Rect rect){
+    UiRenderingPass pass = UiRenderingPass::begin(&ui_rendering_core);
+    auto test_shape = [&](UiBuffers buffer, Rect rect, UiImage image = {}){
         Vector4 key_color = {1, 1, 1, 1};
         switch (buffer) {
             case UiBuffers::Rectangle:
@@ -602,7 +601,7 @@ void Entry::frame(void) {
                     key_color = {1, 0, 0, 1};
                 }
                 break;
-            case UiBuffers::Circle:
+            case UiBuffers::Ellipse:
                 if (math_point_intersect_ellipse({ inputs.mouse_pos.x, inputs.mouse_pos.y }, rect.pos+rect.siz/2, rect.siz/2)) {
                     key_color = {1, 0, 0, 1};
                 }
@@ -613,14 +612,20 @@ void Entry::frame(void) {
                 }
                 break;
         }
-        ui_rendering.render_object(buffer, rect, key_color);
+
+        UiBrush brush = {};
+        brush.buffer = buffer;
+        brush.color_top = Vector4{0.8, 0.8, 0.8, 1.0}*key_color;
+        brush.color_bottom = Vector4{1.0, 1.0, 1.0, 1.0}*key_color;
+        pass.render_brush(brush, rect);
     };
 
-    test_shape(UiBuffers::Squircle, { { 10, 10 }, { 100, 100 } });
-    test_shape(UiBuffers::Circle, { { 120, 120 }, { 100, 100 } });
-    test_shape(UiBuffers::Rectangle, { { 120, 10 }, { 100, 100 } });
-    ui_rendering.end_pipeline();
-#endif
+
+    test_shape(UiBuffers::Squircle, { { 30, 30 }, { 300, 300 } });
+    test_shape(UiBuffers::Ellipse, { { 360, 360 }, { 300, 300 } });
+    test_shape(UiBuffers::Rectangle, { { 360, 30 }, { 300, 300 } });
+    pass.end();
+
     sg_commit();
 
     inputs.update();
@@ -628,7 +633,7 @@ void Entry::frame(void) {
 
 
 void Entry::cleanup(void) {
-    ui_rendering.deinit();
+    ui_rendering_core.deinit();
     nc.disconnect();
     boxdraw_destroy(&boxdraw);
     simgui_shutdown();
