@@ -24,7 +24,9 @@ jobs:
           copy bin\Release\catedu.exe package
           mkdir package\assets
           copy assets\* package\assets
-          tar -acf catedu-windows.zip package\*
+          cd package
+          tar -acf ../catedu-windows.zip *
+          cd ..
       - name: release
         uses: actions/create-release@v1
         id: create_release
