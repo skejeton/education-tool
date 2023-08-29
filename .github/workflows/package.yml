@@ -14,7 +14,9 @@ jobs:
       - name: checkout
         run: |
           git submodule init
-          git submodule update --remote
+          git submodule update --remotea
+          git lfs install
+          git lfs pull
       - name: build
         run: |
           python3 build.py build -release
