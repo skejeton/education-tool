@@ -118,7 +118,6 @@ def main():
   if "release" in arguments.switches:
     p.set_release()
 
-
   if arguments.target == "build-wasm":
     script = target_build_wasm()
   elif arguments.target == "test-unit":

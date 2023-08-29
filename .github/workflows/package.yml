@@ -14,17 +14,17 @@ jobs:
       - name: checkout
         run: |
           git submodule init
-          git submodule update --remotea
+          git submodule update --remote
           git lfs install
           git lfs pull
       - name: build
         run: |
           python3 build.py build -release
           mkdir package
-          copy bin/Release/catedu.exe package
-          mkdir package/assets
-          copy assets/* package/assets
-          tar -acf catedu-windows.zip package/*
+          copy bin\Release\catedu.exe package
+          mkdir package\assets
+          copy assets\* package\assets
+          tar -acf catedu-windows.zip package\*
       - name: release
         uses: actions/create-release@v1
         id: create_release
