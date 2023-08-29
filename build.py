@@ -118,21 +118,21 @@ def main():
   if "release" in arguments.switches:
     p.set_release()
 
-  match arguments.target:
-    case "build-wasm":
-      script = target_build_wasm()
-    case "test-unit":
-      p.set_test()
-      p.set_run()
-    case "test-env":
-      p.set_env_test(arguments.switches[0])
-      p.set_run()
-    case "run":
-      p.set_run()
-    case "build":
-      pass
-    case _:
-      raise Exception(f"Unknown target: {arguments.target}")
+
+  if arguments.target == "build-wasm":
+    script = target_build_wasm()
+  elif arguments.target == "test-unit":
+    p.set_test()
+    p.set_run()
+  elif arguments.target == "test-env":
+    p.set_env_test(arguments.switches[0])
+    p.set_run()
+  elif arguments.target == "run":
+    p.set_run()
+  elif arguments.target == "build":
+    pass
+  else:
+    raise Exception(f"Unknown target: {arguments.target}")
 
   if arguments.target != "build-wasm":
     script = target_build(p)
