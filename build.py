@@ -7,6 +7,27 @@ class Arguments:
     self.target = target
     self.switches = switches
 
+class CompileProperties:
+  def __init__(self):
+    self.test_mode = False
+    self.env_test = False
+    self.release_mode = False
+    self.env_test_name = ""
+    self.run_mode = False
+
+  def set_test(self):
+    self.test_mode = True
+
+  def set_env_test(self, name):
+    self.env_test = True
+    self.env_test_name = name
+
+  def set_release(self):
+    self.release_mode = True
+
+  def set_run(self):
+    self.run_mode = True
+
 def parse_arguments(argv):
   target = ""
   switches = []
@@ -39,64 +60,84 @@ def target_build_wasm():
       raise Exception("Can not build WASM because you need to install Emscripten SDK")
 
 
-def target_build(test_mode = False, env_test = False, env_test_name = ""):
+def target_build(p: CompileProperties):
   test_string = ""
-  if test_mode and env_test:
-    test_string += f"-DENV_TYPE=ENVTEST -DENV_TEST_NAME={env_test_name}"
-  elif test_mode:
+  if p.test_mode and p.env_test:
+    test_string += f"-DENV_TYPE=ENVTEST -DENV_TEST_NAME={p.env_test_name}"
+  elif p.test_mode:
     test_string += "-DENV_TYPE=UNITTEST"
   else:
     test_string += "-DENV_TYPE=NORMAL"
 
+  command = ""
+  mode_string = "Release" if p.release_mode else "Debug"
+
   if os.name == "nt":
-    return f"if not exist bin mkdir bin\nlib\\sokol-tools-bin\\bin\\win32\\sokol-shdc.exe --input catedu/shaders/amalgamation.glsl --output catedu/shaders.hxx --slang hlsl5 && cd bin && cmake -DCMAKE_BUILD_TYPE=Debug {test_string} .. && msbuild catedu.sln /property:Configuration=Debug && cd .."
+    # NOTE: The new line is important, because using && in the end of if
+    # statement will only execute the rest if the if statement is true.
+    command += "if not exist bin mkdir bin\r\n"
+    command += "lib\\sokol-tools-bin\\bin\\win32\\sokol-shdc.exe --input catedu/shaders/amalgamation.glsl --output catedu/shaders.hxx --slang hlsl5 "
+    command += "&& cd bin "
+    command += f"&& cmake -DCMAKE_BUILD_TYPE={mode_string} {test_string} .. "
+    command += f"&& msbuild catedu.sln /property:Configuration={mode_string} "
+    command += "&& cd .. "
+    if p.run_mode:
+      command += f"&& .\\bin\\{mode_string}\\catedu.exe"
   elif sys.platform == "darwin":
-    return f"mkdir -p bin\nlib/sokol-tools-bin/bin/osx/sokol-shdc --input catedu/shaders/amalgamation.glsl --output catedu/shaders.hxx --slang metal_macos && cd bin && cmake -DCMAKE_BUILD_TYPE=Debug {test_string} .. && make && cd .."
+    command += "mkdir -p bin "
+    command += "&& lib/sokol-tools-bin/bin/osx/sokol-shdc --input catedu/shaders/amalgamation.glsl --output catedu/shaders.hxx --slang metal_macos "
+    command += "&& cd bin "
+    command += f"&& cmake -DCMAKE_BUILD_TYPE={mode_string} {test_string} .. "
+    command += "&& make "
+    command += "&& cd .. "
+    if p.run_mode:
+      command += "&& ./bin/catedu"
   else:
-    return f"mkdir -p bin\nlib/sokol-tools-bin/bin/linux/sokol-shdc --input catedu/shaders/amalgamation.glsl --output catedu/shaders.hxx --slang glsl330 && cd bin && cmake -DCMAKE_BUILD_TYPE=Debug {test_string} .. && make && cd .."
-
-def target_run(test_mode = False, env_test = False, env_test_name = ""):
-  if os.name == "nt":
-    return target_build(test_mode, env_test, env_test_name) + " && .\\bin\\debug\\catedu.exe\n"
-  elif sys.platform == "darwin":
-    return target_build(test_mode, env_test, env_test_name) + " && ./bin/catedu\n"
-  else:
-    return target_build(test_mode, env_test, env_test_name) + " && ./bin/catedu\n"
-
-def target_test_unit():
-  return target_run(True)
-
-def target_test_env(test: str):
-  return target_run(True, True, test)
+    command += "mkdir -p bin "
+    command += "&& lib/sokol-tools-bin/bin/linux/sokol-shdc --input catedu/shaders/amalgamation.glsl --output catedu/shaders.hxx --slang glsl330 "
+    command += "&& cd bin "
+    command += f"&& cmake -DCMAKE_BUILD_TYPE={mode_string} {test_string} .. "
+    command += "&& make "
+    command += "&& cd .. "
+    if p.run_mode:
+      command += "&& ./bin/catedu"
+  return command
 
 def init_system_features():
   if shutil.which("emcc") is not None:
     system_features["has_emcc"] = True
 
 def main():
+  init_system_features()
+
   arguments = parse_arguments(sys.argv[1:])
   script = ""
 
-  init_system_features()
+  p = CompileProperties()
 
-  if arguments.target == "build-wasm":
-    script = target_build_wasm()
-  elif arguments.target == "build":
-    script = target_build()
-  elif arguments.target == "test-unit":
-    script = target_test_unit()
-  elif arguments.target == "test-env":
-    assert(len(arguments.switches) == 1)
-    script = target_test_env(arguments.switches[0])
-  elif arguments.target == "run":
-    script = target_run()
-  else:
-    raise Exception(f"Unknown target: {arguments.target}")
-  print(script)
-  if os.name == "nt":
-    os.system("if not exist user mkdir user")
-  else:
-    os.system("mkdir -p user")
+  if "release" in arguments.switches:
+    p.set_release()
+
+  match arguments.target:
+    case "build-wasm":
+      script = target_build_wasm()
+    case "test-unit":
+      p.set_test()
+      p.set_run()
+    case "test-env":
+      p.set_env_test(arguments.switches[0])
+      p.set_run()
+    case "run":
+      p.set_run()
+    case "build":
+      pass
+    case _:
+      raise Exception(f"Unknown target: {arguments.target}")
+
+  if arguments.target != "build-wasm":
+    script = target_build(p)
+
+
   lines = script.split('\n')
   for line in lines:
     status = os.system(line)

@@ -17,7 +17,12 @@ jobs:
           git submodule update --remote
       - name: build
         run: |
-          python3 build.py build
+          python3 build.py build -release
+          mkdir package
+          copy bin/Release/catedu.exe package
+          mkdir package/assets
+          copy assets/* package/assets
+          tar -acf catedu-windows.zip package
       - name: release
         uses: actions/create-release@v1
         id: create_release
@@ -34,6 +39,6 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./bin/Debug/catedu.exe
-          asset_name: catedu.exe
-          asset_content_type: application/exe
+          asset_path: ./catedu-windows.zip
+          asset_name: catedu-windows.zip
+          asset_content_type: application/zip

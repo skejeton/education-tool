@@ -88,6 +88,10 @@ MainMenu MainMenu::init(std::filesystem::path directory_path)
 {
     MainMenu menu = {};
 
+    if (!std::filesystem::exists(directory_path)) {
+        std::filesystem::create_directory(directory_path);
+    }
+
     menu.directory_path = directory_path;
     synchronize_file_list(&menu);
 
