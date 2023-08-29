@@ -13,6 +13,7 @@
 #include "easy_gui.hpp"
 #include "enet/enet.h"
 #include "catedu/core/math/point_intersect.hpp"
+#include "catedu/ui/resources/load_image.hpp"
 
 static void save_entity_in_editor(Entry *entry)
 {
@@ -179,6 +180,7 @@ void Entry::init(void) {
     sg_setup(&desc);
 
     this->ui_rendering_core = UiRenderingCore::init();
+    this->example_image = ui_resources_load_image(&this->ui_rendering_core, "./assets/example.png");
 
     // use sokol-imgui with all default-options (we're not doing
     // multi-sampled rendering or using non-default pixel formats)
@@ -614,6 +616,7 @@ void Entry::frame(void) {
         }
 
         UiBrush brush = {};
+        brush.image = this->example_image;
         brush.buffer = buffer;
         brush.color_top = Vector4{0.8, 0.8, 0.8, 1.0}*key_color;
         brush.color_bottom = Vector4{1.0, 1.0, 1.0, 1.0}*key_color;

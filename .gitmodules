@@ -13,3 +13,6 @@
 [submodule "lib/lib-enet"]
 	path = lib/lib-enet
 	url = https://github.com/skejeton/enet
+[submodule "lib/stb"]
+	path = lib/stb
+	url = https://github.com/nothings/stb

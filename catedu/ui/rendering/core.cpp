@@ -7,26 +7,18 @@
 
 #define DEFAULT_SAMPLE_COUNT 128
 
+static UiImage generate_image_from_data(int width, int height, const void *data) {
+    return ui_image_make_from_data({(size_t)(width*height*4), (void*)data}, {width, height});
+}
+
 // Generates 2x2 image of magenta and black
 static UiImage generate_test_image() {
-    sg_image_desc test_image_desc = {};
-    test_image_desc.width = 2;
-    test_image_desc.height = 2;
-    test_image_desc.pixel_format = SG_PIXELFORMAT_RGBA8;
-    test_image_desc.label = "ui-test-image";
-    test_image_desc.data.subimage[0][0].ptr = (const void *)"\xFF\x00\xFF\xFF\x00\x00\x00\xFF\x00\x00\x00\xFF\xFF\x00\xFF\xFF";
-    test_image_desc.data.subimage[0][0].size = 16;
-    sg_sampler_desc test_image_sampler_desc = {};
-    test_image_sampler_desc.min_filter = SG_FILTER_NEAREST;
-    test_image_sampler_desc.mag_filter = SG_FILTER_NEAREST;
-    test_image_sampler_desc.wrap_u = SG_WRAP_CLAMP_TO_EDGE;
-    test_image_sampler_desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
+    return generate_image_from_data(2, 2, "\xFF\x00\xFF\xFF\x00\x00\x00\xFF\x00\x00\x00\xFF\xFF\x00\xFF\xFF");
+}
 
-    return {
-        sg_make_image(test_image_desc),
-        sg_make_sampler(test_image_sampler_desc),
-        {2, 2}
-    };
+// Generates 1x1 white image
+static UiImage generate_white_image() {
+    return generate_image_from_data(1, 1, "\xFF\xFF\xFF\xFF");
 }
 
 UiBuffer generate_buffer(RenderGeo geo) {
@@ -35,8 +27,8 @@ UiBuffer generate_buffer(RenderGeo geo) {
 
     // Fill UVs
     for (size_t i = 0; i < geo.vbuf_size; i += 4) {
-        geo.vbuf[i+2] = geo.vbuf[i+0]+0.5f;
-        geo.vbuf[i+3] = geo.vbuf[i+1]+0.5f;
+        geo.vbuf[i+2] = 1.0-(geo.vbuf[i+0]+0.5f);
+        geo.vbuf[i+3] = 1.0-(geo.vbuf[i+1]+0.5f);
     }
 
     vertex_buffer_desc.label = "ui-buf";
@@ -83,7 +75,6 @@ UiRenderingCore UiRenderingCore::init()
 
     result.pipeline = sg_make_pipeline(pipeline_desc);
 
-
     result.bindings.vertex_buffers[0] = result.buffers[0].vertex_buffer;
     result.bindings.index_buffer = result.buffers[0].index_buffer;
 
@@ -91,26 +82,8 @@ UiRenderingCore UiRenderingCore::init()
     result.pass_action.colors[0].store_action = SG_STOREACTION_STORE;
     result.pass_action.colors[0].clear_value = {0.5, 0.5, 0.5, 1.0};
 
-    // Allocate one-pixel white image
-    sg_image_desc white_image_desc = {};
-    white_image_desc.width = 1;
-    white_image_desc.height = 1;
-    white_image_desc.pixel_format = SG_PIXELFORMAT_RGBA8;
-    white_image_desc.label = "ui-white-image";
-    white_image_desc.data.subimage[0][0].ptr = (const void *)"\xFF\xFF\xFF\xFF";
-    white_image_desc.data.subimage[0][0].size = 4;
-    sg_sampler_desc white_image_sampler_desc = {};
-    white_image_sampler_desc.min_filter = SG_FILTER_NEAREST;
-    white_image_sampler_desc.mag_filter = SG_FILTER_NEAREST;
-    white_image_sampler_desc.wrap_u = SG_WRAP_CLAMP_TO_EDGE;
-    white_image_sampler_desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
-
-    result.white_image = {
-        sg_make_image(white_image_desc),
-        sg_make_sampler(white_image_sampler_desc),
-        {1, 1}
-    };
-    result.test_image = generate_test_image();
+    result.white_image = result.alloc_image(generate_white_image());
+    result.test_image = result.alloc_image(generate_test_image());
 
     return result;
 }
@@ -123,8 +96,6 @@ void UiRenderingCore::deinit()
     }
     sg_destroy_pipeline(this->pipeline);
     sg_destroy_shader(this->shader);
-    sg_destroy_image(this->white_image.image);
-    sg_destroy_sampler(this->white_image.sampler);
 
     for (auto it = TableIterator<UiImage>::init(&this->images); it.going(); it.next()) {
         this->dealloc_image(it.id);
@@ -144,14 +115,9 @@ void UiRenderingCore::end_pipeline()
     sg_end_pass();
 }
 
-UiImageId UiRenderingCore::alloc_image(sg_image_desc desc, sg_sampler_desc sampler_desc)
+UiImageId UiRenderingCore::alloc_image(UiImage image)
 {
-    UiImage img = {};
-    img.image = sg_make_image(desc);
-    img.sampler = sg_make_sampler(sampler_desc);
-    img.size = {desc.width, desc.height};
-
-    return this->images.allocate(img);
+    return this->images.allocate(image);
 }
 
 void UiRenderingCore::dealloc_image(UiImageId id)
@@ -170,13 +136,12 @@ UiImage *UiRenderingCore::get_image(UiImageId id)
 
 void UiRenderingCore::render_object(Rect rect, UiBrush brush)
 {
-    UiImage *img = this->get_image(brush.image);
-    if (brush.image != NULL_ID) {
-        assert(img && "Trying to render with an invalid image id");
-    }
     if (brush.image == NULL_ID) {
-        img = &this->test_image;
+        brush.image = this->test_image;
     }
+
+    UiImage *img = this->get_image(brush.image);
+    assert(img && "Trying to render with an invalid image id");
 
     const float width = this->pip_size.x;
     const float height = this->pip_size.y;
@@ -204,4 +169,27 @@ void UiRenderingCore::render_object(Rect rect, UiBrush brush)
 
     sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_ui_vs_params, &params_range);
     sg_draw(0, buf->indices, 1);
+}
+
+UiImage ui_image_make_from_data(Buffer data, Vector2i size)
+{
+    sg_image_desc image_desc = {};
+    image_desc.width = size.x;
+    image_desc.height = size.y;
+    image_desc.pixel_format = SG_PIXELFORMAT_RGBA8;
+    image_desc.label = "ui-image";
+    image_desc.data.subimage[0][0].ptr = data.data;
+    image_desc.data.subimage[0][0].size = data.size;
+    sg_sampler_desc sampler_desc = {};
+    sampler_desc.min_filter = SG_FILTER_NEAREST;
+    sampler_desc.mag_filter = SG_FILTER_NEAREST;
+    sampler_desc.wrap_u = SG_WRAP_CLAMP_TO_EDGE;
+    sampler_desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
+    sampler_desc.label = "ui-sampler";
+
+    return {
+        sg_make_image(image_desc),
+        sg_make_sampler(sampler_desc),
+        {size.x, size.y}
+    };
 }

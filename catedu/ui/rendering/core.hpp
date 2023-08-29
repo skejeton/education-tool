@@ -8,6 +8,7 @@
 #include "sokol/sokol_gfx.h"
 #include "catedu/math.hpp"
 #include "catedu/table.hpp"
+#include "catedu/core/memory/buffer.hpp"
 
 struct UiBuffer {
     sg_buffer vertex_buffer;
@@ -43,8 +44,8 @@ struct UiRenderingCore {
     sg_bindings bindings;
     sg_pipeline pipeline;
     sg_shader shader;
-    UiImage white_image;
-    UiImage test_image;
+    UiImageId white_image;
+    UiImageId test_image;
     Table<UiImage> images;
 
     // Per pipeline
@@ -55,11 +56,13 @@ struct UiRenderingCore {
     void begin_pipeline();
     void end_pipeline();
 
-    UiImageId alloc_image(sg_image_desc desc, sg_sampler_desc sampler_desc);
+    UiImageId alloc_image(UiImage image);
     void dealloc_image(UiImageId id);
     UiImage *get_image(UiImageId id);
 
     void render_object(Rect rect, UiBrush brush);
 };
+
+UiImage ui_image_make_from_data(Buffer data, Vector2i size);
 
 #endif // HPP_CATEDU_UI_RENDERING_CORE

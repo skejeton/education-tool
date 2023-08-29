@@ -68,6 +68,7 @@ struct Entry {
     OpenMenu menu;
     DialogQueue dialog_queue;
     UiRenderingCore ui_rendering_core;
+    UiImageId example_image;
 
     void init();
     void input(const sapp_event* event);
