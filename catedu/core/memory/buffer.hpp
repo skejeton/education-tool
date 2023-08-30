@@ -6,11 +6,12 @@
 /**
  * @brief Generic data buffer with data and size.
  */
-struct Buffer {
+struct Buffer
+{
     /// @brief Buffer size.
     size_t size;
     /// @brief Buffer data.
-    void *data;
+    void* data;
 };
 
 #endif

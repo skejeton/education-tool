@@ -5,45 +5,49 @@
 #ifndef HPP_CATEDU_NET_TABLE
 #define HPP_CATEDU_NET_TABLE
 
+#include "save.hpp"
 #include "table.hpp"
 #include <functional>
 #include <vector>
-#include "save.hpp"
 
-template <typename T>
-struct NetTableIdValue {
+template<typename T>
+struct NetTableIdValue
+{
     TableId id;
     T value;
 };
 
-
-template <class T>
-struct NetTableInit {
+template<class T>
+struct NetTableInit
+{
     std::vector<NetTableIdValue<T>> pairs;
 };
 
-
-template <class T>
-struct NetTableAlloc {
+template<class T>
+struct NetTableAlloc
+{
     T value;
 };
 
-
-template <class T>
-struct NetTableSet {
+template<class T>
+struct NetTableSet
+{
     TableId id;
     T value;
 };
 
-
-template <class T>
-struct NetTableRemove {
+template<class T>
+struct NetTableRemove
+{
     TableId id;
 };
 
-
-template <class T>
-void net_table_init(BinaryFormat *format, Table<T> *table, std::function<void(BinaryFormat *fmt, T *element)> encoder) {
+template<class T>
+void
+net_table_init(BinaryFormat* format,
+               Table<T>* table,
+               std::function<void(BinaryFormat* fmt, T* element)> encoder)
+{
 
     if (format->mode == BinaryIOMode::WRITE) {
         size_t count = 0;
@@ -58,7 +62,7 @@ void net_table_init(BinaryFormat *format, Table<T> *table, std::function<void(Bi
             if (table->slots[i].taken || table->slots[i].generation) {
                 TableId id;
                 id.generation = table->slots[i].generation;
-                id.id = i+1;
+                id.id = i + 1;
                 format->pass_value(&id);
                 format->pass_value(&table->slots[i].taken);
                 if (table->slots[i].taken) {
@@ -89,8 +93,13 @@ void net_table_init(BinaryFormat *format, Table<T> *table, std::function<void(Bi
     }
 }
 
-template <class T>
-TableId net_table_alloc(BinaryFormat *format, Table<T> *dest, T *value, std::function<void(BinaryFormat *fmt, T *element)> encoder) {
+template<class T>
+TableId
+net_table_alloc(BinaryFormat* format,
+                Table<T>* dest,
+                T* value,
+                std::function<void(BinaryFormat* fmt, T* element)> encoder)
+{
     if (format->mode == BinaryIOMode::READ) {
         encoder(format, value);
 
@@ -102,16 +111,24 @@ TableId net_table_alloc(BinaryFormat *format, Table<T> *dest, T *value, std::fun
     return NULL_ID;
 }
 
-template <class T>
-FileBuffer net_table_set_write(TableId id, T value, std::function<void(BinaryFormat *fmt, T *element)> encoder) {
+template<class T>
+FileBuffer
+net_table_set_write(TableId id,
+                    T value,
+                    std::function<void(BinaryFormat* fmt, T* element)> encoder)
+{
     BinaryFormat format = BinaryFormat::begin_write();
     format.pass_value(&id);
     encoder(&format, &value);
     return format.leak_file_buffer();
 }
 
-template <class T>
-void net_table_set_apply(FileBuffer input, Table<T> *dest, std::function<void(BinaryFormat *fmt, T *element)> decoder) {
+template<class T>
+void
+net_table_set_apply(FileBuffer input,
+                    Table<T>* dest,
+                    std::function<void(BinaryFormat* fmt, T* element)> decoder)
+{
     BinaryFormat format = BinaryFormat::begin_read(input.data, input.size);
 
     NetTableSet<T> set;
@@ -121,15 +138,19 @@ void net_table_set_apply(FileBuffer input, Table<T> *dest, std::function<void(Bi
     decoder(&format, dest->get(set.id));
 }
 
-template <class T>
-FileBuffer net_table_remove_write(TableId id) {
+template<class T>
+FileBuffer
+net_table_remove_write(TableId id)
+{
     BinaryFormat format = BinaryFormat::begin_write();
     format.pass_value(&id);
     return format.leak_file_buffer();
 }
 
-template <class T>
-bool net_table_remove_apply(FileBuffer input, Table<T> *dest) {
+template<class T>
+bool
+net_table_remove_apply(FileBuffer input, Table<T>* dest)
+{
     BinaryFormat format = BinaryFormat::begin_read(input.data, input.size);
 
     NetTableRemove<T> remove;
@@ -138,7 +159,5 @@ bool net_table_remove_apply(FileBuffer input, Table<T> *dest) {
     // TODO: Prevent crashing
     return dest->remove(remove.id);
 }
-
-
 
 #endif

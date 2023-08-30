@@ -2,12 +2,15 @@
 #include "imgui/imgui.h"
 #include "sokol/sokol_app.h"
 
-struct HelpEntry {
+struct HelpEntry
+{
     char kind;
-    const char *text;
+    const char* text;
 };
 
-void show_document(EasyGui *gui, HelpEntry *entries, size_t entries_count) {
+void
+show_document(EasyGui* gui, HelpEntry* entries, size_t entries_count)
+{
     gui->padding = 0;
     for (size_t i = 0; i < entries_count; i++) {
         HelpEntry entry = entries[i];
@@ -31,23 +34,29 @@ void show_document(EasyGui *gui, HelpEntry *entries, size_t entries_count) {
 }
 
 HelpEntry entries[] = {
-        // TODO: keep up to date list of ALL shortcuts
-        //       make a system to automatically register shortcuts into this document
-        {'h', "Keyboard shortcuts"},
-        {'t', "[ - Build mode"},
-        {'t', "] - Play mode"},
+    // TODO: keep up to date list of ALL shortcuts
+    //       make a system to automatically register shortcuts into this
+    //       document
+    { 'h', "Keyboard shortcuts" },
+    { 't', "[ - Build mode" },
+    { 't', "] - Play mode" },
 
-        {'h', "Movement"},
-        {'t', "Use WASD keys for movement"},
+    { 'h', "Movement" },
+    { 't', "Use WASD keys for movement" },
 
-        {'h', "Build mode"},
-        {'t', "With build mode you can create your own games. Place buildings and add NPC's to interact with."},
+    { 'h', "Build mode" },
+    { 't',
+      "With build mode you can create your own games. Place buildings and add "
+      "NPC's to interact with." },
 
-        {'h', "Play mode"},
-        {'t', "Play games you made with build mode, interact with NPC's and walk around buildings and trees across pavements."}
-
+    { 'h', "Play mode" },
+    { 't',
+      "Play games you made with build mode, interact with NPC's and walk "
+      "around buildings and trees across pavements." }
 };
 
-void HelpMenu::show(EasyGui *gui) {
+void
+HelpMenu::show(EasyGui* gui)
+{
     show_document(gui, entries, sizeof entries / sizeof entries[0]);
 }

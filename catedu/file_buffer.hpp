@@ -9,14 +9,14 @@
 #include <stdint.h>
 #include <stdio.h>
 
-struct FileBuffer {
-    uint8_t *data;
+struct FileBuffer
+{
+    uint8_t* data;
     size_t size;
 
-    static FileBuffer read_whole_file(FILE *f);
-    void write_whole_file(FILE *f);
+    static FileBuffer read_whole_file(FILE* f);
+    void write_whole_file(FILE* f);
     void deinit();
 };
 
 #endif // H_CATEDU_FILE_BUFFER
-

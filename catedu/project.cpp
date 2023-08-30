@@ -1,13 +1,14 @@
 #include "project.hpp"
-#include <stdio.h>
 #include "save.hpp"
+#include <stdio.h>
 
-
-static void save_load_project(Project *project, BinaryFormat *format)
+static void
+save_load_project(Project* project, BinaryFormat* format)
 {
-    auto flashbacks_saver = TableSaver<FlashbacksDialog>::init(format, &project->flashbacks.dialogs);
-    for (;flashbacks_saver.going(); flashbacks_saver.next()) {
-        FlashbacksDialog *dialog = flashbacks_saver.save();
+    auto flashbacks_saver =
+      TableSaver<FlashbacksDialog>::init(format, &project->flashbacks.dialogs);
+    for (; flashbacks_saver.going(); flashbacks_saver.next()) {
+        FlashbacksDialog* dialog = flashbacks_saver.save();
 
         format->pass_c_string((char**)&dialog->answer);
         format->pass_c_string((char**)&dialog->text);
@@ -16,9 +17,9 @@ static void save_load_project(Project *project, BinaryFormat *format)
         flashbacks_saver.pass_id(&dialog->next);
     }
 
-    auto entities_saver = TableSaver<Entity>::init(format, &project->scene.entities);
-    for (;entities_saver.going(); entities_saver.next())
-    {
+    auto entities_saver =
+      TableSaver<Entity>::init(format, &project->scene.entities);
+    for (; entities_saver.going(); entities_saver.next()) {
         Entity* entity = entities_saver.save();
 
         format->pass_value(&entity->position);
@@ -28,36 +29,36 @@ static void save_load_project(Project *project, BinaryFormat *format)
     }
 }
 
-
-ProjectFile ProjectFile::init_from_path(const char *path)
+ProjectFile
+ProjectFile::init_from_path(const char* path)
 {
-    FILE *f = fopen(path, "rb");
+    FILE* f = fopen(path, "rb");
 
     ProjectFile file = {};
     file.f = f;
     return file;
 }
 
-
-FileBuffer ProjectFile::read_project_data()
+FileBuffer
+ProjectFile::read_project_data()
 {
     return FileBuffer::read_whole_file(f);
 }
 
-
-void ProjectFile::write_project_data(FileBuffer buffer)
+void
+ProjectFile::write_project_data(FileBuffer buffer)
 {
     buffer.write_whole_file(f);
 }
 
-
-void ProjectFile::deinit()
+void
+ProjectFile::deinit()
 {
     fclose(f);
 }
 
-
-Project Project::load(ProjectFile f)
+Project
+Project::load(ProjectFile f)
 {
     FileBuffer buf = f.read_project_data();
     if (buf.size == 0) {
@@ -73,8 +74,8 @@ Project Project::load(ProjectFile f)
     return project;
 }
 
-
-void Project::save(ProjectFile f)
+void
+Project::save(ProjectFile f)
 {
     BinaryFormat format = BinaryFormat::begin_write();
     save_load_project(this, &format);

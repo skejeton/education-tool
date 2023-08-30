@@ -1,10 +1,10 @@
 #ifndef HPP_CATEDU_CORE_MATH_INTERPOLATION
 #define HPP_CATEDU_CORE_MATH_INTERPOLATION
 
-inline float math_lerp(float a, float b, float t)
+inline float
+math_lerp(float a, float b, float t)
 {
-    return (b-a)*t+a;
+    return (b - a) * t + a;
 }
 
 #endif
-

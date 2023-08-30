@@ -5,12 +5,14 @@
 #ifndef H_CATEDU_EASY_GUI
 #define H_CATEDU_EASY_GUI
 
-#include "math.hpp"
 #include "imgui_tricks.hpp"
+#include "math.hpp"
 #include <vector>
 
-struct Layout {
-    enum Type {
+struct Layout
+{
+    enum Type
+    {
         COLUMN,
         ROW
     } type;
@@ -22,18 +24,21 @@ struct Layout {
     float secn_size;
 };
 
-enum Side {
+enum Side
+{
     LEFT,
     RIGHT,
     TOP,
     BOTTOM
 };
 
-struct EasyGui {
+struct EasyGui
+{
     ImGuiTricks tricks;
     std::vector<Layout> layouts;
-    // Because we have to place each ImGUI element into a separate window, we need to make a counter for static
-    // elements like labels, so their ID's don't collide with each other.
+    // Because we have to place each ImGUI element into a separate window, we
+    // need to make a counter for static elements like labels, so their ID's
+    // don't collide with each other.
     int static_counter;
     float margin;
     float padding;
@@ -48,13 +53,13 @@ struct EasyGui {
     void begin_layout(Layout::Type type);
     void end_layout();
 
-    bool button(const char *text);
-    void input_text_multiline(const char *name, char *buf, size_t max);
-    void input_text(const char *name, char *buf, size_t max);
-    void checkbox(const char *name, bool *value);
-    void label(const char *text, ...);
+    bool button(const char* text);
+    void input_text_multiline(const char* name, char* buf, size_t max);
+    void input_text(const char* name, char* buf, size_t max);
+    void checkbox(const char* name, bool* value);
+    void label(const char* text, ...);
 
-    void begin_window(const char *name);
+    void begin_window(const char* name);
     void end_window();
 
     void push_id(int id);

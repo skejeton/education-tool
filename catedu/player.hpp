@@ -1,18 +1,18 @@
 #ifndef HPP_PLAYER_CATEDU
 #define HPP_PLAYER_CATEDU
 
-#include "table.hpp"
 #include "camera.hpp"
+#include "table.hpp"
 
-struct Player {
+struct Player
+{
     Camera camera;
     Vector3 camera_velocity;
 };
 
-
-struct PlayerPool {
+struct PlayerPool
+{
     Table<Player> players;
 };
-
 
 #endif

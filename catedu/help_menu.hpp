@@ -7,8 +7,9 @@
 
 #include "easy_gui.hpp"
 
-struct HelpMenu {
-    void show(EasyGui *gui);
+struct HelpMenu
+{
+    void show(EasyGui* gui);
 };
 
 #endif // H_CATEDU_HELP_MENU

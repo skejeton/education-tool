@@ -5,16 +5,23 @@
 
 #define MAX_LENGTH 1024
 
-FlashbacksDialogPrototype allocate_prototype() {
-    return FlashbacksDialogPrototype{(char*)calloc(MAX_LENGTH, 1), (char*)calloc(MAX_LENGTH, 1)};
+FlashbacksDialogPrototype
+allocate_prototype()
+{
+    return FlashbacksDialogPrototype{ (char*)calloc(MAX_LENGTH, 1),
+                                      (char*)calloc(MAX_LENGTH, 1) };
 }
 
-void deallocate_prototype(FlashbacksDialogPrototype *prototype) {
+void
+deallocate_prototype(FlashbacksDialogPrototype* prototype)
+{
     free(prototype->text);
     free(prototype->answer);
 }
 
-void EntityEditor::show(EasyGui *gui) {
+void
+EntityEditor::show(EasyGui* gui)
+{
     int i = 0;
     int delete_index = -1;
     int swap_index_first = -1;
@@ -23,7 +30,7 @@ void EntityEditor::show(EasyGui *gui) {
     gui->padding = 10;
 
     gui->stretch = true;
-    for (auto &dialog : this->prototypes) {
+    for (auto& dialog : this->prototypes) {
         gui->push_id(i);
         gui->input_text_multiline("Description", dialog.text, MAX_LENGTH);
         gui->input_text("Answer", dialog.answer, MAX_LENGTH);
@@ -35,11 +42,11 @@ void EntityEditor::show(EasyGui *gui) {
             gui->stretch = false;
             if (gui->button("^")) {
                 swap_index_first = i;
-                swap_index_last = i-1;
+                swap_index_last = i - 1;
             }
             if (gui->button("v")) {
                 swap_index_first = i;
-                swap_index_last = i+1;
+                swap_index_last = i + 1;
             }
             gui->checkbox("Numeric Guess", &dialog.numeric);
             gui->stretch = true;
@@ -49,7 +56,9 @@ void EntityEditor::show(EasyGui *gui) {
         i++;
     }
 
-    if (swap_index_first >= 0 && swap_index_last >= 0 && swap_index_first < prototypes.size() && swap_index_last < prototypes.size()) {
+    if (swap_index_first >= 0 && swap_index_last >= 0 &&
+        swap_index_first < prototypes.size() &&
+        swap_index_last < prototypes.size()) {
         auto temp = prototypes[swap_index_first];
         prototypes[swap_index_first] = prototypes[swap_index_last];
         prototypes[swap_index_last] = temp;
@@ -57,7 +66,7 @@ void EntityEditor::show(EasyGui *gui) {
 
     if (delete_index >= 0) {
         deallocate_prototype(&this->prototypes[delete_index]);
-        this->prototypes.erase(this->prototypes.begin()+delete_index);
+        this->prototypes.erase(this->prototypes.begin() + delete_index);
     }
 
     if (gui->button("+")) {
@@ -65,16 +74,21 @@ void EntityEditor::show(EasyGui *gui) {
     }
 }
 
-void copy_string_safe_n(char *dest, const char *src, size_t max) {
+void
+copy_string_safe_n(char* dest, const char* src, size_t max)
+{
     *dest = 0;
-    if (!src) return;
-    for (size_t i = 0; src[i] && i < max-1; i++) {
+    if (!src)
+        return;
+    for (size_t i = 0; src[i] && i < max - 1; i++) {
         dest[i] = src[i];
     }
-    dest[max-1] = 0;
+    dest[max - 1] = 0;
 }
 
-static FlashbacksDialogPrototype derive_prototype_from(FlashbacksDialog dialog) {
+static FlashbacksDialogPrototype
+derive_prototype_from(FlashbacksDialog dialog)
+{
     FlashbacksDialogPrototype prototype = allocate_prototype();
 
     copy_string_safe_n(prototype.text, dialog.text, MAX_LENGTH);
@@ -83,7 +97,9 @@ static FlashbacksDialogPrototype derive_prototype_from(FlashbacksDialog dialog) 
     return prototype;
 }
 
-void EntityEditor::derive_from(TableId entity_id, Entity* entity) {
+void
+EntityEditor::derive_from(TableId entity_id, Entity* entity)
+{
     prototypes = {};
 
     this->entity_id = entity_id;
@@ -91,7 +107,7 @@ void EntityEditor::derive_from(TableId entity_id, Entity* entity) {
 
     FlashbacksDialogId id = entity->dialog_id;
     while (id.id) {
-        FlashbacksDialog *dialog = flashbacks->get_from_id(id);
+        FlashbacksDialog* dialog = flashbacks->get_from_id(id);
         if (!dialog) {
             break;
         }
@@ -100,7 +116,9 @@ void EntityEditor::derive_from(TableId entity_id, Entity* entity) {
     }
 }
 
-void EntityEditor::emplace(Netcode *nc) {
+void
+EntityEditor::emplace(Netcode* nc)
+{
     if (entity == nullptr) {
         return;
     }

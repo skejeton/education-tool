@@ -3,13 +3,14 @@
 #include <assert.h>
 #include <string.h>
 
-static size_t remaining_memory(SerialMem *serial)
+static size_t
+remaining_memory(SerialMem* serial)
 {
     return serial->buffer.size - serial->at;
 }
 
-
-size_t SerialMem::write_buffer(Buffer buf)
+size_t
+SerialMem::write_buffer(Buffer buf)
 {
 #ifdef _DEBUG
     assert(this->filter_ == Any || this->filter_ == Write);
@@ -24,8 +25,8 @@ size_t SerialMem::write_buffer(Buffer buf)
     return buf.size - bytes_to_write;
 }
 
-
-size_t SerialMem::read_buffer(Buffer buf)
+size_t
+SerialMem::read_buffer(Buffer buf)
 {
 #ifdef _DEBUG
     assert(this->filter_ == Any || this->filter_ == Read);
@@ -40,7 +41,8 @@ size_t SerialMem::read_buffer(Buffer buf)
     return buf.size - bytes_to_read;
 }
 
-void *SerialMem::pointer()
+void*
+SerialMem::pointer()
 {
     return ((uint8_t*)this->buffer.data + this->at);
 }

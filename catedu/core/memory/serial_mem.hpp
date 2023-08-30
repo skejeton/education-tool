@@ -7,11 +7,13 @@
 /**
  * @brief A sequential memory reader/writer.
  */
-struct SerialMem {
+struct SerialMem
+{
     /**
      * @brief Operation type checker.
      */
-    enum Operation {
+    enum Operation
+    {
         /// @brief Allow both reads and writes at the same time.
         Any,
         /// @brief Allow only reads, error out on writes.
@@ -49,26 +51,23 @@ struct SerialMem {
      * @brief Writes data from the buffer.
      * @return Amount of bytes couldn't fit.
      */
-    [[nodiscard]]
-    size_t write_buffer(Buffer buf);
+    [[nodiscard]] size_t write_buffer(Buffer buf);
 
     /**
      * @brief Reads data to the buffer.
      * @return Amount of bytes couldn't read.
      */
-    [[nodiscard]]
-    size_t read_buffer(Buffer buf);
+    [[nodiscard]] size_t read_buffer(Buffer buf);
 
     /**
      * @brief Writes a value.
      * @return Amount of bytes couldn't fit.
      * @warning SAFETY: This function doesn't convert to a uniform endianness.
      */
-    template <class T>
-    [[nodiscard]]
-    size_t write_value(T value)
+    template<class T>
+    [[nodiscard]] size_t write_value(T value)
     {
-        return write_buffer({sizeof(value), &value});
+        return write_buffer({ sizeof(value), &value });
     }
 
     /**
@@ -76,15 +75,14 @@ struct SerialMem {
      * @return Amount of bytes couldn't read.
      * @warning SAFETY: This function doesn't convert to a uniform endianness.
      */
-    template <class T>
-    [[nodiscard]]
-    size_t read_value(T *value)
+    template<class T>
+    [[nodiscard]] size_t read_value(T* value)
     {
-        return read_buffer({sizeof(*value), value});
+        return read_buffer({ sizeof(*value), value });
     }
 
     /// @return Gives pointer to the current position in the buffer
-    void *pointer();
+    void* pointer();
 };
 
 #endif

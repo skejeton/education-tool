@@ -1,17 +1,17 @@
 #ifndef HPP_CATEDU_CORE_PATCHER_PATCH_DEBUGGER
 #define HPP_CATEDU_CORE_PATCHER_PATCH_DEBUGGER
 
-#include <vector>
 #include "patch_explorer.hpp"
+#include <vector>
 
 /**
  * @brief For reading patches.
  */
-struct PatchDebugger {
+struct PatchDebugger
+{
     PatchExplorer explorer;
 
-    void section(const char *section);
+    void section(const char* section);
 };
 
 #endif
-
