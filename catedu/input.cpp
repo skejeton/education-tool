@@ -1,15 +1,17 @@
 #include "input.hpp"
 #include <cstdio>
 
-Input Input::init()
+Input
+Input::init()
 {
     return Input{};
 }
 
-void Input::update()
+void
+Input::update()
 {
     // Reset deltas
-    this->mouse_delta = {0, 0};
+    this->mouse_delta = { 0, 0 };
     this->mouse_wheel = 0;
 
     // Reset one-frame input states
@@ -24,11 +26,13 @@ void Input::update()
     }
 }
 
-void Input::pass_event(const sapp_event *event)
+void
+Input::pass_event(const sapp_event* event)
 {
     switch (event->type) {
         case SAPP_EVENTTYPE_MOUSE_SCROLL:
-            this->mouse_wheel = event->scroll_y == 0 ? 0 : (event->scroll_y < 0 ? -1 : 1);
+            this->mouse_wheel =
+              event->scroll_y == 0 ? 0 : (event->scroll_y < 0 ? -1 : 1);
             break;
         case SAPP_EVENTTYPE_KEY_DOWN:
             this->key_states[event->key_code].held = true;
@@ -40,8 +44,8 @@ void Input::pass_event(const sapp_event *event)
             this->key_states[event->key_code].released = true;
             break;
         case SAPP_EVENTTYPE_MOUSE_MOVE:
-            this->mouse_pos = {event->mouse_x, event->mouse_y};
-            this->mouse_delta += {event->mouse_dx, event->mouse_dy};
+            this->mouse_pos = { event->mouse_x, event->mouse_y };
+            this->mouse_delta += { event->mouse_dx, event->mouse_dy };
             break;
         case SAPP_EVENTTYPE_MOUSE_DOWN:
             if (event->mouse_button >= 0 && event->mouse_button < 3) {

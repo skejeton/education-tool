@@ -5,35 +5,38 @@
 #ifndef HPP_CATEDU_RPC
 #define HPP_CATEDU_RPC
 
+#include "enet/enet.h"
 #include <string>
 #include <unordered_map>
-#include "enet/enet.h"
 
-struct RpcClient {
+struct RpcClient
+{
     uint32_t id;
 
-    inline bool is_server() {
-        return id == 0;
-    }
+    inline bool is_server() { return id == 0; }
 };
 
 struct Rpc;
 
+typedef void (*RpcCallback)(Rpc* rpc,
+                            RpcClient sender,
+                            void* userdata,
+                            size_t data_size,
+                            const void* data);
 
-typedef void (*RpcCallback)(Rpc *rpc, RpcClient sender, void *userdata, size_t data_size, const void *data);
-
-
-struct RpcCallbackContext {
-    void *userdata;
+struct RpcCallbackContext
+{
+    void* userdata;
     RpcCallback callback;
 };
 
-
-struct PeerMap {
+struct PeerMap
+{
     std::unordered_map<uint32_t, ENetPeer*> peers;
 };
 
-struct Rpc {
+struct Rpc
+{
     /**
      * Called if just connected before any serving operations.
      */
@@ -52,12 +55,12 @@ struct Rpc {
     /**
      * Host for the server and client.
      */
-    ENetHost *enet_host;
+    ENetHost* enet_host;
 
     /**
      * Peer for the client.
      */
-    ENetPeer *enet_peer;
+    ENetPeer* enet_peer;
 
     /**
      * Map of all function names to functions.
@@ -69,16 +72,15 @@ struct Rpc {
      * @param[in] address Address to host.
      * @return Whether the hosting was successful.
      */
-    [[nodiscard]]
-    static bool host(Rpc *out_rpc, ENetAddress address);
+    [[nodiscard]] static bool host(Rpc* out_rpc, ENetAddress address);
 
     /**
-     * @param[out] out_rpc Rpc instance connected to address via the default port.
+     * @param[out] out_rpc Rpc instance connected to address via the default
+     * port.
      * @param[in] address Address to connect to.
      * @return Whether the connection was successful.
      */
-    [[nodiscard]]
-    static bool connect(Rpc *out_rpc, ENetAddress address);
+    [[nodiscard]] static bool connect(Rpc* out_rpc, ENetAddress address);
 
     /**
      * Services the server and the client, must be called every tick.
@@ -91,7 +93,9 @@ struct Rpc {
      * @param userdata Custom userdata/context for each call.
      * @param callback The callback to the RPC function.
      */
-    void register_function(const char *fn_name, void *userdata, RpcCallback callback);
+    void register_function(const char* fn_name,
+                           void* userdata,
+                           RpcCallback callback);
 
     /**
      * @brief      Sends a packet to a specific client.
@@ -105,7 +109,10 @@ struct Rpc {
      *
      * @return     True if function is registered and called.
      */
-    [[nodiscard]] bool broadcast(const char *fn_name, const size_t data_size, const void *data, uint32_t poser = 0);
+    [[nodiscard]] bool broadcast(const char* fn_name,
+                                 const size_t data_size,
+                                 const void* data,
+                                 uint32_t poser = 0);
 
     /**
      * @brief      Sends a packet to a specific client.
@@ -120,7 +127,11 @@ struct Rpc {
      *
      * @return     True if function is registered and called.
      */
-    [[nodiscard]] bool send(RpcClient client, const char* fn_name, const size_t data_size, const void* data, uint32_t poser = 0);
+    [[nodiscard]] bool send(RpcClient client,
+                            const char* fn_name,
+                            const size_t data_size,
+                            const void* data,
+                            uint32_t poser = 0);
 
     /**
      * @brief      Disconnects from the server, or stops hosting.
@@ -132,4 +143,4 @@ struct Rpc {
     uint32_t own_id();
 };
 
-#endif //HPP_CATEDU_RPC
+#endif // HPP_CATEDU_RPC

@@ -1,24 +1,28 @@
-#include <cassert>
+#include "flashbacks.hpp"
 #include "imgui/imgui.h"
 #include "imgui_utilities.hpp"
-#include "flashbacks.hpp"
-#include <cstdio>
-#include "util.hpp"
 #include "netcode.hpp"
+#include "util.hpp"
+#include <cassert>
+#include <cstdio>
 
-FlashbacksAllocatedDialog Flashbacks::alloc_dialog() {
+FlashbacksAllocatedDialog
+Flashbacks::alloc_dialog()
+{
     FlashbacksDialogId id = this->dialogs.allocate({});
     return { id, this->dialogs.get(id) };
 }
 
-
-FlashbacksDialog *Flashbacks::get_from_id(FlashbacksDialogId id) {
+FlashbacksDialog*
+Flashbacks::get_from_id(FlashbacksDialogId id)
+{
     return this->dialogs.get(id);
 }
 
-
-void Flashbacks::touch(FlashbacksDialogId id, FlashbacksDialogChoice choice) {
-    FlashbacksDialog *dialog = this->get_from_id(id);
+void
+Flashbacks::touch(FlashbacksDialogId id, FlashbacksDialogChoice choice)
+{
+    FlashbacksDialog* dialog = this->get_from_id(id);
     assert(dialog && "Invalid dialog ID");
 
     dialog->choice = choice;
@@ -36,22 +40,26 @@ void Flashbacks::touch(FlashbacksDialogId id, FlashbacksDialogChoice choice) {
     if (index == -1) {
         backlog.push_back(id);
     } else {
-        backlog.erase(backlog.begin()+index);
+        backlog.erase(backlog.begin() + index);
         backlog.push_back(id);
     }
 }
 
-static FlashbacksDialogId allocate_dialog_sequential(Netcode *nc, Flashbacks *flashbacks, FlashbacksDialogPrototype proto, FlashbacksDialogId previous_id) {
+static FlashbacksDialogId
+allocate_dialog_sequential(Netcode* nc,
+                           Flashbacks* flashbacks,
+                           FlashbacksDialogPrototype proto,
+                           FlashbacksDialogId previous_id)
+{
     FlashbacksDialog current = {};
     current.text = proto.text;
     current.answer = proto.answer;
     current.numeric = proto.numeric;
     current.prev = previous_id;
 
-
     TableId id = nc->add_dialog(current);
     if (previous_id.id != 0) {
-        FlashbacksDialog *previous = flashbacks->get_from_id(previous_id);
+        FlashbacksDialog* previous = flashbacks->get_from_id(previous_id);
         previous->next = id;
         nc->set_dialog(previous_id, *previous);
     }
@@ -59,8 +67,12 @@ static FlashbacksDialogId allocate_dialog_sequential(Netcode *nc, Flashbacks *fl
     return id;
 }
 
-void FlashbacksDialogMaker::append_dialog(Netcode *nc, FlashbacksDialogPrototype proto) {
-    FlashbacksDialogId id = allocate_dialog_sequential(nc, flashbacks, proto, previous_id);
+void
+FlashbacksDialogMaker::append_dialog(Netcode* nc,
+                                     FlashbacksDialogPrototype proto)
+{
+    FlashbacksDialogId id =
+      allocate_dialog_sequential(nc, flashbacks, proto, previous_id);
 
     if (starter_id.id == 0) {
         this->starter_id = id;
@@ -69,16 +81,18 @@ void FlashbacksDialogMaker::append_dialog(Netcode *nc, FlashbacksDialogPrototype
     previous_id = id;
 }
 
-
-FlashbacksDialogMaker FlashbacksDialogMaker::from(Flashbacks *flashbacks) {
+FlashbacksDialogMaker
+FlashbacksDialogMaker::from(Flashbacks* flashbacks)
+{
     FlashbacksDialogMaker result = {};
     result.flashbacks = flashbacks;
 
     return result;
 }
 
-
-void FlashbacksGui::begin_sequence(FlashbacksDialogId start) {
+void
+FlashbacksGui::begin_sequence(FlashbacksDialogId start)
+{
     // if ID is 0, resort to inactive state
     if (start.id == 0) {
         this->mode = this->prev_mode;
@@ -93,23 +107,27 @@ void FlashbacksGui::begin_sequence(FlashbacksDialogId start) {
 }
 
 static float
-convert_string_to_numeric_answer(const char *str)
+convert_string_to_numeric_answer(const char* str)
 {
-    char *end_ptr;
+    char* end_ptr;
     return strtof(str, &end_ptr);
 }
 
 static bool
-compare_numeric_answer_equal(const char *a, const char *b)
+compare_numeric_answer_equal(const char* a, const char* b)
 {
-    return convert_string_to_numeric_answer(a) == convert_string_to_numeric_answer(b);
+    return convert_string_to_numeric_answer(a) ==
+           convert_string_to_numeric_answer(b);
 }
 
-FlashbacksEvent show_sequence(FlashbacksGui *gui) {
-    FlashbacksDialog *dialog = gui->flashbacks->get_from_id(gui->sequence_current);
+FlashbacksEvent
+show_sequence(FlashbacksGui* gui)
+{
+    FlashbacksDialog* dialog =
+      gui->flashbacks->get_from_id(gui->sequence_current);
     assert(dialog && "Invalid dialog ID");
 
-    ImGui::SetNextWindowPos({ (1024-400)/2.0f, (786-300)/2.0f });
+    ImGui::SetNextWindowPos({ (1024 - 400) / 2.0f, (786 - 300) / 2.0f });
     ImGui::SetNextWindowSize({ 400, 300 });
     ImGui::Begin("Dialogue");
 
@@ -130,45 +148,59 @@ FlashbacksEvent show_sequence(FlashbacksGui *gui) {
 
         if (dialog->answer) {
             switch (gui->answer_mode) {
-            case FlashbacksGui::AnswerMode::UNKNOWN:
-                if (dialog->numeric) {
-                    if (ImGui::Button("Guess")) {
-                        if (compare_numeric_answer_equal(gui->answer, dialog->answer))  {
-                            gui->flashbacks->touch(gui->sequence_current, FlashbacksDialogChoice::CORRECT);
-                            gui->answer_mode = FlashbacksGui::AnswerMode::CHOSE_ANSWER;
-                        } else {
-                            gui->flashbacks->touch(gui->sequence_current, FlashbacksDialogChoice::WRONG);
-                            gui->answer_mode = FlashbacksGui::AnswerMode::CHOSE_ANSWER;
+                case FlashbacksGui::AnswerMode::UNKNOWN:
+                    if (dialog->numeric) {
+                        if (ImGui::Button("Guess")) {
+                            if (compare_numeric_answer_equal(gui->answer,
+                                                             dialog->answer)) {
+                                gui->flashbacks->touch(
+                                  gui->sequence_current,
+                                  FlashbacksDialogChoice::CORRECT);
+                                gui->answer_mode =
+                                  FlashbacksGui::AnswerMode::CHOSE_ANSWER;
+                            } else {
+                                gui->flashbacks->touch(
+                                  gui->sequence_current,
+                                  FlashbacksDialogChoice::WRONG);
+                                gui->answer_mode =
+                                  FlashbacksGui::AnswerMode::CHOSE_ANSWER;
+                            }
+                        }
+                        ImGui::SameLine();
+                        ImGui::InputText(
+                          "Answer", gui->answer, sizeof gui->answer);
+                    } else {
+                        if (ImGui::Button("Show Answer")) {
+                            gui->answer_mode =
+                              FlashbacksGui::AnswerMode::SEEN_ANSWER;
                         }
                     }
-                    ImGui::SameLine();
-                    ImGui::InputText("Answer", gui->answer, sizeof gui->answer);
-                } else {
-                    if (ImGui::Button("Show Answer")) {
-                        gui->answer_mode = FlashbacksGui::AnswerMode::SEEN_ANSWER;
+                    break;
+                case FlashbacksGui::AnswerMode::SEEN_ANSWER:
+                    if (ImGui::Button("Guessed Wrong")) {
+                        gui->flashbacks->touch(gui->sequence_current,
+                                               FlashbacksDialogChoice::WRONG);
+                        gui->answer_mode =
+                          FlashbacksGui::AnswerMode::CHOSE_ANSWER;
                     }
-                }
-                break;
-            case FlashbacksGui::AnswerMode::SEEN_ANSWER:
-                if (ImGui::Button("Guessed Wrong")) {
-                    gui->flashbacks->touch(gui->sequence_current, FlashbacksDialogChoice::WRONG);
-                    gui->answer_mode = FlashbacksGui::AnswerMode::CHOSE_ANSWER;
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("Guessed Correct")) {
-                    gui->flashbacks->touch(gui->sequence_current, FlashbacksDialogChoice::CORRECT);
-                    gui->answer_mode = FlashbacksGui::AnswerMode::CHOSE_ANSWER;
-                }
-                break;
-            case FlashbacksGui::AnswerMode::CHOSE_ANSWER:
-                if (ImGui::Button("Next")) {
-                    gui->begin_sequence(dialog->next);
-                }
-                break;
+                    ImGui::SameLine();
+                    if (ImGui::Button("Guessed Correct")) {
+                        gui->flashbacks->touch(gui->sequence_current,
+                                               FlashbacksDialogChoice::CORRECT);
+                        gui->answer_mode =
+                          FlashbacksGui::AnswerMode::CHOSE_ANSWER;
+                    }
+                    break;
+                case FlashbacksGui::AnswerMode::CHOSE_ANSWER:
+                    if (ImGui::Button("Next")) {
+                        gui->begin_sequence(dialog->next);
+                    }
+                    break;
             }
         } else {
             if (ImGui::Button("Next")) {
-                gui->flashbacks->touch(gui->sequence_current, FlashbacksDialogChoice::UNDEFINED);
+                gui->flashbacks->touch(gui->sequence_current,
+                                       FlashbacksDialogChoice::UNDEFINED);
                 gui->begin_sequence(dialog->next);
             }
         }
@@ -182,14 +214,18 @@ FlashbacksEvent show_sequence(FlashbacksGui *gui) {
     return FlashbacksEvent::NONE;
 }
 
-FlashbacksGui FlashbacksGui::create(Flashbacks *flashbacks) {
+FlashbacksGui
+FlashbacksGui::create(Flashbacks* flashbacks)
+{
     FlashbacksGui result = {};
     result.flashbacks = flashbacks;
 
     return result;
 }
 
-void FlashbacksGui::toggle_backlog() {
+void
+FlashbacksGui::toggle_backlog()
+{
     if (this->mode == Mode::BACKLOG) {
         this->mode = Mode::INACTIVE;
     } else {
@@ -197,66 +233,73 @@ void FlashbacksGui::toggle_backlog() {
     }
 }
 
-FlashbacksEvent FlashbacksGui::show() {
+FlashbacksEvent
+FlashbacksGui::show()
+{
     FlashbacksEvent event = FlashbacksEvent::NONE;
 
     switch (mode) {
-    case Mode::INACTIVE:
-        this->prev_mode = Mode::INACTIVE;
-        break;
-    case Mode::SEQUENCE:
-        event = show_sequence(this);
-        break;
-    case Mode::BACKLOG:
-        this->prev_mode = Mode::BACKLOG;
+        case Mode::INACTIVE:
+            this->prev_mode = Mode::INACTIVE;
+            break;
+        case Mode::SEQUENCE:
+            event = show_sequence(this);
+            break;
+        case Mode::BACKLOG:
+            this->prev_mode = Mode::BACKLOG;
 
-        ImGui::SetNextWindowPos({ (1024-400)/2.0f, (786-500)/2.0f });
-        ImGui::SetNextWindowSize({ 400, 500 });
-        ImGui::Begin("Backlog");
-        {
-            if (ImGui::BeginTable("Backlog-Table", 2))
+            ImGui::SetNextWindowPos(
+              { (1024 - 400) / 2.0f, (786 - 500) / 2.0f });
+            ImGui::SetNextWindowSize({ 400, 500 });
+            ImGui::Begin("Backlog");
             {
-                ImGui::TableSetupColumn("c1", ImGuiTableColumnFlags_WidthStretch, 1);
-                ImGui::TableSetupColumn("c2", ImGuiTableColumnFlags_WidthFixed, 50);
-                for (auto item : this->flashbacks->backlog) {
-                    FlashbacksDialog *dialog = this->flashbacks->get_from_id(item);
-                    assert(dialog && "Invalid dialog ID");
+                if (ImGui::BeginTable("Backlog-Table", 2)) {
+                    ImGui::TableSetupColumn(
+                      "c1", ImGuiTableColumnFlags_WidthStretch, 1);
+                    ImGui::TableSetupColumn(
+                      "c2", ImGuiTableColumnFlags_WidthFixed, 50);
+                    for (auto item : this->flashbacks->backlog) {
+                        FlashbacksDialog* dialog =
+                          this->flashbacks->get_from_id(item);
+                        assert(dialog && "Invalid dialog ID");
 
-                    ImVec4 color = { 1, 1, 1, 1 };
-                    if (dialog->choice == FlashbacksDialogChoice::WRONG) {
-                        color = { 1, 0, 0, 1 };
-                    }
-                    if (dialog->choice == FlashbacksDialogChoice::CORRECT) {
-                        color = { 0, 1, 0, 1 };
-                    }
+                        ImVec4 color = { 1, 1, 1, 1 };
+                        if (dialog->choice == FlashbacksDialogChoice::WRONG) {
+                            color = { 1, 0, 0, 1 };
+                        }
+                        if (dialog->choice == FlashbacksDialogChoice::CORRECT) {
+                            color = { 0, 1, 0, 1 };
+                        }
 
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::PushStyleColor(ImGuiCol_Text, color);
-                    ImGui::Text("%s", dialog->text);
-                    ImGui::PopStyleColor();
-                    ImGui::TableSetColumnIndex(1);
-                    ImGui::PushID(item.id);
-                    if (ImGui::Button("Retry")) {
-                        this->begin_sequence(item);
+                        ImGui::TableNextRow();
+                        ImGui::TableSetColumnIndex(0);
+                        ImGui::PushStyleColor(ImGuiCol_Text, color);
+                        ImGui::Text("%s", dialog->text);
+                        ImGui::PopStyleColor();
+                        ImGui::TableSetColumnIndex(1);
+                        ImGui::PushID(item.id);
+                        if (ImGui::Button("Retry")) {
+                            this->begin_sequence(item);
+                        }
+                        ImGui::PopID();
                     }
-                    ImGui::PopID();
+                    ImGui::EndTable();
                 }
-                ImGui::EndTable();
             }
-        }
-        ImGui::End();
-        break;
+            ImGui::End();
+            break;
     }
 
     return event;
 }
 
-void Flashbacks::free_sequence(Netcode *nc, FlashbacksDialogId id) {
-    FlashbacksDialog *dialog = get_from_id(id);
+void
+Flashbacks::free_sequence(Netcode* nc, FlashbacksDialogId id)
+{
+    FlashbacksDialog* dialog = get_from_id(id);
 
     while (dialog) {
-        FlashbacksDialog *next = get_from_id(dialog->next);
+        FlashbacksDialog* next = get_from_id(dialog->next);
 
         free((void*)dialog->text);
         free((void*)dialog->answer);

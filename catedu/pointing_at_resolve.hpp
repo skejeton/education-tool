@@ -1,13 +1,14 @@
 ///
 /// BRIEF: A collision pool for boxes against rays.
-/// 
+///
 
 #include "math.hpp"
 
 #ifndef H_POINTING_AT_RESOLVE_CATEDU
 #define H_POINTING_AT_RESOLVE_CATEDU
 
-struct PointingAtResolve {
+struct PointingAtResolve
+{
     Ray3 ray;
     double dist;
     int id;

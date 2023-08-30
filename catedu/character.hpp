@@ -5,13 +5,14 @@
 #ifndef H_CATEDU_CHARACTER
 #define H_CATEDU_CHARACTER
 
-#include "math.hpp"
 #include "boxdraw.hpp"
+#include "math.hpp"
 
-struct Character {
+struct Character
+{
     Vector3 position;
 
-    void draw(BoxdrawRenderer *renderer, Vector4 color_multiple);
+    void draw(BoxdrawRenderer* renderer, Vector4 color_multiple);
 };
 
 #endif

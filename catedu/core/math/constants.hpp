@@ -10,4 +10,3 @@
 #define MATH_DOUBLE_EPSILON std::numeric_limits<double>::epsilon
 
 #endif
-

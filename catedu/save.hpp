@@ -5,23 +5,25 @@
 #ifndef H_CATEDU_SAVE
 #define H_CATEDU_SAVE
 
-#include <cstdint>
+#include "file_buffer.hpp"
+#include "table.hpp"
 #include <cassert>
+#include <cstdint>
 #include <cstring>
 #include <functional>
 #include <stdint.h>
 #include <unordered_map>
-#include "table.hpp"
-#include "file_buffer.hpp"
 
-enum struct BinaryIOMode {
+enum struct BinaryIOMode
+{
     WRITE,
     READ
 };
 
-struct BinaryFormat {
-    uint8_t *origin;
-    uint8_t *data;
+struct BinaryFormat
+{
+    uint8_t* origin;
+    uint8_t* data;
     size_t cap;
     BinaryIOMode mode;
 
@@ -36,7 +38,7 @@ struct BinaryFormat {
         return format;
     }
 
-    static BinaryFormat begin_read(const void *origin, size_t max)
+    static BinaryFormat begin_read(const void* origin, size_t max)
     {
         BinaryFormat format = {};
         format.mode = BinaryIOMode::READ;
@@ -46,12 +48,10 @@ struct BinaryFormat {
         return format;
     }
 
-    bool can_fit(size_t n)
-    {
-        return (this->data - origin)+n <= cap;
-    }
+    bool can_fit(size_t n) { return (this->data - origin) + n <= cap; }
 
-    void resize(size_t n) {
+    void resize(size_t n)
+    {
         size_t offs = data - origin;
         while (!can_fit(n)) {
             cap *= 2;
@@ -61,7 +61,7 @@ struct BinaryFormat {
         }
     }
 
-    void pass_bytes(void *data, size_t n)
+    void pass_bytes(void* data, size_t n)
     {
         if (!can_fit(n)) {
             if (this->mode == BinaryIOMode::READ) {
@@ -79,8 +79,8 @@ struct BinaryFormat {
         this->data += n;
     }
 
-    template <class T>
-    void pass_value(T *data)
+    template<class T>
+    void pass_value(T* data)
     {
         pass_bytes(data, sizeof *data);
 
@@ -95,7 +95,7 @@ struct BinaryFormat {
 #endif
     }
 
-    inline void pass_pointer(void **data, size_t n)
+    inline void pass_pointer(void** data, size_t n)
     {
         if (mode == BinaryIOMode::WRITE && *data == nullptr) {
             n = (size_t)-1;
@@ -110,16 +110,16 @@ struct BinaryFormat {
                 return;
             }
 
-            uint8_t *bytes = (uint8_t*)malloc(n);
+            uint8_t* bytes = (uint8_t*)malloc(n);
             pass_bytes(bytes, n);
             *data = bytes;
         } else {
-            uint8_t *bytes = (uint8_t*)*data;
+            uint8_t* bytes = (uint8_t*)*data;
             pass_bytes(bytes, n);
         }
     }
 
-    inline void pass_c_string(char **string)
+    inline void pass_c_string(char** string)
     {
         size_t len = 0;
         if (mode == BinaryIOMode::WRITE && *string) {
@@ -129,50 +129,40 @@ struct BinaryFormat {
         pass_pointer((void**)string, len);
     }
 
-    inline size_t size()
-    {
-        return (size_t)((uint8_t*)data-(uint8_t*)origin);
-    }
+    inline size_t size() { return (size_t)((uint8_t*)data - (uint8_t*)origin); }
 
-    inline FileBuffer get_rest()
-    {
-        return {data, cap-size()};
-    }
+    inline FileBuffer get_rest() { return { data, cap - size() }; }
 
-    inline FileBuffer leak_file_buffer()
-    {
-        return {origin, size()};
-    }
+    inline FileBuffer leak_file_buffer() { return { origin, size() }; }
 };
 
-struct IdMapper {
+struct IdMapper
+{
     std::unordered_map<size_t, size_t> id_map;
     size_t id_increment;
 
-    void push_id(BinaryFormat *format, size_t id)
+    void push_id(BinaryFormat* format, size_t id)
     {
         format->pass_value(&id_increment);
         if (format->mode == BinaryIOMode::WRITE) {
             id_map[id] = id_increment++;
-        }
-        else {
+        } else {
             id_map[id_increment] = id;
         }
     }
 
-    size_t get_id(size_t original) {
-        return id_map.at(original);
-    }
+    size_t get_id(size_t original) { return id_map.at(original); }
 };
 
-template <class T>
-struct TableSaver {
-    BinaryFormat *format;
+template<class T>
+struct TableSaver
+{
+    BinaryFormat* format;
     TableIterator<T> iter;
     IdMapper id_mapper;
     size_t count;
 
-    static TableSaver init(BinaryFormat *format, Table<T> *table)
+    static TableSaver init(BinaryFormat* format, Table<T>* table)
     {
         TableSaver saver = {};
 
@@ -188,8 +178,7 @@ struct TableSaver {
             for (; iter.going(); iter.next()) {
                 saver.id_mapper.push_id(format, iter.id.id);
             }
-        }
-        else {
+        } else {
             for (size_t i = 0; i < saver.count; i++) {
                 saver.id_mapper.push_id(format, table->allocate({}).id);
             }
@@ -201,22 +190,13 @@ struct TableSaver {
         return saver;
     }
 
-    bool going()
-    {
-        return iter.going();
-    }
+    bool going() { return iter.going(); }
 
-    void next()
-    {
-        iter.next();
-    }
+    void next() { iter.next(); }
 
-    T* save()
-    {
-        return iter.table->get(iter.id);
-    }
+    T* save() { return iter.table->get(iter.id); }
 
-    void pass_id(TableId *id)
+    void pass_id(TableId* id)
     {
         if (format->mode == BinaryIOMode::WRITE) {
             size_t write_id = id_mapper.get_id(id->id);
@@ -224,7 +204,7 @@ struct TableSaver {
         } else {
             size_t read_id;
             format->pass_value(&read_id);
-            *id = {id_mapper.get_id(read_id)};
+            *id = { id_mapper.get_id(read_id) };
         }
     }
 };

@@ -1,7 +1,8 @@
-#include "tau/tau.h"
 #include "catedu/table.hpp"
+#include "tau/tau.h"
 
-TEST(Table) {
+TEST(Table)
+{
     Table<int> test_table = {};
 
     TableId item1 = test_table.allocate(42);
@@ -30,4 +31,3 @@ TEST(Table) {
 
     CHECK_EQ(test_table.get({ 2, 1 }), nullptr);
 }
-

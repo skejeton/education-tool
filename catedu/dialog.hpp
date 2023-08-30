@@ -9,24 +9,24 @@
 #include <string>
 #include <vector>
 
-
-enum class DialogType {
-    Info,       // For displaying information.
-    Pending,    // For indicating wait.
-    Warning,    // For indicating a warning.
-    Error       // For indicating an error.
+enum class DialogType
+{
+    Info,    // For displaying information.
+    Pending, // For indicating wait.
+    Warning, // For indicating a warning.
+    Error    // For indicating an error.
 };
 
-
-struct Dialog {
+struct Dialog
+{
     DialogType type;
     std::string text;
 
     bool show();
 };
 
-
-struct DialogQueue {
+struct DialogQueue
+{
     std::queue<Dialog> dialogs;
 
     void push(std::string text, DialogType type);

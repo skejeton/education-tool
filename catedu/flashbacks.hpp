@@ -7,65 +7,73 @@
 
 #define FLASHBACKS_DIALOGS_MAX 512
 
-#include <vector>
 #include "table.hpp"
+#include <vector>
 
 struct Netcode;
 
 typedef TableId FlashbacksDialogId;
 
-enum class FlashbacksDialogChoice {
+enum class FlashbacksDialogChoice
+{
     UNDEFINED,
     CORRECT,
     WRONG,
 };
 
-struct FlashbacksDialog {
+struct FlashbacksDialog
+{
     bool numeric;
     const char *text, *answer;
     FlashbacksDialogChoice choice;
     FlashbacksDialogId next, prev;
 };
 
-
 /// NOTE: Must be extremely short lived
-struct FlashbacksAllocatedDialog {
+struct FlashbacksAllocatedDialog
+{
     FlashbacksDialogId id;
-    FlashbacksDialog *pointer;
+    FlashbacksDialog* pointer;
 };
 
-struct Flashbacks {
+struct Flashbacks
+{
     Table<FlashbacksDialog> dialogs;
     std::vector<FlashbacksDialogId> backlog;
 
     FlashbacksAllocatedDialog alloc_dialog();
-    void free_sequence(Netcode *nc, FlashbacksDialogId id);
-    FlashbacksDialog *get_from_id(FlashbacksDialogId id);
+    void free_sequence(Netcode* nc, FlashbacksDialogId id);
+    FlashbacksDialog* get_from_id(FlashbacksDialogId id);
     void touch(FlashbacksDialogId id, FlashbacksDialogChoice choice);
 };
 
-struct FlashbacksDialogPrototype {
+struct FlashbacksDialogPrototype
+{
     char *text, *answer;
     bool numeric;
 };
 
-struct FlashbacksDialogMaker {
-    Flashbacks *flashbacks;
+struct FlashbacksDialogMaker
+{
+    Flashbacks* flashbacks;
     FlashbacksDialogId previous_id;
     FlashbacksDialogId starter_id;
 
-    static FlashbacksDialogMaker from(Flashbacks *flashbacks);
-    void append_dialog(Netcode *nc, FlashbacksDialogPrototype proto);
+    static FlashbacksDialogMaker from(Flashbacks* flashbacks);
+    void append_dialog(Netcode* nc, FlashbacksDialogPrototype proto);
 };
 
-enum struct FlashbacksEvent {
+enum struct FlashbacksEvent
+{
     NONE,
     COMPLETED
 };
 
-struct FlashbacksGui {
-    Flashbacks *flashbacks;
-    enum class Mode {
+struct FlashbacksGui
+{
+    Flashbacks* flashbacks;
+    enum class Mode
+    {
         INACTIVE,
         SEQUENCE,
         BACKLOG
@@ -73,7 +81,8 @@ struct FlashbacksGui {
 
     Mode mode, prev_mode;
 
-    enum class AnswerMode {
+    enum class AnswerMode
+    {
         UNKNOWN,
         SEEN_ANSWER,
         CHOSE_ANSWER,
@@ -82,7 +91,7 @@ struct FlashbacksGui {
     AnswerMode answer_mode;
     char answer[512];
 
-    static FlashbacksGui create(Flashbacks *flashbacks);
+    static FlashbacksGui create(Flashbacks* flashbacks);
     void begin_sequence(FlashbacksDialogId start);
     void toggle_backlog();
 
@@ -90,6 +99,5 @@ struct FlashbacksGui {
 
     FlashbacksEvent show();
 };
-
 
 #endif // H_FLASHBACKS_CATEDU

@@ -1,15 +1,17 @@
 #include "patch_explorer.hpp"
-#include <assert.h>
 #include "catedu/core/memory/serial_mem_ext.hpp"
+#include <assert.h>
 
-static PatchSectionData parse_data_section(SerialMem *serial, PatchExplorer *explorer)
+static PatchSectionData
+parse_data_section(SerialMem* serial, PatchExplorer* explorer)
 {
     PatchSectionData data;
     // serial->read_value(&data.buffer);
     return data;
 }
 
-static PatchSectionScope parse_scope_section(SerialMem *serial, PatchExplorer *explorer)
+static PatchSectionScope
+parse_scope_section(SerialMem* serial, PatchExplorer* explorer)
 {
     PatchSectionScope scope;
     // TODO: Check overflow
@@ -17,7 +19,8 @@ static PatchSectionScope parse_scope_section(SerialMem *serial, PatchExplorer *e
     return scope;
 }
 
-static PatchSection parse_section(SerialMem *serial, PatchExplorer *explorer)
+static PatchSection
+parse_section(SerialMem* serial, PatchExplorer* explorer)
 {
     namespace ext = serial_mem_ext;
 
@@ -37,26 +40,27 @@ static PatchSection parse_section(SerialMem *serial, PatchExplorer *explorer)
     }
 }
 
-
-PatchExplorer PatchExplorer::from_patch(Patch *patch)
+PatchExplorer
+PatchExplorer::from_patch(Patch* patch)
 {
-    return {patch};
+    return { patch };
 }
 
-PatchSection PatchExplorer::get_section(const char *section)
+PatchSection
+PatchExplorer::get_section(const char* section)
 {
 
-    auto serial = SerialMem::from_buffer({this->patch->size, this->patch->data});
+    auto serial =
+      SerialMem::from_buffer({ this->patch->size, this->patch->data });
     /*
 
 
     size_t i = 0;
     while (i < this->patch->size) {
         const char *name = (const char *)((uint8_t*)this->patch->data+i);
-        size_t name_size = strlen((const char *)((uint8_t*)this->patch->data+i))+1;
-        i += name_size;
-        size_t data_size = *(size_t*)((uint8_t*)((uint8_t*)this->patch->data+i));
-        i += sizeof(size_t);
+        size_t name_size = strlen((const char
+    *)((uint8_t*)this->patch->data+i))+1; i += name_size; size_t data_size =
+    *(size_t*)((uint8_t*)((uint8_t*)this->patch->data+i)); i += sizeof(size_t);
         uint8_t *data = (uint8_t*)this->patch->data+i;
         i += data_size;
 

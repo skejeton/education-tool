@@ -2,14 +2,15 @@
 #define HPP_NETCODE_CATEDU
 
 #include "environment.hpp"
-#include "rpc.hpp"
 #include "main_menu.hpp"
+#include "rpc.hpp"
 
 struct FlashbacksDialog;
 
-struct Netcode {
+struct Netcode
+{
     Rpc rpc;
-    Environment *env;
+    Environment* env;
     TableId player_id;
 
     /**
@@ -17,7 +18,7 @@ struct Netcode {
      */
     std::unordered_map<uint32_t, TableId> player_ids;
 
-    void connect(Environment *env, OpenProject open_project);
+    void connect(Environment* env, OpenProject open_project);
     void disconnect();
 
     void service();
@@ -34,7 +35,7 @@ struct Netcode {
     void remove_dialog(TableId id);
     void set_dialog(TableId id, FlashbacksDialog dialog);
 
-private:
+  private:
     void register_all();
 };
 

@@ -7,7 +7,8 @@
 
 #include "math.hpp"
 
-struct Camera {
+struct Camera
+{
     float fov_deg;
     float aspect;
     float yaw, pitch;

@@ -5,23 +5,25 @@
 #ifndef H_CATEDU_PROJECT
 #define H_CATEDU_PROJECT
 
-#include "scene.hpp"
-#include "flashbacks.hpp"
 #include "file_buffer.hpp"
+#include "flashbacks.hpp"
+#include "scene.hpp"
 #include <array>
 #include <cstdint>
 
-struct ProjectFile {
-    FILE *f;
+struct ProjectFile
+{
+    FILE* f;
 
-    static ProjectFile init_from_path(const char *path);
+    static ProjectFile init_from_path(const char* path);
 
     FileBuffer read_project_data();
     void write_project_data(FileBuffer f);
     void deinit();
 };
 
-struct Project {
+struct Project
+{
     Scene scene;
     Flashbacks flashbacks;
 

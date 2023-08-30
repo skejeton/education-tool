@@ -9,246 +9,329 @@
 #define MATH_TAU 6.283185307179586
 #define MATH_EPSILON 0.00001
 
-struct Vector2i {
-    union {
-        struct {
+struct Vector2i
+{
+    union
+    {
+        struct
+        {
             int32_t x, y;
         };
         int32_t values[2];
     };
 };
 
-inline Vector2i operator+(Vector2i a, Vector2i b) {
-    return {a.x+b.x, a.y+b.y};
+inline Vector2i
+operator+(Vector2i a, Vector2i b)
+{
+    return { a.x + b.x, a.y + b.y };
 }
 
-inline Vector2i operator-(Vector2i a, Vector2i b) {
-    return {a.x-b.x, a.y-b.y};
+inline Vector2i
+operator-(Vector2i a, Vector2i b)
+{
+    return { a.x - b.x, a.y - b.y };
 }
 
-inline Vector2i operator*(Vector2i a, Vector2i b) {
-    return {a.x*b.x, a.y*b.y};
+inline Vector2i
+operator*(Vector2i a, Vector2i b)
+{
+    return { a.x * b.x, a.y * b.y };
 }
 
-inline Vector2i operator/(Vector2i a, Vector2i b) {
-    return {a.x/b.x, a.y/b.y};
+inline Vector2i
+operator/(Vector2i a, Vector2i b)
+{
+    return { a.x / b.x, a.y / b.y };
 }
 
-inline Vector2i operator*(Vector2i a, int32_t b) {
-    return {a.x*b, a.y*b};
+inline Vector2i
+operator*(Vector2i a, int32_t b)
+{
+    return { a.x * b, a.y * b };
 }
 
-inline Vector2i operator/(Vector2i a, int32_t b) {
-    return {a.x/b, a.y/b};
+inline Vector2i
+operator/(Vector2i a, int32_t b)
+{
+    return { a.x / b, a.y / b };
 }
 
-inline Vector2i operator+=(Vector2i &a, Vector2i b) {
-    return a = {a.x+b.x, a.y+b.y};
+inline Vector2i
+operator+=(Vector2i& a, Vector2i b)
+{
+    return a = { a.x + b.x, a.y + b.y };
 }
 
-inline Vector2i operator-=(Vector2i &a, Vector2i b) {
-    return a = {a.x-b.x, a.y-b.y};
+inline Vector2i
+operator-=(Vector2i& a, Vector2i b)
+{
+    return a = { a.x - b.x, a.y - b.y };
 }
 
-inline Vector2i operator*=(Vector2i &a, Vector2i b) {
-    return a = {a.x*b.x, a.y*b.y};
+inline Vector2i
+operator*=(Vector2i& a, Vector2i b)
+{
+    return a = { a.x * b.x, a.y * b.y };
 }
 
-inline Vector2i operator/=(Vector2i &a, Vector2i b) {
-    return a = {a.x/b.x, a.y/b.y};
+inline Vector2i
+operator/=(Vector2i& a, Vector2i b)
+{
+    return a = { a.x / b.x, a.y / b.y };
 }
 
-inline Vector2i operator*=(Vector2i &a, int32_t b) {
-    return a = {a.x*b, a.y*b};
+inline Vector2i
+operator*=(Vector2i& a, int32_t b)
+{
+    return a = { a.x * b, a.y * b };
 }
 
-inline Vector2i operator/=(Vector2i &a, int32_t b) {
-    return a = {a.x/b, a.y/b};
+inline Vector2i
+operator/=(Vector2i& a, int32_t b)
+{
+    return a = { a.x / b, a.y / b };
 }
 
-struct Vector2 {
-    union {
-        struct {
+struct Vector2
+{
+    union
+    {
+        struct
+        {
             float x, y;
         };
         float values[2];
     };
 };
 
-inline Vector2 operator-(Vector2 a) {
-    return {-a.x, -a.y};
+inline Vector2
+operator-(Vector2 a)
+{
+    return { -a.x, -a.y };
 }
 
-inline Vector2 operator+(Vector2 a, Vector2 b) {
-    return {a.x+b.x, a.y+b.y};
+inline Vector2
+operator+(Vector2 a, Vector2 b)
+{
+    return { a.x + b.x, a.y + b.y };
 }
 
-inline Vector2 operator+=(Vector2 &a, Vector2 b) {
-    return a = {a.x+b.x, a.y+b.y};
+inline Vector2
+operator+=(Vector2& a, Vector2 b)
+{
+    return a = { a.x + b.x, a.y + b.y };
 }
 
-inline Vector2 operator-(Vector2 a, Vector2 b) {
-    return {a.x-b.x, a.y-b.y};
+inline Vector2
+operator-(Vector2 a, Vector2 b)
+{
+    return { a.x - b.x, a.y - b.y };
 }
 
-inline Vector2 operator-=(Vector2 &a, Vector2 b) {
-    return a = {a.x-b.x, a.y-b.y};
+inline Vector2
+operator-=(Vector2& a, Vector2 b)
+{
+    return a = { a.x - b.x, a.y - b.y };
 }
 
-inline Vector2 operator*(Vector2 a, Vector2 b) {
-    return {a.x*b.x, a.y*b.y};
+inline Vector2
+operator*(Vector2 a, Vector2 b)
+{
+    return { a.x * b.x, a.y * b.y };
 }
 
-inline Vector2 operator*=(Vector2 &a, Vector2 b) {
-    return a = {a.x*b.x, a.y*b.y};
+inline Vector2
+operator*=(Vector2& a, Vector2 b)
+{
+    return a = { a.x * b.x, a.y * b.y };
 }
 
-inline Vector2 operator/(Vector2 a, Vector2 b) {
-    return {a.x/b.x, a.y/b.y};
+inline Vector2
+operator/(Vector2 a, Vector2 b)
+{
+    return { a.x / b.x, a.y / b.y };
 }
 
-inline Vector2 operator/(Vector2 a, float b) {
-    return {a.x/b, a.y/b};
+inline Vector2
+operator/(Vector2 a, float b)
+{
+    return { a.x / b, a.y / b };
 }
 
-inline Vector2 operator/=(Vector2 &a, Vector2 b) {
-    return a = {a.x/b.x, a.y/b.y};
+inline Vector2
+operator/=(Vector2& a, Vector2 b)
+{
+    return a = { a.x / b.x, a.y / b.y };
 }
 
-struct Vector3 {
-    union {
-        struct {
+struct Vector3
+{
+    union
+    {
+        struct
+        {
             float x, y, z;
         };
         float values[3];
     };
 };
 
-
-struct Vector4 {
-    union {
-        struct {
+struct Vector4
+{
+    union
+    {
+        struct
+        {
             float x, y, z, w;
         };
         float values[4];
     };
 };
 
-
-struct Ray3 {
+struct Ray3
+{
     Vector3 origin;
     Vector3 direction;
 };
 
-
-struct Box3 {
+struct Box3
+{
     Vector3 min;
     Vector3 max;
 };
 
-
-struct Rect {
+struct Rect
+{
     Vector2 pos;
     Vector2 siz;
 };
 
-inline Vector3 operator+(Vector3 a, Vector3 b) {
-    return {a.x+b.x, a.y+b.y, a.z+b.z};
+inline Vector3
+operator+(Vector3 a, Vector3 b)
+{
+    return { a.x + b.x, a.y + b.y, a.z + b.z };
 }
 
-
-inline Vector3 operator-(Vector3 a, Vector3 b) {
-    return {a.x-b.x, a.y-b.y, a.z-b.z};
+inline Vector3
+operator-(Vector3 a, Vector3 b)
+{
+    return { a.x - b.x, a.y - b.y, a.z - b.z };
 }
 
-
-inline Vector3 operator*(Vector3 a, Vector3 b) {
-    return {a.x*b.x, a.y*b.y, a.z*b.z};
+inline Vector3
+operator*(Vector3 a, Vector3 b)
+{
+    return { a.x * b.x, a.y * b.y, a.z * b.z };
 }
 
-
-inline Vector3 operator/(Vector3 a, Vector3 b) {
-    return {a.x/b.x, a.y/b.y, a.z/b.z};
+inline Vector3
+operator/(Vector3 a, Vector3 b)
+{
+    return { a.x / b.x, a.y / b.y, a.z / b.z };
 }
 
-
-inline Vector3 operator*(Vector3 a, float b) {
-    return {a.x*b, a.y*b, a.z*b};
+inline Vector3
+operator*(Vector3 a, float b)
+{
+    return { a.x * b, a.y * b, a.z * b };
 }
 
-
-inline Vector3 operator/(Vector3 a, float b) {
-    return {a.x/b, a.y/b, a.z/b};
+inline Vector3
+operator/(Vector3 a, float b)
+{
+    return { a.x / b, a.y / b, a.z / b };
 }
 
-
-inline Vector3 operator+=(Vector3 &a, Vector3 b) {
-    return a = {a.x+b.x, a.y+b.y, a.z+b.z};
+inline Vector3
+operator+=(Vector3& a, Vector3 b)
+{
+    return a = { a.x + b.x, a.y + b.y, a.z + b.z };
 }
 
-
-inline Vector3 operator-=(Vector3 &a, Vector3 b) {
-    return a = {a.x-b.x, a.y-b.y, a.z-b.z};
+inline Vector3
+operator-=(Vector3& a, Vector3 b)
+{
+    return a = { a.x - b.x, a.y - b.y, a.z - b.z };
 }
 
-
-inline Vector3 operator*=(Vector3 &a, Vector3 b) {
-    return a = {a.x*b.x, a.y*b.y, a.z*b.z};
+inline Vector3
+operator*=(Vector3& a, Vector3 b)
+{
+    return a = { a.x * b.x, a.y * b.y, a.z * b.z };
 }
 
-
-inline Vector3 operator/=(Vector3 &a, Vector3 b) {
-    return a = {a.x/b.x, a.y/b.y, a.z/b.z};
+inline Vector3
+operator/=(Vector3& a, Vector3 b)
+{
+    return a = { a.x / b.x, a.y / b.y, a.z / b.z };
 }
 
-
-inline Vector3 operator*=(Vector3 &a, float b) {
-    return a = {a.x*b, a.y*b, a.z*b};
+inline Vector3
+operator*=(Vector3& a, float b)
+{
+    return a = { a.x * b, a.y * b, a.z * b };
 }
 
-
-inline Vector3 operator/=(Vector3 &a, float b) {
-    return a = {a.x/b, a.y/b, a.z/b};
+inline Vector3
+operator/=(Vector3& a, float b)
+{
+    return a = { a.x / b, a.y / b, a.z / b };
 }
 
-
-inline float vector3_dot(Vector3 a, Vector3 b) {
+inline float
+vector3_dot(Vector3 a, Vector3 b)
+{
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-
-inline float vector3_length(Vector3 a) {
+inline float
+vector3_length(Vector3 a)
+{
     return sqrt(vector3_dot(a, a));
 }
 
-
-inline Vector3 vector3_normalize(Vector3 a) {
+inline Vector3
+vector3_normalize(Vector3 a)
+{
     return a / vector3_length(a);
 }
 
-
-inline Vector3 vector3_cross(Vector3 a, Vector3 b) {
-    return {a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x};
+inline Vector3
+vector3_cross(Vector3 a, Vector3 b)
+{
+    return { a.y * b.z - a.z * b.y,
+             a.z * b.x - a.x * b.z,
+             a.x * b.y - a.y * b.x };
 }
 
-inline float vector2_dot(Vector2 a, Vector2 b) {
+inline float
+vector2_dot(Vector2 a, Vector2 b)
+{
     return a.x * b.x + a.y * b.y;
 }
 
-inline float vector2_length(Vector2 a) {
+inline float
+vector2_length(Vector2 a)
+{
     return sqrt(vector2_dot(a, a));
 }
 
-inline Vector2 vector2_normalize(Vector2 a) {
+inline Vector2
+vector2_normalize(Vector2 a)
+{
     return a / vector2_length(a);
 }
 
-
-inline Vector4 operator*(Vector4 a, Vector4 b) {
-    return {a.x*b.x, a.y*b.y, a.z*b.z, a.w*b.w};
+inline Vector4
+operator*(Vector4 a, Vector4 b)
+{
+    return { a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w };
 }
 
-inline Box3 box3_extrude_from_point_volume(Vector3 point, Vector3 extrude) {
+inline Box3
+box3_extrude_from_point_volume(Vector3 point, Vector3 extrude)
+{
     extrude /= 2;
 
     Vector3 min = point;
@@ -260,11 +343,12 @@ inline Box3 box3_extrude_from_point_volume(Vector3 point, Vector3 extrude) {
     max.y += extrude.y;
     max.z += extrude.z;
 
-    return {min, max};
+    return { min, max };
 }
 
-
-inline Box3 box3_extrude_from_point(Vector3 point, Vector3 extrude) {
+inline Box3
+box3_extrude_from_point(Vector3 point, Vector3 extrude)
+{
     Vector3 min = point;
     min.x -= extrude.x;
     min.y -= extrude.y;
@@ -274,18 +358,21 @@ inline Box3 box3_extrude_from_point(Vector3 point, Vector3 extrude) {
     max.y += extrude.y;
     max.z += extrude.z;
 
-    return {min, max};
+    return { min, max };
 }
 
-
-inline bool vector3_vs_box3(Vector3 vector, Box3 box) {
+inline bool
+vector3_vs_box3(Vector3 vector, Box3 box)
+{
     bool x_plane = vector.x >= box.min.x && vector.x <= box.max.x;
     bool y_plane = vector.y >= box.min.y && vector.y <= box.max.y;
     bool z_plane = vector.z >= box.min.z && vector.z <= box.max.z;
     return x_plane && y_plane && z_plane;
 }
 
-inline Box3 box3_translate(Box3 box, Vector3 vector) {
+inline Box3
+box3_translate(Box3 box, Vector3 vector)
+{
     box.min.x += vector.x;
     box.min.y += vector.y;
     box.min.z += vector.z;
@@ -298,7 +385,9 @@ inline Box3 box3_translate(Box3 box, Vector3 vector) {
 }
 
 // NOTE: The "foot" of the player
-inline Vector3 box3_base_midpoint(Box3 box) {
+inline Vector3
+box3_base_midpoint(Box3 box)
+{
     Vector3 pos = {};
     pos.x = (box.max.x - box.min.x) / 2;
     pos.y = box.min.y;
@@ -307,7 +396,9 @@ inline Vector3 box3_base_midpoint(Box3 box) {
     return pos;
 }
 
-inline Vector3 box3_center(Box3 box) {
+inline Vector3
+box3_center(Box3 box)
+{
     Vector3 pos = {};
     pos.x = (box.max.x - box.min.x) / 2;
     pos.y = (box.max.y - box.min.y) / 2;
@@ -316,9 +407,10 @@ inline Vector3 box3_center(Box3 box) {
     return pos;
 }
 
-
 // NOTE: The "eyes" of the player
-inline Vector3 box3_eyes_midpoint(Box3 box) {
+inline Vector3
+box3_eyes_midpoint(Box3 box)
+{
     Vector3 pos = {};
     pos.x = (box.max.x - box.min.x) / 2;
     pos.y = box.max.y;
@@ -327,26 +419,32 @@ inline Vector3 box3_eyes_midpoint(Box3 box) {
     return pos;
 }
 
-
-inline bool rect_vs_vector2(Rect rect, Vector2 point) {
-    return
-            point.x >= rect.pos.x && point.y >= rect.pos.y &&
-            point.x < (rect.pos.x+rect.siz.x) && point.y < (rect.pos.y+rect.siz.y);
+inline bool
+rect_vs_vector2(Rect rect, Vector2 point)
+{
+    return point.x >= rect.pos.x && point.y >= rect.pos.y &&
+           point.x < (rect.pos.x + rect.siz.x) &&
+           point.y < (rect.pos.y + rect.siz.y);
 }
 
-
-inline bool rect_vs_rect(Rect r1, Rect r2) {
-    return (r1.pos.x + r1.siz.x) > (r2.pos.x) && (r1.pos.y + r1.siz.y) > (r2.pos.y)
-           && (r1.pos.x) < (r2.pos.x + r2.siz.x) && (r1.pos.y) < (r2.pos.y + r2.siz.y);
+inline bool
+rect_vs_rect(Rect r1, Rect r2)
+{
+    return (r1.pos.x + r1.siz.x) > (r2.pos.x) &&
+           (r1.pos.y + r1.siz.y) > (r2.pos.y) &&
+           (r1.pos.x) < (r2.pos.x + r2.siz.x) &&
+           (r1.pos.y) < (r2.pos.y + r2.siz.y);
 }
 
-
-inline Rect rect_from_min_max(Vector2 min, Vector2 max) {
-    return {min.x, min.y, max.x-min.x, max.y-min.y};
+inline Rect
+rect_from_min_max(Vector2 min, Vector2 max)
+{
+    return { min.x, min.y, max.x - min.x, max.y - min.y };
 }
 
-
-inline Vector2 rect_vs_rect_snap(Rect r, Rect along) {
+inline Vector2
+rect_vs_rect_snap(Rect r, Rect along)
+{
     float x_left = r.pos.x + r.siz.x - along.pos.x;
     float y_up = r.pos.y + r.siz.y - along.pos.y;
 
@@ -368,25 +466,25 @@ inline Vector2 rect_vs_rect_snap(Rect r, Rect along) {
     }
 
     if (fabs(min_x) < fabs(min_y)) {
-        return {min_x, 0};
+        return { min_x, 0 };
     }
-    return {0, min_y};
+    return { 0, min_y };
 }
 
-
-inline bool ray3_vs_box3(Ray3 r, Box3 b, float max_distance, float *distance)
+inline bool
+ray3_vs_box3(Ray3 r, Box3 b, float max_distance, float* distance)
 {
     r.direction = vector3_normalize(r.direction);
     Vector3 dirfrac;
     dirfrac.x = 1.0f / r.direction.x;
     dirfrac.y = 1.0f / r.direction.y;
     dirfrac.z = 1.0f / r.direction.z;
-    float t1 = (b.min.x - r.origin.x)*dirfrac.x;
-    float t2 = (b.max.x - r.origin.x)*dirfrac.x;
-    float t3 = (b.min.y - r.origin.y)*dirfrac.y;
-    float t4 = (b.max.y - r.origin.y)*dirfrac.y;
-    float t5 = (b.min.z - r.origin.z)*dirfrac.z;
-    float t6 = (b.max.z - r.origin.z)*dirfrac.z;
+    float t1 = (b.min.x - r.origin.x) * dirfrac.x;
+    float t2 = (b.max.x - r.origin.x) * dirfrac.x;
+    float t3 = (b.min.y - r.origin.y) * dirfrac.y;
+    float t4 = (b.max.y - r.origin.y) * dirfrac.y;
+    float t5 = (b.min.z - r.origin.z) * dirfrac.z;
+    float t6 = (b.max.z - r.origin.z) * dirfrac.z;
 
     float tmin = fmax(fmaxf(fminf(t1, t2), fminf(t3, t4)), fminf(t5, t6));
     float tmax = fmin(fminf(fmaxf(t1, t2), fmaxf(t3, t4)), fmaxf(t5, t6));
@@ -406,7 +504,8 @@ inline bool ray3_vs_box3(Ray3 r, Box3 b, float max_distance, float *distance)
     return true;
 }
 
-inline bool ray3_vs_horizontal_plane(Ray3 r, float y, float *t)
+inline bool
+ray3_vs_horizontal_plane(Ray3 r, float y, float* t)
 {
     if (r.origin.y < y) {
         if (r.direction.y > 0) {
@@ -423,47 +522,71 @@ inline bool ray3_vs_horizontal_plane(Ray3 r, float y, float *t)
     return false;
 }
 
-inline Vector3 ray3_at(Ray3 r, float t)
+inline Vector3
+ray3_at(Ray3 r, float t)
 {
     return r.origin + r.direction * t;
 }
 
-struct Matrix4 {
+struct Matrix4
+{
     float values[16];
 
-
-    static Matrix4 identity() {
-        return {
-                1, 0, 0, 0,
-                0, 1, 0, 0,
-                0, 0, 1, 0,
-                0, 0, 0, 1
-        };
+    static Matrix4 identity()
+    {
+        return { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
     }
 
-
-    static Matrix4 perspective(float fov, float aspect, float near, float far) {
+    static Matrix4 perspective(float fov, float aspect, float near, float far)
+    {
         float height = 1 / tanf(fov / 2);
         float width = height / aspect;
 
-        return {
-                width, 0,      0,              0,
-                0,     height, 0,              0,
-                0,     0,      (near + far) / (near - far),         -1.0f,
-                0,     0,     (2.0f * near * far) / (near - far ), 0
-        };
+        return { width,
+                 0,
+                 0,
+                 0,
+                 0,
+                 height,
+                 0,
+                 0,
+                 0,
+                 0,
+                 (near + far) / (near - far),
+                 -1.0f,
+                 0,
+                 0,
+                 (2.0f * near * far) / (near - far),
+                 0 };
     }
 
-    static Matrix4 ortho(float left, float right, float bottom, float top, float near, float far) {
-        return {
-                2.0f / (right - left), 0,                     0,                    0,
-                0,                     2.0f / (top - bottom), 0,                    0,
-                0,                     0,                     2.0f / (near - far),  0,
-                (left + right) / (left - right), (bottom + top) / (bottom - top), (near + far) / (near - far), 1
-        };
+    static Matrix4 ortho(float left,
+                         float right,
+                         float bottom,
+                         float top,
+                         float near,
+                         float far)
+    {
+        return { 2.0f / (right - left),
+                 0,
+                 0,
+                 0,
+                 0,
+                 2.0f / (top - bottom),
+                 0,
+                 0,
+                 0,
+                 0,
+                 2.0f / (near - far),
+                 0,
+                 (left + right) / (left - right),
+                 (bottom + top) / (bottom - top),
+                 (near + far) / (near - far),
+                 1 };
     }
 
-    static Matrix4 look_at(Vector3 center, Vector3 eye, Vector3 up) {
+    static Matrix4 look_at(Vector3 center, Vector3 eye, Vector3 up)
+    {
         Vector3 z = vector3_normalize(center - eye);
         Vector3 x = vector3_normalize(vector3_cross(z, up));
         Vector3 y = vector3_cross(x, z);
@@ -472,89 +595,66 @@ struct Matrix4 {
         float ydot = -vector3_dot(y, center);
         float zdot = -vector3_dot(z, center);
 
+        return { x.x, y.x, -z.x, 0, x.y,  y.y,  -z.y,  0,
+                 x.z, y.z, -z.z, 0, xdot, ydot, -zdot, 1 };
+    }
+
+    static Matrix4 translate(Vector3 center)
+    {
+        return { 1, 0, 0, 0, 0,        1,        0,        0,
+                 0, 0, 1, 0, center.x, center.y, center.z, 1 };
+    }
+
+    static Matrix4 scale(float factor)
+    {
         return {
-                x.x,  y.x,  -z.x,  0,
-                x.y,  y.y,  -z.y,  0,
-                x.z,  y.z,  -z.z,  0,
-                xdot, ydot, -zdot, 1
+            factor, 0, 0, 0, 0, factor, 0, 0, 0, 0, factor, 0, 0, 0, 0, 1
         };
     }
 
-
-    static Matrix4 translate(Vector3 center) {
-        return {
-                1,        0,        0,        0,
-                0,        1,        0,        0,
-                0,        0,        1,        0,
-                center.x, center.y, center.z, 1
-        };
+    static Matrix4 scale_v(Vector3 factor)
+    {
+        return { factor.x, 0, 0,        0, 0, factor.y, 0, 0,
+                 0,        0, factor.z, 0, 0, 0,        0, 1 };
     }
 
-
-    static Matrix4 scale(float factor) {
-        return {
-                factor,   0,        0,        0,
-                0,        factor,   0,        0,
-                0,        0,        factor,   0,
-                0,        0,        0,        1
-        };
-    }
-
-
-    static Matrix4 scale_v(Vector3 factor) {
-        return {
-                factor.x, 0,        0,        0,
-                0,        factor.y, 0,        0,
-                0,        0,        factor.z, 0,
-                0,        0,        0,        1
-        };
-    }
-
-
-    static Matrix4 rotate_x(float angle) {
+    static Matrix4 rotate_x(float angle)
+    {
         float c = cos(angle);
         float s = sin(angle);
         return {
-                1.0f, 0.0f, 0.0f, 0.0f,
-                0.0f,    c,    s, 0.0f,
-                0.0f,   -s,    c, 0.0f,
-                0.0f, 0.0f, 0.0f, 1.0f,
+            1.0f, 0.0f, 0.0f, 0.0f, 0.0f, c,    s,    0.0f,
+            0.0f, -s,   c,    0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
         };
     }
 
-
-    static Matrix4 rotate_y(float angle) {
+    static Matrix4 rotate_y(float angle)
+    {
         float c = cos(angle);
         float s = sin(angle);
-        return {
-                c, 0.0f,   -s, 0.0f,
-                0.0f, 1.0f, 0.0f, 0.0f,
-                s, 0.0f,    c, 0.0f,
-                0.0f, 0.0f, 0.0f, 1.0f
-        };
+        return { c, 0.0f, -s, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+                 s, 0.0f, c,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
     }
 
-
-    static Matrix4 rotate_z(float angle) {
+    static Matrix4 rotate_z(float angle)
+    {
         float c = cos(angle);
         float s = sin(angle);
-        return {
-                c,    s, 0.0f, 0.0f,
-                -s,    c, 0.0f, 0.0f,
-                0.0f, 0.0f, 1.0f, 0.0f,
-                0.0f, 0.0f, 0.0f, 1.0f
-        };
+        return { c,    s,    0.0f, 0.0f, -s,   c,    0.0f, 0.0f,
+                 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
     }
 };
 
-
-inline Matrix4 operator*(Matrix4 a, Matrix4 b) {
+inline Matrix4
+operator*(Matrix4 a, Matrix4 b)
+{
     Matrix4 result = {};
 
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
             for (int k = 0; k < 4; ++k) {
-                result.values[i*4+j] += a.values[k*4+j] * b.values[i*4+k];
+                result.values[i * 4 + j] +=
+                  a.values[k * 4 + j] * b.values[i * 4 + k];
             }
         }
     }
@@ -562,28 +662,33 @@ inline Matrix4 operator*(Matrix4 a, Matrix4 b) {
     return result;
 }
 
-
-inline Vector3 operator*(Matrix4 a, Vector3 b) {
-    float data[4] = {b.x, b.y, b.z, 1.0};
+inline Vector3
+operator*(Matrix4 a, Vector3 b)
+{
+    float data[4] = { b.x, b.y, b.z, 1.0 };
     float ret[4] = {};
 
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
-            ret[i] += a.values[j*4+i] * data[j];
+            ret[i] += a.values[j * 4 + i] * data[j];
         }
     }
 
-    return {ret[0], ret[1], ret[2]};
+    return { ret[0], ret[1], ret[2] };
 }
 
 // Conversion Operations
 
-inline Vector2i vector2_to_vector2i(Vector2 v) {
-    return {(int32_t)v.x, (int32_t)v.y};
+inline Vector2i
+vector2_to_vector2i(Vector2 v)
+{
+    return { (int32_t)v.x, (int32_t)v.y };
 }
 
-inline Vector2 vector2i_to_vector2(Vector2i v) {
-    return {(float)v.x, (float)v.y};
+inline Vector2
+vector2i_to_vector2(Vector2i v)
+{
+    return { (float)v.x, (float)v.y };
 }
 
 #endif // H_MATH_CATEDU
