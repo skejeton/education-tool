@@ -5,14 +5,22 @@
 #define HPP_CATEDU_UI_RENDERING_PASS
 
 #include "core.hpp"
+#include "transform.hpp"
 
-struct UiRenderingPass {
-    UiRenderingCore *core;
+struct UiRenderingPass
+{
+    UiTransformer transformer;
+    UiRenderingCore* core;
 
-    static UiRenderingPass begin(UiRenderingCore *core);
+    static UiRenderingPass begin(UiRenderingCore* core);
     void end();
 
-    void render_brush(UiBrush brush, Rect rect);
+    void push_transform(UiTransform transform);
+    void pop_transform();
+
+    Vector2 transform_point(Vector2 point);
+
+    void render_brush(UiBrush brush);
 };
 
 #endif // HPP_CATEDU_UI_RENDERING_PASS

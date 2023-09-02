@@ -5,18 +5,20 @@
 #ifndef HPP_CATEDU_UI_RENDERING_CORE
 #define HPP_CATEDU_UI_RENDERING_CORE
 
-#include "sokol/sokol_gfx.h"
+#include "catedu/core/memory/buffer.hpp"
 #include "catedu/math.hpp"
 #include "catedu/table.hpp"
-#include "catedu/core/memory/buffer.hpp"
+#include "sokol/sokol_gfx.h"
 
-struct UiBuffer {
+struct UiBuffer
+{
     sg_buffer vertex_buffer;
     sg_buffer index_buffer;
     size_t indices;
 };
 
-enum class UiBuffers {
+enum class UiBuffers
+{
     Ellipse,
     Squircle,
     Rectangle,
@@ -25,20 +27,23 @@ enum class UiBuffers {
 
 typedef TableId UiImageId;
 
-struct UiImage {
+struct UiImage
+{
     sg_image image;
     sg_sampler sampler;
     Vector2i size;
 };
 
-struct UiBrush {
+struct UiBrush
+{
     UiBuffers buffer;
     Vector4 color_bottom;
     Vector4 color_top;
     UiImageId image;
 };
 
-struct UiRenderingCore {
+struct UiRenderingCore
+{
     UiBuffer buffers[(size_t)UiBuffers::Count_];
     sg_pass_action pass_action;
     sg_bindings bindings;
@@ -47,6 +52,8 @@ struct UiRenderingCore {
     UiImageId white_image;
     UiImageId test_image;
     Table<UiImage> images;
+    Matrix4 matrix;
+    Rect rect;
 
     // Per pipeline
     Vector2 pip_size;
@@ -58,11 +65,12 @@ struct UiRenderingCore {
 
     UiImageId alloc_image(UiImage image);
     void dealloc_image(UiImageId id);
-    UiImage *get_image(UiImageId id);
+    UiImage* get_image(UiImageId id);
 
-    void render_object(Rect rect, UiBrush brush);
+    void render_object(UiBrush brush);
 };
 
-UiImage ui_image_make_from_data(Buffer data, Vector2i size);
+UiImage
+ui_image_make_from_data(Buffer data, Vector2i size);
 
 #endif // HPP_CATEDU_UI_RENDERING_CORE

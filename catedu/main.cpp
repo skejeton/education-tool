@@ -20,5 +20,6 @@ sokol_main(int argc, char* argv[])
     desc.icon.sokol_default = true;
     desc.enable_clipboard = true;
     desc.logger.func = slog_func;
+    desc.sample_count = 4;
     return desc;
 }

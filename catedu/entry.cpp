@@ -664,35 +664,76 @@ Entry::frame(void)
     UiRenderingPass pass = UiRenderingPass::begin(&ui_rendering_core);
     auto test_shape = [&](UiBuffers buffer, Rect rect, UiImage image = {}) {
         Vector4 key_color = { 1, 1, 1, 1 };
+
+        Vector2 pivot = { 0.5, 0.5 };
+        static float rotation = 0.0;
+        rotation += 0.01;
+
+        UiTransform transform = {};
+        transform.base = rect;
+        transform.rotation = rotation;
+        transform.origin = pivot;
+        transform.scale = { 1.0, 1.0 };
+
+        pass.push_transform(transform);
+        Vector2 mouse_pos = { inputs.mouse_pos.x, inputs.mouse_pos.y };
+        mouse_pos = pass.transform_point(mouse_pos);
+
         switch (buffer) {
             case UiBuffers::Rectangle:
-                if (math_point_intersect_rect(
-                      { inputs.mouse_pos.x, inputs.mouse_pos.y }, rect)) {
+                if (math_point_intersect_rect(mouse_pos, rect)) {
                     key_color = { 1, 0, 0, 1 };
                 }
                 break;
             case UiBuffers::Ellipse:
                 if (math_point_intersect_ellipse(
-                      { inputs.mouse_pos.x, inputs.mouse_pos.y },
-                      rect.pos + rect.siz / 2,
-                      rect.siz / 2)) {
+                      mouse_pos, rect.pos + rect.siz / 2, rect.siz / 2)) {
                     key_color = { 1, 0, 0, 1 };
                 }
                 break;
             case UiBuffers::Squircle:
-                if (math_point_intersect_squircle(
-                      { inputs.mouse_pos.x, inputs.mouse_pos.y }, rect, 8)) {
+                if (math_point_intersect_squircle(mouse_pos, rect, 8)) {
                     key_color = { 1, 0, 0, 1 };
                 }
                 break;
         }
-
         UiBrush brush = {};
         brush.image = this->example_image;
         brush.buffer = buffer;
         brush.color_top = Vector4{ 0.8, 0.8, 0.8, 1.0 } * key_color;
         brush.color_bottom = Vector4{ 1.0, 1.0, 1.0, 1.0 } * key_color;
-        pass.render_brush(brush, rect);
+
+        pass.render_brush(brush);
+        {
+            UiTransform transformb = {};
+            transformb.base = { 10, 10, 100, 100 };
+            transformb.rotation = rotation;
+            transformb.origin = { 0.5, 0.5 };
+            transformb.scale = { 1.0, 1.0 };
+
+            pass.push_transform(transformb);
+            brush.color_top *= 0.4f;
+            brush.color_bottom *= 0.4f;
+            pass.render_brush(brush);
+            pass.pop_transform();
+        }
+        pass.pop_transform();
+
+        UiTransform pivot_transform = {};
+        pivot_transform.base = { pivot * rect.siz + rect.pos - Vector2{ 5, 5 },
+                                 { 10, 10 } };
+        pivot_transform.scale = { 1, 1 };
+        pivot_transform.origin = { 0.5, 0.5 };
+        pivot_transform.rotation = rotation;
+
+        UiBrush pivot_brush = {};
+        pivot_brush.buffer = UiBuffers::Squircle;
+        pivot_brush.color_top = Vector4{ 1.0, 0.8, 0.0, 1.0 };
+        pivot_brush.color_bottom = Vector4{ 1.0, 1.0, 0.0, 1.0 };
+
+        pass.push_transform(pivot_transform);
+        pass.render_brush(pivot_brush);
+        pass.pop_transform();
     };
 
     test_shape(UiBuffers::Squircle, { { 30, 30 }, { 300, 300 } });
