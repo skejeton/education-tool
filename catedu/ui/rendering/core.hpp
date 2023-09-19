@@ -40,6 +40,7 @@ struct UiBrush
     Vector4 color_bottom;
     Vector4 color_top;
     UiImageId image;
+    Rect image_region_rect;
 };
 
 struct UiRenderingCore

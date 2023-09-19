@@ -71,7 +71,8 @@
     "xmemory": "cpp",
     "xstddef": "cpp",
     "xtr1common": "cpp",
-    "cassert": "cpp"
+    "cassert": "cpp",
+    "map": "cpp"
   },
   "C_Cpp.errorSquiggles": "enabled"
 }

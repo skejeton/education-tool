@@ -2,6 +2,7 @@
 #include "catedu/core/math/interpolation.hpp"
 #include "catedu/rendering/2d/generate_mesh.hpp"
 #include "catedu/shaders.hxx"
+#include "catedu/util.hpp"
 #include <assert.h>
 #include <sokol/sokol_app.h>
 
@@ -183,6 +184,10 @@ UiRenderingCore::render_object(UiBrush brush)
     vs_params.mvp = matrix;
     vs_params.color_bottom = brush.color_bottom;
     vs_params.color_top = brush.color_top;
+    rect_to_uv(brush.image_region_rect,
+               vector2i_to_vector2(img->size),
+               &vs_params.uv_min,
+               &vs_params.uv_max);
 
     sg_range params_range = SG_RANGE(vs_params);
 
@@ -201,8 +206,8 @@ ui_image_make_from_data(Buffer data, Vector2i size)
     image_desc.data.subimage[0][0].ptr = data.data;
     image_desc.data.subimage[0][0].size = data.size;
     sg_sampler_desc sampler_desc = {};
-    sampler_desc.min_filter = SG_FILTER_NEAREST;
-    sampler_desc.mag_filter = SG_FILTER_NEAREST;
+    sampler_desc.min_filter = SG_FILTER_LINEAR;
+    sampler_desc.mag_filter = SG_FILTER_LINEAR;
     sampler_desc.wrap_u = SG_WRAP_CLAMP_TO_EDGE;
     sampler_desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
     sampler_desc.label = "ui-sampler";

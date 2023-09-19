@@ -1,0 +1,22 @@
+#ifndef HPP_CATEDU_UI_RENDERING_MAKE_BRUSH
+#define HPP_CATEDU_UI_RENDERING_MAKE_BRUSH
+
+#include "catedu/math.hpp"
+#include "core.hpp"
+
+struct UiMakeBrush
+{
+    UiBrush brush;
+
+    static UiMakeBrush make_plain_brush(UiBuffers shape);
+    static UiMakeBrush make_image_brush(UiBuffers shape,
+                                        UiRenderingCore* core,
+                                        UiImageId image);
+
+    UiMakeBrush& with_solid(Vector4 color);
+    UiMakeBrush& with_gradient(Vector4 color_bottom, Vector4 color_top);
+    UiMakeBrush& with_image_region(Rect region);
+    UiBrush build();
+};
+
+#endif // HPP_CATEDU_UI_RENDERING_MAKE_BRUSH

@@ -73,7 +73,7 @@ UiTransform::stack(UiTransform previous)
     this->scalem_ *= pivoted_at_relative(
       Matrix4::scale_v({ this->scale.x, this->scale.y, 1.0f }), parent, *this);
     this->rotationm_ *= pivoted_at_relative(
-      Matrix4::rotate_z(this->rotation * (MATH_TAU / 360)), parent, *this);
+      Matrix4::rotate_z(-this->rotation * (MATH_TAU / 360)), parent, *this);
     this->translationm_ *=
       Matrix4::translate({ this->base.pos.x, -this->base.pos.y, 0.0f });
 

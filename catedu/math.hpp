@@ -2,6 +2,14 @@
 /// BRIEF: Collection of math types and functions
 ///
 
+// NOTE: Oh I hate you Microsoft SO much
+#ifdef far
+#undef far
+#endif
+#ifdef near
+#undef near
+#endif
+
 #ifndef H_MATH_CATEDU
 #define H_MATH_CATEDU
 #include <cmath>

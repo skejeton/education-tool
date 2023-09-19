@@ -1,6 +1,7 @@
 #include "entry.hpp"
 #include "boxdraw.hpp"
 #include "catedu/core/math/point_intersect.hpp"
+#include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/resources/load_image.hpp"
 #include "character.hpp"
 #include "easy_gui.hpp"
@@ -196,6 +197,8 @@ Entry::init(void)
     sg_setup(&desc);
 
     this->ui_rendering_core = UiRenderingCore::init();
+    this->font_renderer = UiFontRenderer::init(
+      &this->ui_rendering_core, { "./assets/Roboto-Regular.ttf", 16 });
     this->example_image =
       ui_resources_load_image(&this->ui_rendering_core, "./assets/example.png");
 
@@ -246,8 +249,8 @@ generate_entity_from_type(SelectionOption selection,
     Entity ent = {};
     ent.interaction_type = EntityInteractionType::STATIC;
 
-    // TODO: Instead of using enums everywhere, have models and for selection
-    // options use data.
+    // TODO: In"C:\\Windows\\System32\\kernel32.dllistead of using enums
+    // everywhere, have models and for selection options use data.
     switch (selection) {
         case SelectionOption::BUILDING:
             ent.shape.type = ShapeType::BUILDING;
@@ -697,13 +700,15 @@ Entry::frame(void)
                 }
                 break;
         }
-        UiBrush brush = {};
-        brush.image = this->example_image;
-        brush.buffer = buffer;
-        brush.color_top = Vector4{ 0.8, 0.8, 0.8, 1.0 } * key_color;
-        brush.color_bottom = Vector4{ 1.0, 1.0, 1.0, 1.0 } * key_color;
+
+        auto brush = UiMakeBrush::make_image_brush(
+                       buffer, &ui_rendering_core, this->example_image)
+                       .with_gradient(Vector4{ 1.0, 1.0, 1.0, 1.0 } * key_color,
+                                      Vector4{ 0.9, 0.9, 0.9, 1.0 } * key_color)
+                       .build();
 
         pass.render_brush(brush);
+
         {
             UiTransform transformb = {};
             transformb.base = { 10, 10, 100, 100 };
@@ -726,19 +731,33 @@ Entry::frame(void)
         pivot_transform.origin = { 0.5, 0.5 };
         pivot_transform.rotation = rotation;
 
-        UiBrush pivot_brush = {};
-        pivot_brush.buffer = UiBuffers::Squircle;
-        pivot_brush.color_top = Vector4{ 1.0, 0.8, 0.0, 1.0 };
-        pivot_brush.color_bottom = Vector4{ 1.0, 1.0, 0.0, 1.0 };
+        auto pivot_brush = UiMakeBrush::make_plain_brush(UiBuffers::Squircle)
+                             .with_gradient(Vector4{ 1.0, 0.8, 0.0, 1.0 },
+                                            Vector4{ 1.0, 1.0, 0.0, 1.0 })
+                             .build();
 
         pass.push_transform(pivot_transform);
         pass.render_brush(pivot_brush);
         pass.pop_transform();
     };
 
-    test_shape(UiBuffers::Squircle, { { 30, 30 }, { 300, 300 } });
-    test_shape(UiBuffers::Ellipse, { { 360, 360 }, { 300, 300 } });
-    test_shape(UiBuffers::Rectangle, { { 360, 30 }, { 300, 300 } });
+    test_shape(UiBuffers::Squircle, { { 200 + 30, 200 + 30 }, { 300, 300 } });
+    test_shape(UiBuffers::Ellipse, { { 200 + 360, 200 + 360 }, { 300, 300 } });
+    test_shape(UiBuffers::Rectangle, { { 200 + 360, 200 + 30 }, { 300, 300 } });
+
+    UiTransform transform = {};
+    transform.base = { 0, 0, 0, 0 };
+    transform.scale = { 6.0, 6.0 };
+    transform.rotation = 0;
+
+    auto brush = UiMakeBrush::make_plain_brush(UiBuffers::Rectangle)
+                   .with_gradient({ 0.8, 0.9, 1, 1 }, { 1, 0.8, 0.8, 1 })
+                   .build();
+
+    pass.push_transform(transform);
+    font_renderer.render_text_utf8(
+      &pass, { 0, 0 }, "Multiline yay!!\n:3\nfdfsg", brush);
+    pass.pop_transform();
     pass.end();
 
     sg_commit();
@@ -750,6 +769,7 @@ void
 Entry::cleanup(void)
 {
     ui_rendering_core.deinit();
+    font_renderer.deinit();
     nc.disconnect();
     boxdraw_destroy(&boxdraw);
     simgui_shutdown();

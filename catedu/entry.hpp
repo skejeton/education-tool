@@ -30,6 +30,7 @@
 #include "sokol/sokol_log.h"
 #include "sokol/util/sokol_imgui.h"
 #include "temp_id_binder.hpp"
+#include "ui/rendering/font.hpp"
 #include "ui/rendering/pass.hpp"
 #include <memory>
 #include <stdio.h>
@@ -72,6 +73,7 @@ struct Entry
     DialogQueue dialog_queue;
     UiRenderingCore ui_rendering_core;
     UiImageId example_image;
+    UiFontRenderer font_renderer;
 
     void init();
     void input(const sapp_event* event);

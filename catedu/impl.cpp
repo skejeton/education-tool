@@ -27,4 +27,6 @@
 #include "sokol/util/sokol_imgui.h"
 
 #define STB_IMAGE_IMPLEMENTATION
+#define STB_TRUETYPE_IMPLEMENTATION
 #include "lib/stb/stb_image.h"
+#include "lib/stb/stb_truetype.h"
