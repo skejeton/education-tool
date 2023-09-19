@@ -196,11 +196,7 @@ Entry::init(void)
     desc.logger.func = slog_func;
     sg_setup(&desc);
 
-    this->ui_rendering_core = UiRenderingCore::init();
-    this->font_renderer = UiFontRenderer::init(
-      &this->ui_rendering_core, { "./assets/Roboto-Regular.ttf", 16 });
-    this->example_image =
-      ui_resources_load_image(&this->ui_rendering_core, "./assets/example.png");
+    this->main_menu_b = GuiMainMenu::init();
 
     // use sokol-imgui with all default-options (we're not doing
     // multi-sampled rendering or using non-default pixel formats)
@@ -664,112 +660,15 @@ Entry::frame(void)
         sg_end_pass();
     }
 
-    UiRenderingPass pass = UiRenderingPass::begin(&ui_rendering_core);
-    auto test_shape = [&](UiBuffers buffer, Rect rect, UiImage image = {}) {
-        Vector4 key_color = { 1, 1, 1, 1 };
-
-        Vector2 pivot = { 0.5, 0.5 };
-        static float rotation = 0.0;
-        rotation += 0.01;
-
-        UiTransform transform = {};
-        transform.base = rect;
-        transform.rotation = rotation;
-        transform.origin = pivot;
-        transform.scale = { 1.0, 1.0 };
-
-        pass.push_transform(transform);
-        Vector2 mouse_pos = { inputs.mouse_pos.x, inputs.mouse_pos.y };
-        mouse_pos = pass.transform_point(mouse_pos);
-
-        switch (buffer) {
-            case UiBuffers::Rectangle:
-                if (math_point_intersect_rect(mouse_pos, rect)) {
-                    key_color = { 1, 0, 0, 1 };
-                }
-                break;
-            case UiBuffers::Ellipse:
-                if (math_point_intersect_ellipse(
-                      mouse_pos, rect.pos + rect.siz / 2, rect.siz / 2)) {
-                    key_color = { 1, 0, 0, 1 };
-                }
-                break;
-            case UiBuffers::Squircle:
-                if (math_point_intersect_squircle(mouse_pos, rect, 8)) {
-                    key_color = { 1, 0, 0, 1 };
-                }
-                break;
-        }
-
-        auto brush = UiMakeBrush::make_image_brush(
-                       buffer, &ui_rendering_core, this->example_image)
-                       .with_gradient(Vector4{ 1.0, 1.0, 1.0, 1.0 } * key_color,
-                                      Vector4{ 0.9, 0.9, 0.9, 1.0 } * key_color)
-                       .build();
-
-        pass.render_brush(brush);
-
-        {
-            UiTransform transformb = {};
-            transformb.base = { 10, 10, 100, 100 };
-            transformb.rotation = rotation;
-            transformb.origin = { 0.5, 0.5 };
-            transformb.scale = { 1.0, 1.0 };
-
-            pass.push_transform(transformb);
-            brush.color_top *= 0.4f;
-            brush.color_bottom *= 0.4f;
-            pass.render_brush(brush);
-            pass.pop_transform();
-        }
-        pass.pop_transform();
-
-        UiTransform pivot_transform = {};
-        pivot_transform.base = { pivot * rect.siz + rect.pos - Vector2{ 5, 5 },
-                                 { 10, 10 } };
-        pivot_transform.scale = { 1, 1 };
-        pivot_transform.origin = { 0.5, 0.5 };
-        pivot_transform.rotation = rotation;
-
-        auto pivot_brush = UiMakeBrush::make_plain_brush(UiBuffers::Squircle)
-                             .with_gradient(Vector4{ 1.0, 0.8, 0.0, 1.0 },
-                                            Vector4{ 1.0, 1.0, 0.0, 1.0 })
-                             .build();
-
-        pass.push_transform(pivot_transform);
-        pass.render_brush(pivot_brush);
-        pass.pop_transform();
-    };
-
-    test_shape(UiBuffers::Squircle, { { 200 + 30, 200 + 30 }, { 300, 300 } });
-    test_shape(UiBuffers::Ellipse, { { 200 + 360, 200 + 360 }, { 300, 300 } });
-    test_shape(UiBuffers::Rectangle, { { 200 + 360, 200 + 30 }, { 300, 300 } });
-
-    UiTransform transform = {};
-    transform.base = { 0, 0, 0, 0 };
-    transform.scale = { 6.0, 6.0 };
-    transform.rotation = 0;
-
-    auto brush = UiMakeBrush::make_plain_brush(UiBuffers::Rectangle)
-                   .with_gradient({ 0.8, 0.9, 1, 1 }, { 1, 0.8, 0.8, 1 })
-                   .build();
-
-    pass.push_transform(transform);
-    font_renderer.render_text_utf8(
-      &pass, { 0, 0 }, "Multiline yay!!\n:3\nfdfsg", brush);
-    pass.pop_transform();
-    pass.end();
+    this->main_menu_b.show(this->inputs.mouse_pos);
 
     sg_commit();
-
     inputs.update();
 }
 
 void
 Entry::cleanup(void)
 {
-    ui_rendering_core.deinit();
-    font_renderer.deinit();
     nc.disconnect();
     boxdraw_destroy(&boxdraw);
     simgui_shutdown();

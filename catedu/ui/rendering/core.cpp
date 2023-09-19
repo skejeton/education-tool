@@ -206,8 +206,8 @@ ui_image_make_from_data(Buffer data, Vector2i size)
     image_desc.data.subimage[0][0].ptr = data.data;
     image_desc.data.subimage[0][0].size = data.size;
     sg_sampler_desc sampler_desc = {};
-    sampler_desc.min_filter = SG_FILTER_LINEAR;
-    sampler_desc.mag_filter = SG_FILTER_LINEAR;
+    sampler_desc.min_filter = SG_FILTER_NEAREST;
+    sampler_desc.mag_filter = SG_FILTER_NEAREST;
     sampler_desc.wrap_u = SG_WRAP_CLAMP_TO_EDGE;
     sampler_desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
     sampler_desc.label = "ui-sampler";

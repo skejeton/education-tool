@@ -6,11 +6,11 @@
 
 struct GuiMainMenu
 {
-    UiRenderingCore core;
+    UiRenderingCore* core;
     UiFontRenderer font;
 
     static GuiMainMenu init();
-    void show();
+    void show(Vector2 mouse_pos);
 };
 
 #endif // HPP_CATEDU_GUI_MAIN_MENU_MAIN_MENU

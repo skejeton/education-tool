@@ -47,8 +47,8 @@ UiTransform::calculate_matrix(Vector2 screen_size)
       Matrix4::scale_v({ 2.0f / screen_size.x, 2.0f / screen_size.y, 1.0f });
 
     // Then we apply the transforms.
-    matrix *= this->rotationm_;
     matrix *= this->scalem_;
+    matrix *= this->rotationm_;
     matrix *= this->translationm_;
 
     // First we scale the rect to the size of the texture so we can make use

@@ -11,6 +11,11 @@
 #define UI_COLOR_YELLOW (Vector4{ 1.0, 1.0, 0.0, 1.0 })
 #define UI_COLOR_CYAN (Vector4{ 0.0, 1.0, 1.0, 1.0 })
 #define UI_COLOR_MAGENTA (Vector4{ 1.0, 0.0, 1.0, 1.0 })
-#define UI_COLOR_TRANSPARENT (Vector4{ 0.0, 0.0, 0.0, 0.0 })
+
+Vector4
+into_transparent(Vector4 color, float alpha = 0.0)
+{
+    return { color.x, color.y, color.z, alpha };
+}
 
 #endif

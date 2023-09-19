@@ -13,6 +13,7 @@
 #include "entity_editor.hpp"
 #include "environment.hpp"
 #include "flashbacks.hpp"
+#include "gui/main_menu/main_menu.hpp"
 #include "help_menu.hpp"
 #include "imgui/imgui.h"
 #include "input.hpp"
@@ -71,9 +72,7 @@ struct Entry
     OpenProject open_project;
     OpenMenu menu;
     DialogQueue dialog_queue;
-    UiRenderingCore ui_rendering_core;
-    UiImageId example_image;
-    UiFontRenderer font_renderer;
+    GuiMainMenu main_menu_b;
 
     void init();
     void input(const sapp_event* event);
