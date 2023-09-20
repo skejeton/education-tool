@@ -78,7 +78,8 @@ void
 UiFontRenderer::render_glyph(UiRenderingPass* pass,
                              Vector2 position,
                              char glyph,
-                             UiBrush brush)
+                             UiBrush brush,
+                             Vector2 scale)
 {
     auto& packed_char = this->packed_chars[glyph];
     Rect image_region = { { packed_char.x1, packed_char.y0 },
@@ -89,7 +90,7 @@ UiFontRenderer::render_glyph(UiRenderingPass* pass,
     transform.base = { position, get_glyph_size(this, glyph) };
     transform.rotation = 0;
     transform.origin = { 0, 0 };
-    transform.scale = { 1.0, 1.0 };
+    transform.scale = scale;
 
     auto new_brush = UiMakeBrush::make_image_brush(
                        UiBuffers::Rectangle, this->core, this->atlas_image)
@@ -106,12 +107,15 @@ void
 UiFontRenderer::render_text_utf8(UiRenderingPass* pass,
                                  Vector2 position,
                                  const char* text,
-                                 UiBrush brush)
+                                 UiBrush brush,
+                                 Vector2 scale)
 {
+    Vector2 pos = { 0, 0 };
+
     for (size_t i = 0; text[i]; i += 1) {
         if (text[i] == '\n') {
-            position.x = 0;
-            position.y += ((this->ascent - this->descent) * this->scale);
+            pos.x = 0;
+            pos.y += ((this->ascent - this->descent) * this->scale) * scale.y;
             continue;
         }
 
@@ -120,15 +124,17 @@ UiFontRenderer::render_text_utf8(UiRenderingPass* pass,
                             this->page_size,
                             this->page_size,
                             text[i],
-                            &position.x,
-                            &position.y,
+                            &pos.x,
+                            &pos.y,
                             &quad,
                             false);
         this->render_glyph(
           pass,
-          { quad.x0 / 5, (quad.y0 + this->ascent * this->scale) / 5 },
+          { quad.x0 / 5 * scale.x + position.x,
+            (quad.y0 + this->ascent * this->scale) / 5 * scale.y + position.y },
           text[i],
-          brush);
+          brush,
+          scale);
     }
 }
 

@@ -88,7 +88,7 @@ GuiMainMenu::show(Vector2 mouse_pos)
                  pass,
                  { 0, 0, sapp_widthf(), sapp_heightf() },
                  UiBuffers::Rectangle,
-                 { 0.1, 0.1, 0.5, 1.0 });
+                 { 0.4, 0.1, 0.5, 1.0 });
 
     srand(50);
     for (int i = 0; i < 100; i++) {
@@ -107,20 +107,41 @@ GuiMainMenu::show(Vector2 mouse_pos)
                      color);
     }
 
-    float padding = 50;
-    float tile_w = (sapp_widthf() - padding * 4) / 3.0f;
+    float pre_padding =
+      (sapp_widthf() > 1400 ? sapp_widthf() - 1400 : 0) / 2.0f;
+    float padding = sapp_widthf() / 50;
+    float tile_w = (sapp_widthf() - padding * 4 - pre_padding * 2) / 3.0f;
     float tile_h = tile_w * (3.0f / 4.0f);
 
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 4; j++) {
             render_shiny(this,
                          pass,
-                         { padding + (tile_w + padding) * i,
+                         { pre_padding + padding + (tile_w + padding) * i,
                            padding + (tile_h + padding) * j,
                            tile_w,
                            tile_h },
                          UiBuffers::Squircle,
                          color_bluish(1.0, 0.8));
+            render_shiny(
+              this,
+              pass,
+              rect_shrink({ pre_padding + padding + (tile_w + padding) * i,
+                            padding + (tile_h + padding) * j,
+                            tile_w,
+                            tile_h * (2.2f / 3.0f) },
+                          { 10, 10 }),
+              UiBuffers::Squircle);
+            this->font.render_text_utf8(
+              &pass,
+              { pre_padding + padding + (tile_w + padding) * i + 20,
+                padding + (tile_h + padding) * j + tile_h * (2.2f / 3.0f) +
+                  10 },
+              stdstrfmt("World %d", i + j * 3).c_str(),
+              UiMakeBrush::make_plain_brush(UiBuffers::Rectangle)
+                .with_solid(UI_COLOR_BLACK)
+                .build(),
+              { 4.0, 4.0 });
         }
 
     render_shiny(this,

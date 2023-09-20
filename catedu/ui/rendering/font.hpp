@@ -30,11 +30,13 @@ struct UiFontRenderer
     void render_glyph(UiRenderingPass* pass,
                       Vector2 position,
                       char glyph,
-                      UiBrush brush);
+                      UiBrush brush,
+                      Vector2 scale = { 1.0, 1.0 });
     void render_text_utf8(UiRenderingPass* pass,
                           Vector2 position,
                           const char* text,
-                          UiBrush brush);
+                          UiBrush brush,
+                          Vector2 scale = { 1.0, 1.0 });
     void deinit();
 };
 
