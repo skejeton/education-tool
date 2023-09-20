@@ -18,4 +18,10 @@ into_transparent(Vector4 color, float alpha = 0.0)
     return { color.x, color.y, color.z, alpha };
 }
 
+static Vector4
+color_bluish(float mul = 1.0f, float alpha = 1.0f)
+{
+    return Vector4{ 0.93f * mul, 0.97f * mul, 1.0f * mul, alpha };
+}
+
 #endif

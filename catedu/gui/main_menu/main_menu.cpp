@@ -3,7 +3,63 @@
 #include "catedu/ui/rendering/colors.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/rendering/pass.hpp"
+#include "sokol/sokol_app.h"
 
+void
+render_shiny(GuiMainMenu* gui,
+             UiRenderingPass& pass,
+             Rect base,
+             UiBuffers shape,
+             Vector4 mul_color = { 1, 1, 1, 1 })
+{
+    {
+        UiTransform transform = {};
+        transform.scale = { 1, 1 };
+        transform.base = rect_shrink(base, { -4, -4 });
+        transform.base.pos.y += 2;
+        pass.push_transform(transform);
+
+        Vector4 top_color = color_bluish(0.2, 0.1) * mul_color;
+        Vector4 bottom_color = color_bluish(0.1, 0.1) * mul_color;
+
+        pass.render_brush(UiMakeBrush::make_plain_brush(shape)
+                            .with_gradient(bottom_color, top_color)
+                            .build());
+        pass.pop_transform();
+    }
+
+    {
+        UiTransform transform = {};
+        transform.scale = { 1, 1 };
+        transform.base = base;
+        pass.push_transform(transform);
+
+        Vector4 top_color = color_bluish(0.95) * mul_color;
+        Vector4 bottom_color = color_bluish(0.80) * mul_color;
+
+        pass.render_brush(UiMakeBrush::make_plain_brush(shape)
+                            .with_gradient(bottom_color, top_color)
+                            .build());
+        pass.pop_transform();
+    }
+    {
+        UiTransform transform = {};
+        transform.scale = { 1, 1 };
+        transform.base = rect_shrink(base, { 4, 4 });
+        pass.push_transform(transform);
+        pass.render_brush(
+          UiMakeBrush::make_plain_brush(shape)
+            .with_gradient(into_transparent(color_bluish()) * mul_color,
+                           color_bluish() * mul_color)
+            .build());
+        pass.pop_transform();
+    }
+}
+
+void
+end_ro()
+{
+}
 
 GuiMainMenu
 GuiMainMenu::init()
@@ -23,57 +79,69 @@ GuiMainMenu::show(Vector2 mouse_pos)
     Vector4 plus_color = { 0.2, 0.7, 0.2, 1 };
 
     UiTransform transform = {};
-    static int frame = 0;
-    frame++;
     transform.base = { 0, 0, 160, 160 };
     transform.origin = { 0.5, 0.5 };
-    transform.rotation = (frame / 60.0f) * 360.0f / 2.0f;
     transform.scale = { 1, 1 };
     pass.push_transform(transform);
 
-    {
-        UiTransform transform = {};
-        transform.scale = { 1, 1 };
-        transform.base = { 30, 30, 100, 100 };
-        pass.push_transform(transform);
+    render_shiny(this,
+                 pass,
+                 { 0, 0, sapp_widthf(), sapp_heightf() },
+                 UiBuffers::Rectangle,
+                 { 0.1, 0.1, 0.5, 1.0 });
 
-        Vector2 relative_mouse_pos = pass.transform_point(mouse_pos);
+    srand(50);
+    for (int i = 0; i < 100; i++) {
+        float dist = rand() % 7 + 1;
+        float r = (1.0 / dist) * 3;
+        float sec = sapp_frame_count() / 60.0f;
+        float x = int(rand() + sec * 500 / dist) % (int)sapp_width();
+        float y = rand() % (int)sapp_height();
 
-        Vector4 top_color = { 0.9, 0.9, 0.9, 1.0 };
-        Vector4 bottom_color = { 0.7, 0.7, 0.7, 1.0 };
+        Vector4 color = color_bluish(1.0, 0.7 / dist);
 
-        if (math_point_intersect_squircle(
-              relative_mouse_pos, { 30, 30, 100, 100 }, 8)) {
-            top_color = { 0.7, 0.7, 0.7, 1.0 };
-            bottom_color = { 0.5, 0.5, 0.5, 1.0 };
+        render_shiny(this,
+                     pass,
+                     { x - r, y - r, r * 2, r * 2 },
+                     UiBuffers::Ellipse,
+                     color);
+    }
+
+    float padding = 50;
+    float tile_w = (sapp_widthf() - padding * 4) / 3.0f;
+    float tile_h = tile_w * (3.0f / 4.0f);
+
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 4; j++) {
+            render_shiny(this,
+                         pass,
+                         { padding + (tile_w + padding) * i,
+                           padding + (tile_h + padding) * j,
+                           tile_w,
+                           tile_h },
+                         UiBuffers::Squircle,
+                         color_bluish(1.0, 0.8));
         }
 
-        pass.render_brush(UiMakeBrush::make_plain_brush(UiBuffers::Squircle)
-                            .with_gradient(bottom_color, top_color)
-                            .build());
-        pass.pop_transform();
-    }
+    render_shiny(this,
+                 pass,
+                 { 0, sapp_heightf() - 100, sapp_widthf(), 100 },
+                 UiBuffers::Rectangle);
+    render_shiny(this,
+                 pass,
+                 { (sapp_widthf() - 150) / 2, sapp_heightf() - 150, 150, 150 },
+                 UiBuffers::Ellipse);
     {
         UiTransform transform = {};
-        transform.scale = { 1, 1 };
-        transform.base = { 32, 32, 96, 96 };
-        pass.push_transform(transform);
-        pass.render_brush(
-          UiMakeBrush::make_plain_brush(UiBuffers::Squircle)
-            .with_gradient(into_transparent(UI_COLOR_WHITE), UI_COLOR_WHITE)
-            .build());
-        pass.pop_transform();
-    }
-    {
-        UiTransform transform = {};
-        transform.scale = { 10, 10 };
-        transform.base = { 45, 45 };
+        transform.scale = { 15, 15 };
+        transform.base = { (sapp_widthf() - 150) / 2 + 25,
+                           sapp_heightf() - 150 + 25 };
         pass.push_transform(transform);
         this->font.render_glyph(
           &pass,
           { 0, 0 },
           '+',
-          UiMakeBrush::make_plain_brush(UiBuffers::Rectangle)
+          UiMakeBrush::make_plain_brush(UiBuffers::Ellipse)
             .with_gradient(into_transparent(plus_color, 0.2), plus_color)
             .build());
         pass.pop_transform();

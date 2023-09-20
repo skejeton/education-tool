@@ -487,6 +487,17 @@ rect_from_min_max(Vector2 min, Vector2 max)
     return { min.x, min.y, max.x - min.x, max.y - min.y };
 }
 
+inline Rect
+rect_shrink(Rect rect, Vector2 amount)
+{
+    rect.pos.x += amount.x;
+    rect.pos.y += amount.y;
+    rect.siz.x -= amount.x * 2;
+    rect.siz.y -= amount.y * 2;
+
+    return rect;
+}
+
 inline Vector2
 rect_vs_rect_snap(Rect r, Rect along)
 {
