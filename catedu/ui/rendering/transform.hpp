@@ -10,6 +10,7 @@ struct UiTransform
     Rect base;
     Vector2 origin;
     Vector2 scale;
+    Vector2 translate;
     float rotation;
 
     Matrix4 scalem_;

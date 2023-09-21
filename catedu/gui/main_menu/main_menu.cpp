@@ -1,4 +1,5 @@
 #include "main_menu.hpp"
+#include "catedu/core/math/interpolation.hpp"
 #include "catedu/core/math/point_intersect.hpp"
 #include "catedu/ui/rendering/colors.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
@@ -57,8 +58,64 @@ render_shiny(GuiMainMenu* gui,
 }
 
 void
-end_ro()
+GuiCore::begin_pass(UiRenderingPass* pass, Vector2 mouse_pos)
 {
+    this->pass = pass;
+    this->mouse_pos = mouse_pos;
+    this->objects.begin_cycle();
+}
+
+void
+GuiCore::end_pass()
+{
+    this->objects.end_cycle();
+}
+
+GuiPassObject
+GuiCore::begin(std::string id, Rect base, UiBuffers shape)
+{
+    GuiObject object = {};
+    object.transform_target.origin = { 0.5, 0.5 };
+    object.transform_target.scale = { 1, 1 };
+
+    this->objects.push(id.c_str(), object);
+
+    GuiObject* ptr = this->objects.value();
+    ptr->shape = shape;
+    ptr->transform_current.translate = math_rerp(
+      ptr->transform_current.translate, ptr->transform_target.translate, 0.5);
+    ptr->transform_current.base = base;
+    ptr->transform_current.origin = ptr->transform_target.origin;
+    ptr->transform_current.rotation = ptr->transform_target.rotation;
+    ptr->transform_current.scale =
+      math_rerp(ptr->transform_current.scale, ptr->transform_target.scale, 0.5);
+
+    this->pass->push_transform(ptr->transform_current);
+    ptr->pointer = this->pass->transform_point(this->mouse_pos);
+
+    bool hovered = false;
+
+    switch (shape) {
+        case UiBuffers::Rectangle:
+            hovered = math_point_intersect_rect(ptr->pointer, base);
+            break;
+        case UiBuffers::Ellipse:
+            hovered = math_point_intersect_ellipse(
+              ptr->pointer, base.pos + base.siz / 2, base.siz / 2);
+            break;
+        case UiBuffers::Squircle:
+            hovered = math_point_intersect_squircle(ptr->pointer, base, 16);
+            break;
+    }
+
+    return { &ptr->transform_target, hovered };
+}
+
+void
+GuiCore::end()
+{
+    this->pass->pop_transform();
+    this->objects.pop();
 }
 
 GuiMainMenu
@@ -75,20 +132,15 @@ void
 GuiMainMenu::show(Vector2 mouse_pos)
 {
     UiRenderingPass pass = UiRenderingPass::begin(this->core);
+    gui.begin_pass(&pass, mouse_pos);
 
     Vector4 plus_color = { 0.2, 0.7, 0.2, 1 };
-
-    UiTransform transform = {};
-    transform.base = { 0, 0, 160, 160 };
-    transform.origin = { 0.5, 0.5 };
-    transform.scale = { 1, 1 };
-    pass.push_transform(transform);
 
     render_shiny(this,
                  pass,
                  { 0, 0, sapp_widthf(), sapp_heightf() },
                  UiBuffers::Rectangle,
-                 { 0.4, 0.1, 0.5, 1.0 });
+                 { 0.0, 0.1, 0.5, 1.0 });
 
     srand(50);
     for (int i = 0; i < 100; i++) {
@@ -113,50 +165,89 @@ GuiMainMenu::show(Vector2 mouse_pos)
     float tile_w = (sapp_widthf() - padding * 4 - pre_padding * 2) / 3.0f;
     float tile_h = tile_w * (3.0f / 4.0f);
 
-    for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 4; j++) {
+    int world_count = 8;
+
+    if (world_count == 0) {
+        this->font.render_text_utf8(
+          &pass,
+          { pre_padding + padding, 100 },
+          "No worlds exist. Create one with (+)",
+          UiMakeBrush::make_plain_brush(UiBuffers::Rectangle)
+            .with_solid(UI_COLOR_WHITE)
+            .build(),
+          { 4.0, 4.0 });
+    }
+
+    static UiTransform transforms[8];
+
+    for (int w = 0; w < world_count; w++) {
+        int i = w % 3;
+        int j = w / 3;
+
+        Rect base_rect = { pre_padding + padding + (tile_w + padding) * i,
+                           padding + (tile_h + padding) * j + 50,
+                           tile_w,
+                           tile_h };
+
+        GuiPassObject world_obj =
+          gui.begin(stdstrfmt("world %d", w), base_rect, UiBuffers::Squircle);
+        {
+            if (world_obj.hovered) {
+                world_obj.transform->scale = { 1.1, 1.1 };
+                world_obj.transform->translate = { 0, -20 };
+            } else {
+                world_obj.transform->scale = { 1, 1 };
+                world_obj.transform->translate = { 0, 0 };
+            }
+
+            Rect rect = { { 0, 0 }, base_rect.siz };
+            Rect preview_rect = rect_shrink(
+              { { 0, 0 }, base_rect.siz * Vector2{ 1, 2.3 / 3 } }, { 10, 10 });
+            Vector2 name_pos = { preview_rect.pos.x + 20,
+                                 preview_rect.pos.y + preview_rect.siz.y + 20 };
+
             render_shiny(this,
                          pass,
-                         { pre_padding + padding + (tile_w + padding) * i,
-                           padding + (tile_h + padding) * j,
-                           tile_w,
-                           tile_h },
+                         { 0, 0, tile_w, tile_h },
                          UiBuffers::Squircle,
                          color_bluish(1.0, 0.8));
-            render_shiny(
-              this,
-              pass,
-              rect_shrink({ pre_padding + padding + (tile_w + padding) * i,
-                            padding + (tile_h + padding) * j,
-                            tile_w,
-                            tile_h * (2.2f / 3.0f) },
-                          { 10, 10 }),
-              UiBuffers::Squircle);
+            render_shiny(this, pass, preview_rect, UiBuffers::Squircle);
             this->font.render_text_utf8(
               &pass,
-              { pre_padding + padding + (tile_w + padding) * i + 20,
-                padding + (tile_h + padding) * j + tile_h * (2.2f / 3.0f) +
-                  10 },
+              name_pos,
               stdstrfmt("World %d", i + j * 3).c_str(),
               UiMakeBrush::make_plain_brush(UiBuffers::Rectangle)
                 .with_solid(UI_COLOR_BLACK)
                 .build(),
-              { 4.0, 4.0 });
+              { 3, 3 });
         }
+        gui.end();
+    }
 
     render_shiny(this,
                  pass,
                  { 0, sapp_heightf() - 100, sapp_widthf(), 100 },
-                 UiBuffers::Rectangle);
-    render_shiny(this,
-                 pass,
-                 { (sapp_widthf() - 150) / 2, sapp_heightf() - 150, 150, 150 },
-                 UiBuffers::Ellipse);
+                 UiBuffers::Rectangle,
+                 { 1, 1, 1, 0.9 });
+
     {
+        GuiPassObject world_obj = gui.begin("plus",
+                                            { (sapp_widthf() - 150) / 2 + 25,
+                                              sapp_heightf() - 150 + 25,
+                                              150,
+                                              150 },
+                                            UiBuffers::Ellipse);
+        if (world_obj.hovered) {
+            world_obj.transform->scale = { 1.1, 1.1 };
+            world_obj.transform->translate = { 0, -20 };
+        } else {
+            world_obj.transform->scale = { 1, 1 };
+            world_obj.transform->translate = { 0, 0 };
+        }
+        render_shiny(this, pass, { 0, 0, 150, 150 }, UiBuffers::Ellipse);
         UiTransform transform = {};
         transform.scale = { 15, 15 };
-        transform.base = { (sapp_widthf() - 150) / 2 + 25,
-                           sapp_heightf() - 150 + 25 };
+        transform.base = { 25, 25 };
         pass.push_transform(transform);
         this->font.render_glyph(
           &pass,
@@ -166,9 +257,9 @@ GuiMainMenu::show(Vector2 mouse_pos)
             .with_gradient(into_transparent(plus_color, 0.2), plus_color)
             .build());
         pass.pop_transform();
+        gui.end();
     }
 
-    pass.pop_transform();
-
+    gui.end_pass();
     pass.end();
 }

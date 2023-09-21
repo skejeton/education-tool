@@ -29,10 +29,10 @@ pivoted_at(Matrix4 mat, Matrix4 parent, Vector2 pivot)
 static Matrix4
 pivoted_at_relative(Matrix4 mat, Matrix4 parent, UiTransform& transform)
 {
-    Vector2 pivot = {
-        transform.base.pos.x + transform.base.siz.x * transform.origin.x,
-        -(transform.base.pos.y + transform.base.siz.y * transform.origin.y)
-    };
+    Vector2 pivot = { transform.base.pos.x + transform.translate.x +
+                        transform.base.siz.x * transform.origin.x,
+                      -(transform.base.pos.y + transform.translate.y +
+                        transform.base.siz.y * transform.origin.y) };
 
     return pivoted_at(mat, parent, pivot);
 }
@@ -75,15 +75,20 @@ UiTransform::stack(UiTransform previous)
     this->rotationm_ *= pivoted_at_relative(
       Matrix4::rotate_z(-this->rotation * (MATH_TAU / 360)), parent, *this);
     this->translationm_ *=
-      Matrix4::translate({ this->base.pos.x, -this->base.pos.y, 0.0f });
+      Matrix4::translate({ this->base.pos.x + this->translate.x,
+                           -this->base.pos.y - this->translate.y,
+                           0.0f });
 
     this->scalem_ *= previous.scalem_;
     this->rotationm_ *= previous.rotationm_;
     this->translationm_ *= previous.translationm_;
 
     Matrix4 combine = Matrix4::identity();
-    combine *= this->rotationm_;
     combine *= this->scalem_;
+    combine *= this->rotationm_;
+    combine *=
+      Matrix4::translate({ this->translate.x, -this->translate.y, 0.0f });
+
     this->combinem_ = combine;
 }
 
@@ -131,8 +136,8 @@ UiTransformer::transform_point(Vector2 point)
                               ? this->transforms.back()
                               : default_transform();
 
-    Matrix4 inv;
-    assert(transform.combinem_.inverse(&inv));
+    Matrix4 inv = Matrix4::identity();
+    transform.combinem_.inverse(&inv);
 
     Vector3 result = inv * Vector3{ point.x, -point.y, 0.0f };
     return { result.x, -result.y };

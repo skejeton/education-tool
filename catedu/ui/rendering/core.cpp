@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <sokol/sokol_app.h>
 
-#define DEFAULT_SAMPLE_COUNT 128
+#define DEFAULT_SAMPLE_COUNT 256
 
 static UiImage
 generate_image_from_data(int width, int height, const void* data)

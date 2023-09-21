@@ -5,16 +5,41 @@
 #include "catedu/ui/rendering/core.hpp"
 #include "catedu/ui/rendering/font.hpp"
 
-struct GuiTool
+struct GuiObject
 {
-    int v;
+    UiTransform transform_current;
+    UiTransform transform_target;
+    Vector2 pointer; // Trasformed mouse position.
+    UiBuffers shape;
+};
+
+struct GuiPassObject
+{
+    // This points to transform_target in GuiPassObject, and will be
+    // interpolated accordingly.
+    UiTransform* transform;
+
+    bool hovered;
+};
+
+struct GuiCore
+{
+    IdRetainer<GuiObject> objects;
+    UiRenderingPass* pass;
+    Vector2 mouse_pos;
+
+    void begin_pass(UiRenderingPass* pass, Vector2 mouse_pos);
+    void end_pass();
+
+    GuiPassObject begin(std::string id, Rect base, UiBuffers shape);
+    void end();
 };
 
 struct GuiMainMenu
 {
     UiRenderingCore* core;
     UiFontRenderer font;
-    IdRetainer<GuiTool> tools;
+    GuiCore gui;
 
     static GuiMainMenu init();
     void show(Vector2 mouse_pos);
