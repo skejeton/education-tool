@@ -47,12 +47,23 @@ render_shiny(GuiMainMenu* gui,
         UiTransform transform = {};
         transform.scale = { 1, 1 };
         transform.base = rect_shrink(base, { 4, 4 });
+
+        if (shape == UiBuffers::Ellipse) {
+            transform.base.siz.x /= 1.5;
+            transform.base.siz.y /= 2.0;
+            transform.base.pos.x += base.siz.x / 2 - transform.base.siz.x / 2;
+            transform.base.pos.y += base.siz.y - transform.base.siz.y;
+
+        } else {
+            transform.base.pos.y += transform.base.siz.y / 2;
+            transform.base.siz.y /= 2;
+        }
+
         pass.push_transform(transform);
-        pass.render_brush(
-          UiMakeBrush::make_plain_brush(shape)
-            .with_gradient(into_transparent(color_bluish()) * mul_color,
-                           color_bluish() * mul_color)
-            .build());
+        pass.render_brush(UiMakeBrush::make_plain_brush(shape)
+                            .with_gradient(color_bluish(1.0, 0.3) * mul_color,
+                                           color_bluish(0.8, 0.6) * mul_color)
+                            .build());
         pass.pop_transform();
     }
 }
@@ -177,8 +188,6 @@ GuiMainMenu::show(Vector2 mouse_pos)
             .build(),
           { 4.0, 4.0 });
     }
-
-    static UiTransform transforms[8];
 
     for (int w = 0; w < world_count; w++) {
         int i = w % 3;
