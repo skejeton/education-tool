@@ -37,6 +37,10 @@ struct UiFontRenderer
                           const char* text,
                           UiBrush brush,
                           Vector2 scale = { 1.0, 1.0 });
+    Rect bounds_text_utf8(Vector2 position,
+                          const char* text,
+                          Vector2 scale,
+                          size_t until = SIZE_MAX);
     void deinit();
 };
 

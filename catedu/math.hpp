@@ -472,6 +472,12 @@ rect_vs_vector2(Rect rect, Vector2 point)
            point.y < (rect.pos.y + rect.siz.y);
 }
 
+inline Rect
+at0(Rect rect)
+{
+    return { { 0, 0 }, rect.siz };
+}
+
 inline bool
 rect_vs_rect(Rect r1, Rect r2)
 {

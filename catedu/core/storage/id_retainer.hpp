@@ -13,7 +13,7 @@ template<typename T>
 struct IdRetainerNode
 {
     size_t death;
-    T value;
+    T* value;
 };
 
 template<typename T>
@@ -63,6 +63,7 @@ IdRetainer<T>::end_cycle()
     // 2. Remove all dead nodes.
     for (auto it = this->values.begin(); it != this->values.end();) {
         if (it->second.death <= this->cycle_number) {
+            free(it->second.value);
             it = this->values.erase(it);
         } else {
             ++it;
@@ -80,7 +81,7 @@ IdRetainer<T>::value()
     std::string path = join_vector_into_string(this->current_path, "/");
     auto it = this->values.find(path);
     assert(it != this->values.end() && "IdRetainer: Invalid path");
-    return &it->second.value;
+    return it->second.value;
 }
 
 template<typename T>
@@ -90,7 +91,9 @@ IdRetainer<T>::push(const char* s, T value)
     this->current_path.push_back(s);
     std::string path = join_vector_into_string(this->current_path, "/");
     if (this->values.count(path) == 0) {
-        this->values[path] = { this->cycle_number + 1, value };
+        T* v_ptr = (T*)malloc(sizeof(T));
+        *v_ptr = value;
+        this->values[path] = { this->cycle_number + 1, v_ptr };
     } else {
         this->values[path].death = this->cycle_number + 1;
     }

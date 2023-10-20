@@ -109,6 +109,7 @@ calc_layout_content_size(Layout* layout)
             return { secn_size, prim_size };
     }
     assert(false);
+    return {};
 }
 
 void

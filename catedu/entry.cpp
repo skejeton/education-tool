@@ -558,6 +558,7 @@ handle_game_mode(Entry* entry)
 
     TableId* locator = pointing_at_bindings.get(pointing_at.closest_id());
     entry->last_object_locator.id = 0;
+
     if (locator != nullptr) {
         entry->last_object_locator = *locator;
         int id = locator->id;
@@ -660,7 +661,7 @@ Entry::frame(void)
         sg_end_pass();
     }
 
-    this->main_menu_b.show(this->inputs.mouse_pos);
+    this->main_menu_b.show();
 
     sg_commit();
     inputs.update();
@@ -679,6 +680,9 @@ Entry::cleanup(void)
 void
 Entry::input(const sapp_event* event)
 {
+    if (pass_event(this->main_menu_b, event)) {
+        return;
+    }
     if (!simgui_handle_event(event)) {
         if (event->type == SAPP_EVENTTYPE_KEY_UP &&
             event->key_code == SAPP_KEYCODE_ESCAPE) {

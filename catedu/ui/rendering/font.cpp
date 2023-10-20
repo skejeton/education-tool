@@ -82,9 +82,9 @@ UiFontRenderer::render_glyph(UiRenderingPass* pass,
                              Vector2 scale)
 {
     auto& packed_char = this->packed_chars[glyph];
-    Rect image_region = { { packed_char.x1, packed_char.y0 },
-                          { packed_char.x0 - packed_char.x1,
-                            packed_char.y1 - packed_char.y0 } };
+    Rect image_region = { { float(packed_char.x1), float(packed_char.y0) },
+                          { float(packed_char.x0) - float(packed_char.x1),
+                            float(packed_char.y1) - float(packed_char.y0) } };
 
     UiTransform transform = {};
     transform.base = { position, get_glyph_size(this, glyph) };
@@ -115,7 +115,8 @@ UiFontRenderer::render_text_utf8(UiRenderingPass* pass,
     for (size_t i = 0; text[i]; i += 1) {
         if (text[i] == '\n') {
             pos.x = 0;
-            pos.y += ((this->ascent - this->descent) * this->scale) * scale.y;
+            pos.y +=
+              ((this->ascent - this->descent) * this->scale / 4.0) * scale.y;
             continue;
         }
 
@@ -131,11 +132,61 @@ UiFontRenderer::render_text_utf8(UiRenderingPass* pass,
         this->render_glyph(
           pass,
           { quad.x0 / 5 * scale.x + position.x,
-            (quad.y0 + this->ascent * this->scale) / 5 * scale.y + position.y },
+            (quad.y0 + (this->ascent + 150) * this->scale) / 5.0f * scale.y +
+              position.y },
           text[i],
           brush,
           scale);
     }
+}
+
+Rect
+UiFontRenderer::bounds_text_utf8(Vector2 position,
+                                 const char* text,
+                                 Vector2 scale,
+                                 size_t until)
+{
+    Vector2 pos = { 0, 0 };
+    float max_w = 0;
+    int line_count = 1;
+
+    for (size_t i = 0; text[i]; i += 1) {
+        if (i == until) {
+            break;
+        }
+
+        if (text[i] == '\n') {
+            line_count++;
+            if (pos.x > max_w) {
+                max_w = pos.x;
+            }
+            pos.x = 0;
+            pos.y +=
+              ((this->ascent - this->descent) * this->scale / 4.0) * scale.y;
+
+            continue;
+        }
+
+        stbtt_aligned_quad quad;
+        stbtt_GetPackedQuad(this->packed_chars,
+                            this->page_size,
+                            this->page_size,
+                            text[i],
+                            &pos.x,
+                            &pos.y,
+                            &quad,
+                            false);
+    }
+    if (line_count == 1) {
+        pos.y += ((this->ascent - this->descent) * this->scale / 4.0) * scale.y;
+    }
+
+    if (pos.x > max_w) {
+        max_w = pos.x;
+    }
+    pos.x = max_w / 5 * scale.x;
+
+    return { position, pos };
 }
 
 void
