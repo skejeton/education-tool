@@ -37,6 +37,9 @@ SingleLineTextEditor::SingleLineTextEditor(char* data, size_t buffer_cap)
 
     // 3. Initialize the cursor.
     this->cursor = { 0 };
+
+    // 4. Set null terminator.
+    this->buffer.data[this->buffer.size] = '\0';
 }
 
 size_t
@@ -44,9 +47,6 @@ SingleLineTextEditor::insert(const char* str)
 {
     // 1. Calculate the number of characters to insert.
     size_t characters_to_insert = std::min(strlen(str), remaining_space(*this));
-
-    printf(
-      "characters_to_insert: %zu %zu\n", remaining_space(*this), strlen(str));
 
     // 2. Reserve space for the characters.
     char* insertion_point = this->buffer.data + this->cursor.column;

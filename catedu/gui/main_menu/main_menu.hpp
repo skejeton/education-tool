@@ -4,10 +4,10 @@
 #include "catedu/core/storage/id_retainer.hpp"
 #include "catedu/diag/diag_monitor.hpp"
 #include "catedu/input.hpp"
+#include "catedu/ui/base/scrolling.hpp"
 #include "catedu/ui/rendering/core.hpp"
 #include "catedu/ui/rendering/font.hpp"
 #include <sokol/sokol_app.h>
-
 
 enum class GuiMenuScreen
 {
@@ -56,10 +56,8 @@ struct GuiInput
 {
     ButtonState mouse_buttons[3];
     Vector2 mouse_pos;
-
-    int text_input_at;
     char text_input[32];
-
+    size_t text_input_at;
     Input inp;
 };
 

@@ -424,9 +424,11 @@ render_text_field(Rect rect,
 }
 
 void
-scratch_text_input(GuiMainMenu& menu, UiRenderingPass& pass)
+put_text_input(const char* name,
+               GuiMainMenu& menu,
+               UiRenderingPass& pass,
+               Rect rect)
 {
-    // 1. Create editor.
     static char buf[16] = { 0 };
     static SingleLineTextEditor editor(buf, sizeof buf);
 
@@ -440,7 +442,10 @@ scratch_text_input(GuiMainMenu& menu, UiRenderingPass& pass)
         editor.erase_back();
     }
 
-    render_text_field({ 400, 20, 400, 50 }, editor, menu.font, pass);
+    menu.gui.begin(name, rect, UiBuffers::Squircle);
+    menu.gui.request_button();
+    render_text_field(rect, editor, menu.font, pass);
+    menu.gui.end();
 }
 
 void
@@ -453,14 +458,8 @@ main_screen(GuiMainMenu& menu, UiRenderingPass& pass)
     float padding = sapp_widthf() / 50;
     float tile_w = (sapp_widthf() - padding * 4 - pre_padding * 2) / 3.0f;
     float tile_h = tile_w * (3.0f / 4.0f);
-    static float scroll = 0;
-    scroll += menu.gui.input.inp.mouse_wheel * 15;
-    if (scroll > 0) {
-        scroll = 0;
-    }
-    if (scroll < -200) {
-        scroll = -200;
-    }
+
+    static float content_max = 0;
 
     int world_count = 8;
 
@@ -475,12 +474,13 @@ main_screen(GuiMainMenu& menu, UiRenderingPass& pass)
           { 4.0, 4.0 });
     }
 
+    content_max = 0;
     for (int w = 0; w < world_count; w++) {
         int i = w % 3;
         int j = w / 3;
 
         Rect base_rect = { pre_padding + padding + (tile_w + padding) * i,
-                           padding + (tile_h + padding) * j + 50 + scroll,
+                           padding + (tile_h + padding) * j + 50,
                            tile_w,
                            tile_h };
         world_tile(menu.gui,
@@ -489,14 +489,15 @@ main_screen(GuiMainMenu& menu, UiRenderingPass& pass)
                    stdstrfmt("w%d", w),
                    stdstrfmt("World %d", w),
                    base_rect);
+
+        content_max =
+          std::max(content_max, base_rect.pos.y + base_rect.siz.y + padding);
     }
 
     render_shiny(pass,
                  { 0, sapp_heightf() - 100, sapp_widthf(), 100 },
                  UiBuffers::Rectangle,
                  { 1, 1, 1, 0.9 });
-
-    scratch_text_input(menu, pass);
 
     {
         menu.gui.begin(
@@ -558,6 +559,7 @@ GuiMainMenu::show()
             main_screen(*this, pass);
             break;
         case GuiMenuScreen::World:
+            put_text_input("World name", *this, pass, { 100, 100, 400, 50 });
             // TODO
             break;
     }
