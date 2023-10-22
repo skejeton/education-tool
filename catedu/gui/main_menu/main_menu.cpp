@@ -16,6 +16,9 @@ pass_event(GuiMainMenu& menu, const sapp_event* event)
 
     switch (event->type) {
         case SAPP_EVENTTYPE_CHAR:
+            if (input.text_input_at == (sizeof input.text_input) - 1) {
+                break;
+            }
             input.text_input[input.text_input_at++] = event->char_code;
             input.text_input[input.text_input_at] = '\0';
             return true;
