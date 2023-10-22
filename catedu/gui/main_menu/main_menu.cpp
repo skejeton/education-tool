@@ -69,8 +69,8 @@ obj_generate_shiny(ObjectGenerationProperties props)
     shine.rectangle.pos.y += shine.rectangle.siz.y / 2;
     shine.rectangle.siz.y /= 2;
     if (props.shape == UiBuffers::Ellipse) {
-        shine.rectangle.pos.x += shine.rectangle.siz.x / 2;
-        shine.rectangle.siz.x /= 2;
+        shine.rectangle.pos.x += shine.rectangle.siz.x / (2 * 3);
+        shine.rectangle.siz.x /= 1.5;
     }
     shine.color_top = color_bluish(1.0, 0.3) * props.mul_color;
     shine.color_bottom = color_bluish(0.8, 0.6) * props.mul_color;
@@ -150,10 +150,10 @@ render_key_value(UiRenderingPass& pass,
     bounds_v.pos.x += padding * 2;
     bounds_v.pos.y += padding;
 
-    render_shiny(pass,
-                 { pos.x, pos.y, bounds_k.siz.x, bounds_k.siz.y },
-                 UiBuffers::Squircle,
-                 { 1, 1, 1, 0.9 });
+    render_default(pass,
+                   { pos.x, pos.y, bounds_k.siz.x, bounds_k.siz.y },
+                   UiBuffers::Rectangle,
+                   { 1, 1, 1, 0.9 });
 
     font.render_text_utf8(&pass,
                           pos + Vector2{ padding * 2, padding },
@@ -165,15 +165,15 @@ render_key_value(UiRenderingPass& pass,
 
     pos = bounds_v.pos;
 
-    render_shiny(pass,
-                 { pos.x, pos.y, bounds_v.siz.x, bounds_v.siz.y },
-                 UiBuffers::Squircle,
-                 { 0.0, 0.8, 0.0, 0.9 });
+    render_default(pass,
+                   { pos.x, pos.y, bounds_v.siz.x, bounds_v.siz.y },
+                   UiBuffers::Rectangle,
+                   { 0.0, 0.8, 0.0, 0.9 });
 
     font.render_text_utf8(&pass,
                           pos + Vector2{ padding, 0 },
                           value,
-                          UiMakeBrush::make_plain_brush(UiBuffers::Squircle)
+                          UiMakeBrush::make_plain_brush(UiBuffers::Rectangle)
                             .with_solid(UI_COLOR_WHITE)
                             .build(),
                           scale);
@@ -197,7 +197,7 @@ render_collapse(GuiCore& gui,
     Rect collapse = { pos, { bounds.siz.y, bounds.siz.y } };
     bounds.pos.x += collapse.siz.x + padding;
 
-    gui.begin(stdstrfmt("collapse %s", key), collapse, UiBuffers::Squircle);
+    gui.begin(stdstrfmt("collapse %s", key), collapse, UiBuffers::Rectangle);
     ButtonState button = gui.request_button();
     render_shiny(pass,
                  at0(collapse),
@@ -208,7 +208,7 @@ render_collapse(GuiCore& gui,
         collapsed = !collapsed;
     }
     gui.end();
-    render_shiny(pass, bounds, UiBuffers::Squircle, { 1, 1, 1, 0.9 });
+    render_shiny(pass, bounds, UiBuffers::Rectangle, { 1, 1, 1, 0.9 });
 
     font.render_text_utf8(&pass,
                           bounds.pos + Vector2{ padding, padding },
