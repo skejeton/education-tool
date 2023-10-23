@@ -62,7 +62,4 @@ Entry::cleanup(void)
 void
 Entry::input(const sapp_event* event)
 {
-    if (pass_event(this->main_menu_b, event)) {
-        return;
-    }
 }
