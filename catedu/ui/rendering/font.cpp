@@ -25,7 +25,7 @@ UiFontRenderer::init(UiRenderingCore* core, UiFontDef def)
     result.page_size = page_size;
 
     FILE* f = fopen(def.path, "rb");
-    assert(f && "I like shorts! They're comfy and easy to wear!");
+    assert(f && "I like shorts! They're comfy and easy to wear! (No file)");
     FileBuffer buf = FileBuffer::read_whole_file(f);
 
     stbtt_InitFont(&result.font_info, buf.data, 0);

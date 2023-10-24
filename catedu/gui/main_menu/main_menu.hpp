@@ -4,16 +4,17 @@
 #include "catedu/core/storage/id_retainer.hpp"
 #include "catedu/diag/diag_monitor.hpp"
 #include "catedu/input.hpp"
+#include "catedu/staging/ui/ui_user.hpp"
 #include "catedu/ui/rendering/core.hpp"
 #include "catedu/ui/rendering/font.hpp"
 #include <sokol/sokol_app.h>
 
 struct GuiMainMenu
 {
-    UiRenderingCore* core;
-    UiFontRenderer font;
+    UiState ui_state;
 
     static GuiMainMenu init();
+
     void show();
 };
 

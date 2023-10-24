@@ -9,24 +9,9 @@
 #include <filesystem>
 
 void
-Entry::init(void)
-{
-    console_create_or_bind_existing();
-
-    sg_desc desc = {};
-    desc.context = sapp_sgcontext();
-    desc.logger.func = slog_func;
-    sg_setup(&desc);
-
-    this->main_menu_b = GuiMainMenu::init();
-
-    enet_initialize();
-}
-
-void
 Entry::frame(void)
 {
-    this->main_menu_b.show();
+    this->main_menu.show();
 
     sg_commit();
     inputs.update();
@@ -37,6 +22,21 @@ Entry::cleanup(void)
 {
     sg_shutdown();
     enet_deinitialize();
+}
+
+void
+Entry::init()
+{
+    console_create_or_bind_existing();
+
+    sg_desc desc = {};
+    desc.context = sapp_sgcontext();
+    desc.logger.func = slog_func;
+    sg_setup(&desc);
+
+    enet_initialize();
+
+    main_menu = GuiMainMenu::init();
 }
 
 void

@@ -24,7 +24,7 @@
 struct Entry
 {
     Input inputs;
-    GuiMainMenu main_menu_b;
+    GuiMainMenu main_menu;
 
     void init();
     void input(const sapp_event* event);
