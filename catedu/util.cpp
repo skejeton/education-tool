@@ -6,7 +6,6 @@
 #endif
 
 #include "catedu/core/memory/buffer.hpp"
-#include "imgui/imgui.h"
 #include "sokol/sokol_app.h"
 #include <stdio.h>
 #include <string>
@@ -24,14 +23,6 @@ string_duplicate(const char* string)
 
     memcpy(new_string, string, count);
     return new_string;
-}
-
-void
-center_next_window(Vector2 size)
-{
-    ImGui::SetNextWindowPos(
-      { (sapp_widthf() - size.x) / 2.0f, (sapp_heightf() - size.y) / 2.0f });
-    ImGui::SetNextWindowSize({ size.x, size.y });
 }
 
 void

@@ -10,7 +10,7 @@ if (APPLE)
     set(ADDITIONAL_FILES catedu/impl.m)
 endif()
 
-file(GLOB CATEDU_SRC_FILES "catedu/*.cpp" "catedu/*/*/*.cpp" "catedu/*/*/*/*.cpp" "catedu/*/*.cpp" ${ADDITIONAL_FILES} "lib/lib-enet/*.c" lib/imgui/imgui.cpp lib/imgui/imgui_draw.cpp lib/imgui/imgui_demo.cpp lib/imgui/imgui_widgets.cpp lib/imgui/imgui_tables.cpp)
+file(GLOB CATEDU_SRC_FILES "catedu/*.cpp" "catedu/*/*/*.cpp" "catedu/*/*/*/*.cpp" "catedu/*/*.cpp" ${ADDITIONAL_FILES} "lib/lib-enet/*.c")
 
 if (${ENV_TYPE} MATCHES "UNITTEST")
     add_compile_definitions(RUN_TESTS)
