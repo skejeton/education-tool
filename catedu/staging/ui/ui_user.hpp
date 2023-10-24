@@ -16,6 +16,7 @@ struct UiUser
 {
     UiState* state;
     UiRenderingPass pass;
+    float y = 0;
 
     static UiUser init(UiState& state);
 

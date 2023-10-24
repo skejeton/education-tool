@@ -19,7 +19,10 @@ GuiMainMenu::show()
     auto user = UiUser::init(this->ui_state);
     user.begin_pass();
 
-    user.put_button("Hello");
+    user.put_button("Playtest");
+    user.put_button("Editor");
+    user.put_button("Settings");
+    user.put_button("Exit");
 
     user.end_pass();
 }

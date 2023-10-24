@@ -488,6 +488,15 @@ rect_vs_rect(Rect r1, Rect r2)
 }
 
 inline Rect
+rect_center_rect(Rect parent, Rect child)
+{
+    return { parent.pos.x + (parent.siz.x - child.siz.x) / 2.0f,
+             parent.pos.y + (parent.siz.y - child.siz.y) / 2.0f,
+             child.siz.x,
+             child.siz.y };
+}
+
+inline Rect
 rect_from_min_max(Vector2 min, Vector2 max)
 {
     return { min.x, min.y, max.x - min.x, max.y - min.y };

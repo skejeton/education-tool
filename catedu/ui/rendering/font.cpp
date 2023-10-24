@@ -93,13 +93,13 @@ UiFontRenderer::render_glyph(UiRenderingPass* pass,
     transform.scale = scale;
 
     auto new_brush = UiMakeBrush::make_image_brush(
-                       UiBuffers::Rectangle, this->core, this->atlas_image)
+                       UiBuffers::Rectangle, pass->core, this->atlas_image)
                        .with_image_region(image_region)
                        .with_gradient(brush.color_bottom, brush.color_top)
                        .build();
 
     pass->push_transform(transform);
-    this->core->render_object(new_brush);
+    pass->core->render_object(new_brush);
     pass->pop_transform();
 }
 

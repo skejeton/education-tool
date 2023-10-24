@@ -27,6 +27,22 @@ UiMakeBrush::make_image_brush(UiBuffers shape,
     return maker;
 }
 
+UiBrush
+UiMakeBrush::make_solid(Vector4 color)
+{
+    return UiMakeBrush::make_plain_brush(UiBuffers::Rectangle)
+      .with_solid(color)
+      .build();
+}
+
+UiBrush
+UiMakeBrush::make_gradient(Vector4 color_bottom, Vector4 color_top)
+{
+    return UiMakeBrush::make_plain_brush(UiBuffers::Rectangle)
+      .with_gradient(color_bottom, color_top)
+      .build();
+}
+
 UiMakeBrush&
 UiMakeBrush::with_solid(Vector4 color)
 {

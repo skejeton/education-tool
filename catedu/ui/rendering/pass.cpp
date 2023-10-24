@@ -9,12 +9,19 @@ UiRenderingPass::begin(UiRenderingCore* core)
     core->begin_pipeline();
     pass.transformer =
       UiTransformer::init(core, { sapp_widthf(), sapp_heightf() });
+
+    UiTransform transform = {};
+    transform.scale = { 1, 1 };
+    transform.base = { 0, 0, sapp_widthf(), sapp_heightf() };
+
+    pass.push_transform(transform);
     return pass;
 }
 
 void
 UiRenderingPass::end()
 {
+    this->pop_transform();
     this->core->end_pipeline();
 }
 
