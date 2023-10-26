@@ -14,7 +14,6 @@ Entry::frame(void)
     this->main_menu.show();
 
     sg_commit();
-    inputs.update();
 }
 
 void
@@ -42,4 +41,5 @@ Entry::init()
 void
 Entry::input(const sapp_event* event)
 {
+    main_menu.ui_state.feed_event(event);
 }

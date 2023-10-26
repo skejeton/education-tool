@@ -2,10 +2,9 @@
 #include "catedu/ui/rendering/colors.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 
-const Vector4 theme[] = { { 0.6, 0.6, 0.6, 1.0 },
-                          { 0.8, 0.8, 0.8, 1.0 },
-                          { 0.0, 0.0, 0.0, 1.0 },
-                          { 0.0, 0.0, 0.0, 1.0 } };
+const Vector4 theme[] = { { 0.8, 0.8, 0.8, 1.0 }, { 0.6, 0.6, 0.6, 1.0 },
+                          { 0.0, 0.0, 0.0, 1.0 }, { 0.0, 0.0, 0.0, 1.0 },
+                          { 0.7, 0.7, 0.7, 1.0 }, { 0.5, 0.5, 0.5, 1.0 } };
 
 void
 draw_rectangle_gradient(UiRenderingPass& pass,
@@ -64,11 +63,19 @@ bool
 UiUser::put_button(const char* text)
 {
     Vector2 size = { 300, 100 };
-    Rect rect = { { 0, y }, size };
+    Rect rect = { { 10, y }, size };
+    Vector4 color1 = theme[0];
+    Vector4 color2 = theme[1];
 
+    if (rect_vs_vector2(rect, state->input.mouse_pos)) {
+        color1 = theme[4];
+        color2 = theme[5];
+        if (state->input.mouse_down) {
+            std::swap(color1, color2);
+        }
+    }
     draw_rectangle_gradient(pass, rect, theme[3], theme[3]);
-    draw_rectangle_gradient(
-      pass, rect_shrink(rect, { 1, 1 }), theme[0], theme[1]);
+    draw_rectangle_gradient(pass, rect_shrink(rect, { 1, 1 }), color1, color2);
     draw_centered_text(text, pass, state->font, rect, theme[2], 2);
     y += size.y + 5;
 
@@ -82,4 +89,21 @@ UiState::init(const char* font_path)
     state.core = UiRenderingCore::init();
     state.font = UiFontRenderer::init(&state.core, { font_path, 16 });
     return state;
+}
+
+void
+UiState::feed_event(const sapp_event* event)
+{
+    switch (event->type) {
+        case SAPP_EVENTTYPE_MOUSE_MOVE:
+            this->input.mouse_pos = { event->mouse_x, event->mouse_y };
+            this->input.mouse_delta = { event->mouse_dx, event->mouse_dy };
+            break;
+        case SAPP_EVENTTYPE_MOUSE_DOWN:
+        case SAPP_EVENTTYPE_MOUSE_UP:
+            this->input.mouse_down =
+              (event->mouse_button == SAPP_MOUSEBUTTON_LEFT) &&
+              event->type == SAPP_EVENTTYPE_MOUSE_DOWN;
+            break;
+    }
 }

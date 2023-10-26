@@ -23,7 +23,6 @@
 
 struct Entry
 {
-    Input inputs;
     GuiMainMenu main_menu;
 
     void init();
