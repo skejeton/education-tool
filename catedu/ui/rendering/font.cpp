@@ -116,7 +116,7 @@ UiFontRenderer::render_text_utf8(UiRenderingPass* pass,
         if (text[i] == '\n') {
             pos.x = 0;
             pos.y +=
-              ((this->ascent - this->descent) * this->scale / 4.0) * scale.y;
+              ((this->ascent - this->descent) * this->scale / 2.0) * scale.y;
             continue;
         }
 
@@ -162,7 +162,7 @@ UiFontRenderer::bounds_text_utf8(Vector2 position,
             }
             pos.x = 0;
             pos.y +=
-              ((this->ascent - this->descent) * this->scale / 4.0) * scale.y;
+              ((this->ascent - this->descent) * this->scale / 5.0) * scale.y;
 
             continue;
         }
@@ -177,8 +177,8 @@ UiFontRenderer::bounds_text_utf8(Vector2 position,
                             &quad,
                             false);
     }
-    if (line_count == 1) {
-        pos.y += ((this->ascent - this->descent) * this->scale / 4.0) * scale.y;
+    if (line_count == 1 && *text) {
+        pos.y += ((this->ascent - this->descent) * this->scale / 5.0) * scale.y;
     }
 
     if (pos.x > max_w) {

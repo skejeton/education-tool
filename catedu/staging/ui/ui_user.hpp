@@ -10,6 +10,7 @@ struct UiInput
     Vector2 mouse_pos;
     Vector2 mouse_delta;
     bool mouse_down;
+    bool mouse_pressed;
 };
 
 struct UiState
@@ -33,5 +34,10 @@ struct UiUser
     void begin_pass();
     void end_pass();
 
-    bool put_button(const char* text);
+    bool button(const char* text);
+    void label(const char* text);
+    void generic(Vector2 size,
+                 UiBrush brush,
+                 float border_width = 0,
+                 UiBrush border = {});
 };

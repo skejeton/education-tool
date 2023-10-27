@@ -16,13 +16,38 @@ GuiMainMenu::init()
 void
 GuiMainMenu::show()
 {
+    static std::string log = "";
+    static float thickness = 1;
+
     auto user = UiUser::init(this->ui_state);
     user.begin_pass();
 
-    user.put_button("Playtest");
-    user.put_button("Editor");
-    user.put_button("Settings");
-    user.put_button("Exit");
+    const char* buttons[] = { "Playtest", "Editor", "Settings", "Exit" };
+    for (int i = 0; i < sizeof buttons / sizeof buttons[0]; i++) {
+        if (user.button(buttons[i])) {
+            log += std::string("Pressed ") + buttons[i] + "\n";
+        }
+    }
+
+    user.generic({ 64, 64 },
+                 UiMakeBrush::make_gradient(UI_COLOR_GREEN, UI_COLOR_MAGENTA),
+                 thickness,
+                 UiMakeBrush::make_solid(UI_COLOR_BLACK));
+
+    if (user.button("Thicker")) {
+        thickness += 1;
+    }
+    if (user.button("Thinner")) {
+        thickness -= 1;
+        if (thickness < 0)
+            thickness = 0;
+    }
+
+    if (user.button("Clear")) {
+        log = "";
+    }
+
+    user.label(log.c_str());
 
     user.end_pass();
 }

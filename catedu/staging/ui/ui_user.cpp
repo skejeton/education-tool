@@ -56,21 +56,25 @@ UiUser::begin_pass()
 void
 UiUser::end_pass()
 {
+    state->input.mouse_pressed = false;
     this->pass.end();
 }
 
 bool
-UiUser::put_button(const char* text)
+UiUser::button(const char* text)
 {
     Vector2 size = { 300, 100 };
     Rect rect = { { 10, y }, size };
     Vector4 color1 = theme[0];
     Vector4 color2 = theme[1];
 
+    bool pressed = false;
+
     if (rect_vs_vector2(rect, state->input.mouse_pos)) {
         color1 = theme[4];
         color2 = theme[5];
         if (state->input.mouse_down) {
+            pressed = state->input.mouse_pressed;
             std::swap(color1, color2);
         }
     }
@@ -79,7 +83,32 @@ UiUser::put_button(const char* text)
     draw_centered_text(text, pass, state->font, rect, theme[2], 2);
     y += size.y + 5;
 
-    return false;
+    return pressed;
+}
+
+void
+UiUser::label(const char* text)
+{
+    Rect r = state->font.bounds_text_utf8({ 10, y }, text, { 2, 2 });
+    state->font.render_text_utf8(
+      &pass, r.pos, text, UiMakeBrush::make_solid(theme[2]), { 2, 2 });
+
+    y += r.siz.y + 5;
+}
+
+void
+UiUser::generic(Vector2 size, UiBrush brush, float border_width, UiBrush border)
+{
+    Rect r = { { 10 + border_width, y + border_width }, size };
+
+    draw_rectangle_gradient(pass,
+                            rect_shrink(r, { -border_width, -border_width }),
+                            border.color_top,
+                            border.color_bottom);
+
+    draw_rectangle_gradient(pass, r, brush.color_top, brush.color_bottom);
+
+    y += size.y + 5 + border_width * 2;
 }
 
 UiState
@@ -104,6 +133,7 @@ UiState::feed_event(const sapp_event* event)
             this->input.mouse_down =
               (event->mouse_button == SAPP_MOUSEBUTTON_LEFT) &&
               event->type == SAPP_EVENTTYPE_MOUSE_DOWN;
+            this->input.mouse_pressed = this->input.mouse_down;
             break;
     }
 }
