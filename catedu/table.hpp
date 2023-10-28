@@ -20,6 +20,8 @@ struct TableId
     }
 
     bool operator!=(TableId other) { return !(*this == other); }
+
+    bool valid() { return id != 0; }
 };
 
 #define NULL_ID (TableId{ 0 })
@@ -35,6 +37,12 @@ struct Table
     }* slots;
     size_t capacity;
     size_t count;
+
+    void deinit()
+    {
+        free(values);
+        free(slots);
+    }
 
     bool scale()
     {
