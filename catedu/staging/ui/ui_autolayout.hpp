@@ -52,6 +52,7 @@ struct AutoLayoutResult
 {
     Rect rect;
     char* note;
+    AutoLayoutResult* next;
 };
 
 struct AutoLayoutNodeId
@@ -82,7 +83,8 @@ struct AutoLayoutProcess
                                  AutoLayoutElement element);
 
     // Returns the count of elements in the destination array.
-    size_t process(BumpAllocator bump, AutoLayoutProcess*& dest);
+    void AutoLayoutProcess::process(BumpAllocator alloc,
+                                    AutoLayoutResult& result);
 };
 
 #endif

@@ -11,6 +11,13 @@ struct BumpAllocator
 
     static BumpAllocator init();
     void* alloc(size_t size);
+
+    template<class T>
+    T* alloc()
+    {
+        return (T*)this->alloc(sizeof(T))
+    }
+
     // @warning All data allocated with this allocator will be lost.
     void deinit();
 };

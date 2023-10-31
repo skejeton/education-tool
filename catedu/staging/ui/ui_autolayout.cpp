@@ -1,18 +1,68 @@
 #include "ui_autolayout.hpp"
+#include "catedu/core/memory/init.hpp"
+#include <algorithm>
 #include <assert.h>
 
-void
-recurse(AutoLayoutProcess* l, AutoLayoutNodeId start)
+struct LayoutPassthrough
 {
-    AutoLayoutNode* node = l->nodes.get(start.id);
+    AutoLayoutNodeId node;
+
+    LayoutPassthrough then(AutoLayoutNodeId node) { return { node }; }
+};
+
+struct LayoutBuilder
+{
+    AutoLayoutProcess* process;
+    AutoLayoutResult* last;
+    BumpAllocator alloc;
+
+    LayoutPassthrough begin();
+};
+
+AutoLayoutResult*
+alloc_result(LayoutBuilder& builder)
+{
+    auto* result = zeroinit(builder.alloc.alloc<AutoLayoutResult>());
+
+    builder.last->next = result;
+    builder.last = result;
+
+    return result;
+}
+
+Vector2
+recurse(LayoutBuilder& builder, LayoutPassthrough pass)
+{
+    AutoLayoutNode* node = builder.process->nodes.get(pass.node.id);
     assert(node);
+    AutoLayoutElement el = node->element;
+    Vector2 my_size = { 0, 0 };
 
-    // etc etc handle calculations.
-
-    while (node) {
-        recurse(l, node->child);
-        node = l->nodes.get(node->sibling.id);
+    AutoLayoutNodeId child = node->child;
+    if (!child.id.valid()) {
+        return el.base_size;
     }
+
+    while (child.id.valid()) {
+        Vector2 size = recurse(builder, pass.then(child));
+        AutoLayoutNode* child_node = builder.process->nodes.get(child.id);
+        assert(child_node);
+
+        switch (el.layout.type) {
+            case AutoLayout::Column:
+                my_size.x = std::max(size.x, my_size.x);
+                my_size.y += size.y;
+                break;
+            case AutoLayout::Row:
+                my_size.x += size.x;
+                my_size.y = std::max(size.y, my_size.y);
+                break;
+        }
+
+        child = builder.process->nodes.get(child.id)->sibling;
+    }
+
+    return my_size;
 }
 
 AutoLayoutProcess
@@ -56,8 +106,13 @@ AutoLayoutProcess::add_element(AutoLayoutNodeId parent,
     return { child };
 }
 
-size_t
-AutoLayoutProcess::process(BumpAllocator bump, AutoLayoutProcess*& dest)
+void
+AutoLayoutProcess::process(BumpAllocator alloc, AutoLayoutResult& result)
 {
-    recurse(this, { 0 });
+    LayoutBuilder builder = {};
+    builder.process = this;
+    builder.last = &result;
+    builder.alloc = alloc;
+
+    recurse(builder, builder.begin());
 }
