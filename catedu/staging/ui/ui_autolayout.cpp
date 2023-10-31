@@ -16,7 +16,7 @@ struct LayoutBuilder
     AutoLayoutResult* last;
     BumpAllocator alloc;
 
-    LayoutPassthrough begin();
+    LayoutPassthrough begin() { return { this->process->root }; }
 };
 
 AutoLayoutResult*
