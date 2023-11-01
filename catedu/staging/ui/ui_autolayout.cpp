@@ -65,6 +65,26 @@ done:
 }
 
 void
+align_to_parents(AutoLayoutProcess* process, AutoLayoutNodeId n)
+{
+    AutoLayoutNode* node = process->nodes.get(n.id);
+    assert(node);
+    AutoLayoutNodeId child = node->child;
+
+    while (child.id.valid()) {
+        AutoLayoutNode* child_node = process->nodes.get(child.id);
+        assert(child_node);
+
+        child_node->element.calc_rect.pos += node->element.calc_rect.pos;
+        align_to_parents(process, child);
+
+        child = child_node->sibling;
+    }
+}
+
+
+
+void
 build_results(ResultBuilder &builder, AutoLayoutNodeId n)
 {
     AutoLayoutNode* node = builder.process->nodes.get(n.id);
@@ -72,6 +92,7 @@ build_results(ResultBuilder &builder, AutoLayoutNodeId n)
 
     AutoLayoutResult *result = alloc_result(builder);
     result->rect = node->element.calc_rect;
+    result->userdata = node->element.userdata;
     
     AutoLayoutNodeId child = node->child;
     while (child.id.valid()) {
@@ -107,7 +128,7 @@ AutoLayoutNodeId
 AutoLayoutProcess::add_element(AutoLayoutNodeId parent,
                                AutoLayoutElement element)
 {
-    AutoLayoutNode node;
+    AutoLayoutNode node = {};
     node.element = element;
     node.parent = parent;
     node.child = { 0 };
@@ -140,5 +161,6 @@ AutoLayoutProcess::process(BumpAllocator alloc, AutoLayoutResult*& result)
     builder.alloc = &alloc;
 
     recurse(this, builder.begin());
+    align_to_parents(this, builder.begin());
     build_results(builder, builder.begin());
 }

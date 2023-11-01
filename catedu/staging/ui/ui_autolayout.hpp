@@ -52,6 +52,7 @@ struct AutoLayoutElement
 
 struct AutoLayoutResult
 {
+    TableId userdata;
     Rect rect;
     char* note;
     AutoLayoutResult* next;
