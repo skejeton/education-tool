@@ -29,9 +29,7 @@ draw_centered_text(const char* text,
                    UiFontRenderer& font,
                    Rect rect,
                    Vector4 color,
-                   float scale = 1
-
-)
+                   float scale = 1)
 {
     Rect bounds = font.bounds_text_utf8(rect.pos, text, { scale, scale });
     Rect text_rect = rect_center_rect(rect, bounds);
@@ -50,12 +48,36 @@ UiUser::init(UiState& state)
 void
 UiUser::begin_pass()
 {
+    this->layout = AutoLayoutProcess::init(this->current_node);
     this->pass = UiRenderingPass::begin(&state->core);
+}
+
+void
+render_out(UiUser& user)
+{
+    auto alloc = BumpAllocator::init();
+    AutoLayoutResult* result;
+    user.layout.process(alloc, result);
+
+    while (result) {
+        draw_rectangle_gradient(user.pass, result->rect, theme[2], theme[2]);
+        draw_rectangle_gradient(user.pass, rect_shrink(result->rect, {1, 1}), theme[1], theme[1]);
+        result = result->next;
+    }
+
+    if (user.current_node.id != user.layout.root.id) {
+        assert(false && "Unfinished begin_generic calls");
+    }
+
+    user.layout.deinit();
+    alloc.deinit();
 }
 
 void
 UiUser::end_pass()
 {
+    render_out(*this);
+
     state->input.mouse_pressed = false;
     this->pass.end();
 }
@@ -64,7 +86,7 @@ bool
 UiUser::button(const char* text)
 {
     Vector2 size = { 300, 100 };
-    Rect rect = { { 10, y }, size };
+    Rect rect = { { 10, 10 }, size };
     Vector4 color1 = theme[0];
     Vector4 color2 = theme[1];
 
@@ -81,7 +103,6 @@ UiUser::button(const char* text)
     draw_rectangle_gradient(pass, rect, theme[3], theme[3]);
     draw_rectangle_gradient(pass, rect_shrink(rect, { 1, 1 }), color1, color2);
     draw_centered_text(text, pass, state->font, rect, theme[2], 2);
-    y += size.y + 5;
 
     return pressed;
 }
@@ -89,26 +110,32 @@ UiUser::button(const char* text)
 void
 UiUser::label(const char* text)
 {
-    Rect r = state->font.bounds_text_utf8({ 10, y }, text, { 2, 2 });
+    Rect r = state->font.bounds_text_utf8({ 10, 10 }, text, { 2, 2 });
     state->font.render_text_utf8(
       &pass, r.pos, text, UiMakeBrush::make_solid(theme[2]), { 2, 2 });
-
-    y += r.siz.y + 5;
 }
 
 void
-UiUser::generic(Vector2 size, UiBrush brush, float border_width, UiBrush border)
+UiUser::begin_generic(Vector2 size,
+                      UiBrush brush,
+                      float border_width,
+                      UiBrush border)
 {
-    Rect r = { { 10 + border_width, y + border_width }, size };
+    AutoLayoutElement el = {};
+    el.base_size = size;
+    el.border = { border_width, border_width, border_width, border_width };
+    el.layout.type = AutoLayout::Column;
 
-    draw_rectangle_gradient(pass,
-                            rect_shrink(r, { -border_width, -border_width }),
-                            border.color_top,
-                            border.color_bottom);
+    this->current_node = this->layout.add_element(this->current_node, el);
+}
 
-    draw_rectangle_gradient(pass, r, brush.color_top, brush.color_bottom);
+void
+UiUser::end_generic()
+{
+    auto node = this->layout.nodes.get(this->current_node.id);
+    assert(node && "Begin generic was not called");
 
-    y += size.y + 5 + border_width * 2;
+    this->current_node = node->parent;
 }
 
 UiState

@@ -6,7 +6,6 @@
 struct BumpAllocator
 {
     void* memory;
-    size_t cap;
     size_t offset;
 
     static BumpAllocator init();

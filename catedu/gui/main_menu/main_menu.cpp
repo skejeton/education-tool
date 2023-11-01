@@ -22,32 +22,28 @@ GuiMainMenu::show()
     auto user = UiUser::init(this->ui_state);
     user.begin_pass();
 
-    const char* buttons[] = { "Playtest", "Editor", "Settings", "Exit" };
-    for (int i = 0; i < sizeof buttons / sizeof buttons[0]; i++) {
-        if (user.button(buttons[i])) {
-            log += std::string("Pressed ") + buttons[i] + "\n";
-        }
-    }
+    user.begin_generic({ 64, 128 },
+                       UiMakeBrush::make_solid({ 1, 0, 0, 1 }),
+                       1,
+                       UiMakeBrush::make_solid({ 0, 0, 0, 1 }));
 
-    user.generic({ 64, 64 },
-                 UiMakeBrush::make_gradient(UI_COLOR_GREEN, UI_COLOR_MAGENTA),
-                 thickness,
-                 UiMakeBrush::make_solid(UI_COLOR_BLACK));
+    user.end_generic();
 
-    if (user.button("Thicker")) {
-        thickness += 1;
-    }
-    if (user.button("Thinner")) {
-        thickness -= 1;
-        if (thickness < 0)
-            thickness = 0;
-    }
+    user.begin_generic({ 400, 64 },
+                       UiMakeBrush::make_solid({ 1, 0, 0, 1 }),
+                       1,
+                       UiMakeBrush::make_solid({ 0, 0, 0, 1 }));
 
-    if (user.button("Clear")) {
-        log = "";
-    }
+    user.end_generic();
 
-    user.label(log.c_str());
+    user.begin_generic({ 54, 54 },
+                       UiMakeBrush::make_solid({ 1, 0, 0, 1 }),
+                       1,
+                       UiMakeBrush::make_solid({ 0, 0, 0, 1 }));
+
+    user.end_generic();
+
+
 
     user.end_pass();
 }

@@ -1,21 +1,8 @@
 #include "bump_allocator.hpp"
 #include <stdlib.h>
-
-void
-resize(BumpAllocator* allocator, size_t new_cap)
-{
-    allocator->memory = realloc(allocator->memory, new_cap);
-    allocator->cap = new_cap;
-}
-
-void
-resize_if_needed(BumpAllocator* allocator, size_t size)
-{
-    if (allocator->offset + size > allocator->cap) {
-        size_t new_cap = allocator->cap * 2;
-        resize(allocator, new_cap);
-    }
-}
+#include <cassert>
+// TODO: Linked list implementation
+#define MAX_ALLOC (1<<16)
 
 void*
 allocate_after_we_have_enough_space(BumpAllocator* allocator, size_t size)
@@ -28,14 +15,18 @@ allocate_after_we_have_enough_space(BumpAllocator* allocator, size_t size)
 BumpAllocator
 BumpAllocator::init()
 {
-    return BumpAllocator{ NULL, 0, 0 };
+    return BumpAllocator{ malloc(MAX_ALLOC), 0 };
 }
 
 void*
 BumpAllocator::alloc(size_t size)
 {
-    resize_if_needed(this, size);
-    return allocate_after_we_have_enough_space(this, size);
+    assert(size <= MAX_ALLOC - this->offset &&
+      "BumpAllocator: resource exhausted. TODO: implement linked list");
+
+    void* ptr = (char*)this->memory + this->offset;
+    this->offset += size;
+    return ptr;
 }
 
 void

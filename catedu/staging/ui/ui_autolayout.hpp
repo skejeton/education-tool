@@ -46,6 +46,8 @@ struct AutoLayoutElement
     TRBL border;       // Border.
     AutoLayout layout; // Layout-specific data.
     char* note;        // Note for debugging.
+    //----------------------------------------------- Calculated data.
+    Rect calc_rect;    // Calculated rect.
 };
 
 struct AutoLayoutResult
@@ -64,6 +66,7 @@ struct AutoLayoutNodeId
 // other nodes.
 struct AutoLayoutNode
 {
+    AutoLayoutNodeId parent;
     AutoLayoutNodeId last;
     AutoLayoutNodeId sibling;  // Reference to the layout tree sibling.
     AutoLayoutNodeId child;    // Reference to the layout tree child.
@@ -84,7 +87,7 @@ struct AutoLayoutProcess
 
     // Returns the count of elements in the destination array.
     void AutoLayoutProcess::process(BumpAllocator alloc,
-                                    AutoLayoutResult& result);
+                                    AutoLayoutResult*& result);
 };
 
 #endif

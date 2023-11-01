@@ -4,6 +4,7 @@
 #include "catedu/ui/rendering/font.hpp"
 #include "catedu/ui/rendering/pass.hpp"
 #include "sokol/sokol_app.h"
+#include "ui_autolayout.hpp"
 
 struct UiInput
 {
@@ -23,11 +24,20 @@ struct UiState
     void feed_event(const sapp_event* event);
 };
 
+struct UiGenericStyles
+{
+    UiBrush brush;
+    float border_width;
+    UiBrush border;
+};
+
 struct UiUser
 {
     UiState* state;
     UiRenderingPass pass;
-    float y = 0;
+    AutoLayoutProcess layout;
+    AutoLayoutNodeId current_node;
+    Table<UiGenericStyles> styles;
 
     static UiUser init(UiState& state);
 
@@ -36,8 +46,9 @@ struct UiUser
 
     bool button(const char* text);
     void label(const char* text);
-    void generic(Vector2 size,
-                 UiBrush brush,
-                 float border_width = 0,
-                 UiBrush border = {});
+    void begin_generic(Vector2 size,
+                       UiBrush brush,
+                       float border_width = 0,
+                       UiBrush border = {});
+    void end_generic();
 };
