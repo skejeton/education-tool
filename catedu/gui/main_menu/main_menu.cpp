@@ -13,8 +13,6 @@ GuiMainMenu::init()
     return { UiState::init("./assets/Roboto-Regular.ttf") };
 }
 
-
-
 void
 GuiMainMenu::show()
 {
@@ -26,7 +24,7 @@ GuiMainMenu::show()
 
     user.begin_generic({ 64, 128 },
                        UiMakeBrush::make_solid({ 1, 0, 0, 1 }),
-                       1,
+                       4,
                        UiMakeBrush::make_solid({ 0, 0, 0, 1 }));
 
     user.end_generic();
@@ -55,8 +53,6 @@ GuiMainMenu::show()
     user.end_generic();
 
     user.end_generic();
-
-
 
     user.end_pass();
 }

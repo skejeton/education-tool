@@ -26,6 +26,8 @@ struct TRBL
     {
         return { { rect.pos }, rect.siz + Vector2{ l + r, t + b } };
     }
+
+    Vector2 apply_size(Vector2 size) { return size + Vector2{ l + r, t + b }; }
 };
 
 struct AutoLayout
@@ -43,11 +45,13 @@ struct AutoLayoutElement
 {
     TableId userdata;  // Reference to userdata.
     Vector2 base_size; // Size of the node, without padding, border, margin.
-    TRBL border;       // Border.
+    TRBL margin;
+    TRBL border;
+    TRBL padding;
     AutoLayout layout; // Layout-specific data.
     char* note;        // Note for debugging.
     //----------------------------------------------- Calculated data.
-    Rect calc_rect;    // Calculated rect.
+    Rect calc_rect; // Calculated rect.
 };
 
 struct AutoLayoutResult

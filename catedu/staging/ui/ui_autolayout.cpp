@@ -3,12 +3,11 @@
 #include <algorithm>
 #include <assert.h>
 
-
 struct ResultBuilder
 {
     AutoLayoutProcess* process;
     AutoLayoutResult* last;
-    BumpAllocator *alloc;
+    BumpAllocator* alloc;
 
     AutoLayoutNodeId begin() { return this->process->root; }
 };
@@ -25,7 +24,7 @@ alloc_result(ResultBuilder& builder)
 }
 
 Vector2
-recurse(AutoLayoutProcess *process, AutoLayoutNodeId n)
+recurse(AutoLayoutProcess* process, AutoLayoutNodeId n)
 {
     AutoLayoutNode* node = process->nodes.get(n.id);
     assert(node);
@@ -43,14 +42,20 @@ recurse(AutoLayoutProcess *process, AutoLayoutNodeId n)
         AutoLayoutNode* child_node = process->nodes.get(child.id);
         assert(child_node);
 
+        AutoLayoutElement& cel = child_node->element;
+
         switch (el.layout.type) {
             case AutoLayout::Column:
-                child_node->element.calc_rect.pos += { 0, my_size.y };
+                child_node->element.calc_rect.pos +=
+                  { el.padding.l + cel.border.l + cel.margin.l + 0,
+                    el.padding.t + cel.border.t + cel.margin.t + my_size.y };
                 my_size.y += size.y;
                 my_size.x = std::max(size.x, my_size.x);
                 break;
             case AutoLayout::Row:
-                child_node->element.calc_rect.pos += { my_size.x, 0 };
+                child_node->element.calc_rect.pos +=
+                  { el.padding.l + cel.border.l + cel.margin.l + my_size.x,
+                    el.padding.t + cel.border.t + cel.margin.t + 0 };
                 my_size.x += size.x;
                 my_size.y = std::max(size.y, my_size.y);
                 break;
@@ -60,8 +65,9 @@ recurse(AutoLayoutProcess *process, AutoLayoutNodeId n)
     }
 
 done:
-    node->element.calc_rect.siz = my_size;
-    return my_size;
+    node->element.calc_rect.siz = el.padding.apply_size(my_size);
+    return el.border.apply_size(
+      el.margin.apply_size(node->element.calc_rect.siz));
 }
 
 void
@@ -82,18 +88,16 @@ align_to_parents(AutoLayoutProcess* process, AutoLayoutNodeId n)
     }
 }
 
-
-
 void
-build_results(ResultBuilder &builder, AutoLayoutNodeId n)
+build_results(ResultBuilder& builder, AutoLayoutNodeId n)
 {
     AutoLayoutNode* node = builder.process->nodes.get(n.id);
     assert(node);
 
-    AutoLayoutResult *result = alloc_result(builder);
+    AutoLayoutResult* result = alloc_result(builder);
     result->rect = node->element.calc_rect;
     result->userdata = node->element.userdata;
-    
+
     AutoLayoutNodeId child = node->child;
     while (child.id.valid()) {
         AutoLayoutNode* child_node = builder.process->nodes.get(child.id);
