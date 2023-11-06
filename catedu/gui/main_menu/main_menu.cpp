@@ -33,9 +33,6 @@ make_element(AutoLayout layout, Vector2 size, bool autox, bool autoy)
 void
 GuiMainMenu::show()
 {
-    static std::string log = "";
-    static float thickness = 1;
-
     auto user = UiUser::init(this->ui_state);
     user.begin_pass();
 
@@ -70,6 +67,11 @@ GuiMainMenu::show()
       UiMakeBrush::make_solid({ 1, 0, 0, 1 }),
       UiMakeBrush::make_solid({ 0, 0, 0, 1 }));
     user.end_generic();
+
+    user.label("This is a test label\nIt has multiline support!", { 3, 3 });
+    user.label("Oooh look fancy!",
+               { 3, 3 },
+               UiMakeBrush::make_gradient({ 1, 0, 0, 1 }, { 0, 0, 1, 1 }));
 
     user.end_generic();
 

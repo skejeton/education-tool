@@ -10,8 +10,8 @@ get_glyph_size(UiFontRenderer* f, char glyph)
 {
     auto& packed_char = f->packed_chars[glyph];
 
-    return { float(packed_char.x1 - packed_char.x0) / 10,
-             float(packed_char.y1 - packed_char.y0) / 10 };
+    return { float(packed_char.x1 - packed_char.x0),
+             float(packed_char.y1 - packed_char.y0) };
 }
 
 UiFontRenderer
@@ -30,7 +30,7 @@ UiFontRenderer::init(UiRenderingCore* core, UiFontDef def)
 
     stbtt_InitFont(&result.font_info, buf.data, 0);
     result.scale =
-      stbtt_ScaleForPixelHeight(&result.font_info, def.font_size * 5);
+      stbtt_ScaleForPixelHeight(&result.font_info, def.font_size * 10);
     int ascent, descent;
     stbtt_GetFontVMetrics(&result.font_info, &ascent, &descent, nullptr);
     result.ascent = ascent;
@@ -48,11 +48,11 @@ UiFontRenderer::init(UiRenderingCore* core, UiFontDef def)
                     2,
                     nullptr);
 
-    stbtt_PackSetOversampling(&pack_context, 2, 2);
+    stbtt_PackSetOversampling(&pack_context, 1, 1);
     stbtt_PackFontRange(&pack_context,
                         buf.data,
                         0,
-                        def.font_size * 5,
+                        def.font_size * 10,
                         0,
                         256,
                         result.packed_chars);
@@ -110,13 +110,14 @@ UiFontRenderer::render_text_utf8(UiRenderingPass* pass,
                                  UiBrush brush,
                                  Vector2 scale)
 {
+    scale /= { 10, 10 };
     Vector2 pos = { 0, 0 };
 
     for (size_t i = 0; text[i]; i += 1) {
         if (text[i] == '\n') {
             pos.x = 0;
-            pos.y +=
-              ((this->ascent - this->descent) * this->scale / 2.0) * scale.y;
+            pos.y += ((this->ascent - this->descent) * this->scale);
+
             continue;
         }
 
@@ -129,11 +130,11 @@ UiFontRenderer::render_text_utf8(UiRenderingPass* pass,
                             &pos.y,
                             &quad,
                             false);
-        this->render_glyph(
+
+        render_glyph(
           pass,
-          { quad.x0 / 5 * scale.x + position.x,
-            (quad.y0 + (this->ascent + 150) * this->scale) / 5.0f * scale.y +
-              position.y },
+          position +
+            Vector2{ quad.x0, quad.y0 + this->ascent * this->scale } * scale,
           text[i],
           brush,
           scale);
@@ -146,6 +147,7 @@ UiFontRenderer::bounds_text_utf8(Vector2 position,
                                  Vector2 scale,
                                  size_t until)
 {
+    scale /= { 10, 10 };
     Vector2 pos = { 0, 0 };
     float max_w = 0;
     int line_count = 1;
@@ -161,8 +163,7 @@ UiFontRenderer::bounds_text_utf8(Vector2 position,
                 max_w = pos.x;
             }
             pos.x = 0;
-            pos.y +=
-              ((this->ascent - this->descent) * this->scale / 5.0) * scale.y;
+            pos.y += ((this->ascent - this->descent) * this->scale) * scale.y;
 
             continue;
         }
@@ -177,14 +178,12 @@ UiFontRenderer::bounds_text_utf8(Vector2 position,
                             &quad,
                             false);
     }
-    if (line_count == 1 && *text) {
-        pos.y += ((this->ascent - this->descent) * this->scale / 5.0) * scale.y;
-    }
+    pos.y += ((this->ascent - this->descent) * this->scale) * scale.y;
 
     if (pos.x > max_w) {
         max_w = pos.x;
     }
-    pos.x = max_w / 5 * scale.x;
+    pos.x = max_w * scale.x;
 
     return { position, pos };
 }

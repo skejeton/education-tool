@@ -24,6 +24,7 @@ struct IdRetainer
     std::map<std::string, IdRetainerNode<T>> values;
 
     static IdRetainer<T> init();
+    void deinit();
 
     void begin_cycle();
     void end_cycle();
@@ -42,6 +43,15 @@ inline IdRetainer<T>
 IdRetainer<T>::init()
 {
     return IdRetainer{ 0, {}, {} };
+}
+
+template<typename T>
+inline void
+IdRetainer<T>::deinit()
+{
+    for (auto it = this->values.begin(); it != this->values.end();) {
+        free(it->second.value);
+    }
 }
 
 template<typename T>

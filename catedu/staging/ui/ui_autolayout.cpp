@@ -71,7 +71,7 @@ done:
         my_size.x = el.width.value;
     }
     if (el.height.type == AutoLayoutDimension::Type::Pixel) {
-        my_size.y = el.width.value;
+        my_size.y = el.height.value;
     }
 
     node->element.padding_box.siz = my_size;

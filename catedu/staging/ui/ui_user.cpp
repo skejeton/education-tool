@@ -23,22 +23,6 @@ draw_rectangle_gradient(UiRenderingPass& pass,
     pass.pop_transform();
 }
 
-void
-draw_centered_text(const char* text,
-                   UiRenderingPass& pass,
-                   UiFontRenderer& font,
-                   Rect rect,
-                   Vector4 color,
-                   float scale = 1)
-{
-    Rect bounds = font.bounds_text_utf8(rect.pos, text, { scale, scale });
-    Rect text_rect = rect_center_rect(rect, bounds);
-    Vector2 text_pos = text_rect.pos;
-
-    font.render_text_utf8(
-      &pass, text_pos, text, UiMakeBrush::make_solid(color), { scale, scale });
-}
-
 UiUser
 UiUser::init(UiState& state)
 {
@@ -50,6 +34,7 @@ UiUser::begin_pass()
 {
     this->layout = AutoLayoutProcess::init(this->current_node);
     this->pass = UiRenderingPass::begin(&state->core);
+    this->bump = BumpAllocator::init();
 }
 
 void
@@ -62,14 +47,22 @@ render_out(UiUser& user)
     while (result) {
         UiGenericStyles* styles = user.styles.get(result->userdata);
         if (styles) {
-            draw_rectangle_gradient(user.pass,
-                                    result->border_box,
-                                    styles->border.color_bottom,
-                                    styles->border.color_top);
-            draw_rectangle_gradient(user.pass,
-                                    result->base_box,
-                                    styles->brush.color_bottom,
-                                    styles->brush.color_top);
+            if (styles->text) {
+                user.state->font.render_text_utf8(&user.pass,
+                                                  result->base_box.pos,
+                                                  styles->text,
+                                                  styles->brush,
+                                                  styles->text_scale);
+            } else {
+                draw_rectangle_gradient(user.pass,
+                                        result->border_box,
+                                        styles->border.color_bottom,
+                                        styles->border.color_top);
+                draw_rectangle_gradient(user.pass,
+                                        result->base_box,
+                                        styles->brush.color_bottom,
+                                        styles->brush.color_top);
+            }
         }
         result = result->next;
     }
@@ -89,43 +82,50 @@ UiUser::end_pass()
     state->input.mouse_pressed = false;
     this->pass.end();
     this->styles.deinit();
+    this->bump.deinit();
 }
 
 bool
 UiUser::button(const char* text)
 {
-    Vector2 size = { 300, 100 };
-    Rect rect = { { 10, 10 }, size };
-    Vector4 color1 = theme[0];
-    Vector4 color2 = theme[1];
+    /*
+        this->state->elements.push(box, {});
 
-    bool pressed = false;
+        this->begin_generic(make_element({ AutoLayout::Row }, { 0, 0 }, true,
+       true), UiMakeBrush::make_solid(theme[0]),
+                            UiMakeBrush::make_solid(theme[1]));
 
-    if (rect_vs_vector2(rect, state->input.mouse_pos)) {
-        color1 = theme[4];
-        color2 = theme[5];
-        if (state->input.mouse_down) {
-            pressed = state->input.mouse_pressed;
-            std::swap(color1, color2);
-        }
-    }
-    draw_rectangle_gradient(pass, rect, theme[3], theme[3]);
-    draw_rectangle_gradient(pass, rect_shrink(rect, { 1, 1 }), color1, color2);
-    draw_centered_text(text, pass, state->font, rect, theme[2], 2);
+        this->state->elements.pop();
 
-    return pressed;
+        return pressed;
+        */
+    return false;
 }
 
 void
-UiUser::label(const char* text)
+UiUser::label(const char* text, Vector2 scale, UiBrush style)
 {
-    Rect r = state->font.bounds_text_utf8({ 10, 10 }, text, { 2, 2 });
-    state->font.render_text_utf8(
-      &pass, r.pos, text, UiMakeBrush::make_solid(theme[2]), { 2, 2 });
+    Vector2 size =
+      this->state->font.bounds_text_utf8({ 0, 0 }, text, scale).siz;
+
+    void* ptr = this->bump.alloc(strlen(text) + 1);
+    strcpy((char*)ptr, text);
+
+    AutoLayoutElement el = {};
+    el.layout = { AutoLayout::Row };
+    el.width = { AutoLayoutDimension::Pixel, size.x };
+    el.height = { AutoLayoutDimension::Pixel, size.y };
+    el.userdata =
+      this->styles.allocate(UiGenericStyles{ style, {}, (char*)ptr, scale });
+
+    this->layout.add_element(this->current_node, el);
 }
 
 void
-UiUser::begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border)
+UiUser::begin_generic(AutoLayoutElement el,
+                      UiBrush brush,
+                      UiBrush border,
+                      UiPersistentElement* persistent)
 {
     el.userdata = this->styles.allocate(UiGenericStyles{ brush, border });
 
@@ -166,4 +166,12 @@ UiState::feed_event(const sapp_event* event)
             this->input.mouse_pressed = this->input.mouse_down;
             break;
     }
+}
+
+void
+UiState::deinit()
+{
+    this->elements.deinit();
+    this->font.deinit();
+    this->core.deinit();
 }
