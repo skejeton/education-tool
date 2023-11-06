@@ -47,6 +47,9 @@ render_out(UiUser& user)
     while (result) {
         UiGenericStyles* styles = user.styles.get(result->userdata);
         if (styles) {
+            if (styles->persistent) {
+                styles->persistent->border_box = result->border_box;
+            }
             if (styles->text) {
                 user.state->font.render_text_utf8(&user.pass,
                                                   result->base_box.pos,
@@ -88,18 +91,42 @@ UiUser::end_pass()
 bool
 UiUser::button(const char* text)
 {
-    /*
-        this->state->elements.push(box, {});
+    this->state->elements.push(text, {});
+    UiPersistentElement* pe = this->state->elements.value();
 
-        this->begin_generic(make_element({ AutoLayout::Row }, { 0, 0 }, true,
-       true), UiMakeBrush::make_solid(theme[0]),
-                            UiMakeBrush::make_solid(theme[1]));
+    AutoLayoutElement el = {};
+    el.layout = { AutoLayout::Row };
+    el.width = { AutoLayoutDimension::Auto };
+    el.height = { AutoLayoutDimension::Auto };
+    el.padding = { 10, 10, 10, 10 };
+    el.margin = { 5, 5, 5, 5 };
+    el.border = { 1, 1, 1, 1 };
 
-        this->state->elements.pop();
+    Vector4 color_top = theme[1];
+    Vector4 color_bottom = theme[0];
 
-        return pressed;
-        */
-    return false;
+    bool pressed = false;
+
+    if (rect_vs_vector2(pe->border_box, this->state->input.mouse_pos)) {
+        color_top = theme[5];
+        color_bottom = theme[4];
+        if (this->state->input.mouse_down) {
+            std::swap(color_top, color_bottom);
+        }
+        pressed = this->state->input.mouse_pressed;
+    }
+
+    this->begin_generic(el,
+                        UiMakeBrush::make_gradient(color_bottom, color_top),
+                        UiMakeBrush::make_solid(theme[2]),
+                        pe);
+
+    this->label(text, { 2, 2 }, UiMakeBrush::make_solid(theme[3]));
+
+    this->end_generic();
+    this->state->elements.pop();
+
+    return pressed;
 }
 
 void
@@ -127,7 +154,9 @@ UiUser::begin_generic(AutoLayoutElement el,
                       UiBrush border,
                       UiPersistentElement* persistent)
 {
-    el.userdata = this->styles.allocate(UiGenericStyles{ brush, border });
+    UiGenericStyles styles = { brush, border, nullptr, { 1, 1 }, persistent };
+
+    el.userdata = this->styles.allocate(styles);
 
     this->current_node = this->layout.add_element(this->current_node, el);
 }

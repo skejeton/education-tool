@@ -17,7 +17,7 @@ struct UiInput
 
 struct UiPersistentElement
 {
-    Rect border_rect;
+    Rect border_box;
 };
 
 struct UiState
