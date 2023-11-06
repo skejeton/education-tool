@@ -102,6 +102,15 @@ align_to_parents(AutoLayoutProcess* process, AutoLayoutNodeId n)
         child_node->element.base_box.pos += node->element.padding_box.pos;
         child_node->element.border_box.pos += node->element.padding_box.pos;
         child_node->element.margin_box.pos += node->element.padding_box.pos;
+
+        Vector2 delta =
+          (node->element.margin_box.siz - child_node->element.padding_box.siz) *
+          Vector2{ node->element.align_width, node->element.align_height };
+
+        child_node->element.padding_box.pos += delta;
+        child_node->element.base_box.pos += delta;
+        child_node->element.border_box.pos += delta;
+        child_node->element.margin_box.pos += delta;
         align_to_parents(process, child);
 
         child = child_node->sibling;

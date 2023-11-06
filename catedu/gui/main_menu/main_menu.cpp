@@ -14,7 +14,11 @@ GuiMainMenu::init()
 }
 
 AutoLayoutElement
-make_element(AutoLayout layout, Vector2 size, bool autox, bool autoy)
+make_element(AutoLayout layout,
+             Vector2 size,
+             bool autox,
+             bool autoy,
+             Vector2 align = { 0, 0 })
 {
     AutoLayoutElement el = {};
     el.layout = layout;
@@ -26,6 +30,8 @@ make_element(AutoLayout layout, Vector2 size, bool autox, bool autoy)
     el.padding = { 3, 3, 3, 3 };
     el.margin = { 3, 3, 3, 3 };
     el.border = { 3, 3, 3, 3 };
+    el.align_width = align.x;
+    el.align_height = align.y;
 
     return el;
 }
@@ -41,37 +47,68 @@ make_auto(AutoLayout layout)
 void
 GuiMainMenu::show()
 {
+    static bool exitpopup = false;
     static std::string logs = "\n";
     auto user = UiUser::init(this->ui_state);
     user.begin_pass();
 
-    user.begin_generic(make_element({ AutoLayout::Row }, { 0, 0 }, true, true),
-                       UiMakeBrush::make_solid({ 1, 0, 0, 0.2 }),
-                       UiMakeBrush::make_solid({ 0, 0, 0, 0.2 }));
-
     user.begin_generic(
-      make_element({ AutoLayout::Column }, { 120, 40 }, false, false),
-      UiMakeBrush::make_solid({ 1, 0, 0, 1 }),
-      UiMakeBrush::make_solid({ 0, 0, 0, 1 }));
+      make_element(
+        { AutoLayout::Column }, { 0, sapp_heightf() }, true, false, { 0, 0.5 }),
+      UiMakeBrush::make_solid({ 0, 0, 0, 0.0 }),
+      UiMakeBrush::make_solid({ 0, 0, 0, 0.0 }));
 
+    user.begin_generic(make_auto({ AutoLayout::Column }), {}, {});
+    user.label("Educat!", { 5, 5 }, UiMakeBrush::make_solid({ 1, 1, 1, 1 }));
+
+    if (user.button("Play")) {
+        logs += "Clicked play!\n";
+    }
+    if (user.button("Editor")) {
+        logs += "Clicked editor!\n";
+    }
+    if (user.button("Settings")) {
+        logs += "Clicked settings!\n";
+    }
+    if (user.button("Exit")) {
+        exitpopup = true;
+        logs += "Clicked exit!\n";
+    }
+
+    user.end_generic();
     user.end_generic();
 
     user.begin_generic(
-      make_element({ AutoLayout::Row }, { 43, 52 }, false, false),
-      UiMakeBrush::make_solid({ 1, 0, 0, 1 }),
-      UiMakeBrush::make_solid({ 0, 0, 0, 1 }));
+      make_element({ AutoLayout::Column }, { 0, 0 }, true, true),
+      UiMakeBrush::make_solid({ 1, 0, 0, 0.2 }),
+      UiMakeBrush::make_solid({ 0, 0, 0, 0.2 }));
 
-    user.end_generic();
     user.begin_generic(
       make_element({ AutoLayout::Column }, { 0, 0 }, true, true),
       UiMakeBrush::make_solid({ 1, 0, 0.5, 1 }),
       UiMakeBrush::make_solid({ 0, 0, 0, 1 }));
 
-    user.begin_generic(
-      make_element({ AutoLayout::Column }, { 120, 54 }, false, false),
-      UiMakeBrush::make_solid({ 1, 0, 0, 1 }),
-      UiMakeBrush::make_solid({ 0, 0, 0, 1 }));
-    user.end_generic();
+    if (exitpopup) {
+        user.begin_generic(
+          make_element({ AutoLayout::Column }, { 0, 0 }, true, true),
+          UiMakeBrush::make_solid({ 1, 0, 0.5, 1 }),
+          UiMakeBrush::make_solid({ 0, 0, 0, 1 }));
+
+        if (user.button("x")) {
+            exitpopup = false;
+        }
+        user.label("Are you sure you want to exit?", { 2, 2 });
+        user.begin_generic(make_auto({ AutoLayout::Row }), {}, {});
+        if (user.button("Yes")) {
+            sapp_request_quit();
+        }
+        if (user.button("No")) {
+            exitpopup = false;
+        }
+        user.end_generic();
+        user.end_generic();
+    }
+
     user.begin_generic(
       make_element({ AutoLayout::Column }, { 10, 60 }, false, false),
       UiMakeBrush::make_solid({ 1, 0, 0.1, 1 }),
@@ -91,12 +128,14 @@ GuiMainMenu::show()
     if (user.button("Option 2.")) {
         logs += "Clicked option 2!\n";
     }
+    /*
     if (user.button("Option 3.")) {
         logs += "Clicked option 3!\n";
     }
     if (user.button("Option 4!")) {
         logs += "Clicked option 4!\n";
     }
+    */
 
     user.end_generic();
 

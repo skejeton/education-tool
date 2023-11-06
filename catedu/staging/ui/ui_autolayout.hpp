@@ -58,6 +58,8 @@ struct AutoLayoutElement
     TableId userdata; // Reference to userdata.
     AutoLayoutDimension width;
     AutoLayoutDimension height;
+    float align_width;
+    float align_height;
     TRBL margin;
     TRBL border;
     TRBL padding;
