@@ -27,7 +27,6 @@ struct UiState
 struct UiGenericStyles
 {
     UiBrush brush;
-    float border_width;
     UiBrush border;
 };
 
@@ -46,9 +45,6 @@ struct UiUser
 
     bool button(const char* text);
     void label(const char* text);
-    void begin_generic(Vector2 size,
-                       UiBrush brush,
-                       float border_width = 0,
-                       UiBrush border = {});
+    void begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border);
     void end_generic();
 };

@@ -41,23 +41,42 @@ struct AutoLayout
     Type type;
 };
 
+struct AutoLayoutDimension
+{
+    enum Type
+    {
+        Auto,
+        Pixel
+    };
+
+    Type type;
+    float value;
+};
+
 struct AutoLayoutElement
 {
-    TableId userdata;  // Reference to userdata.
-    Vector2 base_size; // Size of the node, without padding, border, margin.
+    TableId userdata; // Reference to userdata.
+    AutoLayoutDimension width;
+    AutoLayoutDimension height;
     TRBL margin;
     TRBL border;
     TRBL padding;
     AutoLayout layout; // Layout-specific data.
     char* note;        // Note for debugging.
     //----------------------------------------------- Calculated data.
-    Rect calc_rect; // Calculated rect.
+    Rect padding_box; // Box inside padding.
+    Rect base_box;    // Box inside border.
+    Rect border_box;  // Box inside margin.
+    Rect margin_box;  //
 };
 
 struct AutoLayoutResult
 {
     TableId userdata;
-    Rect rect;
+    Rect padding_box; // Box inside padding.
+    Rect base_box;    // Box inside border.
+    Rect border_box;  // Box inside margin.
+    Rect margin_box;  //
     char* note;
     AutoLayoutResult* next;
 };

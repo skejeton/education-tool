@@ -23,7 +23,7 @@ alloc_result(ResultBuilder& builder)
     return result;
 }
 
-Vector2
+void
 recurse(AutoLayoutProcess* process, AutoLayoutNodeId n)
 {
     AutoLayoutNode* node = process->nodes.get(n.id);
@@ -33,41 +33,58 @@ recurse(AutoLayoutProcess* process, AutoLayoutNodeId n)
 
     AutoLayoutNodeId child = node->child;
     if (!child.id.valid()) {
-        my_size = el.base_size;
         goto done;
     }
 
     while (child.id.valid()) {
-        Vector2 size = recurse(process, child);
+        recurse(process, child);
         AutoLayoutNode* child_node = process->nodes.get(child.id);
         assert(child_node);
 
         AutoLayoutElement& cel = child_node->element;
+        Vector2 size = cel.margin_box.siz;
+        Vector2 delta;
 
         switch (el.layout.type) {
             case AutoLayout::Column:
-                child_node->element.calc_rect.pos +=
-                  { el.padding.l + cel.border.l + cel.margin.l + 0,
-                    el.padding.t + cel.border.t + cel.margin.t + my_size.y };
+                delta = { 0, my_size.y };
                 my_size.y += size.y;
                 my_size.x = std::max(size.x, my_size.x);
                 break;
             case AutoLayout::Row:
-                child_node->element.calc_rect.pos +=
-                  { el.padding.l + cel.border.l + cel.margin.l + my_size.x,
-                    el.padding.t + cel.border.t + cel.margin.t + 0 };
+                delta = { my_size.x, 0 };
                 my_size.x += size.x;
                 my_size.y = std::max(size.y, my_size.y);
                 break;
         }
 
+        child_node->element.margin_box.pos += delta;
+        child_node->element.border_box.pos += delta;
+        child_node->element.base_box.pos += delta;
+        child_node->element.padding_box.pos += delta;
+
         child = child_node->sibling;
     }
 
 done:
-    node->element.calc_rect.siz = el.padding.apply_size(my_size);
-    return el.border.apply_size(
-      el.margin.apply_size(node->element.calc_rect.siz));
+    if (el.width.type == AutoLayoutDimension::Type::Pixel) {
+        my_size.x = el.width.value;
+    }
+    if (el.height.type == AutoLayoutDimension::Type::Pixel) {
+        my_size.y = el.width.value;
+    }
+
+    node->element.padding_box.siz = my_size;
+    node->element.base_box.siz = el.padding.apply_size(my_size);
+    node->element.border_box.siz =
+      el.border.apply_size(node->element.base_box.siz);
+    node->element.margin_box.siz =
+      el.margin.apply_size(node->element.border_box.siz);
+    node->element.border_box.pos += { el.margin.l, el.margin.t };
+    node->element.base_box.pos +=
+      Vector2{ el.border.l, el.border.t } + node->element.border_box.pos;
+    node->element.padding_box.pos +=
+      Vector2{ el.padding.l, el.padding.t } + node->element.base_box.pos;
 }
 
 void
@@ -81,7 +98,10 @@ align_to_parents(AutoLayoutProcess* process, AutoLayoutNodeId n)
         AutoLayoutNode* child_node = process->nodes.get(child.id);
         assert(child_node);
 
-        child_node->element.calc_rect.pos += node->element.calc_rect.pos;
+        child_node->element.padding_box.pos += node->element.padding_box.pos;
+        child_node->element.base_box.pos += node->element.padding_box.pos;
+        child_node->element.border_box.pos += node->element.padding_box.pos;
+        child_node->element.margin_box.pos += node->element.padding_box.pos;
         align_to_parents(process, child);
 
         child = child_node->sibling;
@@ -95,7 +115,10 @@ build_results(ResultBuilder& builder, AutoLayoutNodeId n)
     assert(node);
 
     AutoLayoutResult* result = alloc_result(builder);
-    result->rect = node->element.calc_rect;
+    result->padding_box = node->element.padding_box;
+    result->base_box = node->element.base_box;
+    result->border_box = node->element.border_box;
+    result->margin_box = node->element.margin_box;
     result->userdata = node->element.userdata;
 
     AutoLayoutNodeId child = node->child;

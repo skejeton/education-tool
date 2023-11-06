@@ -62,14 +62,12 @@ render_out(UiUser& user)
     while (result) {
         UiGenericStyles* styles = user.styles.get(result->userdata);
         if (styles) {
-            draw_rectangle_gradient(
-              user.pass,
-              rect_shrink(result->rect,
-                          { -styles->border_width, -styles->border_width }),
-              styles->border.color_bottom,
-              styles->border.color_top);
             draw_rectangle_gradient(user.pass,
-                                    result->rect,
+                                    result->border_box,
+                                    styles->border.color_bottom,
+                                    styles->border.color_top);
+            draw_rectangle_gradient(user.pass,
+                                    result->base_box,
                                     styles->brush.color_bottom,
                                     styles->brush.color_top);
         }
@@ -127,19 +125,9 @@ UiUser::label(const char* text)
 }
 
 void
-UiUser::begin_generic(Vector2 size,
-                      UiBrush brush,
-                      float border_width,
-                      UiBrush border)
+UiUser::begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border)
 {
-    AutoLayoutElement el = {};
-    el.base_size = size;
-    el.border = { border_width, border_width, border_width, border_width };
-    el.padding = { 5, 6, 7, 8 };
-    el.margin = { 5, 6, 7, 8 };
-    el.layout.type = AutoLayout::Column;
-    el.userdata =
-      this->styles.allocate(UiGenericStyles{ brush, border_width, border });
+    el.userdata = this->styles.allocate(UiGenericStyles{ brush, border });
 
     this->current_node = this->layout.add_element(this->current_node, el);
 }
