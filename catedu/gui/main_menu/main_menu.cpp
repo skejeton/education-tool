@@ -83,20 +83,23 @@ GuiMainMenu::show()
                                             false,
                                             { 0.5, 0.5 },
                                             3),
-                               UiMakeBrush::make_solid({ 0.0, 0.0, 0.7, 1.0 }),
+                               UiMakeBrush::make_gradient(
+                                 { 0.0, 0.0, 0.7, 1.0 }, { 0, 0.2, 1.0, 1.0 }),
                                UiMakeBrush::make_solid({ 1, 1, 1, 1.0 }));
             user.label(
               "?", { 5, 5 }, UiMakeBrush::make_solid({ 1, 1, 1, 1.0 }));
             user.end_generic();
         } else {
-            user.begin_generic(make_element({ AutoLayout::Column },
-                                            { 64, 64 },
-                                            false,
-                                            false,
-                                            { 0.5, 0.5 },
-                                            3),
-                               UiMakeBrush::make_solid({ 1.0, 0.7, 0.0, 1.0 }),
-                               UiMakeBrush::make_solid({ 1, 1, 1, 1.0 }));
+            user.begin_generic(
+              make_element({ AutoLayout::Column },
+                           { 64, 64 },
+                           false,
+                           false,
+                           { 0.5, 0.5 },
+                           3),
+              UiMakeBrush::make_gradient({ 0.8, 0.5, 0.0, 1.0 },
+                                         { 1.0, 0.7, 0.0, 1.0 }),
+              UiMakeBrush::make_solid({ 1, 1, 1, 1.0 }));
             user.label(
               ":/", { 5, 5 }, UiMakeBrush::make_solid({ 1, 1, 1, 1.0 }));
             user.end_generic();
