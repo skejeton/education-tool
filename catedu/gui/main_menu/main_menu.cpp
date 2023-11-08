@@ -67,12 +67,39 @@ GuiMainMenu::show()
     if (popuptype) {
         user.begin_generic(
           make_element(
-            { AutoLayout::Column }, { 500, 250 }, false, true, { 0.0, 0.0 }, 1),
+            { AutoLayout::Column }, { 520, 250 }, false, true, { 0.0, 0.0 }, 1),
           UiMakeBrush::make_solid({ 0.7, 0.7, 0.7, 1.0 }),
           UiMakeBrush::make_solid({ 0, 0, 0, 1.0 }));
 
         if (user.button("x")) {
             popuptype = 0;
+        }
+        user.begin_generic(make_auto({ AutoLayout::Row }), {}, {});
+
+        if (popuptype == 1) {
+            user.begin_generic(make_element({ AutoLayout::Column },
+                                            { 64, 64 },
+                                            false,
+                                            false,
+                                            { 0.5, 0.5 },
+                                            3),
+                               UiMakeBrush::make_solid({ 0.0, 0.0, 0.7, 1.0 }),
+                               UiMakeBrush::make_solid({ 1, 1, 1, 1.0 }));
+            user.label(
+              "?", { 5, 5 }, UiMakeBrush::make_solid({ 1, 1, 1, 1.0 }));
+            user.end_generic();
+        } else {
+            user.begin_generic(make_element({ AutoLayout::Column },
+                                            { 64, 64 },
+                                            false,
+                                            false,
+                                            { 0.5, 0.5 },
+                                            3),
+                               UiMakeBrush::make_solid({ 1.0, 0.7, 0.0, 1.0 }),
+                               UiMakeBrush::make_solid({ 1, 1, 1, 1.0 }));
+            user.label(
+              ":/", { 5, 5 }, UiMakeBrush::make_solid({ 1, 1, 1, 1.0 }));
+            user.end_generic();
         }
 
         if (popuptype == 1) {
@@ -85,6 +112,7 @@ GuiMainMenu::show()
                        UiMakeBrush::make_solid({ 0, 0, 0, 1.0 }));
         }
 
+        user.end_generic();
         user.begin_generic(make_auto({ AutoLayout::Row }), {}, {});
         if (popuptype == 1) {
             if (user.button("Yes")) {
