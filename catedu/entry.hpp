@@ -24,6 +24,7 @@
 struct Entry
 {
     GuiMainMenu main_menu;
+    BoxdrawRenderer boxdraw_renderer;
 
     void init();
     void input(const sapp_event* event);

@@ -11,7 +11,22 @@
 void
 Entry::frame(void)
 {
-    this->main_menu.show();
+    // this->main_menu.show();
+    const float width = sapp_widthf();
+    const float height = sapp_heightf();
+
+    Camera camera = Camera::init(45);
+    camera.set_aspect(width / height);
+    camera.move(10, 0, 3);
+    camera.rotate(-0.2, 0);
+
+    boxdraw_push(
+      &this->boxdraw_renderer,
+      boxdraw_cmdgradient(box3_extrude_from_point({ 0, 0, 0 }, { 4, 1, 4 }),
+                          { 0.0, 1.0, 0.0, 1.0 },
+                          { 1.0, 1.0, 0.0, 1.0 }));
+
+    boxdraw_flush(&this->boxdraw_renderer, camera.vp);
 
     sg_commit();
 }
@@ -19,6 +34,7 @@ Entry::frame(void)
 void
 Entry::cleanup(void)
 {
+    boxdraw_destroy(&this->boxdraw_renderer);
     sg_shutdown();
     enet_deinitialize();
 }
@@ -36,6 +52,7 @@ Entry::init()
     enet_initialize();
 
     main_menu = GuiMainMenu::init();
+    this->boxdraw_renderer = boxdraw_create();
 }
 
 void

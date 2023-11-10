@@ -1,0 +1,7 @@
+#ifndef HPP_CATEDU_STAGING_WORLD_WORLD_DEFINED
+#define HPP_CATEDU_STAGING_WORLD_WORLD_DEFINED
+
+struct World
+{};
+
+#endif
