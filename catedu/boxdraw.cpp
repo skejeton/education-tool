@@ -88,7 +88,7 @@ boxdraw_create()
     pipeline_desc.colors[0].blend.dst_factor_alpha = SG_BLENDFACTOR_ZERO;
     pipeline_desc.shader = result.shader;
     pipeline_desc.index_type = SG_INDEXTYPE_UINT16;
-    pipeline_desc.cull_mode = SG_CULLMODE_BACK;
+    pipeline_desc.cull_mode = SG_CULLMODE_FRONT;
     pipeline_desc.depth.write_enabled = true;
     pipeline_desc.depth.compare = SG_COMPAREFUNC_LESS_EQUAL;
     pipeline_desc.label = "cube-pipeline";
@@ -133,8 +133,10 @@ create_box_transform(Box3 box)
     height = box.max.y - box.min.y;
     depth = box.max.z - box.min.z;
 
+    Vector3 pos = box.min + Vector3{ width, height, depth } / 2.0f;
+
     Matrix4 result =
-      Matrix4::translate(box.max) * Matrix4::scale_v({ width, height, depth });
+      Matrix4::translate(pos) * Matrix4::scale_v({ width, height, depth });
 
     return result;
 }

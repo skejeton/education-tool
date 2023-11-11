@@ -18,6 +18,7 @@ struct Camera
     static Camera init(float fov_deg);
     void set_aspect(float aspect);
     void rotate(float yaw, float pitch);
+    void rotate_around(Vector3 point, float yaw, float pitch);
     Ray3 ray();
     void move(float sideways, float upward, float forward);
 };

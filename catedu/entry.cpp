@@ -16,14 +16,17 @@ Entry::frame(void)
 {
     const float width = sapp_widthf();
     const float height = sapp_heightf();
+    static float time = 0;
+    time += sapp_frame_duration();
 
     Camera camera = Camera::init(45);
     camera.set_aspect(width / height);
     camera.move(0, 10, -10);
     camera.rotate(0, -45);
+    camera.rotate_around({ 0, 0, 0 }, -time * 5, 0);
 
-    for (int i = -5; i < 5; i++) {
-        for (int j = -5; j < 5; j++) {
+    for (int i = -4; i < 5; i++) {
+        for (int j = -4; j < 5; j++) {
             boxdraw_push(&this->boxdraw_renderer,
                          boxdraw_cmdtexture(
                            box3_extrude_from_point({ float(i), 0, float(j) },
@@ -31,35 +34,81 @@ Entry::frame(void)
                            tex.cropped({ 0, 32, 32, 32 })));
         }
     }
-    char* s = "###  ###\n"
-              "#      #\n"
-              "#      #\n"
-              "#      #\n"
-              "#      #\n"
-              "#      #\n"
-              "#      #\n"
-              "########\n";
+    char* s = "### ###\n"
+              "#     #\n"
+              "#     #\n"
+              "#     #\n"
+              "#     #\n"
+              "#     #\n"
+              "#######\n";
 
-    int x = 0, y = 0;
-    for (int i = 0; s[i]; i++) {
-        if (s[i] == '\n') {
-            x = 0;
-            y++;
-            continue;
-        } else if (s[i] == '#') {
-            boxdraw_push(&this->boxdraw_renderer,
-                         boxdraw_cmdtexture(box3_extrude_from_point(
-                                              { float(x - 4), 1, float(y - 4) },
-                                              { 0.5f, 0.5f, 0.5f }),
-                                            tex.cropped({ 64, 32, 32, 32 })));
-            x++;
-        } else {
-            boxdraw_push(&this->boxdraw_renderer,
-                         boxdraw_cmdtexture(box3_extrude_from_point(
-                                              { float(x - 4), 1, float(y - 4) },
-                                              { 0.5f, 0.05f, 0.5f }),
-                                            tex.cropped({ 32, 32, 32, 32 })));
-            x++;
+    {
+        int x = 0, y = 0;
+        for (int i = 0; s[i]; i++) {
+            if (s[i] == '\n') {
+                x = 0;
+                y++;
+                continue;
+            } else if (s[i] == '#') {
+                boxdraw_push(
+                  &this->boxdraw_renderer,
+                  boxdraw_cmdtexture(
+                    box3_extrude_from_point({ float(x - 3), 1, float(y - 3) },
+                                            { 0.5f, 0.5f, 0.5f }),
+                    tex.cropped({ 64, 32, 32, 32 })));
+                x++;
+            } else {
+                boxdraw_push(
+                  &this->boxdraw_renderer,
+                  boxdraw_cmdtexture(box3_extrude_from_point(
+                                       { float(x - 3), 0.55, float(y - 3) },
+                                       { 0.5f, 0.05f, 0.5f }),
+                                     tex.cropped({ 32, 32, 32, 32 })));
+                x++;
+            }
+        }
+    }
+
+    {
+        int x = 0, y = 0;
+        for (int i = 0; s[i]; i++) {
+            if (s[i] == '\n') {
+                x = 0;
+                y++;
+                continue;
+            } else if (s[i] == '#') {
+                boxdraw_push(
+                  &this->boxdraw_renderer,
+                  boxdraw_cmdtexture(
+                    box3_extrude_from_point({ float(x - 3), 2, float(y - 3) },
+                                            { 0.5f, 0.5f, 0.5f }),
+                    tex.cropped({ 64, 32, 32, 32 })));
+                x++;
+            } else {
+                x++;
+            }
+        }
+    }
+
+    {
+        int x = 0, y = 0;
+        for (int i = 0; s[i]; i++) {
+            if (s[i] == '\n') {
+                x = 0;
+                y++;
+                continue;
+            } else if (s[i] == '#') {
+                if ((x + y) % 2 == 0)
+                    boxdraw_push(
+                      &this->boxdraw_renderer,
+                      boxdraw_cmdtexture(box3_extrude_from_point(
+                                           { float(x - 3), 3, float(y - 3) },
+                                           { 0.5f, 0.5f, 0.5f }),
+                                         tex.cropped({ 64, 32, 32, 32 })));
+                x++;
+            } else {
+                x++;
+            }
         }
     }
 

@@ -623,8 +623,8 @@ struct Matrix4
                  0,
                  0,
                  0,
-                 (near + far) / (near - far),
-                 -1.0f,
+                 -(near + far) / (near - far),
+                 1.0f,
                  0,
                  0,
                  (2.0f * near * far) / (near - far),
@@ -658,7 +658,7 @@ struct Matrix4
 
     static Matrix4 look_at(Vector3 center, Vector3 eye, Vector3 up)
     {
-        Vector3 z = vector3_normalize(center - eye);
+        Vector3 z = vector3_normalize(eye - center);
         Vector3 x = vector3_normalize(vector3_cross(z, up));
         Vector3 y = vector3_cross(x, z);
 
@@ -709,8 +709,8 @@ struct Matrix4
 
     static Matrix4 rotate_z(float angle)
     {
-        float c = cos(angle);
-        float s = sin(angle);
+        float c = cos(-angle);
+        float s = sin(-angle);
         return { c,    s,    0.0f, 0.0f, -s,   c,    0.0f, 0.0f,
                  0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
     }

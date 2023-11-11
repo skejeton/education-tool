@@ -1,17 +1,18 @@
 #include "camera.hpp"
+#include <stdio.h>
 
 static Matrix4
 rotation_matrix(Camera* camera)
 {
-    return Matrix4::rotate_x(camera->pitch) * Matrix4::rotate_y(camera->yaw);
+    return Matrix4::rotate_y(-camera->yaw) * Matrix4::rotate_x(camera->pitch);
 }
 
 static Matrix4
 make_vp(Camera* camera)
 {
     Vector3 eye = rotation_matrix(camera) * Vector3{ 0.0f, 0.0f, -1.0f };
-    Matrix4 view = Matrix4::look_at(
-      camera->position, camera->position + eye, { 0.0f, 1.0f, 0.0f });
+    Vector3 p = camera->position;
+    Matrix4 view = Matrix4::look_at(p, p + eye, { 0.0f, 1.0f, 0.0f });
     Matrix4 proj = Matrix4::perspective(
       camera->fov_deg * (MATH_TAU / 360), camera->aspect, 0.1f, 1000.0f);
 
@@ -55,6 +56,18 @@ Camera::rotate(float yaw, float pitch)
     this->vp = make_vp(this);
 }
 
+void
+Camera::rotate_around(Vector3 point, float yaw, float pitch)
+{
+
+    Vector3 pos = Matrix4::rotate_y(-yaw * (MATH_TAU / 360)) *
+                  Matrix4::rotate_x(pitch * (MATH_TAU / 360)) *
+                  (this->position - point);
+    this->position = pos;
+
+    rotate(yaw, pitch);
+}
+
 Ray3
 Camera::ray()
 {
@@ -66,6 +79,6 @@ void
 Camera::move(float sideways, float upward, float forward)
 {
     this->position +=
-      (Matrix4::rotate_y(this->yaw) * Vector3{ sideways, upward, forward });
+      (Matrix4::rotate_y(-this->yaw) * Vector3{ sideways, upward, forward });
     this->vp = make_vp(this);
 }
