@@ -94,9 +94,8 @@ UiRenderingCore::init()
     result.bindings.vertex_buffers[0] = result.buffers[0].vertex_buffer;
     result.bindings.index_buffer = result.buffers[0].index_buffer;
 
-    result.pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
+    result.pass_action.colors[0].load_action = SG_LOADACTION_LOAD;
     result.pass_action.colors[0].store_action = SG_STOREACTION_STORE;
-    result.pass_action.colors[0].clear_value = { 0.5, 0.5, 0.5, 1.0 };
 
     result.white_image = result.alloc_image(generate_white_image());
     result.test_image = result.alloc_image(generate_test_image());

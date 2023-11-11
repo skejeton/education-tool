@@ -3,14 +3,9 @@
 
 #include <stddef.h>
 
-/**
- * @brief Generic data buffer with data and size.
- */
 struct Buffer
 {
-    /// @brief Buffer size.
     size_t size;
-    /// @brief Buffer data.
     void* data;
 };
 

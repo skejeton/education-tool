@@ -1,32 +1,58 @@
 #include "boxdraw.hpp"
+#include "catedu/sys/sg_tricks.hpp"
 #include "shaders.hxx"
 #include <cassert>
 #include <cstdlib>
 
-static float cube_vertices[] = {
-    -1.0, -1.0, -1.0, 1.0, 1.0,  -1.0, -1.0, 1.0,
-    1.0,  1.0,  -1.0, 0.0, -1.0, 1.0,  -1.0, 0.0,
+// clang-format off
+const float static cube_vertices[] = {
+    // pos                normal    uv
+    // +y
+    -0.5, 0.5, 0.5,      0, 1, 0,  0, 1,
+    -0.5, 0.5, -0.5,       0, 1, 0,  1, 1,
+    0.5, 0.5, -0.5,        0, 1, 0,  1, 0,
+    0.5, 0.5, 0.5,       0, 1, 0,  0, 0,
 
-    -1.0, -1.0, 1.0,  1.0, 1.0,  -1.0, 1.0,  1.0,
-    1.0,  1.0,  1.0,  0.0, -1.0, 1.0,  1.0,  0.0,
+    // -x
+    -0.5, 0.5, -0.5,      -1, 0, 0,  0, 0,
+    -0.5, -0.5, -0.5,     -1, 0, 0,  0, 1,
+    -0.5, -0.5, 0.5,    -1, 0, 0,  1, 1,
+    -0.5, 0.5, 0.5,     -1, 0, 0,  1, 0,
 
-    -1.0, -1.0, -1.0, 1.0, -1.0, 1.0,  -1.0, 0.0,
-    -1.0, 1.0,  1.0,  0.0, -1.0, -1.0, 1.0,  1.0,
+    // +x
+    0.5, 0.5, -0.5,        1, 0, 0,  0, 0,
+    0.5, -0.5, -0.5,       1, 0, 0,  0, 1,
+    0.5, -0.5, 0.5,      1, 0, 0,  1, 1,
+    0.5, 0.5, 0.5,       1, 0, 0,  1, 0,
 
-    1.0,  -1.0, -1.0, 1.0, 1.0,  1.0,  -1.0, 0.0,
-    1.0,  1.0,  1.0,  0.0, 1.0,  -1.0, 1.0,  1.0,
+    // -z
+    0.5, 0.5, -0.5,        0, 0,-1,  0, 0,
+    0.5, -0.5, -0.5,       0, 0,-1,  0, 1,
+    -0.5, -0.5, -0.5,      0, 0,-1,  1, 1,
+    -0.5, 0.5, -0.5,       0, 0,-1,  1, 0,
 
-    -1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0,  1.0,
-    1.0,  -1.0, 1.0,  1.0, 1.0,  -1.0, -1.0, 1.0,
+    // +z
+    0.5, 0.5, 0.5,       0, 0, 1,  0, 0,
+    0.5, -0.5, 0.5,      0, 0, 1,  0, 1,
+    -0.5, -0.5, 0.5,     0, 0, 1,  1, 1,
+    -0.5, 0.5, 0.5,      0, 0, 1,  1, 0,
 
-    -1.0, 1.0,  -1.0, 0.0, -1.0, 1.0,  1.0,  0.0,
-    1.0,  1.0,  1.0,  0.0, 1.0,  1.0,  -1.0, 0.0,
+    // -y
+    -0.5, -0.5, 0.5,     0,-1, 0,  0, 1,
+    -0.5, -0.5, -0.5,      0,-1, 0,  1, 1,
+    0.5, -0.5, -0.5,       0,-1, 0,  1, 0,
+    0.5, -0.5, 0.5,      0,-1, 0,  0, 0
 };
 
-static uint16_t cube_indices[] = { 0,  1,  2,  0,  2,  3,  6,  5,  4,
-                                   7,  6,  4,  8,  9,  10, 8,  10, 11,
-                                   14, 13, 12, 15, 14, 12, 16, 17, 18,
-                                   16, 18, 19, 22, 21, 20, 23, 22, 20 };
+const static uint16_t cube_indices[] = {
+    0, 1, 2,  0, 2, 3,       // +y
+    6, 5, 4,  7, 6, 4,       // -x
+    8, 9, 10,  8, 10, 11,    // +x
+    14, 13, 12,  15, 14, 12, // -z
+    16, 17, 18,  16, 18, 19, // +z
+    22, 21, 20,  23, 22, 20  // -y
+};
+// clang-format on
 
 BoxdrawRenderer
 boxdraw_create()
@@ -52,8 +78,8 @@ boxdraw_create()
 
     sg_pipeline_desc pipeline_desc = {};
     pipeline_desc.layout.attrs[0].format = SG_VERTEXFORMAT_FLOAT3; // position
-    pipeline_desc.layout.attrs[1].format =
-      SG_VERTEXFORMAT_FLOAT; // is bottom vertex
+    pipeline_desc.layout.attrs[1].format = SG_VERTEXFORMAT_FLOAT3; // normal
+    pipeline_desc.layout.attrs[2].format = SG_VERTEXFORMAT_FLOAT2; // UV
     pipeline_desc.colors[0].blend.enabled = true;
     pipeline_desc.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
     pipeline_desc.colors[0].blend.dst_factor_rgb =
@@ -107,20 +133,8 @@ create_box_transform(Box3 box)
     height = box.max.y - box.min.y;
     depth = box.max.z - box.min.z;
 
-    Vector3 offset = box.min;
-
-    /*
-     * Uncenter the cube.
-     */
-    offset.x += width / 2;
-    offset.y += height / 2;
-    offset.z += depth / 2;
-
-    Matrix4 result = Matrix4::translate(offset) *
-                     Matrix4::scale_v({ width, height, depth }) *
-                     Matrix4::scale(0.5) /* Scale by half, because cube_indices
-                                            spans -1, 1 range (2 units) */
-      ;
+    Matrix4 result =
+      Matrix4::translate(box.max) * Matrix4::scale_v({ width, height, depth });
 
     return result;
 }
@@ -133,7 +147,6 @@ boxdraw_flush(BoxdrawRenderer* renderer, Matrix4 view_projection)
 
     sg_begin_default_pass(&renderer->pass_action, width, height);
     sg_apply_pipeline(renderer->pipeline);
-    sg_apply_bindings(renderer->bindings);
 
     for (size_t i = 0; i < renderer->commands_count; i++) {
         BoxdrawCommand command = renderer->commands[i];
@@ -142,8 +155,26 @@ boxdraw_flush(BoxdrawRenderer* renderer, Matrix4 view_projection)
 
         boxdraw_vs_params_t vs_params;
         vs_params.mvp = view_projection * model;
-        vs_params.top_color = command.top_color;
-        vs_params.bottom_color = command.bottom_color;
+        vs_params.color_top = command.top_color;
+        vs_params.color_bottom = command.bottom_color;
+        vs_params.color_mul = { 1, 1, 1, 1 };
+        if (command.texture.if_valid()) {
+            vs_params.uv_min = command.texture.uv_min();
+            vs_params.uv_max = command.texture.uv_max();
+            vs_params.size = command.texture.size;
+
+            renderer->bindings.fs.images[0] = command.texture.sysid_texture;
+            renderer->bindings.fs.samplers[0] = command.texture.sysid_sampler;
+        } else {
+            vs_params.uv_min = { 0, 0 };
+            vs_params.uv_max = { 1, 1 };
+            vs_params.size = { 1, 1 };
+
+            sg_tricks_get_white_texture(renderer->bindings.fs.images[0],
+                                        renderer->bindings.fs.samplers[0]);
+        }
+
+        sg_apply_bindings(renderer->bindings);
 
         sg_range params_range = SG_RANGE(vs_params);
         sg_apply_uniforms(

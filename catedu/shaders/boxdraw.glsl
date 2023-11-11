@@ -1,33 +1,72 @@
+
 ////////////////////////////////////////////////////////////////////////////////
 @vs boxdraw_vs
 uniform boxdraw_vs_params {
     mat4 mvp;
-    vec4 top_color;
-    vec4 bottom_color;
+    vec4 color_top;
+    vec4 color_bottom;
+    vec4 color_mul;
+    vec2 uv_min, uv_max;
+    vec2 size;
 };
 
-in vec4 position;
-in float isbottomvertex;
 
+in vec3 position;
+in vec3 normal;
+in vec2 uv;
 out vec4 color;
+out vec2 frag_uv;
+out vec2 frag_uv_min;
+out vec2 frag_uv_max;
+out vec2 frag_size;
 
 void main() {
-    color = top_color;
-    if (isbottomvertex > 0.5) {
-        color = bottom_color;
-    }
+    gl_Position = mvp * vec4(position, 1.0);
 
-    gl_Position = mvp * position;
+
+    vec3 light_dir = -normalize(vec3(0.4, -1.3, 1.0));
+    vec4 light_color = vec4(1.0, 1.0, 0.5, 1.0);
+    vec4 ambient_color = vec4(0.1, 0.1, 0.5, 1.0);
+    float dp = dot(light_dir, normal);
+    vec4 all = vec4(dp, dp, dp, 1) * light_color + ambient_color;
+
+    color = mix(color_top, color_bottom, -position.y+0.5)*all;
+
+    frag_uv = uv;
+    frag_uv_min = uv_min;
+    frag_uv_max = uv_max;
+    frag_size = size;
 }
+
 @end
 ////////////////////////////////////////////////////////////////////////////////
 @fs boxdraw_fs
+
+uniform texture2D image;
+uniform sampler image_sampler;
 in vec4 color;
+in vec2 frag_uv;
 out vec4 frag_color;
+in vec2 frag_uv_min;
+in vec2 frag_uv_max;
+in vec2 frag_size;
 
 void main() {
-    frag_color = color;
+    vec2 uv = frag_uv * (frag_uv_max - frag_uv_min) + frag_uv_min;
+    float offs_bound_x = 1.0 / frag_size.x;
+    float offs_bound_y = 1.0 / frag_size.y;
+    float min_bound_x = frag_uv_min.x + offs_bound_x;
+    float max_bound_x = frag_uv_max.x - offs_bound_x;
+    float min_bound_y = frag_uv_min.y + offs_bound_y;
+    float max_bound_y = frag_uv_max.y - offs_bound_y;
+
+
+    uv = clamp(uv, vec2(min_bound_x, min_bound_y), vec2(max_bound_x, max_bound_y));
+
+    vec4 sample_value = texture(sampler2D(image, image_sampler), uv);
+    frag_color = sample_value * color;
 }
 @end
 ////////////////////////////////////////////////////////////////////////////////
 @program boxdraw_prog boxdraw_vs boxdraw_fs
+

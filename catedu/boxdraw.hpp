@@ -9,11 +9,13 @@
 #include "math.hpp"
 #include "sokol/sokol_app.h"
 #include "sokol/sokol_gfx.h"
+#include "staging/texture.hpp"
 
 struct BoxdrawCommand
 {
     Box3 box;
     Vector4 top_color, bottom_color;
+    Texture texture;
 };
 
 struct BoxdrawRenderer
@@ -47,6 +49,12 @@ inline BoxdrawCommand
 boxdraw_cmdgradient(Box3 box, Vector4 top_color, Vector4 bottom_color)
 {
     return { box, top_color, bottom_color };
+}
+
+inline BoxdrawCommand
+boxdraw_cmdtexture(Box3 box, Texture texture)
+{
+    return { box, { 1.0, 1.0, 1.0, 1.0 }, { 1.0, 1.0, 1.0, 1.0 }, texture };
 }
 
 #endif // H_BOXDRAW_CATEDU
