@@ -3,13 +3,13 @@
 static Matrix4
 rotation_matrix(Camera* camera)
 {
-    return Matrix4::rotate_y(camera->pitch) * Matrix4::rotate_x(camera->yaw);
+    return Matrix4::rotate_x(camera->pitch) * Matrix4::rotate_y(camera->yaw);
 }
 
 static Matrix4
 make_vp(Camera* camera)
 {
-    Vector3 eye = rotation_matrix(camera) * Vector3{ 0.0f, 0.0f, 1.0f };
+    Vector3 eye = rotation_matrix(camera) * Vector3{ 0.0f, 0.0f, -1.0f };
     Matrix4 view = Matrix4::look_at(
       camera->position, camera->position + eye, { 0.0f, 1.0f, 0.0f });
     Matrix4 proj = Matrix4::perspective(
@@ -37,19 +37,19 @@ Camera::set_aspect(float aspect)
 void
 Camera::rotate(float yaw, float pitch)
 {
-    this->yaw += yaw;
-    this->pitch += pitch;
+    this->yaw += yaw * (MATH_TAU / 360);
+    this->pitch += pitch * (MATH_TAU / 360);
 
     // Normalize
     this->yaw = fmod(this->yaw, MATH_TAU);
     this->pitch = fmod(this->pitch, MATH_TAU);
 
-    // Restrict yaw
-    if (this->yaw > MATH_TAU / 4 - MATH_EPSILON) {
-        this->yaw = MATH_TAU / 4 - MATH_EPSILON;
+    // Restrict pitch
+    if (this->pitch > MATH_TAU / 4 - MATH_EPSILON) {
+        this->pitch = MATH_TAU / 4 - MATH_EPSILON;
     }
-    if (this->yaw < -(MATH_TAU / 4 - MATH_EPSILON)) {
-        this->yaw = -(MATH_TAU / 4 - MATH_EPSILON);
+    if (this->pitch < -(MATH_TAU / 4 - MATH_EPSILON)) {
+        this->pitch = -(MATH_TAU / 4 - MATH_EPSILON);
     }
 
     this->vp = make_vp(this);
@@ -63,9 +63,9 @@ Camera::ray()
 }
 
 void
-Camera::move(float forward, float sideways, float upward)
+Camera::move(float sideways, float upward, float forward)
 {
     this->position +=
-      (Matrix4::rotate_y(this->pitch) * Vector3{ sideways, upward, forward });
+      (Matrix4::rotate_y(this->yaw) * Vector3{ sideways, upward, forward });
     this->vp = make_vp(this);
 }

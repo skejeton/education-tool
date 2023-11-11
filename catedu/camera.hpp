@@ -19,7 +19,7 @@ struct Camera
     void set_aspect(float aspect);
     void rotate(float yaw, float pitch);
     Ray3 ray();
-    void move(float forward, float sideways, float upward);
+    void move(float sideways, float upward, float forward);
 };
 
 #endif // H_CAMERA_CATEDU

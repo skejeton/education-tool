@@ -17,8 +17,8 @@ Entry::frame(void)
 
     Camera camera = Camera::init(45);
     camera.set_aspect(width / height);
-    camera.move(10, 0, 3);
-    camera.rotate(-0.2, 0);
+    camera.move(0, 20, -20);
+    camera.rotate(0, -45);
 
     boxdraw_push(
       &this->boxdraw_renderer,

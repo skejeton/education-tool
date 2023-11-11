@@ -691,8 +691,8 @@ struct Matrix4
 
     static Matrix4 rotate_x(float angle)
     {
-        float c = cos(angle);
-        float s = sin(angle);
+        float c = cos(-angle);
+        float s = sin(-angle);
         return {
             1.0f, 0.0f, 0.0f, 0.0f, 0.0f, c,    s,    0.0f,
             0.0f, -s,   c,    0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
@@ -701,8 +701,8 @@ struct Matrix4
 
     static Matrix4 rotate_y(float angle)
     {
-        float c = cos(angle);
-        float s = sin(angle);
+        float c = cos(-angle);
+        float s = sin(-angle);
         return { c, 0.0f, -s, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
                  s, 0.0f, c,  0.0f, 0.0f, 0.0f, 0.0f, 1.0f };
     }
