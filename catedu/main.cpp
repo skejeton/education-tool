@@ -13,6 +13,7 @@ sokol_main(int argc, char* argv[])
         global_entry = new Entry();
         global_entry->init();
     };
+    
     desc.frame_cb = []() { global_entry->frame(); };
     desc.cleanup_cb = []() {
         global_entry->cleanup();

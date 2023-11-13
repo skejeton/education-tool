@@ -11,11 +11,12 @@
 
 struct GuiMainMenu
 {
-    UiState ui_state;
+    UiState *ui_state;
 
-    static GuiMainMenu init();
+    static GuiMainMenu init(UiState *ui_state);
+    void deinit();
 
-    void show();
+    int show();
 };
 
 #endif // HPP_CATEDU_GUI_MAIN_MENU_MAIN_MENU

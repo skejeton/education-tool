@@ -12,10 +12,11 @@
 Texture tex;
 
 void
-Entry::frame(void)
+show_menu_animation(Entry* entry)
 {
     const float width = sapp_widthf();
     const float height = sapp_heightf();
+
     static float time = 0;
     time += sapp_frame_duration();
 
@@ -27,7 +28,7 @@ Entry::frame(void)
 
     for (int i = -4; i < 5; i++) {
         for (int j = -4; j < 5; j++) {
-            boxdraw_push(&this->boxdraw_renderer,
+            boxdraw_push(&entry->boxdraw_renderer,
                          boxdraw_cmdtexture(
                            box3_extrude_from_point({ float(i), 0, float(j) },
                                                    { 0.5f, 0.5f, 0.5f }),
@@ -51,7 +52,7 @@ Entry::frame(void)
                 continue;
             } else if (s[i] == '#') {
                 boxdraw_push(
-                  &this->boxdraw_renderer,
+                  &entry->boxdraw_renderer,
                   boxdraw_cmdtexture(
                     box3_extrude_from_point({ float(x - 3), 1, float(y - 3) },
                                             { 0.5f, 0.5f, 0.5f }),
@@ -59,7 +60,7 @@ Entry::frame(void)
                 x++;
             } else {
                 boxdraw_push(
-                  &this->boxdraw_renderer,
+                  &entry->boxdraw_renderer,
                   boxdraw_cmdtexture(box3_extrude_from_point(
                                        { float(x - 3), 0.55, float(y - 3) },
                                        { 0.5f, 0.05f, 0.5f }),
@@ -78,7 +79,7 @@ Entry::frame(void)
                 continue;
             } else if (s[i] == '#') {
                 boxdraw_push(
-                  &this->boxdraw_renderer,
+                  &entry->boxdraw_renderer,
                   boxdraw_cmdtexture(
                     box3_extrude_from_point({ float(x - 3), 2, float(y - 3) },
                                             { 0.5f, 0.5f, 0.5f }),
@@ -100,7 +101,7 @@ Entry::frame(void)
             } else if (s[i] == '#') {
                 if ((x + y) % 2 == 0)
                     boxdraw_push(
-                      &this->boxdraw_renderer,
+                      &entry->boxdraw_renderer,
                       boxdraw_cmdtexture(box3_extrude_from_point(
                                            { float(x - 3), 3, float(y - 3) },
                                            { 0.5f, 0.5f, 0.5f }),
@@ -112,9 +113,65 @@ Entry::frame(void)
         }
     }
 
-    boxdraw_flush(&this->boxdraw_renderer, camera.vp);
+    boxdraw_flush(&entry->boxdraw_renderer, camera.vp);
+}
 
-    this->main_menu.show();
+void
+show_editor(Entry* entry)
+{
+    const float width = sapp_widthf();
+    const float height = sapp_heightf();
+
+    static float time = 0;
+    time += sapp_frame_duration();
+
+    Camera camera = Camera::init(45);
+    camera.set_aspect(width / height);
+    camera.move(
+      0 + entry->world.camera_pos.x, 10, -10 + entry->world.camera_pos.y);
+    camera.rotate(0, -45);
+
+    entry->world.render(entry->boxdraw_renderer);
+
+    boxdraw_flush(&entry->boxdraw_renderer, camera.vp);
+}
+
+void
+Entry::frame(void)
+{
+    this->world.camera_pos.x +=
+      (target_camera_pos.x - this->world.camera_pos.x) * sapp_frame_duration() *
+      40;
+    this->world.camera_pos.y +=
+      (target_camera_pos.y - this->world.camera_pos.y) * sapp_frame_duration() *
+      40;
+    switch (ui_mode) {
+        case 0: // Main Menu
+            show_menu_animation(this);
+            ui_mode = this->main_menu.show();
+            if (ui_mode == 2) {
+                for (int i = 0; i < 64; i++) {
+                    for (int j = 0; j < 64; j++) {
+                        if (this->world.data[i][j] == 4) {
+                            target_camera_pos = { float(i - 32),
+                                                  float(j - 32) };
+                            this->world.camera_rot = 0;
+                        }
+                    }
+                }
+            }
+            break;
+        case 1: // Editor
+            this->world.is_editor = true;
+            show_editor(this);
+            ui_mode = this->editor.show();
+            break;
+        case 2: // Editor
+            this->world.is_editor = false;
+            show_editor(this);
+            ui_mode = this->game_gui.show();
+            break;
+    }
 
     sg_commit();
 }
@@ -122,6 +179,7 @@ Entry::frame(void)
 void
 Entry::cleanup(void)
 {
+    main_menu.deinit();
     tex.deinit();
     boxdraw_destroy(&this->boxdraw_renderer);
     sg_tricks_deinit();
@@ -143,12 +201,67 @@ Entry::init()
 
     enet_initialize();
 
-    main_menu = GuiMainMenu::init();
+    world = World::init(tex);
+    ui_state = UiState::init("./assets/Roboto-Regular.ttf");
+    main_menu = GuiMainMenu::init(&ui_state);
+    editor = GuiEditor::init(&ui_state);
+    game_gui = GuiGame::init(&ui_state);
     this->boxdraw_renderer = boxdraw_create();
 }
 
 void
 Entry::input(const sapp_event* event)
 {
-    main_menu.ui_state.feed_event(event);
+    if (event->type == SAPP_EVENTTYPE_KEY_DOWN) {
+        Vector2 camera_prev = target_camera_pos;
+        if (event->key_code == SAPP_KEYCODE_LEFT) {
+            target_camera_pos.x -= 1;
+        }
+        if (event->key_code == SAPP_KEYCODE_RIGHT) {
+            target_camera_pos.x += 1;
+        }
+        if (event->key_code == SAPP_KEYCODE_UP) {
+            target_camera_pos.y += 1;
+        }
+        if (event->key_code == SAPP_KEYCODE_DOWN) {
+            target_camera_pos.y -= 1;
+        }
+
+        int t =
+          this->world
+            .data[int(target_camera_pos.x) + 32][int(target_camera_pos.y) + 32];
+        if (ui_mode == 2 && (t == 1 || t == 3)) {
+            target_camera_pos = camera_prev;
+        }
+        if (event->key_code == SAPP_KEYCODE_D) {
+            this->world.camera_rot += 1;
+            if (this->world.camera_rot > 3) {
+                this->world.camera_rot = 0;
+            }
+            return;
+        }
+        if (event->key_code == SAPP_KEYCODE_A) {
+            this->world.camera_rot -= 1;
+            if (this->world.camera_rot < 0) {
+                this->world.camera_rot = 3;
+            }
+            return;
+        }
+        if (event->key_code == SAPP_KEYCODE_ESCAPE) {
+            this->game_gui.dialog_open = false;
+            return;
+        }
+        if (event->key_code == SAPP_KEYCODE_Q) {
+            this->game_gui.dialog_open = !this->game_gui.dialog_open;
+            return;
+        }
+        if (ui_mode == 1 && event->key_code == SAPP_KEYCODE_SPACE) {
+            this->world.data[int(target_camera_pos.x) + 32]
+                            [int(target_camera_pos.y) + 32] =
+              this->editor.selection;
+            return;
+        }
+    }
+
+    ui_state.feed_event(event);
 }

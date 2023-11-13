@@ -59,12 +59,21 @@ void main() {
     float max_bound_x = frag_uv_max.x - offs_bound_x;
     float min_bound_y = frag_uv_min.y + offs_bound_y;
     float max_bound_y = frag_uv_max.y - offs_bound_y;
+    float dist = gl_FragCoord.z / gl_FragCoord.w;
 
+
+    const float LOG2 = 1.442695;
+    float fogFactor = pow(10, -0.03 *
+                   0.03 *
+                   dist *
+                   dist *
+                   LOG2 );
+    fogFactor = clamp(fogFactor, 0.0, 1.0);
 
     uv = clamp(uv, vec2(min_bound_x, min_bound_y), vec2(max_bound_x, max_bound_y));
 
     vec4 sample_value = texture(sampler2D(image, image_sampler), uv);
-    frag_color = sample_value * color;
+    frag_color = mix(vec4(0.0, 0.1, 0.5, 1.0), sample_value * color, fogFactor);
 }
 @end
 ////////////////////////////////////////////////////////////////////////////////

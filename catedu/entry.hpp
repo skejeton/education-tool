@@ -9,6 +9,8 @@
 #include "camera.hpp"
 #include "camera_input.hpp"
 #include "console.hpp"
+#include "gui/editor/editor.hpp"
+#include "gui/game/game.hpp"
 #include "gui/main_menu/main_menu.hpp"
 #include "input.hpp"
 #include "math.hpp"
@@ -16,6 +18,7 @@
 #include "sokol/sokol_gfx.h"
 #include "sokol/sokol_glue.h"
 #include "sokol/sokol_log.h"
+#include "staging/world/world.hpp"
 #include "ui/rendering/font.hpp"
 #include "ui/rendering/pass.hpp"
 #include <memory>
@@ -23,8 +26,14 @@
 
 struct Entry
 {
+    UiState ui_state;
     GuiMainMenu main_menu;
+    GuiEditor editor;
+    GuiGame game_gui;
+    World world;
+    int ui_mode;
     BoxdrawRenderer boxdraw_renderer;
+    Vector2 target_camera_pos;
 
     void init();
     void input(const sapp_event* event);
