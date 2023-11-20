@@ -9,13 +9,13 @@
 
 struct GuiEditor
 {
-    UiState *ui_state;
+    UiState* ui_state;
     int selection = 0;
 
-    static GuiEditor init(UiState *ui_state);
+    static GuiEditor init(UiState* ui_state);
     void deinit();
 
-    int show();
+    int show(Vector2 campos);
 };
 
 #endif // HPP_CATEDU_GUI_EDITOR_EDITOR

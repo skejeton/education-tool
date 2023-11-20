@@ -13,6 +13,8 @@ struct UiInput
     Vector2 mouse_delta;
     bool mouse_down;
     bool mouse_pressed;
+    char inputchars[8];
+    int inputchars_count;
 };
 
 struct UiPersistentElement
@@ -26,9 +28,10 @@ struct UiState
     UiFontRenderer font;
     UiInput input;
     IdRetainer<UiPersistentElement> elements;
+    bool textfieldfocus;
 
     static UiState init(const char* font_path);
-    void feed_event(const sapp_event* event);
+    bool feed_event(const sapp_event* event);
     void deinit();
 };
 
@@ -55,6 +58,7 @@ struct UiUser
     void begin_pass();
     void end_pass();
 
+    void input(char* id, char* out, int max);
     bool button(const char* text);
     void label(const char* text,
                Vector2 scale = { 1, 1 },

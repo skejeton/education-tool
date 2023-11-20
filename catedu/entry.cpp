@@ -128,12 +128,35 @@ show_editor(Entry* entry)
     Camera camera = Camera::init(45);
     camera.set_aspect(width / height);
     camera.move(
-      0 + entry->world.camera_pos.x, 10, -10 + entry->world.camera_pos.y);
-    camera.rotate(0, -45);
+      0 + entry->world.camera_pos.x, 10, -6 + entry->world.camera_pos.y);
+    camera.rotate(0, -55);
 
     entry->world.render(entry->boxdraw_renderer);
 
     boxdraw_flush(&entry->boxdraw_renderer, camera.vp);
+}
+
+void
+save_world(Entry* entry)
+{
+    FILE* f = fopen("user/world.dat", "wb");
+    assert(f);
+
+    fwrite(entry->world.data, sizeof(entry->world.data), 1, f);
+    fclose(f);
+}
+
+void
+load_world(Entry* entry)
+{
+    FILE* f = fopen("user/world.dat", "rb");
+    if (!f) {
+        return;
+    }
+    fprintf(stderr, "loading world.");
+
+    fread(entry->world.data, sizeof(entry->world.data), 1, f);
+    fclose(f);
 }
 
 void
@@ -164,7 +187,10 @@ Entry::frame(void)
         case 1: // Editor
             this->world.is_editor = true;
             show_editor(this);
-            ui_mode = this->editor.show();
+            ui_mode = this->editor.show(this->world.camera_pos);
+            if (ui_mode == 0) {
+                save_world(this);
+            }
             break;
         case 2: // Editor
             this->world.is_editor = false;
@@ -179,6 +205,7 @@ Entry::frame(void)
 void
 Entry::cleanup(void)
 {
+    save_world(this);
     main_menu.deinit();
     tex.deinit();
     boxdraw_destroy(&this->boxdraw_renderer);
@@ -202,6 +229,7 @@ Entry::init()
     enet_initialize();
 
     world = World::init(tex);
+    load_world(this);
     ui_state = UiState::init("./assets/Roboto-Regular.ttf");
     main_menu = GuiMainMenu::init(&ui_state);
     editor = GuiEditor::init(&ui_state);
@@ -212,6 +240,36 @@ Entry::init()
 void
 Entry::input(const sapp_event* event)
 {
+    if (event->key_code == SAPP_KEYCODE_1) {
+        this->game_gui.show_dialogue(
+          "Welcome onboard! Please hand your passport.");
+        return;
+    }
+
+    if (event->key_code == SAPP_KEYCODE_2) {
+        this->game_gui.show_dialogue(
+          "Great! What is your name traveller?", "", this->name);
+        return;
+    }
+
+    if (event->key_code == SAPP_KEYCODE_3) {
+        this->game_gui.show_dialogue(
+          stdstrfmt("Welcome %s! Proceed to the door on the left.", this->name)
+            .c_str());
+        return;
+    }
+
+    if (event->key_code == SAPP_KEYCODE_4) {
+        this->world.data[-3 + 32][-1 + 32] = 2;
+        this->world.data[-2 + 32][-1 + 32] = 2;
+
+        return;
+    }
+
+    if (ui_state.feed_event(event)) {
+        return;
+    }
+
     if (event->type == SAPP_EVENTTYPE_KEY_DOWN) {
         Vector2 camera_prev = target_camera_pos;
         if (event->key_code == SAPP_KEYCODE_LEFT) {
@@ -230,7 +288,7 @@ Entry::input(const sapp_event* event)
         int t =
           this->world
             .data[int(target_camera_pos.x) + 32][int(target_camera_pos.y) + 32];
-        if (ui_mode == 2 && (t == 1 || t == 3)) {
+        if (ui_mode == 2 && (t == 1 || t == 3 || t == 5 || t == 6 || t == 7)) {
             target_camera_pos = camera_prev;
         }
         if (event->key_code == SAPP_KEYCODE_D) {
@@ -262,6 +320,4 @@ Entry::input(const sapp_event* event)
             return;
         }
     }
-
-    ui_state.feed_event(event);
 }

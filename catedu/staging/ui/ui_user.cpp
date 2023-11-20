@@ -83,9 +83,57 @@ UiUser::end_pass()
     render_out(*this);
 
     state->input.mouse_pressed = false;
+    this->state->input.inputchars[0] = 0;
+    this->state->input.inputchars_count = 0;
     this->pass.end();
     this->styles.deinit();
     this->bump.deinit();
+}
+
+void
+UiUser::input(char* id, char* out, int max)
+{
+    this->state->elements.push(id, {});
+    UiPersistentElement* pe = this->state->elements.value();
+
+    bool coll = rect_vs_vector2(pe->border_box, this->state->input.mouse_pos);
+    if (this->state->textfieldfocus && coll) {
+        for (int i = 0; i < this->state->input.inputchars_count; i++) {
+            if (this->state->input.inputchars[i] == '\b') {
+                if (strlen(out) > 0)
+                    out[strlen(out) - 1] = 0;
+            } else if (this->state->input.inputchars[i]) {
+                if (strlen(out) < max - 1) {
+                    out[strlen(out)] = this->state->input.inputchars[i];
+                }
+            }
+        }
+    }
+    this->state->textfieldfocus = this->state->textfieldfocus || coll;
+
+    AutoLayoutElement el = {};
+    el.layout = { AutoLayout::Row };
+    el.width = { AutoLayoutDimension::Auto };
+    el.height = { AutoLayoutDimension::Auto };
+    el.padding = { 10, 10, 10, 10 };
+    el.margin = { 5, 5, 5, 5 };
+    el.border = { 1, 1, 1, 1 };
+
+    this->begin_generic(el,
+                        UiMakeBrush::make_solid(theme[0]),
+                        coll ? UiMakeBrush::make_solid(theme[3])
+                             : UiMakeBrush::make_solid(theme[1]),
+                        pe);
+    char* t = (char*)malloc(max + 3);
+    memcpy(t, out, strlen(out));
+    t[strlen(out)] = '|';
+    t[strlen(out) + 1] = 0;
+
+    this->label(t, { 2, 2 }, UiMakeBrush::make_solid(theme[2]));
+    free(t);
+    this->end_generic();
+
+    this->state->elements.pop();
 }
 
 bool
@@ -179,13 +227,14 @@ UiState::init(const char* font_path)
     return state;
 }
 
-void
+bool
 UiState::feed_event(const sapp_event* event)
 {
     switch (event->type) {
         case SAPP_EVENTTYPE_MOUSE_MOVE:
             this->input.mouse_pos = { event->mouse_x, event->mouse_y };
             this->input.mouse_delta = { event->mouse_dx, event->mouse_dy };
+            this->textfieldfocus = false;
             break;
         case SAPP_EVENTTYPE_MOUSE_DOWN:
         case SAPP_EVENTTYPE_MOUSE_UP:
@@ -194,7 +243,28 @@ UiState::feed_event(const sapp_event* event)
               event->type == SAPP_EVENTTYPE_MOUSE_DOWN;
             this->input.mouse_pressed = this->input.mouse_down;
             break;
+        case SAPP_EVENTTYPE_KEY_DOWN:
+            if (event->key_code == SAPP_KEYCODE_BACKSPACE) {
+                if (this->input.inputchars_count < 8) {
+                    this->input.inputchars[this->input.inputchars_count++] =
+                      '\b';
+                }
+            }
+            if (event->key_code == SAPP_KEYCODE_ENTER) {
+                if (this->input.inputchars_count < 8) {
+                    this->input.inputchars[this->input.inputchars_count++] =
+                      '\n';
+                }
+            }
+            return this->textfieldfocus;
+        case SAPP_EVENTTYPE_CHAR:
+            if (this->input.inputchars_count < 8) {
+                this->input.inputchars[this->input.inputchars_count++] =
+                  event->char_code;
+            }
+            return this->textfieldfocus;
     }
+    return false;
 }
 
 void

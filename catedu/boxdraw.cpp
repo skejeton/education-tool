@@ -150,6 +150,9 @@ boxdraw_flush(BoxdrawRenderer* renderer, Matrix4 view_projection)
     sg_begin_default_pass(&renderer->pass_action, width, height);
     sg_apply_pipeline(renderer->pipeline);
 
+    sg_image prev_image_id = { 0 };
+    sg_sampler prev_sampler_id = { 0 };
+
     for (size_t i = 0; i < renderer->commands_count; i++) {
         BoxdrawCommand command = renderer->commands[i];
 
@@ -160,6 +163,7 @@ boxdraw_flush(BoxdrawRenderer* renderer, Matrix4 view_projection)
         vs_params.color_top = command.top_color;
         vs_params.color_bottom = command.bottom_color;
         vs_params.color_mul = { 1, 1, 1, 1 };
+
         if (command.texture.if_valid()) {
             vs_params.uv_min = command.texture.uv_min();
             vs_params.uv_max = command.texture.uv_max();
@@ -176,7 +180,13 @@ boxdraw_flush(BoxdrawRenderer* renderer, Matrix4 view_projection)
                                         renderer->bindings.fs.samplers[0]);
         }
 
-        sg_apply_bindings(renderer->bindings);
+        if (prev_image_id.id != command.texture.sysid_texture.id ||
+            prev_sampler_id.id != command.texture.sysid_sampler.id) {
+            sg_apply_bindings(renderer->bindings);
+        }
+
+        prev_image_id = command.texture.sysid_texture;
+        prev_sampler_id = command.texture.sysid_sampler;
 
         sg_range params_range = SG_RANGE(vs_params);
         sg_apply_uniforms(

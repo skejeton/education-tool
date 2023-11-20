@@ -12,7 +12,8 @@ make_element(AutoLayout layout,
 AutoLayoutElement
 make_auto(AutoLayout layout, Vector2 align = { 0, 0 });
 
-const char* selections[] = { "Remove", "Bricks", "Tile", "Entity", "Player" };
+const char* selections[] = { "Remove", "Bricks",  "Tile",  "Entity",
+                             "Player", "Counter", "Glass", "Door" };
 
 GuiEditor
 GuiEditor::init(UiState* ui_state)
@@ -27,8 +28,9 @@ GuiEditor::deinit()
 }
 
 int
-GuiEditor::show()
+GuiEditor::show(Vector2 campos)
 {
+    static char test[4] = {};
     int ui_mode = 1;
     UiUser user = UiUser::init(*this->ui_state);
     user.begin_pass();
@@ -44,6 +46,10 @@ GuiEditor::show()
     }
 
     ui_mode = user.button("Exit") ? 0 : ui_mode;
+
+    user.input("testlol", test, 4);
+
+    user.label(stdstrfmt("%g %g", campos.x, campos.y).c_str());
 
     user.end_pass();
 

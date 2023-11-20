@@ -1,8 +1,11 @@
 #include "game.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 
+/*
 const char* message = "Use arrow keys to move. <^v>. Well, I think you already "
                       "figured it out.\nPress [ESC] to close this dialog.";
+
+                      */
 
 AutoLayoutElement
 make_element(AutoLayout layout,
@@ -22,6 +25,20 @@ void
 GuiGame::deinit()
 {
     // Nothing yet
+}
+
+void
+GuiGame::show_dialogue(const char* text, const char* ans, char* ans_out)
+{
+    this->dialog_open = true;
+    strcpy(dialog_text, text);
+    this->ans_out = NULL;
+    if (ans) {
+        strcpy(dialog_ans, ans);
+        this->dialog_has_ans = true;
+        assert(ans_out);
+        this->ans_out = ans_out;
+    }
 }
 
 int
@@ -54,7 +71,12 @@ GuiGame::show()
                    { 3, 3 },
                    UiMakeBrush::make_gradient({ 0.5, 0.5, 0.9, 1.0f },
                                               { 0.5, 0.5, 1.0, 1.0f }));
-        user.label(message, { 2, 2 });
+
+        if (this->ans_out) {
+            user.input("ans", this->ans_out, 16);
+        }
+
+        user.label(this->dialog_text, { 2, 2 });
         user.end_generic();
     } else {
         ui_mode = user.button("Exit") ? 0 : ui_mode;

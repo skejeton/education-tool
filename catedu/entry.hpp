@@ -34,6 +34,7 @@ struct Entry
     int ui_mode;
     BoxdrawRenderer boxdraw_renderer;
     Vector2 target_camera_pos;
+    char name[128];
 
     void init();
     void input(const sapp_event* event);
