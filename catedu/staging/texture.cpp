@@ -10,8 +10,7 @@
 #include <unistd.h>
 #endif
 
-void
-init_sampler_tex(sg_sampler& s, sg_image& i, Vector2 size, Buffer data)
+void init_sampler_tex(sg_sampler &s, sg_image &i, Vector2 size, Buffer data)
 {
     sg_image_desc idesc = {};
     idesc.width = size.x;
@@ -31,34 +30,33 @@ init_sampler_tex(sg_sampler& s, sg_image& i, Vector2 size, Buffer data)
     s = sg_make_sampler(sdesc);
 }
 
-Texture
-Texture::init(const char* png_path)
+Texture Texture::init(const char *png_path)
 {
-    if (access(png_path, F_OK) != 0) {
+    if (access(png_path, F_OK) != 0)
+    {
         fprintf(stderr, "Texture::init: file %s does not exist\n", png_path);
     }
     Texture result = {};
     int width, height, channels;
-    stbi_uc* data = stbi_load(png_path, &width, &height, &channels, 4);
-    Buffer data_buf = { size_t(width * height * 4), data };
-    Vector2 data_dims = { (float)width, (float)height };
+    stbi_uc *data = stbi_load(png_path, &width, &height, &channels, 4);
+    Buffer data_buf = {size_t(width * height * 4), data};
+    Vector2 data_dims = {(float)width, (float)height};
     result.size = data_dims;
+    result.tile_count = {1, 1};
 
-    init_sampler_tex(
-      result.sysid_sampler, result.sysid_texture, data_dims, data_buf);
+    init_sampler_tex(result.sysid_sampler, result.sysid_texture, data_dims,
+                     data_buf);
 
     return result;
 }
 
-void
-Texture::deinit()
+void Texture::deinit()
 {
     sg_destroy_sampler(this->sysid_sampler);
     sg_destroy_image(this->sysid_texture);
 }
 
-Texture
-Texture::uncropped()
+Texture Texture::uncropped()
 {
     Texture tex = *this;
     tex.crop = {};
@@ -66,8 +64,7 @@ Texture::uncropped()
     return tex;
 }
 
-Texture
-Texture::cropped(Rect crop)
+Texture Texture::cropped(Rect crop)
 {
     Texture tex = *this;
     tex.crop = crop;
@@ -75,21 +72,25 @@ Texture::cropped(Rect crop)
     return tex;
 }
 
-Vector2
-Texture::uv_min()
+Texture Texture::tiled(Vector2 tile_count)
 {
-    return { crop.pos.x / size.x, crop.pos.y / size.y };
+    Texture tex = *this;
+    tex.tile_count = tile_count;
+    return tex;
 }
 
-Vector2
-Texture::uv_max()
+Vector2 Texture::uv_min()
 {
-    return { (crop.pos.x + crop.siz.x) / size.x,
-             (crop.pos.y + crop.siz.y) / size.y };
+    return {crop.pos.x / size.x, crop.pos.y / size.y};
 }
 
-bool
-Texture::if_valid()
+Vector2 Texture::uv_max()
+{
+    return {(crop.pos.x + crop.siz.x) / size.x,
+            (crop.pos.y + crop.siz.y) / size.y};
+}
+
+bool Texture::if_valid()
 {
     return this->sysid_texture.id != SG_INVALID_ID &&
            this->sysid_sampler.id != SG_INVALID_ID;

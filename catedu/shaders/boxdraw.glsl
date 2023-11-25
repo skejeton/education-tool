@@ -8,6 +8,7 @@ uniform boxdraw_vs_params {
     vec4 color_mul;
     vec2 uv_min, uv_max;
     vec2 size;
+    vec2 tile_count;
 };
 
 
@@ -19,6 +20,7 @@ out vec2 frag_uv;
 out vec2 frag_uv_min;
 out vec2 frag_uv_max;
 out vec2 frag_size;
+out vec2 frag_tile_count;
 
 void main() {
     gl_Position = mvp * vec4(position, 1.0);
@@ -36,6 +38,7 @@ void main() {
     frag_uv_min = uv_min;
     frag_uv_max = uv_max;
     frag_size = size;
+    frag_tile_count = max(tile_count, vec2(1.0, 1.0));
 }
 
 @end
@@ -50,9 +53,11 @@ out vec4 frag_color;
 in vec2 frag_uv_min;
 in vec2 frag_uv_max;
 in vec2 frag_size;
+in vec2 frag_tile_count;
 
 void main() {
-    vec2 uv = frag_uv * (frag_uv_max - frag_uv_min) + frag_uv_min;
+    vec2 uv = mod(frag_tile_count * frag_uv, vec2(1, 1)) * (frag_uv_max - frag_uv_min) + frag_uv_min;
+
     float offs_bound_x = 1.0 / frag_size.x;
     float offs_bound_y = 1.0 / frag_size.y;
     float min_bound_x = frag_uv_min.x + offs_bound_x;
@@ -60,7 +65,6 @@ void main() {
     float min_bound_y = frag_uv_min.y + offs_bound_y;
     float max_bound_y = frag_uv_max.y - offs_bound_y;
     float dist = gl_FragCoord.z / gl_FragCoord.w;
-
 
     const float LOG2 = 1.442695;
     float fogFactor = pow(10, -0.03 *
