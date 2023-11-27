@@ -26,7 +26,6 @@
 #include <memory>
 #include <stdio.h>
 
-
 struct Entry
 {
     UiState ui_state;
@@ -39,7 +38,7 @@ struct Entry
     BoxdrawRenderer boxdraw_renderer;
     Vector2 target_camera_pos;
     char name[128];
-    bool zoomout = true;
+    bool zoomout = false;
     ScriptData script_data;
 
     void init();
