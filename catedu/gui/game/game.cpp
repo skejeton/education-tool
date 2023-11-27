@@ -3,6 +3,7 @@
 
 AutoLayoutElement make_element(AutoLayout layout, Vector2 size, bool autox,
                                bool autoy, Vector2 align = {0, 0}, float p = 3);
+AutoLayoutElement make_auto(AutoLayout layout, Vector2 align = {0, 0});
 
 GuiGame GuiGame::init(UiState *ui_state)
 {
@@ -14,22 +15,15 @@ void GuiGame::deinit()
     // Nothing yet
 }
 
-void GuiGame::show_dialogue(const char *text, const char *ans, char *ans_out)
+void GuiGame::show_dialog(Dialog dialog)
 {
-    this->dialog_open = true;
-    strcpy(dialog_text, text);
-    this->ans_out = NULL;
-    if (ans)
-    {
-        strcpy(dialog_ans, ans);
-        this->dialog_has_ans = true;
-        assert(ans_out);
-        this->ans_out = ans_out;
-    }
+    dialog.open = true;
+    this->dialog = dialog;
 }
 
-int GuiGame::show()
+int GuiGame::show(int currency, int reals, char **script)
 {
+    *script = nullptr;
     int ui_mode = 2;
 
     UiUser user = UiUser::init(*this->ui_state);
@@ -41,7 +35,11 @@ int GuiGame::show()
                        UiMakeBrush::make_solid({0, 0, 0, 0}),
                        UiMakeBrush::make_solid({0, 0, 0, 0}));
 
-    if (this->dialog_open)
+    user.begin_generic(make_auto({AutoLayout::Column}), {}, {});
+    user.label(stdstrfmt("S$%d", currency).c_str(), {3, 3});
+    user.label(stdstrfmt("R$%d", reals).c_str(), {3, 3});
+
+    if (this->dialog.open)
     {
         user.begin_generic(make_element({AutoLayout::Column},
                                         {sapp_widthf() - 30, 300}, false, false,
@@ -49,22 +47,36 @@ int GuiGame::show()
                            UiMakeBrush::make_gradient({0.5, 0.5, 0.5, 0.5f},
                                                       {0.6, 0.6, 0.6, 0.5f}),
                            UiMakeBrush::make_solid({0, 0, 0, 1.0}));
-        user.label("Entity says:", {3, 3},
+        user.label(this->dialog.title, {3, 3},
                    UiMakeBrush::make_gradient({0.5, 0.5, 0.9, 1.0f},
                                               {0.5, 0.5, 1.0, 1.0f}));
 
-        if (this->ans_out)
-        {
-            user.input("ans", this->ans_out, 16);
-        }
+        user.label(this->dialog.text, {2, 2});
+        user.label(this->dialog.translation, {1.5, 1.5},
+                   UiMakeBrush::make_gradient({1.0, 1.0, 1.0, 0.8f},
+                                              {1.0, 1.0, 1.0, 0.8f}));
 
-        user.label(this->dialog_text, {2, 2});
+        user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
+        for (int i = 0; i < 8; i++)
+        {
+            if (this->dialog.buttons[i].text)
+            {
+                if (user.button(this->dialog.buttons[i].text))
+                {
+                    this->dialog.open = false;
+                    *script = this->dialog.buttons[i].script;
+                }
+            }
+        }
+        user.end_generic();
+
         user.end_generic();
     }
     else
     {
         ui_mode = user.button("Exit") ? 0 : ui_mode;
     }
+    user.end_generic();
 
     user.end_generic();
     user.end_pass();

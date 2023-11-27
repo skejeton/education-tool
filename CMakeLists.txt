@@ -31,6 +31,7 @@ add_executable(${PROJECT_NAME} ${CATEDU_SRC_FILES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
 if (WIN32)
+    add_compile_options(/fsanitize=address)
     target_link_libraries(${PROJECT_NAME} PUBLIC d3d11 ws2_32 winmm)
 endif()
 

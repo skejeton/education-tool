@@ -19,22 +19,27 @@ struct TableId
         return (id ? generation == other.generation : true) && id == other.id;
     }
 
-    bool operator!=(TableId other) { return !(*this == other); }
+    bool operator!=(TableId other)
+    {
+        return !(*this == other);
+    }
 
-    bool valid() { return id != 0; }
+    bool valid()
+    {
+        return id != 0;
+    }
 };
 
-#define NULL_ID (TableId{ 0 })
+#define NULL_ID (TableId{0})
 
-template<class T>
-struct Table
+template <class T> struct Table
 {
-    T* values;
+    T *values;
     struct Slot
     {
         bool taken;
         size_t generation;
-    }* slots;
+    } *slots;
     size_t capacity;
     size_t count;
 
@@ -52,16 +57,18 @@ struct Table
         else
             new_capacity *= 2;
 
-        T* new_values = (T*)realloc(values, sizeof(T) * new_capacity);
+        T *new_values = (T *)realloc(values, sizeof(T) * new_capacity);
         // NOTE: Allocation error
-        if (new_values == NULL) {
+        if (new_values == NULL)
+        {
             return false;
         }
         values = new_values;
 
-        Slot* new_slots = (Slot*)realloc(slots, sizeof(Slot) * new_capacity);
+        Slot *new_slots = (Slot *)realloc(slots, sizeof(Slot) * new_capacity);
         // NOTE: Allocation error
-        if (new_slots == NULL) {
+        if (new_slots == NULL)
+        {
             return false;
         }
         slots = new_slots;
@@ -74,7 +81,8 @@ struct Table
 
     TableId allocate_at(TableId id, T value)
     {
-        while (capacity < id.id) {
+        while (capacity < id.id)
+        {
             if (!scale())
                 return NULL_ID;
         }
@@ -88,17 +96,20 @@ struct Table
 
     TableId find_next_id()
     {
-        TableId id = { 0 };
-        for (size_t i = 0; i < capacity; i++) {
-            if (!slots[i].taken) {
-                id = { i + 1 };
+        TableId id = {0};
+        for (size_t i = 0; i < capacity; i++)
+        {
+            if (!slots[i].taken)
+            {
+                id = {i + 1};
                 id.generation = slots[i].generation;
                 break;
             }
         }
 
-        if (id.id == 0) {
-            id = { capacity + 1 };
+        if (id.id == 0)
+        {
+            id = {capacity + 1};
         }
 
         return id;
@@ -106,7 +117,8 @@ struct Table
 
     void mark_generation_at(TableId id)
     {
-        while (capacity < id.id) {
+        while (capacity < id.id)
+        {
             assert(scale());
         }
 
@@ -115,20 +127,24 @@ struct Table
 
     TableId allocate(T value)
     {
-        TableId id = { 0 };
-        for (size_t i = 0; i < capacity; i++) {
-            if (!slots[i].taken) {
-                id = { i + 1 };
+        TableId id = {0};
+        for (size_t i = 0; i < capacity; i++)
+        {
+            if (!slots[i].taken)
+            {
+                id = {i + 1};
                 break;
             }
         }
 
-        if (id.id == 0) {
+        if (id.id == 0)
+        {
             size_t old_capacity = capacity;
-            if (!scale()) {
+            if (!scale())
+            {
                 return NULL_ID;
             }
-            id = { old_capacity + 1 };
+            id = {old_capacity + 1};
         }
 
         count++;
@@ -142,7 +158,8 @@ struct Table
     bool remove(TableId id)
     {
         if (id.id - 1 < capacity && slots[id.id - 1].taken &&
-            slots[id.id - 1].generation == id.generation) {
+            slots[id.id - 1].generation == id.generation)
+        {
             slots[id.id - 1].taken = false;
             slots[id.id - 1].generation++;
             count--;
@@ -151,32 +168,46 @@ struct Table
         return false;
     }
 
-    T* get(TableId id)
+    // @note Use this only when it's a programming error to have an invalid ID.
+    //       This in general applies to all asserts.
+    T &get_assert(TableId id)
+    {
+        assert(id.id - 1 < capacity && slots[id.id - 1].taken &&
+               slots[id.id - 1].generation == id.generation && "Invalid ID.");
+        return values[id.id - 1];
+    }
+
+    T *get(TableId id)
     {
         if (id.id - 1 < capacity && slots[id.id - 1].taken &&
-            slots[id.id - 1].generation == id.generation) {
+            slots[id.id - 1].generation == id.generation)
+        {
             return &values[id.id - 1];
         }
         return nullptr;
     }
 };
 
-template<class T>
-struct TableIterator
+template <class T> struct TableIterator
 {
-    Table<T>* table;
+    Table<T> *table;
     TableId id;
     bool is_going;
 
-    bool going() { return is_going; }
+    bool going()
+    {
+        return is_going;
+    }
 
     void next()
     {
         is_going = false;
 
         id.id += 1;
-        while ((id.id - 1) < table->capacity) {
-            if (table->slots[id.id - 1].taken) {
+        while ((id.id - 1) < table->capacity)
+        {
+            if (table->slots[id.id - 1].taken)
+            {
                 id.generation = table->slots[id.id - 1].generation;
                 is_going = true;
                 break;
@@ -185,9 +216,9 @@ struct TableIterator
         }
     }
 
-    static TableIterator init(Table<T>* table)
+    static TableIterator init(Table<T> *table)
     {
-        TableIterator iterator = { table, { 0 }, false };
+        TableIterator iterator = {table, {0}, false};
         iterator.next();
         return iterator;
     }

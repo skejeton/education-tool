@@ -77,7 +77,7 @@ void main() {
     uv = clamp(uv, vec2(min_bound_x, min_bound_y), vec2(max_bound_x, max_bound_y));
 
     vec4 sample_value = texture(sampler2D(image, image_sampler), uv);
-    frag_color = mix(vec4(0.0, 0.1, 0.5, 1.0), sample_value * color, fogFactor);
+    frag_color = mix(vec4(0.7, 0.7, 0.5, 1.0), sample_value * color, fogFactor);
 }
 @end
 ////////////////////////////////////////////////////////////////////////////////

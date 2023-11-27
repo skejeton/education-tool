@@ -24,14 +24,14 @@ struct UiPersistentElement
 
 struct UiState
 {
-    UiRenderingCore core;
+    UiRenderingCore *core;
     UiFontRenderer font;
     UiInput input;
     IdRetainer<UiPersistentElement> elements;
     bool textfieldfocus;
 
-    static UiState init(const char* font_path);
-    bool feed_event(const sapp_event* event);
+    static UiState init(const char *font_path);
+    bool feed_event(const sapp_event *event);
     void deinit();
 };
 
@@ -39,35 +39,36 @@ struct UiGenericStyles
 {
     UiBrush brush;
     UiBrush border;
-    const char* text;
+    const char *text;
     Vector2 text_scale;
-    UiPersistentElement* persistent;
+    UiPersistentElement *persistent;
 };
 
 struct UiUser
 {
-    UiState* state;
+    UiState *state;
     UiRenderingPass pass;
     AutoLayoutProcess layout;
     AutoLayoutNodeId current_node;
     Table<UiGenericStyles> styles;
     BumpAllocator bump;
 
-    static UiUser init(UiState& state);
+    static UiUser init(UiState &state);
 
     void begin_pass();
     void end_pass();
 
-    void input(char* id, char* out, int max);
-    bool button(const char* text);
-    void label(const char* text,
-               Vector2 scale = { 1, 1 },
-               UiBrush style = { UiBuffers::Rectangle,
-                                 { 1, 1, 1, 1 },
-                                 { 1, 1, 1, 1 } });
-    void begin_generic(AutoLayoutElement el,
-                       UiBrush brush,
-                       UiBrush border,
-                       UiPersistentElement* persistent = nullptr);
+    void input(char *id, char *out, int max);
+    bool button(const char *text);
+    void label(const char *text, Vector2 scale = {1, 1},
+               UiBrush style = {
+                   UiBuffers::Rectangle, {1, 1, 1, 1}, {1, 1, 1, 1}});
+    void label_tooltip(const char *text, const char *tooltip,
+                       Vector2 scale = {1, 1},
+                       UiBrush style = {
+                           UiBuffers::Rectangle, {1, 1, 1, 1}, {1, 1, 1, 1}});
+
+    void begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,
+                       UiPersistentElement *persistent = nullptr);
     void end_generic();
 };

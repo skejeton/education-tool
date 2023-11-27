@@ -6,10 +6,9 @@
 #include "catedu/ui/resources/load_image.hpp"
 #include "enet/enet.h"
 #include "math.hpp"
+#include "resources/resources.hpp"
 #include <cstdlib>
 #include <filesystem>
-
-Texture tex;
 
 void show_menu_animation(Entry *entry)
 {
@@ -33,7 +32,7 @@ void show_menu_animation(Entry *entry)
                          boxdraw_cmdtexture(
                              box3_extrude_from_point({float(i), 0, float(j)},
                                                      {0.5f, 0.5f, 0.5f}),
-                             tex.cropped({0, 32, 32, 32})));
+                             entry->res.tileset.cropped({0, 32, 32, 32})));
         }
     }
 
@@ -62,17 +61,17 @@ void show_menu_animation(Entry *entry)
                     boxdraw_cmdtexture(
                         box3_extrude_from_point({float(x - 3), 1, float(y - 3)},
                                                 {0.5f, 0.5f, 0.5f}),
-                        tex.cropped({64, 32, 32, 32})));
+                        entry->res.tileset.cropped({64, 32, 32, 32})));
                 x++;
             }
             else
             {
-                boxdraw_push(
-                    &entry->boxdraw_renderer,
-                    boxdraw_cmdtexture(box3_extrude_from_point(
-                                           {float(x - 3), 0.55, float(y - 3)},
-                                           {0.5f, 0.05f, 0.5f}),
-                                       tex.cropped({32, 32, 32, 32})));
+                boxdraw_push(&entry->boxdraw_renderer,
+                             boxdraw_cmdtexture(
+                                 box3_extrude_from_point(
+                                     {float(x - 3), 0.55, float(y - 3)},
+                                     {0.5f, 0.05f, 0.5f}),
+                                 entry->res.tileset.cropped({32, 32, 32, 32})));
                 x++;
             }
         }
@@ -95,7 +94,7 @@ void show_menu_animation(Entry *entry)
                     boxdraw_cmdtexture(
                         box3_extrude_from_point({float(x - 3), 2, float(y - 3)},
                                                 {0.5f, 0.5f, 0.5f}),
-                        tex.cropped({64, 32, 32, 32})));
+                        entry->res.tileset.cropped({64, 32, 32, 32})));
                 x++;
             }
             else
@@ -120,10 +119,11 @@ void show_menu_animation(Entry *entry)
                 if ((x + y) % 2 == 0)
                     boxdraw_push(
                         &entry->boxdraw_renderer,
-                        boxdraw_cmdtexture(box3_extrude_from_point(
-                                               {float(x - 3), 3, float(y - 3)},
-                                               {0.5f, 0.5f, 0.5f}),
-                                           tex.cropped({64, 32, 32, 32})));
+                        boxdraw_cmdtexture(
+                            box3_extrude_from_point(
+                                {float(x - 3), 3, float(y - 3)},
+                                {0.5f, 0.5f, 0.5f}),
+                            entry->res.tileset.cropped({64, 32, 32, 32})));
                 x++;
             }
             else
@@ -146,11 +146,20 @@ void show_editor(Entry *entry)
 
     Camera camera = Camera::init(45);
     camera.set_aspect(width / height);
-    camera.move(0 + entry->world.camera_pos.x, 10,
-                -6 + entry->world.camera_pos.y);
+    if (entry->zoomout)
+    {
+        camera.move(0 + entry->world.camera_pos.x, 10,
+                    -6 + entry->world.camera_pos.y);
+    }
+    else
+    {
+        camera.move(0 + entry->world.camera_pos.x, 7,
+                    -4 + entry->world.camera_pos.y);
+    }
+
     camera.rotate(0, -55);
 
-    entry->world.render(entry->boxdraw_renderer);
+    entry->world.render(entry->res, entry->boxdraw_renderer);
 
     boxdraw_flush(&entry->boxdraw_renderer, camera.vp);
 }
@@ -160,7 +169,21 @@ void save_world(Entry *entry)
     FILE *f = fopen("user/world.dat", "wb");
     assert(f);
 
-    fwrite(entry->world.data, sizeof(entry->world.data), 1, f);
+    fwrite(entry->world.middle, sizeof(entry->world.middle), 1, f);
+    fwrite(entry->world.ground, sizeof(entry->world.ground), 1, f);
+
+    size_t entity_count = entry->world.entities.count;
+    fwrite(&entity_count, sizeof(size_t), 1, f);
+
+    auto it = TableIterator<WorldEntity>::init(&entry->world.entities);
+
+    for (; it.going(); it.next())
+    {
+        auto ent = it.table->get_assert(it.id);
+
+        fwrite(&ent, sizeof(WorldEntity), 1, f);
+    }
+
     fclose(f);
 }
 
@@ -173,12 +196,26 @@ void load_world(Entry *entry)
     }
     fprintf(stderr, "loading world.");
 
-    fread(entry->world.data, sizeof(entry->world.data), 1, f);
+    fread(entry->world.middle, sizeof(entry->world.middle), 1, f);
+    fread(entry->world.ground, sizeof(entry->world.ground), 1, f);
+
+    size_t entity_count = 0;
+    fread(&entity_count, sizeof(size_t), 1, f);
+
+    for (size_t i = 0; i < entity_count; i++)
+    {
+        WorldEntity ent = {};
+        fread(&ent, sizeof(WorldEntity), 1, f);
+
+        entry->world.entities.allocate(ent);
+    }
+
     fclose(f);
 }
 
 void Entry::frame(void)
 {
+    this->world.if_grass = this->script_data.activate_grass;
     this->world.camera_pos.x +=
         (target_camera_pos.x - this->world.camera_pos.x) *
         sapp_frame_duration() * 40;
@@ -192,15 +229,15 @@ void Entry::frame(void)
         ui_mode = this->main_menu.show();
         if (ui_mode == 2)
         {
-            for (int i = 0; i < 64; i++)
+            this->script_data = {};
+            this->script_data.currency = 900000;
+            auto it = TableIterator<WorldEntity>::init(&this->world.entities);
+            for (; it.going(); it.next())
             {
-                for (int j = 0; j < 64; j++)
+                auto ent = it.table->get_assert(it.id);
+                if (strcmp(ent.id, "player") == 0)
                 {
-                    if (this->world.data[i][j] == 4)
-                    {
-                        target_camera_pos = {float(i - 32), float(j - 32)};
-                        this->world.camera_rot = 0;
-                    }
+                    target_camera_pos = ent.pos;
                 }
             }
         }
@@ -208,16 +245,44 @@ void Entry::frame(void)
     case 1: // Editor
         this->world.is_editor = true;
         show_editor(this);
-        ui_mode = this->editor.show(this->world.camera_pos);
+        ui_mode = this->editor.show(this->world, this->res);
+        if (this->editor.create_entity)
+        {
+            WorldEntity ent = {};
+            ent.pos = target_camera_pos;
+
+            this->world.entities.allocate(ent);
+        }
         if (ui_mode == 0)
         {
             save_world(this);
         }
         break;
-    case 2: // Editor
+    case 2: // Gameplay
         this->world.is_editor = false;
         show_editor(this);
-        ui_mode = this->game_gui.show();
+        {
+            char *script;
+            ui_mode = this->game_gui.show(script_data.currency,
+                                          script_data.reals, &script);
+            if (script)
+            {
+                ScriptEvent sevent = {};
+                sevent.script_name = script;
+                sevent.any = true;
+                this->script_data.activate_dialog = false;
+                this->script_data.dialog = {};
+                this->script_data.backtrack = false;
+                this->script_data.target_pos = target_camera_pos;
+                printf("script: %s\n", script);
+                run_script(this->script_data, sevent);
+                if (this->script_data.activate_dialog)
+                {
+                    this->game_gui.show_dialog(this->script_data.dialog);
+                }
+                this->target_camera_pos = this->script_data.target_pos;
+            }
+        }
         break;
     }
 
@@ -228,7 +293,7 @@ void Entry::cleanup(void)
 {
     save_world(this);
     main_menu.deinit();
-    tex.deinit();
+    res.deinit();
     boxdraw_destroy(&this->boxdraw_renderer);
     sg_tricks_deinit();
     sg_shutdown();
@@ -244,11 +309,10 @@ void Entry::init()
     desc.logger.func = slog_func;
     sg_setup(&desc);
     sg_tricks_init();
-    tex = Texture::init("./assets/test_spritesheet_01.png");
+    res = load_resource_spec("./assets/tileset.png");
 
     enet_initialize();
 
-    world = World::init(tex);
     load_world(this);
     ui_state = UiState::init("./assets/Roboto-Regular.ttf");
     main_menu = GuiMainMenu::init(&ui_state);
@@ -259,37 +323,6 @@ void Entry::init()
 
 void Entry::input(const sapp_event *event)
 {
-    if (event->key_code == SAPP_KEYCODE_1)
-    {
-        this->game_gui.show_dialogue(
-            "Welcome onboard! Please hand your passport.");
-        return;
-    }
-
-    if (event->key_code == SAPP_KEYCODE_2)
-    {
-        this->game_gui.show_dialogue("Great! What is your name traveller?", "",
-                                     this->name);
-        return;
-    }
-
-    if (event->key_code == SAPP_KEYCODE_3)
-    {
-        this->game_gui.show_dialogue(
-            stdstrfmt("Welcome %s! Proceed to the door on the left.",
-                      this->name)
-                .c_str());
-        return;
-    }
-
-    if (event->key_code == SAPP_KEYCODE_4)
-    {
-        this->world.data[-3 + 32][-1 + 32] = 2;
-        this->world.data[-2 + 32][-1 + 32] = 2;
-
-        return;
-    }
-
     if (ui_state.feed_event(event))
     {
         return;
@@ -298,63 +331,108 @@ void Entry::input(const sapp_event *event)
     if (event->type == SAPP_EVENTTYPE_KEY_DOWN)
     {
         Vector2 camera_prev = target_camera_pos;
-        if (event->key_code == SAPP_KEYCODE_LEFT)
+        bool just_moved = false;
+        if (ui_mode == 1 || (ui_mode == 2 && !this->game_gui.dialog.open))
         {
-            target_camera_pos.x -= 1;
-        }
-        if (event->key_code == SAPP_KEYCODE_RIGHT)
-        {
-            target_camera_pos.x += 1;
-        }
-        if (event->key_code == SAPP_KEYCODE_UP)
-        {
-            target_camera_pos.y += 1;
-        }
-        if (event->key_code == SAPP_KEYCODE_DOWN)
-        {
-            target_camera_pos.y -= 1;
+            if (event->key_code == SAPP_KEYCODE_LEFT)
+            {
+                target_camera_pos.x -= 1;
+                just_moved = true;
+            }
+            if (event->key_code == SAPP_KEYCODE_RIGHT)
+            {
+                target_camera_pos.x += 1;
+                just_moved = true;
+            }
+            if (event->key_code == SAPP_KEYCODE_UP)
+            {
+                target_camera_pos.y += 1;
+                just_moved = true;
+            }
+            if (event->key_code == SAPP_KEYCODE_DOWN)
+            {
+                target_camera_pos.y -= 1;
+                just_moved = true;
+            }
         }
 
-        int t = this->world.data[int(target_camera_pos.x) + 32]
-                                [int(target_camera_pos.y) + 32];
-        if (ui_mode == 2 && (t == 1 || t == 3 || t == 5 || t == 6 || t == 7))
+        size_t t = this->world.middle[int(target_camera_pos.x) + 32]
+                                     [int(target_camera_pos.y) + 32];
+
+        // FIXME: Quick hack to check if the tile is there, otherwise get_assert
+        //        will crash the program. Should be a better way to do this.
+        if (ui_mode == 2 && res.tiles.get({t}) &&
+            res.tiles.get_assert({t}).if_obstacle)
         {
             target_camera_pos = camera_prev;
         }
-        if (event->key_code == SAPP_KEYCODE_D)
+        if (event->key_code == SAPP_KEYCODE_Z)
         {
-            this->world.camera_rot += 1;
-            if (this->world.camera_rot > 3)
-            {
-                this->world.camera_rot = 0;
-            }
-            return;
+            this->zoomout = !this->zoomout;
         }
-        if (event->key_code == SAPP_KEYCODE_A)
+        if (event->key_code == SAPP_KEYCODE_X)
         {
-            this->world.camera_rot -= 1;
-            if (this->world.camera_rot < 0)
-            {
-                this->world.camera_rot = 3;
-            }
-            return;
+            this->game_gui.show_dialog(
+                {"Hello",
+                 "World",
+                 "Bogos binted",
+                 {{"OK", "ok"}, {"Cancel", "cancel"}, {"asdf", nullptr}}});
         }
-        if (event->key_code == SAPP_KEYCODE_ESCAPE)
-        {
-            this->game_gui.dialog_open = false;
-            return;
-        }
-        if (event->key_code == SAPP_KEYCODE_Q)
-        {
-            this->game_gui.dialog_open = !this->game_gui.dialog_open;
-            return;
-        }
+
         if (ui_mode == 1 && event->key_code == SAPP_KEYCODE_SPACE)
         {
-            this->world.data[int(target_camera_pos.x) + 32]
-                            [int(target_camera_pos.y) + 32] =
-                this->editor.selection;
+            // FIXME: Same problem with get_assert as above.
+            SpecTile *tile = res.tiles.get(editor.selection);
+            if (tile == nullptr || tile->if_ground)
+            {
+                this->world.ground[int(target_camera_pos.x) + 32]
+                                  [int(target_camera_pos.y) + 32] =
+                    this->editor.selection.id;
+            }
+
+            if (tile == nullptr || !tile->if_ground)
+            {
+                this->world.middle[int(target_camera_pos.x) + 32]
+                                  [int(target_camera_pos.y) + 32] =
+                    this->editor.selection.id;
+            }
+
             return;
+        }
+        if (ui_mode == 2)
+        {
+            auto it = TableIterator<WorldEntity>::init(&this->world.entities);
+            for (; it.going(); it.next())
+            {
+                auto ent = it.table->get_assert(it.id);
+                if (vector2_to_vector2i(ent.pos) ==
+                    vector2_to_vector2i(target_camera_pos))
+                {
+                    ScriptEvent sevent = {};
+                    sevent.script_name = ent.interact_script;
+                    sevent.interacted = event->key_code == SAPP_KEYCODE_SPACE;
+                    sevent.walked_on = just_moved;
+                    sevent.any = true;
+                    if (!sevent.interacted && !sevent.walked_on)
+                    {
+                        break;
+                    }
+                    this->script_data.activate_dialog = false;
+                    this->script_data.dialog = {};
+                    this->script_data.backtrack = false;
+                    printf("script: %s\n", sevent.script_name);
+                    run_script(this->script_data, sevent);
+                    if (this->script_data.activate_dialog)
+                    {
+                        this->game_gui.show_dialog(this->script_data.dialog);
+                    }
+
+                    if (this->script_data.backtrack)
+                    {
+                        target_camera_pos = camera_prev;
+                    }
+                }
+            }
         }
     }
 }

@@ -1,65 +1,45 @@
 #include "world.hpp"
 
-Rect tile_texture_rect(int tile_id)
+void render_model_at(Vector3 pos, ResourceSpec &res, TableId id,
+                     BoxdrawRenderer &boxdraw, bool if_editor)
+
 {
-    switch (tile_id)
+    SpecModel &model = res.models.get_assert(id);
+
+    Box3 box = box3_translate(model.model, pos);
+    Texture tex = res.tileset.cropped(model.texture_rect);
+
+    if (model.if_editor_only && !if_editor)
     {
-    case 0: // nothing
-        return {};
-        break;
-    case 1: // brick
-        return {64, 32, 32, 32};
-        break;
-    case 2: // tile
-        return {32, 32, 32, 32};
-        break;
-    case 3: // entity
-        return {64, 0, 32, 32};
-        break;
-    case 4: // player
-        return {96, 32, 32, 32};
-        break;
-    case 5: // counter
-        return {64, 64, 32, 32};
-        break;
-    case 6: // glass
-        return {64 + 32, 64, 32, 32};
-        break;
-    case 7: // door
-        return {64 - 32, 64, 32, 32};
-        break;
+        return;
+    }
+
+    boxdraw_push(&boxdraw, boxdraw_cmdtexture(box, tex));
+    if (model.if_tall)
+    {
+        box = box3_translate(box, {0, 1, 0});
+        boxdraw_push(&boxdraw, boxdraw_cmdtexture(box, tex));
     }
 }
 
-Box3 tile_model(int tile_id, Vector3 pos)
+void render_tile_at(Vector3 pos, ResourceSpec &res, TableId id,
+                    BoxdrawRenderer &boxdraw, bool if_editor)
 {
-    switch (tile_id)
-    {
-    case 0: // nothing
-        return {};
-        break;
-    case 1: // brick
-    case 3: // entity
-    case 4: // player
-    case 6: // glass
-        return box3_extrude_from_point(pos, {0.5, 0.5, 0.5});
-        break;
-    case 5: // counter
-        return box3_extrude_from_point(pos + Vector3{0, -0.10, 0},
-                                       {0.5, 0.35, 0.5});
-        break;
-    case 7: // door
-        return box3_extrude_from_point(pos, {0.5, 0.5, 0.1});
-    case 2: // tile
-        return box3_extrude_from_point(pos + Vector3{0, -0.45, 0},
-                                       {0.5, 0.05, 0.5});
-        break;
-    }
+    // FIXME(T1): Incredibly inefficient.
+    SpecTile &tile = res.tiles.get_assert(id);
+    render_model_at(pos, res, tile.model_id, boxdraw, if_editor);
 }
 
-World World::init(Texture tileset)
+bool is_tile_transparent(ResourceSpec &res, TableId id)
 {
-    return {tileset};
+    SpecTile &tile = res.tiles.get_assert(id);
+    SpecModel &model = res.models.get_assert(tile.model_id);
+    return model.if_transparent;
+}
+
+World World::init()
+{
+    return {};
 }
 
 void World::deinit()
@@ -71,49 +51,97 @@ Vector2i World::map_index_to_pos(int i, int j)
     return {i - 32, j - 32};
 }
 
-void World::render(BoxdrawRenderer &boxdraw)
+void World::render(ResourceSpec &res, BoxdrawRenderer &boxdraw)
 {
-    boxdraw_push(
-        &boxdraw,
-        boxdraw_cmdtexture(
-            box3_extrude_from_point({0, 0, 0}, {32 - 0.5, 0.5, 32 - 0.5}),
-            this->tileset.cropped({0, 32, 32, 32}).tiled({64, 64})));
-    for (int i = 63; i >= 0; i--)
+    // FIXME(T2): Currently can't use models for the grass here since the model
+    //            is different size and scale.
+    // This is to draw the grass.
+    if (this->if_grass)
+    {
+        boxdraw_push(
+            &boxdraw,
+            boxdraw_cmdtexture(
+                box3_extrude_from_point({0, 0, 0}, {32 - 0.5, 0.5, 32 - 0.5}),
+                res.tileset.cropped({0, 32, 32, 32}).tiled({64, 64})));
+    }
+
+    if (!is_editor)
+    {
+        TableId player_model = res.find_model_by_name("player");
+        render_model_at({float(camera_pos.x), 1, float(camera_pos.y)}, res,
+                        player_model, boxdraw, true);
+    }
+
+    auto it = TableIterator<WorldEntity>::init(&entities);
+    for (; it.going(); it.next())
+    {
+        WorldEntity &ent = it.table->get_assert(it.id);
+        TableId model = res.find_model_by_name(ent.model_name);
+        if (model.id == 0)
+        {
+            model = res.find_model_by_name("invalid");
+        }
+        render_model_at({float(ent.pos.x), 1, float(ent.pos.y)}, res, model,
+                        boxdraw, is_editor);
+    }
+
+    // NOTE: Render in reverse order for proper glass rendering. This is a hack
+    //       until I get per-pixel transparency working.
+    // Good old @Copypaste...
+    for (int i = 0; i < 64; i++)
     {
         for (int j = 63; j >= 0; j--)
         {
-            if (this->data[i][j] == 0 || (!is_editor && this->data[i][j] == 4))
+            if (this->ground[i][j] == 0)
             {
                 continue;
             }
 
             Vector2i pos = this->map_index_to_pos(i, j);
 
-            if (this->data[i][j] == 1 || this->data[i][j] == 6 ||
-                this->data[i][j] == 7)
-            {
-                boxdraw_push(&boxdraw,
-                             boxdraw_cmdtexture(
-                                 tile_model(this->data[i][j],
-                                            {float(pos.x), 2, float(pos.y)}),
-                                 this->tileset.cropped(
-                                     tile_texture_rect(this->data[i][j]))));
-            }
-
-            boxdraw_push(
-                &boxdraw,
-                boxdraw_cmdtexture(tile_model(this->data[i][j],
-                                              {float(pos.x), 1, float(pos.y)}),
-                                   this->tileset.cropped(
-                                       tile_texture_rect(this->data[i][j]))));
+            render_tile_at({float(pos.x), 1, float(pos.y)}, res,
+                           {(size_t)this->ground[i][j]}, boxdraw, is_editor);
         }
     }
 
-    boxdraw_push(&boxdraw,
-                 boxdraw_cmdtexture(
-                     box3_extrude_from_point(
-                         {float(camera_pos.x), 1, float(camera_pos.y)},
-                         {0.51, 0.51, 0.51}),
-                     is_editor ? this->tileset.cropped({96, 0, 32, 32})
-                               : this->tileset.cropped({96, 32, 32, 32})));
+    for (int i = 0; i < 64; i++)
+    {
+        for (int j = 63; j >= 0; j--)
+        {
+            if (this->middle[i][j] == 0 ||
+                is_tile_transparent(res, {(size_t)this->middle[i][j]}))
+            {
+                continue;
+            }
+
+            Vector2i pos = this->map_index_to_pos(i, j);
+
+            render_tile_at({float(pos.x), 1, float(pos.y)}, res,
+                           {(size_t)this->middle[i][j]}, boxdraw, is_editor);
+        }
+    }
+
+    for (int i = 0; i < 64; i++)
+    {
+        for (int j = 63; j >= 0; j--)
+        {
+            if (this->middle[i][j] == 0 ||
+                !is_tile_transparent(res, {(size_t)this->middle[i][j]}))
+            {
+                continue;
+            }
+
+            Vector2i pos = this->map_index_to_pos(i, j);
+
+            render_tile_at({float(pos.x), 1, float(pos.y)}, res,
+                           {(size_t)this->middle[i][j]}, boxdraw, is_editor);
+        }
+    }
+
+    if (is_editor)
+    {
+        TableId selector_model = res.find_model_by_name("selector");
+        render_model_at({float(camera_pos.x), 1, float(camera_pos.y)}, res,
+                        selector_model, boxdraw, is_editor);
+    }
 }
