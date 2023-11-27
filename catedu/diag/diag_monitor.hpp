@@ -16,7 +16,7 @@ struct DiagMonitorObject
     std::string value;
 };
 
-using DiagObjectsIterator = std::vector<DiagMonitorObject>&;
+using DiagObjectsIterator = std::vector<DiagMonitorObject> &;
 
 struct DiagMonitorPass
 {
@@ -27,26 +27,23 @@ struct DiagMonitorPass
     static DiagMonitorPass begin();
     void end();
 
-    void begin_section(const char* name);
+    void begin_section(const char *name);
     void end_section();
 
-    template<class T>
-    void push(const char* name, T value)
+    template <class T> void push(const char *name, T value)
     {
         objects.push_back(
-          { DiagMonitorObject::Type::Value, name, std::to_string(value) });
+            {DiagMonitorObject::Type::Value, name, std::to_string(value)});
     }
 
-    template<>
-    void push<const char*>(const char* name, const char* value)
+    void push(const char *name, const char *value)
     {
-        objects.push_back({ DiagMonitorObject::Type::Value, name, value });
+        objects.push_back({DiagMonitorObject::Type::Value, name, value});
     }
 
-    template<>
-    void push<std::string>(const char* name, std::string value)
+    void push(const char *name, std::string value)
     {
-        objects.push_back({ DiagMonitorObject::Type::Value, name, value });
+        objects.push_back({DiagMonitorObject::Type::Value, name, value});
     }
 };
 

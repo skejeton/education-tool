@@ -114,11 +114,9 @@ int GuiEditor::show(World &world, ResourceSpec &res)
     for (; it.going(); it.next())
     {
         auto el = it.table->get_assert(it.id);
-        pointing_ent = Vector2i{(int)round(world.camera_pos.x),
-                                (int)round(world.camera_pos.y)} ==
-                               vector2_to_vector2i(el.pos)
-                           ? it.id
-                           : pointing_ent;
+        auto v = Vector2i{(int)round(world.camera_pos.x),
+                          (int)round(world.camera_pos.y)};
+        pointing_ent = v == vector2_to_vector2i(el.pos) ? it.id : pointing_ent;
     }
 
     switch (tab)

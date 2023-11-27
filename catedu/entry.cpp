@@ -405,8 +405,8 @@ void Entry::input(const sapp_event *event)
             for (; it.going(); it.next())
             {
                 auto ent = it.table->get_assert(it.id);
-                if (vector2_to_vector2i(ent.pos) ==
-                    vector2_to_vector2i(target_camera_pos))
+                auto v = vector2_to_vector2i(ent.pos);
+                if (v == vector2_to_vector2i(target_camera_pos))
                 {
                     ScriptEvent sevent = {};
                     sevent.script_name = ent.interact_script;

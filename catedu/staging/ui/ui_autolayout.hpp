@@ -12,22 +12,23 @@ struct TRBL
 
     Rect apply_inflate(Rect rect)
     {
-        return { { rect.pos - Vector2{ l, t } },
-                 rect.siz + Vector2{ l + r, t + b } };
+        return {{rect.pos - Vector2{l, t}}, rect.siz + Vector2{l + r, t + b}};
     }
 
     Rect apply_deflate(Rect rect)
     {
-        return { { rect.pos + Vector2{ l, t } },
-                 rect.siz - Vector2{ l + r, t + b } };
+        return {{rect.pos + Vector2{l, t}}, rect.siz - Vector2{l + r, t + b}};
     }
 
     Rect apply_size(Rect rect)
     {
-        return { { rect.pos }, rect.siz + Vector2{ l + r, t + b } };
+        return {{rect.pos}, rect.siz + Vector2{l + r, t + b}};
     }
 
-    Vector2 apply_size(Vector2 size) { return size + Vector2{ l + r, t + b }; }
+    Vector2 apply_size(Vector2 size)
+    {
+        return size + Vector2{l + r, t + b};
+    }
 };
 
 struct AutoLayout
@@ -64,7 +65,7 @@ struct AutoLayoutElement
     TRBL border;
     TRBL padding;
     AutoLayout layout; // Layout-specific data.
-    char* note;        // Note for debugging.
+    char *note;        // Note for debugging.
     //----------------------------------------------- Calculated data.
     Rect padding_box; // Box inside padding.
     Rect base_box;    // Box inside border.
@@ -79,8 +80,8 @@ struct AutoLayoutResult
     Rect base_box;    // Box inside border.
     Rect border_box;  // Box inside margin.
     Rect margin_box;  //
-    char* note;
-    AutoLayoutResult* next;
+    char *note;
+    AutoLayoutResult *next;
 };
 
 struct AutoLayoutNodeId
@@ -105,15 +106,14 @@ struct AutoLayoutProcess
     AutoLayoutNodeId root;
     BumpAllocator notes;
 
-    static AutoLayoutProcess init(AutoLayoutNodeId& root);
+    static AutoLayoutProcess init(AutoLayoutNodeId &root);
     void deinit();
 
     AutoLayoutNodeId add_element(AutoLayoutNodeId parent,
                                  AutoLayoutElement element);
 
     // Returns the count of elements in the destination array.
-    void AutoLayoutProcess::process(BumpAllocator alloc,
-                                    AutoLayoutResult*& result);
+    void process(BumpAllocator alloc, AutoLayoutResult *&result);
 };
 
 #endif
