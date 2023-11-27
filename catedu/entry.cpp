@@ -166,7 +166,7 @@ void show_editor(Entry *entry)
 
 void save_world(Entry *entry)
 {
-    FILE *f = fopen("user/world.dat", "wb");
+    FILE *f = fopen("data/world.dat", "wb");
     assert(f);
 
     fwrite(entry->world.middle, sizeof(entry->world.middle), 1, f);
@@ -189,7 +189,7 @@ void save_world(Entry *entry)
 
 void load_world(Entry *entry)
 {
-    FILE *f = fopen("user/world.dat", "rb");
+    FILE *f = fopen("data/world.dat", "rb");
     if (!f)
     {
         return;
