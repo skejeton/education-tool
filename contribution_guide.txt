@@ -1,0 +1,45 @@
+> Description
+
+This document outlines key practices and principles to be adhered to in this project. We hope it will grow to reflect a holistic view of software engineering, emphasizing best practices, robustness, efficiency, maintainability, and a balance between security, performance and code clarity.
+
+> Basics
+
+Code Review and Documentation: All code changes must undergo rigorous peer review. Adequate documentation is required for each significant change to ensure maintainability and knowledge sharing.
+
+Performance Considerations: Always balance readability, maintainability, and performance. Premature optimization should be avoided, but be mindful of the impact of code changes on performance, especially in critical paths.
+
+Security and Data Integrity: Adhere to the latest security best practices. Protect data integrity at all costs, especially when dealing with user data and sensitive information.
+
+> Struct field design
+Avoid References in Struct Fields: Utilize references in struct fields sparingly. While they can offer efficiency benefits, they complicate initialization, memory management, and move semantics. Evaluate each use case critically, balancing performance with code clarity and safety. See also: Reference Management Guidelines (Section R2).
+
+> Effective use of references in functions
+Optimized Reference Usage: Leverage references for function parameters and return values when a null value is not a valid state. This approach simplifies syntax, reduces unnecessary pointer dereferencing, and avoids the overhead of object copying. However, when interfacing with struct fields, adapt as per Rule 1, converting references to pointers where necessary for alignment with memory management strategies.
+
+> Error handling and asserts
+Asserts vs. Error Handling: Asserts are a tool for catching programming errors and should not be used for handling user-generated errors or in-game scripting issues. The software must gracefully handle faulty inputs without crashing. Implement comprehensive error handling mechanisms to manage user errors and script faults. Ensure that asserts remain a development tool, not a crutch for inadequate error handling.
+
+> Omens
+-  the game MUST NOT crash due to a faulty input
+
+Shorthand
+1. no references in struct fields
+2. use references in functions 
+3. no asserts for user errors
+
+Explanation
+1. it makes any kind of initialization hell, makes move semantics and other
+   memory operations much more difficult than it already is. However, check
+   (R2).
+
+2. Leverage references for function parameters and return values when a null value is not a valid state. This approach simplifies syntax, reduces unnecessary pointer dereferencing, and avoids the overhead of object copying. However, when interfacing with struct fields, adapt as per Rule 1, converting references to pointers where necessary for alignment with memory management strategies.
+
+2. DO use references for function parameters and return values when null is not
+   needed. This removes the need for ugly `->` syntax. If you need to store it
+   to follow (R1) take the pointer of it. If you want to load from struct,
+   dereference it, it will not do any copy.
+
+3. Asserts are only for errors made by
+   programmers of the C++ codebase, C++ asserts must not be used for in game
+   scripting 
+
