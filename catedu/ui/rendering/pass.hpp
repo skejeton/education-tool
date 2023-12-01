@@ -10,9 +10,9 @@
 struct UiRenderingPass
 {
     UiTransformer transformer;
-    UiRenderingCore* core;
+    UiRenderingCore *core;
 
-    static UiRenderingPass begin(UiRenderingCore* core);
+    static UiRenderingPass begin(UiRenderingCore *core);
     void end();
 
     void push_transform(UiTransform transform);

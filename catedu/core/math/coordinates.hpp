@@ -22,25 +22,21 @@ struct Polar3
 /**
  * @brief Converts a polar coordinate into a cartesian coordinate.
  */
-Vector2
-polar2_into_cartesian(Polar2 coord);
+Vector2 polar2_into_cartesian(Polar2 coord);
 
 /**
  * @brief Converts a cartesian coordinate into a polar coordinate.
  */
-Polar2
-cartesian_into_polar2(Vector2 coord);
+Polar2 cartesian_into_polar2(Vector2 coord);
 
 /**
  * @brief Converts a polar coordinate into a cartesian coordinate.
  */
-Vector3
-polar3_into_cartesian(Polar3 coord);
+Vector3 polar3_into_cartesian(Polar3 coord);
 
 /**
  * @brief Converts a cartesian coordinate into a polar coordinate.
  */
-Polar3
-cartesian_into_polar3(Vector3 coord);
+Polar3 cartesian_into_polar3(Vector3 coord);
 
 #endif

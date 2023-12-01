@@ -2,7 +2,6 @@
 #define HPP_CATEDU_STAGING_WORLD_WORLD_DEFINED
 
 #include "catedu/boxdraw.hpp"
-#include "catedu/staging/texture.hpp"
 #include "resource_spec.hpp"
 
 struct WorldEntity

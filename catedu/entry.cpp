@@ -1,14 +1,12 @@
 #include "entry.hpp"
 #include "boxdraw.hpp"
-#include "catedu/core/math/point_intersect.hpp"
+#include "camera.hpp"
 #include "catedu/sys/sg_tricks.hpp"
-#include "catedu/ui/rendering/make_brush.hpp"
-#include "catedu/ui/resources/load_image.hpp"
 #include "enet/enet.h"
 #include "math.hpp"
 #include "resources/resources.hpp"
 #include <cstdlib>
-#include <filesystem>
+#include "console.hpp"
 
 void show_menu_animation(Entry *entry)
 {
@@ -36,13 +34,13 @@ void show_menu_animation(Entry *entry)
         }
     }
 
-    char *s = "### ###\n"
-              "#     #\n"
-              "#     #\n"
-              "#     #\n"
-              "#     #\n"
-              "#     #\n"
-              "#######\n";
+    const char *s = "### ###\n"
+                    "#     #\n"
+                    "#     #\n"
+                    "#     #\n"
+                    "#     #\n"
+                    "#     #\n"
+                    "#######\n";
 
     {
         int x = 0, y = 0;
@@ -274,7 +272,6 @@ void Entry::frame(void)
                 this->script_data.dialog = {};
                 this->script_data.backtrack = false;
                 this->script_data.target_pos = target_camera_pos;
-                printf("script: %s\n", script);
                 run_script(this->script_data, sevent);
                 if (this->script_data.activate_dialog)
                 {
@@ -370,14 +367,6 @@ void Entry::input(const sapp_event *event)
         {
             this->zoomout = !this->zoomout;
         }
-        if (event->key_code == SAPP_KEYCODE_X)
-        {
-            this->game_gui.show_dialog(
-                {"Hello",
-                 "World",
-                 "Bogos binted",
-                 {{"OK", "ok"}, {"Cancel", "cancel"}, {"asdf", nullptr}}});
-        }
 
         if (ui_mode == 1 && event->key_code == SAPP_KEYCODE_SPACE)
         {
@@ -420,7 +409,6 @@ void Entry::input(const sapp_event *event)
                     this->script_data.activate_dialog = false;
                     this->script_data.dialog = {};
                     this->script_data.backtrack = false;
-                    printf("script: %s\n", sevent.script_name);
                     run_script(this->script_data, sevent);
                     if (this->script_data.activate_dialog)
                     {

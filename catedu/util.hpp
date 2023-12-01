@@ -6,12 +6,9 @@
 #define H_CATEDU_UTIL
 
 #include <assert.h>
-#include <cstdlib>
-#include <cstring>
 #include <memory>
 #include <string>
 #include <vector>
-
 
 #include "math.hpp"
 

@@ -5,8 +5,6 @@
 #include "core.hpp"
 #include "pass.hpp"
 #include "stb/stb_truetype.h"
-#include <unordered_map>
-#include <vector>
 
 struct UiFontDef
 {

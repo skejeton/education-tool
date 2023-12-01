@@ -1,8 +1,7 @@
 #include "patch_applier.hpp"
 #include <assert.h>
 
-void
-PatchApplier::value(const char* section, Buffer data)
+void PatchApplier::value(const char *section, Buffer data)
 {
     /*
     Buffer buf = this->explorer.get_section(section);
@@ -13,8 +12,7 @@ PatchApplier::value(const char* section, Buffer data)
     */
 }
 
-void
-PatchApplier::string(const char* section, char** value)
+void PatchApplier::string(const char *section, char **value)
 {
     /*
     Buffer buf = this->explorer.get_section(section);

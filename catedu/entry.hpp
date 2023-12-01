@@ -6,13 +6,9 @@
 #define H_CATEDU_ENTRY
 
 #include "boxdraw.hpp"
-#include "camera.hpp"
-#include "camera_input.hpp"
-#include "console.hpp"
 #include "gui/editor/editor.hpp"
 #include "gui/game/game.hpp"
 #include "gui/main_menu/main_menu.hpp"
-#include "input.hpp"
 #include "math.hpp"
 #include "scripts.hpp"
 #include "sokol/sokol_app.h"
@@ -21,10 +17,6 @@
 #include "sokol/sokol_log.h"
 #include "staging/world/resource_spec.hpp"
 #include "staging/world/world.hpp"
-#include "ui/rendering/font.hpp"
-#include "ui/rendering/pass.hpp"
-#include <memory>
-#include <stdio.h>
 
 struct Entry
 {

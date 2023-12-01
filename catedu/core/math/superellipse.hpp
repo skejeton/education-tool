@@ -12,8 +12,7 @@
  * @param theta The angle of the point on the superellipse.
  * @return The point on the superellipse.
  */
-Polar2
-quintic_superellipse_generate(float n, float a, float b, float theta);
+Polar2 superellipse_generate(float n, float a, float b, float theta);
 
 /**
  * @brief Checks if a point is inside a quintic superellipse.
@@ -24,7 +23,6 @@ quintic_superellipse_generate(float n, float a, float b, float theta);
  * @param point The point to check.
  * @return Whether the point is inside the superellipse.
  */
-bool
-quintic_superellipse_intersect_point(float n, float a, float b, Vector2 point);
+bool superellipse_intersect_point(float n, float a, float b, Vector2 point);
 
 #endif

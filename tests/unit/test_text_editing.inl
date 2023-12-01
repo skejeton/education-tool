@@ -48,7 +48,8 @@ TEST(SingleLineTextEditorTest, BasicTest)
     CHECK_EQ(editor.cursor.column, 31);
 
     // 11. Removing everything.
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 100; i++)
+    {
         editor.erase_back();
     }
     CHECK_STREQ(buffer, "");

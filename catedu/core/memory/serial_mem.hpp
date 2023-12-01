@@ -64,10 +64,9 @@ struct SerialMem
      * @return Amount of bytes couldn't fit.
      * @warning SAFETY: This function doesn't convert to a uniform endianness.
      */
-    template<class T>
-    [[nodiscard]] size_t write_value(T value)
+    template <class T> [[nodiscard]] size_t write_value(T value)
     {
-        return write_buffer({ sizeof(value), &value });
+        return write_buffer({sizeof(value), &value});
     }
 
     /**
@@ -75,14 +74,13 @@ struct SerialMem
      * @return Amount of bytes couldn't read.
      * @warning SAFETY: This function doesn't convert to a uniform endianness.
      */
-    template<class T>
-    [[nodiscard]] size_t read_value(T* value)
+    template <class T> [[nodiscard]] size_t read_value(T *value)
     {
-        return read_buffer({ sizeof(*value), value });
+        return read_buffer({sizeof(*value), value});
     }
 
     /// @return Gives pointer to the current position in the buffer
-    void* pointer();
+    void *pointer();
 };
 
 #endif

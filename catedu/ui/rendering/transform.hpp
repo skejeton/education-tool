@@ -25,11 +25,11 @@ struct UiTransform
 
 struct UiTransformer
 {
-    UiRenderingCore* core;
+    UiRenderingCore *core;
     std::vector<UiTransform> transforms;
     Vector2 screen_size;
 
-    static UiTransformer init(UiRenderingCore* core, Vector2 screen_size);
+    static UiTransformer init(UiRenderingCore *core, Vector2 screen_size);
     void push(UiTransform transform);
     void pop();
 

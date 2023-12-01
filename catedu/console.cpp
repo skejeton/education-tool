@@ -3,8 +3,7 @@
 #include <stdio.h>
 #include <windows.h>
 
-static void
-last_error_fatal()
+static void last_error_fatal()
 {
     LPSTR message = nullptr;
 
@@ -17,23 +16,24 @@ last_error_fatal()
 
     DWORD language = MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT);
 
-    DWORD size = FormatMessageA(
-      format_flags, NULL, last_error, language, (LPSTR)&message, 0, NULL);
+    DWORD size = FormatMessageA(format_flags, NULL, last_error, language,
+                                (LPSTR)&message, 0, NULL);
 
     FatalAppExitA(0, message);
 
     //   No need to free message as the app already exited.
 }
 
-void
-console_create_or_bind_existing()
+void console_create_or_bind_existing()
 {
-    if (GetConsoleWindow() != NULL) {
+    if (GetConsoleWindow() != NULL)
+    {
         // Already has console
         return;
     }
 
-    if (!AllocConsole()) {
+    if (!AllocConsole())
+    {
         last_error_fatal();
     }
 
@@ -42,8 +42,7 @@ console_create_or_bind_existing()
     freopen("CONOUT$", "w", stderr);
 }
 #else
-void
-console_create_or_bind_existing()
+void console_create_or_bind_existing()
 {
     // Mac and Linux will make use of the default console
 }

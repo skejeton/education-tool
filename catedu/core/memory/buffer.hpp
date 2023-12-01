@@ -6,7 +6,7 @@
 struct Buffer
 {
     size_t size;
-    void* data;
+    void *data;
 };
 
 #endif

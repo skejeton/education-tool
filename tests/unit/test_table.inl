@@ -29,5 +29,5 @@ TEST(Table)
 
     CHECK_EQ(test_table.get(item3), nullptr);
 
-    CHECK_EQ(test_table.get({ 2, 1 }), nullptr);
+    CHECK_EQ(test_table.get({2, 1}), nullptr);
 }

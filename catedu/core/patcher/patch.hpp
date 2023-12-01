@@ -13,7 +13,7 @@ struct Patch
     /// @brief Patch buffer size.
     size_t size;
     /// @brief Patch buffer data.
-    void* data;
+    void *data;
 };
 
 struct PatchSectionData
@@ -33,9 +33,8 @@ struct PatchSection
         Data,
         Scope
     } type;
-    char* name;
-    union
-    {
+    char *name;
+    union {
         PatchSectionData data;
         PatchSectionScope scope;
     };

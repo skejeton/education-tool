@@ -2,16 +2,16 @@
 #include "catedu/core/memory/serial_mem_ext.hpp"
 #include <assert.h>
 
-static PatchSectionData
-parse_data_section(SerialMem* serial, PatchExplorer* explorer)
+static PatchSectionData parse_data_section(SerialMem *serial,
+                                           PatchExplorer *explorer)
 {
     PatchSectionData data;
     // serial->read_value(&data.buffer);
     return data;
 }
 
-static PatchSectionScope
-parse_scope_section(SerialMem* serial, PatchExplorer* explorer)
+static PatchSectionScope parse_scope_section(SerialMem *serial,
+                                             PatchExplorer *explorer)
 {
     PatchSectionScope scope;
     // TODO: Check overflow
@@ -19,8 +19,7 @@ parse_scope_section(SerialMem* serial, PatchExplorer* explorer)
     return scope;
 }
 
-static PatchSection
-parse_section(SerialMem* serial, PatchExplorer* explorer)
+static PatchSection parse_section(SerialMem *serial, PatchExplorer *explorer)
 {
     namespace ext = serial_mem_ext;
 
@@ -30,28 +29,27 @@ parse_section(SerialMem* serial, PatchExplorer* explorer)
     assert(serial->read_value(&section.type) == 0);
     assert(ext::read_string(serial, &section.name, &section_name_length) == 0);
 
-    switch (section.type) {
-        case PatchSection::Type::Data:
-            parse_data_section(serial, explorer);
-        case PatchSection::Type::Scope:
-            parse_scope_section(serial, explorer);
-        default:
-            assert(false);
+    switch (section.type)
+    {
+    case PatchSection::Type::Data:
+        parse_data_section(serial, explorer);
+    case PatchSection::Type::Scope:
+        parse_scope_section(serial, explorer);
     }
+
+    return section;
 }
 
-PatchExplorer
-PatchExplorer::from_patch(Patch* patch)
+PatchExplorer PatchExplorer::from_patch(Patch *patch)
 {
-    return { patch };
+    return {patch};
 }
 
-PatchSection
-PatchExplorer::get_section(const char* section)
+PatchSection PatchExplorer::get_section(const char *section)
 {
 
     auto serial =
-      SerialMem::from_buffer({ this->patch->size, this->patch->data });
+        SerialMem::from_buffer({this->patch->size, this->patch->data});
     /*
 
 

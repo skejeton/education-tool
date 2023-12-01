@@ -2,7 +2,6 @@
 #define HPP_CATEDU_RENDERING_MESH_GENERATOR
 
 #include <vector>
-#include <assert.h>
 #include "render_buffer.hpp"
 #include "catedu/math.hpp"
 

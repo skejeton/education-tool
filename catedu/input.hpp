@@ -24,7 +24,7 @@ struct Input
 
     Input init();
     void update(); // called every frame
-    void pass_event(const sapp_event* event);
+    void pass_event(const sapp_event *event);
 };
 
 #endif

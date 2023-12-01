@@ -1,32 +1,27 @@
 #include "diag_monitor.hpp"
 
-DiagObjectsIterator
-DiagMonitorPass::iterate()
+DiagObjectsIterator DiagMonitorPass::iterate()
 {
     return objects;
 }
 
-DiagMonitorPass
-DiagMonitorPass::begin()
+DiagMonitorPass DiagMonitorPass::begin()
 {
     return DiagMonitorPass{};
 }
 
-void
-DiagMonitorPass::end()
+void DiagMonitorPass::end()
 {
 }
 
-void
-DiagMonitorPass::begin_section(const char* name)
+void DiagMonitorPass::begin_section(const char *name)
 {
     objects.push_back(
-      DiagMonitorObject{ DiagMonitorObject::Type::SectionBegin, name, "" });
+        DiagMonitorObject{DiagMonitorObject::Type::SectionBegin, name, ""});
 }
 
-void
-DiagMonitorPass::end_section()
+void DiagMonitorPass::end_section()
 {
     objects.push_back(
-      DiagMonitorObject{ DiagMonitorObject::Type::SectionEnd, "", "" });
+        DiagMonitorObject{DiagMonitorObject::Type::SectionEnd, "", ""});
 }

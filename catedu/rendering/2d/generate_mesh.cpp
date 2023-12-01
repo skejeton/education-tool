@@ -2,7 +2,7 @@
 #include "generate_mesh.hpp"
 #include "../mesh_generator.hpp"
 #include "catedu/core/math/interpolation.hpp"
-#include "catedu/core/math/quintic_superellipse.hpp"
+#include "catedu/core/math/superellipse.hpp"
 
 #define PUSH_2D_V values, 2
 
@@ -43,7 +43,7 @@ RenderGeo rendering_2d_generate_squircle(
 )
 {
     auto generator = [n, a, b](float theta){
-        Polar2 polar = quintic_superellipse_generate(n, a, b, theta);
+        Polar2 polar = superellipse_generate(n, a, b, theta);
         return polar2_into_cartesian(polar);
     };
 

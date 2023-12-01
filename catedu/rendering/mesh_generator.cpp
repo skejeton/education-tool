@@ -1,5 +1,6 @@
 #include "mesh_generator.hpp"
 #include "catedu/core/memory/operations.hpp"
+#include <assert.h>
 
 RenderMeshGenerator RenderMeshGenerator::init(size_t vertex_stride)
 {

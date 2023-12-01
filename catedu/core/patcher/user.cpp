@@ -18,6 +18,7 @@ PatchingMode::begin(Mode mode, Patch* patch)
         case Debug:
             this->debugger = { patch };
             break;
+        default: assert(false && "Invalid patching mode");
     }
 }
 
@@ -37,6 +38,7 @@ PatchingMode::pass_string(const char* name, char** string)
         case Debug:
             this->debugger.section(name);
             break;
+        default: assert(false && "Invalid patching mode");
     }
 }
 
@@ -56,6 +58,7 @@ PatchingMode::pass_value(const char* name, Buffer buffer)
         case Debug:
             this->debugger.section(name);
             break;
+        default: assert(false && "Invalid patching mode");
     }
 }
 

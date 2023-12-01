@@ -66,12 +66,11 @@ struct UiRenderingCore
 
     UiImageId alloc_image(UiImage image);
     void dealloc_image(UiImageId id);
-    UiImage* get_image(UiImageId id);
+    UiImage *get_image(UiImageId id);
 
     void render_object(UiBrush brush);
 };
 
-UiImage
-ui_image_make_from_data(Buffer data, Vector2i size);
+UiImage ui_image_make_from_data(Buffer data, Vector2i size);
 
 #endif // HPP_CATEDU_UI_RENDERING_CORE

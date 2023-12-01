@@ -6,18 +6,15 @@
 #include <map>
 #include <stddef.h>
 #include <string>
-#include <variant>
 #include <vector>
 
-template<typename T>
-struct IdRetainerNode
+template <typename T> struct IdRetainerNode
 {
     size_t death;
-    T* value;
+    T *value;
 };
 
-template<typename T>
-struct IdRetainer
+template <typename T> struct IdRetainer
 {
     size_t cycle_number;
     std::vector<std::string> current_path;
@@ -29,41 +26,34 @@ struct IdRetainer
     void begin_cycle();
     void end_cycle();
 
-    T* value();
+    T *value();
 
     /// @brief Creates a branch with the specified ID and value.
     /// @param id The ID of the branch.
     /// @param value The value of the branch.
-    void push(const char* id, T value = {});
+    void push(const char *id, T value = {});
     void pop(int n = 1);
 };
 
-template<typename T>
-inline IdRetainer<T>
-IdRetainer<T>::init()
+template <typename T> inline IdRetainer<T> IdRetainer<T>::init()
 {
-    return IdRetainer{ 0, {}, {} };
+    return IdRetainer{0, {}, {}};
 }
 
-template<typename T>
-inline void
-IdRetainer<T>::deinit()
+template <typename T> inline void IdRetainer<T>::deinit()
 {
-    for (auto it = this->values.begin(); it != this->values.end();) {
+    for (auto it = this->values.begin(); it != this->values.end();)
+    {
         free(it->second.value);
     }
 }
 
-template<typename T>
-inline void
-IdRetainer<T>::begin_cycle()
+template <typename T> inline void IdRetainer<T>::begin_cycle()
 {
     this->current_path.clear();
 }
 
-template<typename T>
-inline void
-IdRetainer<T>::end_cycle()
+template <typename T> inline void IdRetainer<T>::end_cycle()
 {
     // 1. Make sure that we haven't pre-emptively ending without finishing the
     // tree.
@@ -71,11 +61,15 @@ IdRetainer<T>::end_cycle()
            "IdRetainer: Invalid end of cycle, not all values were popped");
 
     // 2. Remove all dead nodes.
-    for (auto it = this->values.begin(); it != this->values.end();) {
-        if (it->second.death <= this->cycle_number) {
+    for (auto it = this->values.begin(); it != this->values.end();)
+    {
+        if (it->second.death <= this->cycle_number)
+        {
             free(it->second.value);
             it = this->values.erase(it);
-        } else {
+        }
+        else
+        {
             ++it;
         }
     }
@@ -84,9 +78,7 @@ IdRetainer<T>::end_cycle()
     this->cycle_number++;
 }
 
-template<typename T>
-inline T*
-IdRetainer<T>::value()
+template <typename T> inline T *IdRetainer<T>::value()
 {
     std::string path = join_vector_into_string(this->current_path, "/");
     auto it = this->values.find(path);
@@ -94,29 +86,29 @@ IdRetainer<T>::value()
     return it->second.value;
 }
 
-template<typename T>
-inline void
-IdRetainer<T>::push(const char* s, T value)
+template <typename T> inline void IdRetainer<T>::push(const char *s, T value)
 {
     this->current_path.push_back(s);
     std::string path = join_vector_into_string(this->current_path, "/");
-    if (this->values.count(path) == 0) {
-        T* v_ptr = (T*)malloc(sizeof(T));
+    if (this->values.count(path) == 0)
+    {
+        T *v_ptr = (T *)malloc(sizeof(T));
         *v_ptr = value;
-        this->values[path] = { this->cycle_number + 1, v_ptr };
-    } else {
+        this->values[path] = {this->cycle_number + 1, v_ptr};
+    }
+    else
+    {
         this->values[path].death = this->cycle_number + 1;
     }
 }
 
-template<typename T>
-inline void
-IdRetainer<T>::pop(int n)
+template <typename T> inline void IdRetainer<T>::pop(int n)
 {
     assert(this->current_path.size() >= n &&
            "IdRetainer: Trying to pop more values than there are in the tree");
 
-    for (size_t i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++)
+    {
         this->current_path.pop_back();
     }
 }

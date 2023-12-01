@@ -10,10 +10,12 @@ UiImageId ui_resources_load_image(UiRenderingCore *core, const char *path)
     assert(data);
 
     // Create image
-    return ui_resources_load_image_from_memory(core, {(size_t)(width*height*4), data}, {width, height});
+    return ui_resources_load_image_from_memory(
+        core, {(size_t)(width * height * 4), data}, {width, height});
 }
 
-UiImageId ui_resources_load_image_from_memory(UiRenderingCore *core, Buffer buffer, Vector2i size)
+UiImageId ui_resources_load_image_from_memory(UiRenderingCore *core,
+                                              Buffer buffer, Vector2i size)
 {
     return core->alloc_image(ui_image_make_from_data(buffer, size));
 }
