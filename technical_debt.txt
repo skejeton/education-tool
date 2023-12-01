@@ -1,0 +1,27 @@
+#------------------------------------------------------------------------------#
+# Next ID: 5                                                                   #
+#------------------------------------------------------------------------------#
+
+> Description
+This document contains the technical debt and compromises made during the development process.
+
+It's a crucial part of the software development process, helping the team keep track of areas where shortcuts or less-than-ideal solutions were implemented. It ensures that these compromises are documented and can be revisited for future improvements.
+
+> Contribution guidelines
+Please write down technical points. >? In case of fixing debt, please mention #debt-id as "#debt-42 removed". In case of adding points, please mention is as well. Thanks ahead. ?<
+
+> Entries
+
+1. Inefficient title and model id fetching: Fetching the tile ID and then the model ID is extremely inefficent for every
+   tile in the world. (What are the implications? How can we fix this?)
+
+2. Lack of string indexing for models
+
+3. Clumsy iterators: The proposed solution is to create an iter overload function for all iterable types as a shorthand, which might be implemented post-November demo if no better solution arises.
+
+4. Continuous iteration without inserting hacks before the loop. Example: we
+   have several tiles, one of them is "nothing", we also need to show that as a
+   button in the editor, however obviously that's implied to be the NULL tile.
+   Maybe the NULL tile should not be default, and only signify invalid IDs?
+
+

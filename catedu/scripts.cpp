@@ -399,7 +399,7 @@ char *run_script(ScriptData &scr, ScriptEvent event)
     {
         scr.activate_dialog = true;
         scr.dialog = Dialog{"Lexi",
-                            "(I should pay more attention on what I’m doing…)",
+                            "(I will pay more attention to what I’m doing…)",
                             "",
                             {{"Close", nullptr}}};
     }
