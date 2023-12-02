@@ -18,6 +18,7 @@ static void last_error_fatal()
 
     DWORD size = FormatMessageA(format_flags, NULL, last_error, language,
                                 (LPSTR)&message, 0, NULL);
+    (void)size;
 
     FatalAppExitA(0, message);
 

@@ -421,11 +421,6 @@ char *run_script(ScriptData &scr, ScriptEvent event)
                             {{"Close", nullptr}}};
         scr.activate_dialog = true;
     }
-    SCRIPT("broke", any)
-    {
-        scr.dialog = Dialog{"Lexi", "(Maybe later)", "", {{"Close", nullptr}}};
-        scr.activate_dialog = true;
-    }
     SCRIPT("1900quota", walked_on)
     {
         if (scr.reals < 1900)

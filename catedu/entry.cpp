@@ -2,11 +2,56 @@
 #include "boxdraw.hpp"
 #include "camera.hpp"
 #include "catedu/sys/sg_tricks.hpp"
+#include "console.hpp"
 #include "enet/enet.h"
 #include "math.hpp"
 #include "resources/resources.hpp"
 #include <cstdlib>
-#include "console.hpp"
+
+void render_layer(const char *s, Vector3 pos, BoxdrawRenderer &boxdraw,
+                  Texture tileset)
+{
+    int x = 0, y = 0;
+    for (int i = 0; s[i]; i++)
+    {
+        if (s[i] == '\n')
+        {
+            x = 0;
+            y++;
+            continue;
+        }
+        else if (s[i] == 'G')
+        {
+            boxdraw_push(&boxdraw, boxdraw_cmdtexture(
+                                       box3_extrude_from_point(
+                                           Vector3{float(x), 0, float(y)} + pos,
+                                           {0.5f, 0.5f, 0.5f}),
+                                       tileset.cropped({0, 32, 32, 32})));
+            x++;
+        }
+        else if (s[i] == '#')
+        {
+            boxdraw_push(&boxdraw, boxdraw_cmdtexture(
+                                       box3_extrude_from_point(
+                                           Vector3{float(x), 0, float(y)} + pos,
+                                           {0.5f, 0.5f, 0.5f}),
+                                       tileset.cropped({64, 32, 32, 32})));
+            x++;
+        }
+        else if (s[i] == '_')
+        {
+            boxdraw_push(
+                &boxdraw,
+                boxdraw_cmdtexture(box3_extrude_from_point(
+                                       Vector3{float(x), -0.45, float(y)} + pos,
+                                       {0.5f, 0.05f, 0.5f}),
+                                   tileset.cropped({32, 32, 32, 32})));
+            x++;
+        } else {
+            x++;
+        }
+    }
+}
 
 void show_menu_animation(Entry *entry)
 {
@@ -22,114 +67,40 @@ void show_menu_animation(Entry *entry)
     camera.rotate(0, -45);
     camera.rotate_around({0, 0, 0}, -time * 5, 0);
 
-    for (int i = -4; i < 5; i++)
-    {
-        for (int j = -4; j < 5; j++)
-        {
-            boxdraw_push(&entry->boxdraw_renderer,
-                         boxdraw_cmdtexture(
-                             box3_extrude_from_point({float(i), 0, float(j)},
-                                                     {0.5f, 0.5f, 0.5f}),
-                             entry->res.tileset.cropped({0, 32, 32, 32})));
-        }
-    }
-
-    const char *s = "### ###\n"
-                    "#     #\n"
-                    "#     #\n"
-                    "#     #\n"
-                    "#     #\n"
-                    "#     #\n"
-                    "#######\n";
-
-    {
-        int x = 0, y = 0;
-        for (int i = 0; s[i]; i++)
-        {
-            if (s[i] == '\n')
-            {
-                x = 0;
-                y++;
-                continue;
-            }
-            else if (s[i] == '#')
-            {
-                boxdraw_push(
-                    &entry->boxdraw_renderer,
-                    boxdraw_cmdtexture(
-                        box3_extrude_from_point({float(x - 3), 1, float(y - 3)},
-                                                {0.5f, 0.5f, 0.5f}),
-                        entry->res.tileset.cropped({64, 32, 32, 32})));
-                x++;
-            }
-            else
-            {
-                boxdraw_push(&entry->boxdraw_renderer,
-                             boxdraw_cmdtexture(
-                                 box3_extrude_from_point(
-                                     {float(x - 3), 0.55, float(y - 3)},
-                                     {0.5f, 0.05f, 0.5f}),
-                                 entry->res.tileset.cropped({32, 32, 32, 32})));
-                x++;
-            }
-        }
-    }
-
-    {
-        int x = 0, y = 0;
-        for (int i = 0; s[i]; i++)
-        {
-            if (s[i] == '\n')
-            {
-                x = 0;
-                y++;
-                continue;
-            }
-            else if (s[i] == '#')
-            {
-                boxdraw_push(
-                    &entry->boxdraw_renderer,
-                    boxdraw_cmdtexture(
-                        box3_extrude_from_point({float(x - 3), 2, float(y - 3)},
-                                                {0.5f, 0.5f, 0.5f}),
-                        entry->res.tileset.cropped({64, 32, 32, 32})));
-                x++;
-            }
-            else
-            {
-                x++;
-            }
-        }
-    }
-
-    {
-        int x = 0, y = 0;
-        for (int i = 0; s[i]; i++)
-        {
-            if (s[i] == '\n')
-            {
-                x = 0;
-                y++;
-                continue;
-            }
-            else if (s[i] == '#')
-            {
-                if ((x + y) % 2 == 0)
-                    boxdraw_push(
-                        &entry->boxdraw_renderer,
-                        boxdraw_cmdtexture(
-                            box3_extrude_from_point(
-                                {float(x - 3), 3, float(y - 3)},
-                                {0.5f, 0.5f, 0.5f}),
-                            entry->res.tileset.cropped({64, 32, 32, 32})));
-                x++;
-            }
-            else
-            {
-                x++;
-            }
-        }
-    }
+    const char *l0 = "GGGGGGGGG\n"
+                     "GGGGGGGGG\n"
+                     "GGGGGGGGG\n"
+                     "GGGGGGGGG\n"
+                     "GGGGGGGGG\n"
+                     "GGGGGGGGG\n"
+                     "GGGGGGGGG\n"
+                     "GGGGGGGGG\n"
+                     "GGGGGGGGG\n";
+    const char *l1 = "###_###\n"
+                     "#_____#\n"
+                     "#_____#\n"
+                     "#_____#\n"
+                     "#_____#\n"
+                     "#_____#\n"
+                     "#######\n";
+    const char *l2 = "### ###\n"
+                     "#     #\n"
+                     "#     #\n"
+                     "#     #\n"
+                     "#     #\n"
+                     "#     #\n"
+                     "#######\n";
+    const char *l3 = "# # # #\n"
+                     "       \n"
+                     "#     #\n"
+                     "       \n"
+                     "#     #\n"
+                     "       \n"
+                     "# # # #\n";
+    render_layer(l0, {-4, 0, -4}, entry->boxdraw_renderer, entry->res.tileset);
+    render_layer(l1, {-3, 1, -3}, entry->boxdraw_renderer, entry->res.tileset);
+    render_layer(l2, {-3, 2, -3}, entry->boxdraw_renderer, entry->res.tileset);
+    render_layer(l3, {-3, 3, -3}, entry->boxdraw_renderer, entry->res.tileset);
 
     boxdraw_flush(&entry->boxdraw_renderer, camera.vp);
 }
@@ -138,9 +109,6 @@ void show_editor(Entry *entry)
 {
     const float width = sapp_widthf();
     const float height = sapp_heightf();
-
-    static float time = 0;
-    time += sapp_frame_duration();
 
     Camera camera = Camera::init(45);
     camera.set_aspect(width / height);
