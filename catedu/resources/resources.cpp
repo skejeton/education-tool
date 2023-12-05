@@ -1,5 +1,6 @@
 #include "resources.hpp"
 
+
 ResourceSpec load_resource_spec(const char *path)
 {
     ResourceSpec result = {};

@@ -47,7 +47,9 @@ void render_layer(const char *s, Vector3 pos, BoxdrawRenderer &boxdraw,
                                        {0.5f, 0.05f, 0.5f}),
                                    tileset.cropped({32, 32, 32, 32})));
             x++;
-        } else {
+        }
+        else
+        {
             x++;
         }
     }
@@ -179,6 +181,33 @@ void load_world(Entry *entry)
     fclose(f);
 }
 
+void activate_script(Entry *entry, char *script_name, bool interacted,
+                     bool just_moved, Vector2 bactrack)
+{
+    ScriptEvent sevent = {};
+    sevent.script_name = script_name;
+    sevent.interacted = interacted;
+    sevent.walked_on = just_moved;
+    sevent.any = true;
+    if (!sevent.interacted && !sevent.walked_on)
+    {
+        return;
+    }
+    entry->script_data.activate_dialog = false;
+    entry->script_data.dialog = {};
+    entry->script_data.backtrack = false;
+    run_script(entry->script_data, sevent);
+    if (entry->script_data.activate_dialog)
+    {
+        entry->game_gui.show_dialog(entry->script_data.dialog);
+    }
+
+    if (entry->script_data.backtrack)
+    {
+        entry->target_camera_pos = bactrack;
+    }
+}
+
 void Entry::frame(void)
 {
     this->world.if_grass = this->script_data.activate_grass;
@@ -233,6 +262,7 @@ void Entry::frame(void)
                                           script_data.reals, &script);
             if (script)
             {
+                activate_script(this, script, false, false, {0, 0});
                 ScriptEvent sevent = {};
                 sevent.script_name = script;
                 sevent.any = true;
@@ -285,6 +315,8 @@ void Entry::init()
     game_gui = GuiGame::init(&ui_state);
     this->boxdraw_renderer = boxdraw_create();
 }
+
+
 
 void Entry::input(const sapp_event *event)
 {
@@ -365,28 +397,8 @@ void Entry::input(const sapp_event *event)
                 auto v = vector2_to_vector2i(ent.pos);
                 if (v == vector2_to_vector2i(target_camera_pos))
                 {
-                    ScriptEvent sevent = {};
-                    sevent.script_name = ent.interact_script;
-                    sevent.interacted = event->key_code == SAPP_KEYCODE_SPACE;
-                    sevent.walked_on = just_moved;
-                    sevent.any = true;
-                    if (!sevent.interacted && !sevent.walked_on)
-                    {
-                        break;
-                    }
-                    this->script_data.activate_dialog = false;
-                    this->script_data.dialog = {};
-                    this->script_data.backtrack = false;
-                    run_script(this->script_data, sevent);
-                    if (this->script_data.activate_dialog)
-                    {
-                        this->game_gui.show_dialog(this->script_data.dialog);
-                    }
-
-                    if (this->script_data.backtrack)
-                    {
-                        target_camera_pos = camera_prev;
-                    }
+                    activate_script(this, ent.interact_script, event->key_code == SAPP_KEYCODE_SPACE, just_moved,
+                                    camera_prev);
                 }
             }
         }
