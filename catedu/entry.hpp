@@ -29,7 +29,6 @@ struct Entry
     int ui_mode;
     BoxdrawRenderer boxdraw_renderer;
     Vector2 target_camera_pos;
-    char name[128];
     bool zoomout = false;
     ScriptData script_data;
 

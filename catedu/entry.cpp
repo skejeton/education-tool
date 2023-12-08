@@ -316,8 +316,6 @@ void Entry::init()
     this->boxdraw_renderer = boxdraw_create();
 }
 
-
-
 void Entry::input(const sapp_event *event)
 {
     if (ui_state.feed_event(event))
@@ -397,8 +395,9 @@ void Entry::input(const sapp_event *event)
                 auto v = vector2_to_vector2i(ent.pos);
                 if (v == vector2_to_vector2i(target_camera_pos))
                 {
-                    activate_script(this, ent.interact_script, event->key_code == SAPP_KEYCODE_SPACE, just_moved,
-                                    camera_prev);
+                    activate_script(this, ent.interact_script,
+                                    event->key_code == SAPP_KEYCODE_SPACE,
+                                    just_moved, camera_prev);
                 }
             }
         }
