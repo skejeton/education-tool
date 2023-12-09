@@ -6,6 +6,7 @@
 #define H_CATEDU_TABLE
 
 #include <assert.h>
+#include <iterator>
 #include <stdlib.h>
 #include <string.h>
 
@@ -170,7 +171,7 @@ template <class T> struct Table
 
     // @note Use this only when it's a programming error to have an invalid ID.
     //       This in general applies to all asserts.
-    T &get_assert(TableId id)
+    T &get_assert(TableId id) const
     {
         assert(id.id - 1 < capacity && slots[id.id - 1].taken &&
                slots[id.id - 1].generation == id.generation && "Invalid ID.");
@@ -223,5 +224,68 @@ template <class T> struct TableIterator
         return iterator;
     }
 };
+
+template <class T>
+struct CxxTableIterator : public std::iterator<std::forward_iterator_tag, T>
+{
+    TableIterator<T> iterator;
+
+    CxxTableIterator(TableIterator<T> iterator) : iterator(iterator)
+    {
+    }
+
+    CxxTableIterator begin()
+    {
+        return *this;
+    }
+
+    CxxTableIterator end()
+    {
+        // NOTE: This is a hack to make the iterator work with range-based for
+        return CxxTableIterator(TableIterator<T>{iterator.table, {0}, false});
+    }
+
+    bool operator==(const CxxTableIterator<T> &other) const
+    {
+
+        return iterator.is_going == other.iterator.is_going &&
+               (iterator.is_going ? iterator.table == other.iterator.table &&
+                                        iterator.id.id == other.iterator.id.id
+                                  : true);
+    }
+
+    bool operator!=(const CxxTableIterator<T> &other) const
+    {
+        return !(*this == other);
+    }
+
+    std::pair<TableId, T &> operator*()
+    {
+        return {iterator.id, iterator.table->get_assert(iterator.id)};
+    }
+
+    std::pair<TableId, T *> operator->()
+    {
+        return {iterator.id, iterator.table->get(iterator.id)};
+    }
+
+    CxxTableIterator &operator++()
+    {
+        iterator.next();
+        return *this;
+    }
+
+    CxxTableIterator operator++(int)
+    {
+        auto tmp = *this;
+        ++(*this);
+        return tmp;
+    }
+};
+
+template <class T> CxxTableIterator<T> iter(Table<T> &table)
+{
+    return CxxTableIterator<T>(TableIterator<T>::init(&table));
+}
 
 #endif

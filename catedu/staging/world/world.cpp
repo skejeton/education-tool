@@ -72,10 +72,8 @@ void World::render(ResourceSpec &res, BoxdrawRenderer &boxdraw)
                         player_model, boxdraw, true);
     }
 
-    auto it = TableIterator<WorldEntity>::init(&entities);
-    for (; it.going(); it.next())
+    for (auto [id, ent] : iter(entities))
     {
-        WorldEntity &ent = it.table->get_assert(it.id);
         TableId model = res.find_model_by_name(ent.model_name);
         if (model.id == 0)
         {
@@ -84,7 +82,6 @@ void World::render(ResourceSpec &res, BoxdrawRenderer &boxdraw)
         render_model_at({float(ent.pos.x), 1, float(ent.pos.y)}, res, model,
                         boxdraw, is_editor);
     }
-
     // NOTE: Render in reverse order for proper glass rendering. This is a hack
     //       until I get per-pixel transparency working.
     // Good old @Copypaste...

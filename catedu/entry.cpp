@@ -107,6 +107,42 @@ void show_menu_animation(Entry *entry)
     boxdraw_flush(&entry->boxdraw_renderer, camera.vp);
 }
 
+void show_debug(Entry *entry)
+{
+    if (entry->input_state.key_states[SAPP_KEYCODE_LEFT].held)
+    {
+        move_player(entry->world_state, {-0.05, 0});
+    }
+    if (entry->input_state.key_states[SAPP_KEYCODE_RIGHT].held)
+    {
+        move_player(entry->world_state, {0.05, 0});
+    }
+    if (entry->input_state.key_states[SAPP_KEYCODE_UP].held)
+    {
+        move_player(entry->world_state, {0, 0.05});
+    }
+    if (entry->input_state.key_states[SAPP_KEYCODE_DOWN].held)
+    {
+        move_player(entry->world_state, {0, -0.05});
+    }
+
+    const float width = sapp_widthf();
+    const float height = sapp_heightf();
+
+    Camera camera = Camera::init(45);
+    camera.set_aspect(width / height);
+    Rect player_rect = world_state_player_rect(entry->world_state);
+
+    camera.move(0 + player_rect.pos.x, 10, -3 + player_rect.pos.y);
+
+    camera.rotate(0, -75);
+
+    render_physics_world_via_boxdraw(entry->world_state.physics,
+                                     entry->boxdraw_renderer);
+
+    boxdraw_flush(&entry->boxdraw_renderer, camera.vp);
+}
+
 void show_editor(Entry *entry)
 {
     const float width = sapp_widthf();
@@ -143,12 +179,8 @@ void save_world(Entry *entry)
     size_t entity_count = entry->world.entities.count;
     fwrite(&entity_count, sizeof(size_t), 1, f);
 
-    auto it = TableIterator<WorldEntity>::init(&entry->world.entities);
-
-    for (; it.going(); it.next())
+    for (auto [_, ent] : iter(entry->world.entities))
     {
-        auto ent = it.table->get_assert(it.id);
-
         fwrite(&ent, sizeof(WorldEntity), 1, f);
     }
 
@@ -219,17 +251,18 @@ void Entry::frame(void)
         sapp_frame_duration() * 40;
     switch (ui_mode)
     {
-    case 0: // Main Menu
+    case 0: // Debug
+        show_debug(this);
+        break;
+    case 1: // Main Menu
         show_menu_animation(this);
         ui_mode = this->main_menu.show();
-        if (ui_mode == 2)
+        if (ui_mode == 3)
         {
             this->script_data = {};
             this->script_data.currency = 900000;
-            auto it = TableIterator<WorldEntity>::init(&this->world.entities);
-            for (; it.going(); it.next())
+            for (auto [_, ent] : iter(this->world.entities))
             {
-                auto ent = it.table->get_assert(it.id);
                 if (strcmp(ent.id, "player") == 0)
                 {
                     target_camera_pos = ent.pos;
@@ -237,7 +270,7 @@ void Entry::frame(void)
             }
         }
         break;
-    case 1: // Editor
+    case 2: // Editor
         this->world.is_editor = true;
         show_editor(this);
         ui_mode = this->editor.show(this->world, this->res);
@@ -248,12 +281,12 @@ void Entry::frame(void)
 
             this->world.entities.allocate(ent);
         }
-        if (ui_mode == 0)
+        if (ui_mode == 1)
         {
             save_world(this);
         }
         break;
-    case 2: // Gameplay
+    case 3: // Gameplay
         this->world.is_editor = false;
         show_editor(this);
         {
@@ -281,6 +314,7 @@ void Entry::frame(void)
         break;
     }
 
+    this->input_state.update();
     sg_commit();
 }
 
@@ -306,6 +340,25 @@ void Entry::init()
     sg_tricks_init();
     res = load_resource_spec("./assets/tileset.png");
 
+    WorldPrototype world_prototype = {"XXXXXXXXXXXXXXXX"
+                                      "X      X       X"
+                                      "X      X       X"
+                                      "X      X       X"
+                                      "X      X       X"
+                                      "X    XXXXX     X"
+                                      "X    X   X     X"
+                                      "X    X P       X"
+                                      "XX  XX         X"
+                                      "X          D   X"
+                                      "X              X"
+                                      "X    D   D     X"
+                                      "X              X"
+                                      "X              X"
+                                      "X              X"
+                                      "X              "};
+
+    world_state = world_prototype_to_world_state(world_prototype);
+
     enet_initialize();
 
     load_world(this);
@@ -323,11 +376,14 @@ void Entry::input(const sapp_event *event)
         return;
     }
 
+    this->input_state.pass_event(event);
+
     if (event->type == SAPP_EVENTTYPE_KEY_DOWN)
     {
         Vector2 camera_prev = target_camera_pos;
         bool just_moved = false;
-        if (ui_mode == 1 || (ui_mode == 2 && !this->game_gui.dialog.open))
+        if (ui_mode == 0 || ui_mode == 2 ||
+            (ui_mode == 3 && !this->game_gui.dialog.open))
         {
             if (event->key_code == SAPP_KEYCODE_LEFT)
             {
@@ -356,7 +412,7 @@ void Entry::input(const sapp_event *event)
 
         // FIXME: Quick hack to check if the tile is there, otherwise get_assert
         //        will crash the program. Should be a better way to do this.
-        if (ui_mode == 2 && res.tiles.get({t}) &&
+        if (ui_mode == 3 && res.tiles.get({t}) &&
             res.tiles.get_assert({t}).if_obstacle)
         {
             target_camera_pos = camera_prev;
@@ -366,7 +422,7 @@ void Entry::input(const sapp_event *event)
             this->zoomout = !this->zoomout;
         }
 
-        if (ui_mode == 1 && event->key_code == SAPP_KEYCODE_SPACE)
+        if (ui_mode == 2 && event->key_code == SAPP_KEYCODE_SPACE)
         {
             // FIXME: Same problem with get_assert as above.
             SpecTile *tile = res.tiles.get(editor.selection);
@@ -386,12 +442,10 @@ void Entry::input(const sapp_event *event)
 
             return;
         }
-        if (ui_mode == 2)
+        if (ui_mode == 3)
         {
-            auto it = TableIterator<WorldEntity>::init(&this->world.entities);
-            for (; it.going(); it.next())
+            for (auto [_, ent] : iter(this->world.entities))
             {
-                auto ent = it.table->get_assert(it.id);
                 auto v = vector2_to_vector2i(ent.pos);
                 if (v == vector2_to_vector2i(target_camera_pos))
                 {

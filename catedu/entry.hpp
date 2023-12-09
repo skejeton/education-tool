@@ -9,7 +9,9 @@
 #include "gui/editor/editor.hpp"
 #include "gui/game/game.hpp"
 #include "gui/main_menu/main_menu.hpp"
+#include "input.hpp"
 #include "math.hpp"
+#include "physics.hpp"
 #include "scripts.hpp"
 #include "sokol/sokol_app.h"
 #include "sokol/sokol_gfx.h"
@@ -20,6 +22,7 @@
 
 struct Entry
 {
+    WorldState world_state;
     UiState ui_state;
     GuiMainMenu main_menu;
     GuiEditor editor;
@@ -31,6 +34,7 @@ struct Entry
     Vector2 target_camera_pos;
     bool zoomout = false;
     ScriptData script_data;
+    Input input_state;
 
     void init();
     void input(const sapp_event *event);

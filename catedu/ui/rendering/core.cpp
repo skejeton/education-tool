@@ -109,10 +109,9 @@ void UiRenderingCore::deinit()
     sg_destroy_pipeline(this->pipeline);
     sg_destroy_shader(this->shader);
 
-    for (auto it = TableIterator<UiImage>::init(&this->images); it.going();
-         it.next())
+    for (auto [id, _] : iter(this->images))
     {
-        this->dealloc_image(it.id);
+        this->dealloc_image(id);
     }
 }
 

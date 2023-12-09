@@ -18,13 +18,6 @@ void GuiEditor::deinit()
 void GuiEditor::show_tab_tiles(UiUser &user, ResourceSpec &res)
 {
     user.begin_generic(make_auto({AutoLayout::Column}), {}, {});
-    // TODO(T3): We should make it simpler, just `for (auto &tile :
-    //           iter(res.tiles))`, in this case `iter` would be an overloaded
-    //           function for different types want to iterate.
-    //
-    //           The reason for this is that iterators pollute the structure,
-    //           having an `iter` returns a specizlied iterator type.
-    auto it = TableIterator<SpecTile>::init(&res.tiles);
 
     // TODO(T4): Gotta be a better way to iterate over empty tile ids instead of
     //           adding a button before the loop?
@@ -35,14 +28,13 @@ void GuiEditor::show_tab_tiles(UiUser &user, ResourceSpec &res)
             ? TableId{0}
             : selection;
 
-    for (; it.going(); it.next())
+    for (auto [id, tile] : iter(res.tiles))
     {
-        auto el = it.table->get_assert(it.id);
         selection =
-            user.button(stdstrfmt("%c%s%c", it.id == selection ? '[' : ' ',
-                                  el.name, it.id == selection ? ']' : ' ')
+            user.button(stdstrfmt("%c%s%c", id == selection ? '[' : ' ',
+                                  tile.name, id == selection ? ']' : ' ')
                             .c_str())
-                ? it.id
+                ? id
                 : selection;
     }
     user.end_generic();
@@ -98,7 +90,7 @@ bool GuiEditor::show_tab_entity(UiUser &user, WorldEntity *ent,
 int GuiEditor::show(World &world, ResourceSpec &res)
 {
     this->create_entity = false;
-    int ui_mode = 1;
+    int ui_mode = 2;
     UiUser user = UiUser::init(*this->ui_state);
     user.begin_pass();
     user.begin_generic(make_auto({AutoLayout::Column}), {}, {});
@@ -106,17 +98,15 @@ int GuiEditor::show(World &world, ResourceSpec &res)
     user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
     tab = user.button(tab == Tiles ? ">Tiles" : "Tiles") ? Tiles : tab;
     tab = user.button(tab == Entity ? ">Entity" : "Entity") ? Entity : tab;
-    ui_mode = user.button("Exit₷") ? 0 : ui_mode;
+    ui_mode = user.button("Exit₷") ? 1 : ui_mode;
     user.end_generic();
 
-    auto it = TableIterator<WorldEntity>::init(&world.entities);
     TableId pointing_ent = {0};
-    for (; it.going(); it.next())
+    for (auto [id, ent] : iter(world.entities))
     {
-        auto el = it.table->get_assert(it.id);
         auto v = Vector2i{(int)round(world.camera_pos.x),
                           (int)round(world.camera_pos.y)};
-        pointing_ent = v == vector2_to_vector2i(el.pos) ? it.id : pointing_ent;
+        pointing_ent = v == vector2_to_vector2i(ent.pos) ? id : pointing_ent;
     }
 
     switch (tab)

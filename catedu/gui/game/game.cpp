@@ -24,7 +24,7 @@ void GuiGame::show_dialog(Dialog dialog)
 int GuiGame::show(int currency, int reals, char **script)
 {
     *script = nullptr;
-    int ui_mode = 2;
+    int ui_mode = 3;
 
     UiUser user = UiUser::init(*this->ui_state);
     user.begin_pass();
@@ -74,7 +74,7 @@ int GuiGame::show(int currency, int reals, char **script)
     }
     else
     {
-        ui_mode = user.button("Exit") ? 0 : ui_mode;
+        ui_mode = user.button("Exit") ? 1 : ui_mode;
     }
     user.end_generic();
 
