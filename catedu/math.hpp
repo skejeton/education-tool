@@ -12,10 +12,12 @@
 
 #ifndef H_MATH_CATEDU
 #define H_MATH_CATEDU
+#include "stadef.h"
 #include <cmath>
 #include <stdint.h>
+
 #define MATH_TAU 6.283185307179586
-#define MATH_EPSILON 0.00001
+#define MATH_EPSILON DEF_EPSILON_MIN
 
 struct Vector2i
 {
