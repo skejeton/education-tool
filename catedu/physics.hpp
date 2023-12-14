@@ -4,6 +4,7 @@
 #include "boxdraw.hpp"
 #include "catedu/math.hpp"
 #include "catedu/table.hpp"
+#include "staging/world/resource_spec.hpp"
 
 struct PhysicsBody
 {
@@ -38,7 +39,8 @@ struct WorldState
 WorldState world_prototype_to_world_state(WorldPrototype &prototype);
 Rect &world_state_player_rect(WorldState &world);
 void render_physics_world_via_boxdraw(PhysicsWorld &world,
-                                      BoxdrawRenderer &boxdraw);
+                                      BoxdrawRenderer &boxdraw,
+                                      ResourceSpec &resources);
 void move_player(WorldState &world, Vector2 delta);
 
 #endif

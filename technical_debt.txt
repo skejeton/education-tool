@@ -21,5 +21,3 @@ Please write down technical points. >? In case of fixing debt, please mention #d
    have several tiles, one of them is "nothing", we also need to show that as a
    button in the editor, however obviously that's implied to be the NULL tile.
    Maybe the NULL tile should not be default, and only signify invalid IDs?
-
-

@@ -138,7 +138,7 @@ void show_debug(Entry *entry)
     camera.rotate(0, -75);
 
     render_physics_world_via_boxdraw(entry->world_state.physics,
-                                     entry->boxdraw_renderer);
+                                     entry->boxdraw_renderer, entry->res);
 
     boxdraw_flush(&entry->boxdraw_renderer, camera.vp);
 }

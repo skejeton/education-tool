@@ -76,7 +76,8 @@ Rect &world_state_player_rect(WorldState &world)
 }
 
 void render_physics_world_via_boxdraw(PhysicsWorld &world,
-                                      BoxdrawRenderer &boxdraw)
+                                      BoxdrawRenderer &boxdraw,
+                                      ResourceSpec &resources)
 {
     for (auto [id, body] : iter(world.bodies))
     {
@@ -84,12 +85,13 @@ void render_physics_world_via_boxdraw(PhysicsWorld &world,
             {body.area.pos.x, 0, body.area.pos.y},
             Vector3{body.area.siz.x, 1, body.area.siz.y} * 0.5f);
 
-        Vector4 color =
-            body.dynamic ? Vector4{1, 0, 0, 1} : Vector4{0, 1, 0, 1};
-        Vector4 color2 =
-            body.dynamic ? Vector4{0, 0, 1, 1} : Vector4{1, 1, 0, 1};
+        const char *model_name = body.dynamic ? "entity" : "counter";
+        SpecModel *model =
+            resources.models.get(resources.find_model_by_name(model_name));
+        assert(model);
 
-        BoxdrawCommand cmd = boxdraw_cmdgradient(box, color, color2);
+        BoxdrawCommand cmd = boxdraw_cmdtexture(
+            box, resources.tileset.cropped(model->texture_rect));
 
         boxdraw_push(&boxdraw, cmd);
     }
