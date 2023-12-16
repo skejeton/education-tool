@@ -9,7 +9,20 @@
 struct PhysicsBody
 {
     Rect area;
+    bool solid;
     bool dynamic;
+    int tag;
+};
+
+struct PhysicsManifold
+{
+    TableId first;
+    TableId second;
+};
+
+struct PhysicsManifolds
+{
+    Table<PhysicsManifold> manifolds;
 };
 
 struct PhysicsWorld
@@ -18,7 +31,9 @@ struct PhysicsWorld
 };
 
 void resolve_dynamic_vs_static(PhysicsBody &dynamic, PhysicsBody static_);
-void resolve_physics(PhysicsWorld &world);
+
+PhysicsManifolds dGGetect_collisions(PhysicsWorld &world);
+void resolve_physics(PhysicsWorld &world, PhysicsManifolds &manifolds);
 
 struct WorldPrototype
 {
@@ -41,6 +56,5 @@ Rect &world_state_player_rect(WorldState &world);
 void render_physics_world_via_boxdraw(PhysicsWorld &world,
                                       BoxdrawRenderer &boxdraw,
                                       ResourceSpec &resources);
-void move_player(WorldState &world, Vector2 delta);
-
+bool move_player(WorldState &world, Vector2 delta, int &floor);
 #endif

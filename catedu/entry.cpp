@@ -8,6 +8,55 @@
 #include "resources/resources.hpp"
 #include <cstdlib>
 
+WorldPrototype world_prototypes[3] = {{"XXXXXXXXXXXXXXXX"
+                                       "X      X ^     X"
+                                       "X      X       X"
+                                       "X      X       X"
+                                       "X      X       X"
+                                       "X    XXXXX     X"
+                                       "X    X   X     X"
+                                       "X    X P       X"
+                                       "XX  XX         X"
+                                       "X          D   X"
+                                       "X              X"
+                                       "X    D   D     X"
+                                       "X              X"
+                                       "X              X"
+                                       "X              X"
+                                       "XXXXXX   XXXXXX"},
+                                      {"XXXXXXXXXXXXXXXX"
+                                       "X        v     X"
+                                       "X              X"
+                                       "X        P     X"
+                                       "XXXXXXX XXXXXXXX"
+                                       "X     X X      X"
+                                       "X XXXXX X XXXX X"
+                                       "X      DX X    X"
+                                       "X XXXXX X X X  X"
+                                       "X     X X XXXX X"
+                                       "X X X X    D   X"
+                                       "X X     XXX X  X"
+                                       "X XXXXXXX X X  X"
+                                       "X         X X  X"
+                                       "XXXXXXXXXXX XXXX"
+                                       "X      ^       "},
+                                      {"XXXXXXXXXXXXXXXX"
+                                       "X              X"
+                                       "XXXXXX   XXXXXXX"
+                                       "X              X"
+                                       "X D  X   X  D  X"
+                                       "X    X   X     X"
+                                       "XXXXXX   XXXXXXX"
+                                       "X              X"
+                                       "X D  X   X  D  X"
+                                       "X    X   X     X"
+                                       "XXXXXX   XXXXXXX"
+                                       "X              X"
+                                       "X      P       X"
+                                       "X              X"
+                                       "X      v       X"
+                                       "XXXXXXXXXXXXXXX"}};
+
 void render_layer(const char *s, Vector3 pos, BoxdrawRenderer &boxdraw,
                   Texture tileset)
 {
@@ -107,23 +156,38 @@ void show_menu_animation(Entry *entry)
     boxdraw_flush(&entry->boxdraw_renderer, camera.vp);
 }
 
+void change_floor(Entry *entry, int floor)
+{
+    entry->floor = floor;
+    entry->world_state =
+        world_prototype_to_world_state(world_prototypes[entry->floor % 3]);
+}
+
+void move_player(Entry *entry, Vector2 delta)
+{
+    if (move_player(entry->world_state, delta, entry->floor))
+    {
+        change_floor(entry, entry->floor);
+    }
+}
+
 void show_debug(Entry *entry)
 {
     if (entry->input_state.key_states[SAPP_KEYCODE_LEFT].held)
     {
-        move_player(entry->world_state, {-0.05, 0});
+        move_player(entry, {-0.05, 0});
     }
     if (entry->input_state.key_states[SAPP_KEYCODE_RIGHT].held)
     {
-        move_player(entry->world_state, {0.05, 0});
+        move_player(entry, {0.05, 0});
     }
     if (entry->input_state.key_states[SAPP_KEYCODE_UP].held)
     {
-        move_player(entry->world_state, {0, 0.05});
+        move_player(entry, {0, 0.05});
     }
     if (entry->input_state.key_states[SAPP_KEYCODE_DOWN].held)
     {
-        move_player(entry->world_state, {0, -0.05});
+        move_player(entry, {0, -0.05});
     }
 
     const float width = sapp_widthf();
@@ -183,24 +247,8 @@ void Entry::init()
     sg_tricks_init();
 
     res = load_resource_spec("./assets/tileset.png");
-    WorldPrototype world_prototype = {"XXXXXXXXXXXXXXXX"
-                                      "X      X       X"
-                                      "X      X       X"
-                                      "X      X       X"
-                                      "X      X       X"
-                                      "X    XXXXX     X"
-                                      "X    X   X     X"
-                                      "X    X P       X"
-                                      "XX  XX         X"
-                                      "X          D   X"
-                                      "X              X"
-                                      "X    D   D     X"
-                                      "X              X"
-                                      "X              X"
-                                      "X              X"
-                                      "X              "};
 
-    world_state = world_prototype_to_world_state(world_prototype);
+    change_floor(this, 0);
     enet_initialize();
 
     ui_state = UiState::init("./assets/Roboto-Regular.ttf");

@@ -35,6 +35,7 @@ struct Entry
     bool zoomout = false;
     ScriptData script_data;
     Input input_state;
+    int floor;
 
     void init();
     void input(const sapp_event *event);
