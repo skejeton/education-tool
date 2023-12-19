@@ -28,12 +28,9 @@ struct Entry
     GuiEditor editor;
     GuiGame game_gui;
     ResourceSpec res;
-    World world;
     int ui_mode;
     BoxdrawRenderer boxdraw_renderer;
     Vector2 target_camera_pos;
-    bool zoomout = false;
-    ScriptData script_data;
     Input input_state;
     int floor;
 

@@ -216,6 +216,7 @@ void Entry::frame(void)
         break;
     case 1: // Main Menu
         show_menu_animation(this);
+        main_menu.show();
         break;
     case 2: // Editor
     case 3: // Gameplay
@@ -240,6 +241,7 @@ void Entry::init()
 {
     console_create_or_bind_existing();
 
+    this->ui_mode = 1;
     sg_desc desc = {};
     desc.context = sapp_sgcontext();
     desc.logger.func = slog_func;
