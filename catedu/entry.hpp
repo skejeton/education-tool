@@ -19,8 +19,9 @@
 #include "sokol/sokol_log.h"
 #include "staging/world/resource_spec.hpp"
 #include "staging/world/world.hpp"
+#include "catedu/sys/sokol_setup.hpp"
 
-struct Entry
+struct Entry : SokolSetup
 {
     WorldState world_state;
     UiState ui_state;
@@ -38,9 +39,9 @@ struct Entry
     int floor;
 
     void init();
-    void input(const sapp_event *event);
-    void cleanup();
     void frame();
+    void cleanup();
+    void input(const sapp_event *event);
 };
 
 #endif // H_CATEDU_ENTRY

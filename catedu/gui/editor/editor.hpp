@@ -2,7 +2,7 @@
 #define HPP_CATEDU_GUI_EDITOR_EDITOR
 
 #include "catedu/input.hpp"
-#include "catedu/staging/ui/ui_user.hpp"
+#include "catedu/ui/user.hpp"
 #include "catedu/staging/world/resource_spec.hpp"
 #include "catedu/staging/world/world.hpp"
 #include "catedu/ui/rendering/core.hpp"

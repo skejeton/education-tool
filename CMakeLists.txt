@@ -18,10 +18,9 @@ if (${ENV_TYPE} MATCHES "UNITTEST")
     list(APPEND CATEDU_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/unit/test_main.cpp)
 endif()
 
-if (${ENV_TYPE} MATCHES "ENVTEST")
-    add_compile_definitions(RUN_TESTS)
+if (${ENV_TYPE} MATCHES "TESTBED")
     list(REMOVE_ITEM CATEDU_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/catedu/main.cpp)
-    list(APPEND CATEDU_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/environment/${ENV_TEST_NAME}/env_main.cpp)
+    list(APPEND CATEDU_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/testbed/${TESTBED_NAME}/tb_main.cpp)
 endif()
 
 message(${CATEDU_SRC_FILES})

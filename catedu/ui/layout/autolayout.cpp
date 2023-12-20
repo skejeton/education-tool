@@ -1,4 +1,4 @@
-#include "ui_autolayout.hpp"
+#include "autolayout.hpp"
 #include "catedu/core/memory/init.hpp"
 #include <algorithm>
 #include <assert.h>

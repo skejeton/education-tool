@@ -1,7 +1,7 @@
 #ifndef HPP_CATEDU_GUI_GAME_GAME
 #define HPP_CATEDU_GUI_GAME_GAME
 
-#include "catedu/staging/ui/ui_user.hpp"
+#include "catedu/ui/user.hpp"
 #include <sokol/sokol_app.h>
 
 struct DialogButton
