@@ -239,11 +239,6 @@ void Entry::cleanup(void)
 void Entry::init()
 {
     console_create_or_bind_existing();
-
-    sg_desc desc = {};
-    desc.context = sapp_sgcontext();
-    desc.logger.func = slog_func;
-    sg_setup(&desc);
     sg_tricks_init();
 
     res = load_resource_spec("./assets/tileset.png");

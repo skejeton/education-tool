@@ -1,4 +1,6 @@
 #include "sokol_setup.hpp"
+#include "sokol/sokol_gfx.h"
+#include "sokol/sokol_glue.h"
 
 static inline SokolSetup *userdata_to_setup(void *userdata)
 {
@@ -7,6 +9,11 @@ static inline SokolSetup *userdata_to_setup(void *userdata)
 
 static void init_callback(void *userdata)
 {
+    sg_desc desc = {};
+    desc.context = sapp_sgcontext();
+    desc.logger.func = slog_func;
+    sg_setup(&desc);
+
     userdata_to_setup(userdata)->init();
 }
 
