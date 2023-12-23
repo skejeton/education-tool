@@ -1,5 +1,5 @@
-#ifndef HPP_CATEDU_STAGING_UI_UI_AUTOLAYOUT
-#define HPP_CATEDU_STAGING_UI_UI_AUTOLAYOUT
+#ifndef HPP_CATEDU_UI_AUTOLAYOUT
+#define HPP_CATEDU_UI_AUTOLAYOUT
 
 #include "catedu/core/alloc/bump_allocator.hpp"
 #include "catedu/math.hpp"

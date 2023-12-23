@@ -17,8 +17,7 @@
 #include "sokol/sokol_gfx.h"
 #include "sokol/sokol_glue.h"
 #include "sokol/sokol_log.h"
-#include "staging/world/resource_spec.hpp"
-#include "staging/world/world.hpp"
+#include "catedu/rendering/resource_spec.hpp"
 #include "catedu/sys/sokol_setup.hpp"
 
 struct Entry : SokolSetup
@@ -29,7 +28,6 @@ struct Entry : SokolSetup
     GuiEditor editor;
     GuiGame game_gui;
     ResourceSpec res;
-    World world;
     int ui_mode;
     BoxdrawRenderer boxdraw_renderer;
     Vector2 target_camera_pos;

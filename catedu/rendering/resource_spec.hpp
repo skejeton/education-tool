@@ -1,8 +1,8 @@
-#ifndef HPP_CATEDU_STAGING_WORLD_RESOURCE_SPEC
-#define HPP_CATEDU_STAGING_WORLD_RESOURCE_SPEC
+#ifndef HPP_CATEDU_RENDERING_RESOURCE_SPEC
+#define HPP_CATEDU_RENDERING_RESOURCE_SPEC
 
 #include "catedu/math.hpp"
-#include "catedu/staging/texture.hpp"
+#include "catedu/rendering/texture.hpp"
 #include "catedu/table.hpp"
 
 struct SpecModel
@@ -33,4 +33,4 @@ struct ResourceSpec
     void deinit();
 };
 
-#endif // HPP_CATEDU_STAGING_WORLD_RESOURCE_SPEC
+#endif // HPP_CATEDU_RENDERING_RESOURCE_SPEC

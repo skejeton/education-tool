@@ -4,7 +4,7 @@
 #include "boxdraw.hpp"
 #include "catedu/math.hpp"
 #include "catedu/table.hpp"
-#include "staging/world/resource_spec.hpp"
+#include "catedu/rendering/resource_spec.hpp"
 
 struct PhysicsBody
 {
