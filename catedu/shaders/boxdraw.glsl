@@ -2,19 +2,23 @@
 ////////////////////////////////////////////////////////////////////////////////
 @vs boxdraw_vs
 uniform boxdraw_vs_params {
-    mat4 mvp;
     vec4 color_top;
     vec4 color_bottom;
     vec4 color_mul;
-    vec2 uv_min, uv_max;
-    vec2 size;
-    vec2 tile_count;
 };
 
 
 in vec3 position;
 in vec3 normal;
 in vec2 uv;
+in vec4 mr1;
+in vec4 mr2;
+in vec4 mr3;
+in vec4 mr4;
+in vec2 uv_min, uv_max;
+in vec2 size;
+in vec2 tile_count;
+
 out vec4 color;
 out vec2 frag_uv;
 out vec2 frag_uv_min;
@@ -23,6 +27,9 @@ out vec2 frag_size;
 out vec2 frag_tile_count;
 
 void main() {
+    // convert row major to column major
+    mat4 mvp = mat4(mr1, mr2, mr3, mr4);
+
     gl_Position = mvp * vec4(position, 1.0);
 
 
@@ -73,9 +80,9 @@ void main() {
                    dist *
                    LOG2 );
     fogFactor = clamp(fogFactor, 0.0, 1.0);
-    */
 
     uv = clamp(uv, vec2(min_bound_x, min_bound_y), vec2(max_bound_x, max_bound_y));
+    */
 
     vec4 sample_value = texture(sampler2D(image, image_sampler), uv);
     frag_color = sample_value * color;

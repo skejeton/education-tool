@@ -13,7 +13,7 @@ sokol_main(int argc, char* argv[])
         global_entry = new Entry();
         global_entry->init();
     };
-    
+
     desc.frame_cb = []() { global_entry->frame(); };
     desc.cleanup_cb = []() {
         global_entry->cleanup();
@@ -28,6 +28,5 @@ sokol_main(int argc, char* argv[])
     desc.icon.sokol_default = true;
     desc.enable_clipboard = true;
     desc.logger.func = slog_func;
-    desc.sample_count = 4;
     return desc;
 }

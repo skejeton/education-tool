@@ -6,6 +6,7 @@
 #define HPP_CATEDU_CORE_TEXT_EDITING_TEXT_EDITING
 
 #include <stdint.h>
+#include <stddef.h>
 
 struct BasicTextBuffer
 {

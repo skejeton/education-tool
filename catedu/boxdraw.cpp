@@ -4,6 +4,8 @@
 #include <cassert>
 #include <cstdlib>
 
+#define INSTANCE_MAX 1024
+
 // clang-format off
 const float static cube_vertices[] = {
     // pos                normal    uv
@@ -44,6 +46,14 @@ const float static cube_vertices[] = {
     0.5, -0.5, 0.5,      0,-1, 0,  0, 0
 };
 
+struct Instance {
+    Matrix4 transform;
+    Vector2 uv_min;
+    Vector2 uv_max;
+    Vector2 size;
+    Vector2 tile_count;
+};
+
 const static uint16_t cube_indices[] = {
     0, 1, 2,  0, 2, 3,       // +y
     6, 5, 4,  7, 6, 4,       // -x
@@ -63,6 +73,12 @@ BoxdrawRenderer boxdraw_create()
     result.shader =
         sg_make_shader(boxdraw_prog_shader_desc(sg_query_backend()));
 
+    sg_buffer_desc instance_buffer_desc = {};
+    instance_buffer_desc.size = INSTANCE_MAX * sizeof(Instance);
+    instance_buffer_desc.label = "cube-instance-buffer";
+    instance_buffer_desc.usage = SG_USAGE_STREAM;
+    result.instance_buffer = sg_make_buffer(instance_buffer_desc);
+
     sg_buffer_desc vertex_buffer_desc = {};
     vertex_buffer_desc.data = SG_RANGE(cube_vertices);
     vertex_buffer_desc.label = "cube-vertices";
@@ -76,9 +92,34 @@ BoxdrawRenderer boxdraw_create()
     result.index_buffer = sg_make_buffer(index_buffer_desc);
 
     sg_pipeline_desc pipeline_desc = {};
+
+    pipeline_desc.layout.buffers[0].stride = sizeof(float) * 8;
+    pipeline_desc.layout.buffers[1].stride = sizeof(Instance);
+    pipeline_desc.layout.buffers[1].step_func = SG_VERTEXSTEP_PER_INSTANCE;
+    // Vertex data
     pipeline_desc.layout.attrs[0].format = SG_VERTEXFORMAT_FLOAT3; // position
     pipeline_desc.layout.attrs[1].format = SG_VERTEXFORMAT_FLOAT3; // normal
     pipeline_desc.layout.attrs[2].format = SG_VERTEXFORMAT_FLOAT2; // UV
+    // Instance data
+    pipeline_desc.layout.attrs[3].format = SG_VERTEXFORMAT_FLOAT4; // matrix row 1
+    pipeline_desc.layout.attrs[3].buffer_index = 1;
+    pipeline_desc.layout.attrs[4].format = SG_VERTEXFORMAT_FLOAT4; // matrix row 2
+    pipeline_desc.layout.attrs[4].buffer_index = 1;
+    pipeline_desc.layout.attrs[5].format = SG_VERTEXFORMAT_FLOAT4; // matrix row 3
+    pipeline_desc.layout.attrs[5].buffer_index = 1;
+    pipeline_desc.layout.attrs[6].format = SG_VERTEXFORMAT_FLOAT4; // matrix row 4
+    pipeline_desc.layout.attrs[6].buffer_index = 1;
+    pipeline_desc.layout.attrs[7].format = SG_VERTEXFORMAT_FLOAT2; // uv min
+    pipeline_desc.layout.attrs[7].buffer_index = 1;
+    pipeline_desc.layout.attrs[8].format = SG_VERTEXFORMAT_FLOAT2; // uv max
+    pipeline_desc.layout.attrs[8].buffer_index = 1;
+    pipeline_desc.layout.attrs[9].format = SG_VERTEXFORMAT_FLOAT2; // size
+    pipeline_desc.layout.attrs[9].buffer_index = 1;
+    pipeline_desc.layout.attrs[10].format = SG_VERTEXFORMAT_FLOAT2; // tile count
+    pipeline_desc.layout.attrs[10].buffer_index = 1;
+
+
+
     pipeline_desc.colors[0].blend.enabled = true;
     pipeline_desc.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
     pipeline_desc.colors[0].blend.dst_factor_rgb =
@@ -94,6 +135,7 @@ BoxdrawRenderer boxdraw_create()
     result.pipeline = sg_make_pipeline(pipeline_desc);
 
     result.bindings.vertex_buffers[0] = result.vertex_buffer;
+    result.bindings.vertex_buffers[1] = result.instance_buffer;
     result.bindings.index_buffer = result.index_buffer;
 
     // initial clear color
@@ -137,6 +179,23 @@ Matrix4 create_box_transform(Box3 box)
     return result;
 }
 
+// TODO: Move this to the boxdraw instance
+Instance instance_data[INSTANCE_MAX];
+size_t instance_count = 0;
+
+static void rflush(BoxdrawRenderer *renderer, boxdraw_vs_params_t vs_params)
+{
+    if (instance_count == 0)
+        return;
+
+    sg_range params_range = SG_RANGE(vs_params);
+    sg_update_buffer(renderer->instance_buffer, {instance_data, instance_count * sizeof(Instance)});
+    sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_boxdraw_vs_params,
+                        &params_range);
+    sg_draw(0, 36, instance_count);
+    instance_count = 0;
+}
+
 void boxdraw_flush(BoxdrawRenderer *renderer, Matrix4 view_projection)
 {
     const int width = sapp_width();
@@ -148,34 +207,32 @@ void boxdraw_flush(BoxdrawRenderer *renderer, Matrix4 view_projection)
     sg_image prev_image_id = {0};
     sg_sampler prev_sampler_id = {0};
 
+    boxdraw_vs_params_t vs_params;
     for (size_t i = 0; i < renderer->commands_count; i++)
     {
+        bool flush = false;
         BoxdrawCommand command = renderer->commands[i];
 
         Matrix4 model = create_box_transform(command.box);
+        instance_data[instance_count++] = {
+            view_projection * model,
+            command.texture.uv_min(),
+            command.texture.uv_max(),
+            command.texture.size,
+            command.texture.tile_count
+        };
 
-        boxdraw_vs_params_t vs_params;
-        vs_params.mvp = view_projection * model;
         vs_params.color_top = command.top_color;
         vs_params.color_bottom = command.bottom_color;
         vs_params.color_mul = {1, 1, 1, 1};
 
         if (command.texture.if_valid())
         {
-            vs_params.uv_min = command.texture.uv_min();
-            vs_params.uv_max = command.texture.uv_max();
-            vs_params.size = command.texture.size;
-            vs_params.tile_count = command.texture.tile_count;
-
             renderer->bindings.fs.images[0] = command.texture.sysid_texture;
             renderer->bindings.fs.samplers[0] = command.texture.sysid_sampler;
         }
         else
         {
-            vs_params.uv_min = {0, 0};
-            vs_params.uv_max = {1, 1};
-            vs_params.size = {1, 1};
-
             sg_tricks_get_white_texture(renderer->bindings.fs.images[0],
                                         renderer->bindings.fs.samplers[0]);
         }
@@ -184,16 +241,15 @@ void boxdraw_flush(BoxdrawRenderer *renderer, Matrix4 view_projection)
             prev_sampler_id.id != command.texture.sysid_sampler.id)
         {
             sg_apply_bindings(renderer->bindings);
+        } else if (instance_count >= INSTANCE_MAX) {
+            assert(false);
         }
 
         prev_image_id = command.texture.sysid_texture;
         prev_sampler_id = command.texture.sysid_sampler;
-
-        sg_range params_range = SG_RANGE(vs_params);
-        sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_boxdraw_vs_params,
-                          &params_range);
-        sg_draw(0, 36, 1);
     }
+
+    rflush(renderer, vs_params);
 
     renderer->commands_count = 0;
     sg_end_pass();

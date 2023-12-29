@@ -3,7 +3,6 @@
 #include "camera.hpp"
 #include "catedu/sys/sg_tricks.hpp"
 #include "console.hpp"
-#include "enet/enet.h"
 #include "math.hpp"
 #include "resources/resources.hpp"
 #include <cstdlib>
@@ -68,13 +67,13 @@ void show_menu_animation(Entry *entry)
     camera.rotate_around({0, 0, 0}, -time * 5, 0);
 
     const char *l0 = "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
+                     "G       G\n"
+                     "G       G\n"
+                     "G       G\n"
+                     "G       G\n"
+                     "G       G\n"
+                     "G       G\n"
+                     "G       G\n"
                      "GGGGGGGGG\n";
     const char *l1 = "###_###\n"
                      "#_____#\n"
@@ -138,8 +137,8 @@ void save_world(Entry *entry)
     fwrite(entry->world.middle, sizeof(entry->world.middle), 1, f);
     fwrite(entry->world.ground, sizeof(entry->world.ground), 1, f);
 
-    size_t entity_count = entry->world.entities.count;
-    fwrite(&entity_count, sizeof(size_t), 1, f);
+    uint32_t entity_count = entry->world.entities.count;
+    fwrite(&entity_count, sizeof(uint32_t), 1, f);
 
     auto it = TableIterator<WorldEntity>::init(&entry->world.entities);
 
@@ -160,13 +159,13 @@ void load_world(Entry *entry)
     {
         return;
     }
-    fprintf(stderr, "loading world.");
+    printf("loading world.\n");
 
     fread(entry->world.middle, sizeof(entry->world.middle), 1, f);
     fread(entry->world.ground, sizeof(entry->world.ground), 1, f);
 
-    size_t entity_count = 0;
-    fread(&entity_count, sizeof(size_t), 1, f);
+    uint32_t entity_count = 0;
+    fread(&entity_count, sizeof(uint32_t), 1, f);
 
     for (size_t i = 0; i < entity_count; i++)
     {
@@ -182,12 +181,17 @@ void load_world(Entry *entry)
 void Entry::frame(void)
 {
     this->world.if_grass = this->script_data.activate_grass;
+    float delta = sapp_frame_duration() * 40;
+    if (delta > 1)
+    {
+        delta = 1;
+    }
+
     this->world.camera_pos.x +=
-        (target_camera_pos.x - this->world.camera_pos.x) *
-        sapp_frame_duration() * 40;
+        (target_camera_pos.x - this->world.camera_pos.x) * delta;
     this->world.camera_pos.y +=
-        (target_camera_pos.y - this->world.camera_pos.y) *
-        sapp_frame_duration() * 40;
+        (target_camera_pos.y - this->world.camera_pos.y) * delta;
+
     switch (ui_mode)
     {
     case 0: // Main Menu
@@ -262,7 +266,6 @@ void Entry::cleanup(void)
     boxdraw_destroy(&this->boxdraw_renderer);
     sg_tricks_deinit();
     sg_shutdown();
-    enet_deinitialize();
 }
 
 void Entry::init()
@@ -275,8 +278,6 @@ void Entry::init()
     sg_setup(&desc);
     sg_tricks_init();
     res = load_resource_spec("./assets/tileset.png");
-
-    enet_initialize();
 
     load_world(this);
     ui_state = UiState::init("./assets/Roboto-Regular.ttf");
