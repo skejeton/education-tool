@@ -21,6 +21,7 @@ struct BoxdrawCommand
 struct BoxdrawRenderer
 {
     sg_pass_action pass_action;
+    sg_buffer instance_buffer;
     sg_buffer vertex_buffer;
     sg_buffer index_buffer;
     sg_bindings bindings;

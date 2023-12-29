@@ -3,7 +3,6 @@
 #include "camera.hpp"
 #include "catedu/sys/sg_tricks.hpp"
 #include "console.hpp"
-#include "enet/enet.h"
 #include "math.hpp"
 #include "resources/resources.hpp"
 #include <cstdlib>
@@ -119,13 +118,13 @@ void show_menu_animation(Entry *entry)
     camera.rotate_around({0, 0, 0}, -time * 5, 0);
 
     const char *l0 = "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
+                     "G       G\n"
+                     "G       G\n"
+                     "G       G\n"
+                     "G       G\n"
+                     "G       G\n"
+                     "G       G\n"
+                     "G       G\n"
                      "GGGGGGGGG\n";
     const char *l1 = "###_###\n"
                      "#_____#\n"
@@ -233,7 +232,6 @@ void Entry::cleanup(void)
     boxdraw_destroy(&this->boxdraw_renderer);
     sg_tricks_deinit();
     sg_shutdown();
-    enet_deinitialize();
 }
 
 void Entry::init()
@@ -244,7 +242,6 @@ void Entry::init()
     res = load_resource_spec("./assets/tileset.png");
 
     change_floor(this, 0);
-    enet_initialize();
 
     ui_state = UiState::init("./assets/Roboto-Regular.ttf");
     main_menu = GuiMainMenu::init(&ui_state);
