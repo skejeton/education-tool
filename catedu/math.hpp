@@ -90,6 +90,28 @@ inline Vector2i operator/=(Vector2i &a, int32_t b)
     return a = {a.x / b, a.y / b};
 }
 
+inline Vector2i operator%(Vector2i &a, int32_t b)
+{
+    return {a.x % b, a.y % b};
+}
+
+inline Vector2i operator%(Vector2i &a, Vector2i b)
+{
+    return {a.x % b.x, a.y % b.y};
+}
+
+
+
+inline Vector2i operator%=(Vector2i &a, int32_t b)
+{
+    return a = {a.x % b, a.y % b};
+}
+
+inline Vector2i operator%=(Vector2i &a, Vector2i b)
+{
+    return a = {a.x % b.x, a.y % b.y};
+}
+
 inline bool operator==(Vector2i &a, Vector2i b)
 {
     return a.x == b.x && a.y == b.y;
