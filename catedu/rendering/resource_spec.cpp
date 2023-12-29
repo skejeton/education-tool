@@ -9,14 +9,11 @@ void ResourceSpec::deinit()
 
 TableId ResourceSpec::find_model_by_name(const char *name)
 {
-    auto it = TableIterator<SpecModel>::init(&models);
-
-    for (; it.going(); it.next())
+    for (auto [id, model] : iter(models))
     {
-        SpecModel &model = it.table->get_assert(it.id);
         if (strcmp(name, model.name) == 0)
         {
-            return it.id;
+            return id;
         }
     }
 

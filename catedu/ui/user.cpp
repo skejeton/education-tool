@@ -1,4 +1,4 @@
-#include "ui_user.hpp"
+#include "user.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 
 const Vector4 theme[] = {{0.8, 0.8, 0.8, 1.0}, {0.6, 0.6, 0.6, 1.0},

@@ -1,7 +1,7 @@
 #ifndef HPP_CATEDU_GUI_MAIN_MENU_MAIN_MENU
 #define HPP_CATEDU_GUI_MAIN_MENU_MAIN_MENU
 
-#include "catedu/staging/ui/ui_user.hpp"
+#include "catedu/ui/user.hpp"
 #include <sokol/sokol_app.h>
 
 struct GuiMainMenu

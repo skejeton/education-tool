@@ -7,6 +7,55 @@
 #include "resources/resources.hpp"
 #include <cstdlib>
 
+WorldPrototype world_prototypes[3] = {{"XXXXXXXXXXXXXXXX"
+                                       "X      X ^     X"
+                                       "X      X       X"
+                                       "X      X       X"
+                                       "X      X       X"
+                                       "X    XXXXX     X"
+                                       "X    X   X     X"
+                                       "X    X P       X"
+                                       "XX  XX         X"
+                                       "X          D   X"
+                                       "X              X"
+                                       "X    D   D     X"
+                                       "X              X"
+                                       "X              X"
+                                       "X              X"
+                                       "XXXXXX   XXXXXX"},
+                                      {"XXXXXXXXXXXXXXXX"
+                                       "X        v     X"
+                                       "X              X"
+                                       "X        P     X"
+                                       "XXXXXXX XXXXXXXX"
+                                       "X     X X      X"
+                                       "X XXXXX X XXXX X"
+                                       "X      DX X    X"
+                                       "X XXXXX X X X  X"
+                                       "X     X X XXXX X"
+                                       "X X X X    D   X"
+                                       "X X     XXX X  X"
+                                       "X XXXXXXX X X  X"
+                                       "X         X X  X"
+                                       "XXXXXXXXXXX XXXX"
+                                       "X      ^       "},
+                                      {"XXXXXXXXXXXXXXXX"
+                                       "X              X"
+                                       "XXXXXX   XXXXXXX"
+                                       "X              X"
+                                       "X D  X   X  D  X"
+                                       "X    X   X     X"
+                                       "XXXXXX   XXXXXXX"
+                                       "X              X"
+                                       "X D  X   X  D  X"
+                                       "X    X   X     X"
+                                       "XXXXXX   XXXXXXX"
+                                       "X              X"
+                                       "X      P       X"
+                                       "X              X"
+                                       "X      v       X"
+                                       "XXXXXXXXXXXXXXX"}};
+
 void render_layer(const char *s, Vector3 pos, BoxdrawRenderer &boxdraw,
                   Texture tileset)
 {
@@ -46,7 +95,9 @@ void render_layer(const char *s, Vector3 pos, BoxdrawRenderer &boxdraw,
                                        {0.5f, 0.05f, 0.5f}),
                                    tileset.cropped({32, 32, 32, 32})));
             x++;
-        } else {
+        }
+        else
+        {
             x++;
         }
     }
@@ -104,163 +155,78 @@ void show_menu_animation(Entry *entry)
     boxdraw_flush(&entry->boxdraw_renderer, camera.vp);
 }
 
-void show_editor(Entry *entry)
+void change_floor(Entry *entry, int floor)
 {
+    entry->floor = floor;
+    entry->world_state =
+        world_prototype_to_world_state(world_prototypes[entry->floor % 3]);
+}
+
+void move_player(Entry *entry, Vector2 delta)
+{
+    if (move_player(entry->world_state, delta, entry->floor))
+    {
+        change_floor(entry, entry->floor);
+    }
+}
+
+void show_debug(Entry *entry)
+{
+    if (entry->input_state.key_states[SAPP_KEYCODE_LEFT].held)
+    {
+        move_player(entry, {-0.05, 0});
+    }
+    if (entry->input_state.key_states[SAPP_KEYCODE_RIGHT].held)
+    {
+        move_player(entry, {0.05, 0});
+    }
+    if (entry->input_state.key_states[SAPP_KEYCODE_UP].held)
+    {
+        move_player(entry, {0, 0.05});
+    }
+    if (entry->input_state.key_states[SAPP_KEYCODE_DOWN].held)
+    {
+        move_player(entry, {0, -0.05});
+    }
+
     const float width = sapp_widthf();
     const float height = sapp_heightf();
 
     Camera camera = Camera::init(45);
     camera.set_aspect(width / height);
-    if (entry->zoomout)
-    {
-        camera.move(0 + entry->world.camera_pos.x, 10,
-                    -6 + entry->world.camera_pos.y);
-    }
-    else
-    {
-        camera.move(0 + entry->world.camera_pos.x, 7,
-                    -4 + entry->world.camera_pos.y);
-    }
+    Rect player_rect = world_state_player_rect(entry->world_state);
 
-    camera.rotate(0, -55);
+    camera.move(0 + player_rect.pos.x, 10, -3 + player_rect.pos.y);
 
-    entry->world.render(entry->res, entry->boxdraw_renderer);
+    camera.rotate(0, -75);
+
+    render_physics_world_via_boxdraw(entry->world_state.physics,
+                                     entry->boxdraw_renderer, entry->res);
 
     boxdraw_flush(&entry->boxdraw_renderer, camera.vp);
 }
 
-void save_world(Entry *entry)
-{
-    FILE *f = fopen("data/world.dat", "wb");
-    assert(f);
-
-    fwrite(entry->world.middle, sizeof(entry->world.middle), 1, f);
-    fwrite(entry->world.ground, sizeof(entry->world.ground), 1, f);
-
-    uint32_t entity_count = entry->world.entities.count;
-    fwrite(&entity_count, sizeof(uint32_t), 1, f);
-
-    auto it = TableIterator<WorldEntity>::init(&entry->world.entities);
-
-    for (; it.going(); it.next())
-    {
-        auto ent = it.table->get_assert(it.id);
-
-        fwrite(&ent, sizeof(WorldEntity), 1, f);
-    }
-
-    fclose(f);
-}
-
-void load_world(Entry *entry)
-{
-    FILE *f = fopen("data/world.dat", "rb");
-    if (!f)
-    {
-        return;
-    }
-    printf("loading world.\n");
-
-    fread(entry->world.middle, sizeof(entry->world.middle), 1, f);
-    fread(entry->world.ground, sizeof(entry->world.ground), 1, f);
-
-    uint32_t entity_count = 0;
-    fread(&entity_count, sizeof(uint32_t), 1, f);
-
-    for (size_t i = 0; i < entity_count; i++)
-    {
-        WorldEntity ent = {};
-        fread(&ent, sizeof(WorldEntity), 1, f);
-
-        entry->world.entities.allocate(ent);
-    }
-
-    fclose(f);
-}
-
 void Entry::frame(void)
 {
-    this->world.if_grass = this->script_data.activate_grass;
-    float delta = sapp_frame_duration() * 40;
-    if (delta > 1)
-    {
-        delta = 1;
-    }
-
-    this->world.camera_pos.x +=
-        (target_camera_pos.x - this->world.camera_pos.x) * delta;
-    this->world.camera_pos.y +=
-        (target_camera_pos.y - this->world.camera_pos.y) * delta;
-
     switch (ui_mode)
     {
-    case 0: // Main Menu
+    case 0: // Debug
+        show_debug(this);
+        break;
+    case 1: // Main Menu
         show_menu_animation(this);
-        ui_mode = this->main_menu.show();
-        if (ui_mode == 2)
-        {
-            this->script_data = {};
-            this->script_data.currency = 900000;
-            auto it = TableIterator<WorldEntity>::init(&this->world.entities);
-            for (; it.going(); it.next())
-            {
-                auto ent = it.table->get_assert(it.id);
-                if (strcmp(ent.id, "player") == 0)
-                {
-                    target_camera_pos = ent.pos;
-                }
-            }
-        }
         break;
-    case 1: // Editor
-        this->world.is_editor = true;
-        show_editor(this);
-        ui_mode = this->editor.show(this->world, this->res);
-        if (this->editor.create_entity)
-        {
-            WorldEntity ent = {};
-            ent.pos = target_camera_pos;
-
-            this->world.entities.allocate(ent);
-        }
-        if (ui_mode == 0)
-        {
-            save_world(this);
-        }
-        break;
-    case 2: // Gameplay
-        this->world.is_editor = false;
-        show_editor(this);
-        {
-            char *script;
-            ui_mode = this->game_gui.show(script_data.currency,
-                                          script_data.reals, &script);
-            if (script)
-            {
-                ScriptEvent sevent = {};
-                sevent.script_name = script;
-                sevent.any = true;
-                this->script_data.activate_dialog = false;
-                this->script_data.dialog = {};
-                this->script_data.backtrack = false;
-                this->script_data.target_pos = target_camera_pos;
-                run_script(this->script_data, sevent);
-                if (this->script_data.activate_dialog)
-                {
-                    this->game_gui.show_dialog(this->script_data.dialog);
-                }
-                this->target_camera_pos = this->script_data.target_pos;
-            }
-        }
+    case 2: // Editor
+    case 3: // Gameplay
         break;
     }
 
+    this->input_state.update();
     sg_commit();
 }
 
 void Entry::cleanup(void)
 {
-    save_world(this);
     main_menu.deinit();
     res.deinit();
     boxdraw_destroy(&this->boxdraw_renderer);
@@ -271,15 +237,12 @@ void Entry::cleanup(void)
 void Entry::init()
 {
     console_create_or_bind_existing();
-
-    sg_desc desc = {};
-    desc.context = sapp_sgcontext();
-    desc.logger.func = slog_func;
-    sg_setup(&desc);
     sg_tricks_init();
+
     res = load_resource_spec("./assets/tileset.png");
 
-    load_world(this);
+    change_floor(this, 0);
+
     ui_state = UiState::init("./assets/Roboto-Regular.ttf");
     main_menu = GuiMainMenu::init(&ui_state);
     editor = GuiEditor::init(&ui_state);
@@ -294,102 +257,5 @@ void Entry::input(const sapp_event *event)
         return;
     }
 
-    if (event->type == SAPP_EVENTTYPE_KEY_DOWN)
-    {
-        Vector2 camera_prev = target_camera_pos;
-        bool just_moved = false;
-        if (ui_mode == 1 || (ui_mode == 2 && !this->game_gui.dialog.open))
-        {
-            if (event->key_code == SAPP_KEYCODE_LEFT)
-            {
-                target_camera_pos.x -= 1;
-                just_moved = true;
-            }
-            if (event->key_code == SAPP_KEYCODE_RIGHT)
-            {
-                target_camera_pos.x += 1;
-                just_moved = true;
-            }
-            if (event->key_code == SAPP_KEYCODE_UP)
-            {
-                target_camera_pos.y += 1;
-                just_moved = true;
-            }
-            if (event->key_code == SAPP_KEYCODE_DOWN)
-            {
-                target_camera_pos.y -= 1;
-                just_moved = true;
-            }
-        }
-
-        size_t t = this->world.middle[int(target_camera_pos.x) + 32]
-                                     [int(target_camera_pos.y) + 32];
-
-        // FIXME: Quick hack to check if the tile is there, otherwise get_assert
-        //        will crash the program. Should be a better way to do this.
-        if (ui_mode == 2 && res.tiles.get({t}) &&
-            res.tiles.get_assert({t}).if_obstacle)
-        {
-            target_camera_pos = camera_prev;
-        }
-        if (event->key_code == SAPP_KEYCODE_Z)
-        {
-            this->zoomout = !this->zoomout;
-        }
-
-        if (ui_mode == 1 && event->key_code == SAPP_KEYCODE_SPACE)
-        {
-            // FIXME: Same problem with get_assert as above.
-            SpecTile *tile = res.tiles.get(editor.selection);
-            if (tile == nullptr || tile->if_ground)
-            {
-                this->world.ground[int(target_camera_pos.x) + 32]
-                                  [int(target_camera_pos.y) + 32] =
-                    this->editor.selection.id;
-            }
-
-            if (tile == nullptr || !tile->if_ground)
-            {
-                this->world.middle[int(target_camera_pos.x) + 32]
-                                  [int(target_camera_pos.y) + 32] =
-                    this->editor.selection.id;
-            }
-
-            return;
-        }
-        if (ui_mode == 2)
-        {
-            auto it = TableIterator<WorldEntity>::init(&this->world.entities);
-            for (; it.going(); it.next())
-            {
-                auto ent = it.table->get_assert(it.id);
-                auto v = vector2_to_vector2i(ent.pos);
-                if (v == vector2_to_vector2i(target_camera_pos))
-                {
-                    ScriptEvent sevent = {};
-                    sevent.script_name = ent.interact_script;
-                    sevent.interacted = event->key_code == SAPP_KEYCODE_SPACE;
-                    sevent.walked_on = just_moved;
-                    sevent.any = true;
-                    if (!sevent.interacted && !sevent.walked_on)
-                    {
-                        break;
-                    }
-                    this->script_data.activate_dialog = false;
-                    this->script_data.dialog = {};
-                    this->script_data.backtrack = false;
-                    run_script(this->script_data, sevent);
-                    if (this->script_data.activate_dialog)
-                    {
-                        this->game_gui.show_dialog(this->script_data.dialog);
-                    }
-
-                    if (this->script_data.backtrack)
-                    {
-                        target_camera_pos = camera_prev;
-                    }
-                }
-            }
-        }
-    }
+    this->input_state.pass_event(event);
 }

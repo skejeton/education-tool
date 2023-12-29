@@ -9,7 +9,7 @@
 #include "math.hpp"
 #include "sokol/sokol_app.h"
 #include "sokol/sokol_gfx.h"
-#include "staging/texture.hpp"
+#include "catedu/rendering/texture.hpp"
 
 struct BoxdrawCommand
 {

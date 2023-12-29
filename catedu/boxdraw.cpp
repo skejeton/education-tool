@@ -3,6 +3,7 @@
 #include "shaders.hxx"
 #include <cassert>
 #include <cstdlib>
+#include <stdio.h>
 
 #define INSTANCE_MAX 1024
 
@@ -237,8 +238,8 @@ void boxdraw_flush(BoxdrawRenderer *renderer, Matrix4 view_projection)
                                         renderer->bindings.fs.samplers[0]);
         }
 
-        if (prev_image_id.id != command.texture.sysid_texture.id ||
-            prev_sampler_id.id != command.texture.sysid_sampler.id)
+        if (prev_image_id.id != renderer->bindings.fs.images[0].id ||
+            prev_sampler_id.id != renderer->bindings.fs.samplers[0].id)
         {
             sg_apply_bindings(renderer->bindings);
         } else if (instance_count >= INSTANCE_MAX) {

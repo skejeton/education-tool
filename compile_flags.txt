@@ -10,3 +10,4 @@ lib/lib-enet/include
 -Wno-missing-braces
 -Werror
 -std=c++17
+-D_CRT_SECURE_NO_WARNINGS

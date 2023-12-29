@@ -17,11 +17,7 @@ Please write down technical points. >? In case of fixing debt, please mention #d
 
 2. Lack of string indexing for models
 
-3. Clumsy iterators: The proposed solution is to create an iter overload function for all iterable types as a shorthand, which might be implemented post-November demo if no better solution arises.
-
 4. Continuous iteration without inserting hacks before the loop. Example: we
    have several tiles, one of them is "nothing", we also need to show that as a
    button in the editor, however obviously that's implied to be the NULL tile.
    Maybe the NULL tile should not be default, and only signify invalid IDs?
-
-
