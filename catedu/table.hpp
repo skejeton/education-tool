@@ -2,9 +2,7 @@
 /// BRIEF: Table for allocation and management of rows
 ///
 
-#ifndef H_CATEDU_TABLE
-#define H_CATEDU_TABLE
-
+#pragma once
 #include <assert.h>
 #include <iterator>
 #include <stdlib.h>
@@ -287,5 +285,3 @@ template <class T> CxxTableIterator<T> iter(Table<T> &table)
 {
     return CxxTableIterator<T>(TableIterator<T>::init(&table));
 }
-
-#endif

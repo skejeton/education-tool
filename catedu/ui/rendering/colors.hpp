@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_UI_RENDERING_COLORS_HPP
-#define HPP_CATEDU_UI_RENDERING_COLORS_HPP
-
+#pragma once
 #include "catedu/math.hpp"
 
 #define UI_COLOR_BLACK (Vector4{0.0, 0.0, 0.0, 1.0})
@@ -21,5 +19,3 @@ static inline Vector4 color_bluish(float mul = 1.0f, float alpha = 1.0f)
 {
     return Vector4{0.93f * mul, 0.97f * mul, 1.0f * mul, alpha};
 }
-
-#endif

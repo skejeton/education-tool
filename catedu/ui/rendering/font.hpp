@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_UI_RENDERING_FONT
-#define HPP_CATEDU_UI_RENDERING_FONT
-
+#pragma once
 #include "catedu/file_buffer.hpp"
 #include "core.hpp"
 #include "pass.hpp"
@@ -41,5 +39,3 @@ struct UiFontRenderer
                           size_t until = SIZE_MAX);
     void deinit();
 };
-
-#endif

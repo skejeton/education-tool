@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_UI_AUTOLAYOUT
-#define HPP_CATEDU_UI_AUTOLAYOUT
-
+#pragma once
 #include "catedu/core/alloc/bump_allocator.hpp"
 #include "catedu/math.hpp"
 #include "catedu/table.hpp"
@@ -115,5 +113,3 @@ struct AutoLayoutProcess
     // Returns the count of elements in the destination array.
     void process(BumpAllocator alloc, AutoLayoutResult *&result);
 };
-
-#endif

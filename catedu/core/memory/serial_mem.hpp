@@ -1,6 +1,4 @@
-#ifndef H_CATEDU_CORE_SERIAL_MEM
-#define H_CATEDU_CORE_SERIAL_MEM
-
+#pragma once
 #include "buffer.hpp"
 #include <inttypes.h>
 
@@ -82,5 +80,3 @@ struct SerialMem
     /// @return Gives pointer to the current position in the buffer
     void *pointer();
 };
-
-#endif

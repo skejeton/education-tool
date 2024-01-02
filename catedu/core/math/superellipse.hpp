@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_CORE_MATH_QUINTIC_SUPERELLIPSE
-#define HPP_CATEDU_CORE_MATH_QUINTIC_SUPERELLIPSE
-
+#pragma once
 #include "coordinates.hpp"
 
 /**
@@ -24,5 +22,3 @@ Polar2 superellipse_generate(float n, float a, float b, float theta);
  * @return Whether the point is inside the superellipse.
  */
 bool superellipse_intersect_point(float n, float a, float b, Vector2 point);
-
-#endif

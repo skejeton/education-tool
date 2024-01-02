@@ -1,6 +1,6 @@
 #include "boxdraw.hpp"
 #include "catedu/sys/sg_tricks.hpp"
-#include "shaders.hxx"
+#include "catedu/shaders.hxx"
 #include <cassert>
 #include <cstdlib>
 #include <stdio.h>

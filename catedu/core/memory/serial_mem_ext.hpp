@@ -1,6 +1,4 @@
-#ifndef H_CATEDU_CORE_SERIAL_MEM_EXT
-#define H_CATEDU_CORE_SERIAL_MEM_EXT
-
+#pragma once
 #include "serial_mem.hpp"
 #include <string.h>
 
@@ -30,5 +28,3 @@ inline size_t read_string(SerialMem *serial_mem, char **string, size_t *size)
 }
 
 } // namespace serial_mem_ext
-
-#endif

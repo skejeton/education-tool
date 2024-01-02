@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_UI_RENDERING_TRANSFORM
-#define HPP_CATEDU_UI_RENDERING_TRANSFORM
-
+#pragma once
 #include "catedu/math.hpp"
 #include "core.hpp"
 #include <vector>
@@ -35,5 +33,3 @@ struct UiTransformer
 
     Vector2 transform_point(Vector2 point);
 };
-
-#endif

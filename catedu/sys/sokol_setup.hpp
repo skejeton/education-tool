@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_SYS_SETUP
-#define HPP_CATEDU_SYS_SETUP
-
+#pragma once
 #include "sokol/sokol_app.h"
 #include "sokol/sokol_log.h"
 
@@ -19,5 +17,3 @@ struct SokolSetup {
 };
 
 sapp_desc sokol_setup_default(const char *title, SokolSetup *setup);
-
-#endif

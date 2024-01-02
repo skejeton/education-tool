@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_RENDERING_TEXTURE
-#define HPP_CATEDU_RENDERING_TEXTURE
-
+#pragma once
 #include "catedu/math.hpp"
 #include "sokol/sokol_gfx.h"
 
@@ -26,5 +24,3 @@ struct Texture
 
     bool if_valid();
 };
-
-#endif // HPP_CATEDU_RENDERING_TEXTURE

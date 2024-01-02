@@ -2,13 +2,11 @@
 /// BRIEF: Entry point for everything
 ///
 
-#ifndef H_CATEDU_ENTRY
-#define H_CATEDU_ENTRY
-
-#include "boxdraw.hpp"
-#include "gui/editor/editor.hpp"
-#include "gui/game/game.hpp"
-#include "gui/main_menu/main_menu.hpp"
+#pragma once
+#include "catedu/rendering/3d/boxdraw.hpp"
+#include "catedu/gui/editor/editor.hpp"
+#include "catedu/gui/game/game.hpp"
+#include "catedu/gui/main_menu/main_menu.hpp"
 #include "input.hpp"
 #include "math.hpp"
 #include "physics.hpp"
@@ -41,5 +39,3 @@ struct Entry : SokolSetup
     void cleanup();
     void input(const sapp_event *event);
 };
-
-#endif // H_CATEDU_ENTRY

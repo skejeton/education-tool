@@ -1,4 +1,3 @@
-///
 #pragma once
 #include "catedu/math.hpp"
 #include "catedu/table.hpp"
@@ -15,6 +14,11 @@ struct ChunkPositionToChunk {
     Chunk chunk;
 };
 
+struct TilePositionToTile {
+    Vector2i position;
+    int id;
+};
+
 struct BasicTilemap {
     Table<ChunkPositionToChunk> chunks;
 
@@ -29,7 +33,7 @@ struct BasicTilemapSerial {
     int chunk_id;
     int tile_id;
 
-    static BasicTilemapSerial init();
+    static BasicTilemapSerial init(BasicTilemap &tilemap);
     void deinit();
-    int next();
+    TilePositionToTile next();
 };

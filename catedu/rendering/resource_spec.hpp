@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_RENDERING_RESOURCE_SPEC
-#define HPP_CATEDU_RENDERING_RESOURCE_SPEC
-
+#pragma once
 #include "catedu/math.hpp"
 #include "catedu/rendering/texture.hpp"
 #include "catedu/table.hpp"
@@ -32,5 +30,3 @@ struct ResourceSpec
     TableId find_model_by_name(const char *name);
     void deinit();
 };
-
-#endif // HPP_CATEDU_RENDERING_RESOURCE_SPEC

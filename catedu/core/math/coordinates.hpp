@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_CORE_MATH_COORDINATES
-#define HPP_CATEDU_CORE_MATH_COORDINATES
-
+#pragma once
 #include "catedu/math.hpp"
 
 /**
@@ -38,5 +36,3 @@ Vector3 polar3_into_cartesian(Polar3 coord);
  * @brief Converts a cartesian coordinate into a polar coordinate.
  */
 Polar3 cartesian_into_polar3(Vector3 coord);
-
-#endif

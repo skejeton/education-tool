@@ -2,9 +2,7 @@
 /// @brief Text editing operations
 /// ***
 
-#ifndef HPP_CATEDU_CORE_TEXT_EDITING_TEXT_EDITING
-#define HPP_CATEDU_CORE_TEXT_EDITING_TEXT_EDITING
-
+#pragma once
 #include <stdint.h>
 #include <stddef.h>
 
@@ -46,5 +44,3 @@ struct SingleLineTextEditor
     /// @brief Sets the cursor position.
     void set_cursor(SingleLineTextCursor cursor);
 };
-
-#endif

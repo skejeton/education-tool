@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_DIAG_DIAG_MONITOR
-#define HPP_CATEDU_DIAG_DIAG_MONITOR
-
+#pragma once
 #include <string>
 #include <vector>
 
@@ -46,5 +44,3 @@ struct DiagMonitorPass
         objects.push_back({DiagMonitorObject::Type::Value, name, value});
     }
 };
-
-#endif // HPP_CATEDU_DIAG_DIAG_MONITOR

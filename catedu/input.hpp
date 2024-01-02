@@ -2,9 +2,7 @@
 /// BRIEF: Input handling utilities.
 ///
 
-#ifndef H_INPUT_CATEDU
-#define H_INPUT_CATEDU
-
+#pragma once
 #include "math.hpp"
 #include "sokol/sokol_app.h"
 
@@ -26,5 +24,3 @@ struct Input
     void update(); // called every frame
     void pass_event(const sapp_event *event);
 };
-
-#endif

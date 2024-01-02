@@ -2,11 +2,10 @@
 /// BRIEF: Box drawing utilities (mostly for debugging)
 ///
 
-#ifndef H_BOXDRAW_CATEDU
-#define H_BOXDRAW_CATEDU
+#pragma once
 #define BOXDRAW_CMD_MAX (1 << 14)
 
-#include "math.hpp"
+#include "catedu/math.hpp"
 #include "sokol/sokol_app.h"
 #include "sokol/sokol_gfx.h"
 #include "catedu/rendering/texture.hpp"
@@ -51,5 +50,3 @@ inline BoxdrawCommand boxdraw_cmdtexture(Box3 box, Texture texture)
 {
     return {box, {1.0, 1.0, 1.0, 1.0}, {1.0, 1.0, 1.0, 1.0}, texture};
 }
-
-#endif // H_BOXDRAW_CATEDU

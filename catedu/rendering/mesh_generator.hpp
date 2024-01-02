@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_RENDERING_MESH_GENERATOR
-#define HPP_CATEDU_RENDERING_MESH_GENERATOR
-
+#pragma once
 #include <vector>
 #include "render_buffer.hpp"
 #include "catedu/math.hpp"
@@ -21,5 +19,3 @@ struct RenderMeshGenerator {
     ///       allow to merge buffers instead.
     RenderGeo convert(RenderWriteDesc desc);
 };
-
-#endif

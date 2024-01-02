@@ -2,9 +2,7 @@
 /// BRIEF: First-person camera controller.
 ///
 
-#ifndef H_CAMERA_CATEDU
-#define H_CAMERA_CATEDU
-
+#pragma once
 #include "math.hpp"
 
 struct Camera
@@ -22,5 +20,3 @@ struct Camera
     Ray3 ray();
     void move(float sideways, float upward, float forward);
 };
-
-#endif // H_CAMERA_CATEDU

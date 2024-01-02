@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_GUI_EDITOR_EDITOR
-#define HPP_CATEDU_GUI_EDITOR_EDITOR
-
+#pragma once
 #include "catedu/input.hpp"
 #include "catedu/ui/user.hpp"
 #include "catedu/rendering/resource_spec.hpp"
@@ -22,5 +20,3 @@ struct GuiEditor
     static GuiEditor init(UiState *ui_state);
     void deinit();
 };
-
-#endif // HPP_CATEDU_GUI_EDITOR_EDITOR

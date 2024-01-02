@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_CORE_PATCHER_PATCH_DEBUGGER
-#define HPP_CATEDU_CORE_PATCHER_PATCH_DEBUGGER
-
+#pragma once
 #include "patch_explorer.hpp"
 
 /**
@@ -12,5 +10,3 @@ struct PatchDebugger
 
     void section(const char *section);
 };
-
-#endif

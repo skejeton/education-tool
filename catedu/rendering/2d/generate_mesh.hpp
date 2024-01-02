@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_RENDERING_2D_GENERATE_MESH
-#define HPP_CATEDU_RENDERING_2D_GENERATE_MESH
-
+#pragma once
 #include "../render_buffer.hpp"
 #include "catedu/math.hpp"
 #include <functional>
@@ -29,5 +27,3 @@ RenderGeo rendering_2d_generate_circle(RenderWriteDesc desc,
                                        size_t sample_count);
 
 RenderGeo rendering_2d_generate_square(RenderWriteDesc desc);
-
-#endif

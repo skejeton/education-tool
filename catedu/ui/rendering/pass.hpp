@@ -1,9 +1,7 @@
 ///
 /// BRIEF: Rendering pass for UI
 ///
-#ifndef HPP_CATEDU_UI_RENDERING_PASS
-#define HPP_CATEDU_UI_RENDERING_PASS
-
+#pragma once
 #include "core.hpp"
 #include "transform.hpp"
 
@@ -22,5 +20,3 @@ struct UiRenderingPass
 
     void render_brush(UiBrush brush);
 };
-
-#endif // HPP_CATEDU_UI_RENDERING_PASS

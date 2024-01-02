@@ -2,6 +2,7 @@
 /// BRIEF: Collection of math types and functions
 ///
 
+#pragma once
 // NOTE: Oh I hate you Microsoft SO much
 #ifdef far
 #undef far
@@ -10,8 +11,6 @@
 #undef near
 #endif
 
-#ifndef H_MATH_CATEDU
-#define H_MATH_CATEDU
 #include "stadef.h"
 #include <cmath>
 #include <stdint.h>
@@ -821,5 +820,3 @@ inline Vector2 vector2i_to_vector2(Vector2i v)
 {
     return {(float)v.x, (float)v.y};
 }
-
-#endif // H_MATH_CATEDU

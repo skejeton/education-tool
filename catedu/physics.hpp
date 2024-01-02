@@ -1,7 +1,5 @@
-#ifndef HPP_CATEDU_PHYSICS
-#define HPP_CATEDU_PHYSICS
-
-#include "boxdraw.hpp"
+#pragma once
+#include "catedu/rendering/3d/boxdraw.hpp"
 #include "catedu/math.hpp"
 #include "catedu/table.hpp"
 #include "catedu/rendering/resource_spec.hpp"
@@ -57,4 +55,3 @@ void render_physics_world_via_boxdraw(PhysicsWorld &world,
                                       BoxdrawRenderer &boxdraw,
                                       ResourceSpec &resources);
 bool move_player(WorldState &world, Vector2 delta, int &floor);
-#endif

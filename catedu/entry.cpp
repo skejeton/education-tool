@@ -1,5 +1,4 @@
 #include "entry.hpp"
-#include "boxdraw.hpp"
 #include "camera.hpp"
 #include "catedu/sys/sg_tricks.hpp"
 #include "console.hpp"
