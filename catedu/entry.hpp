@@ -20,7 +20,6 @@
 
 struct Entry : SokolSetup
 {
-    WorldState world_state;
     UiState ui_state;
     GuiMainMenu main_menu;
     GuiEditor editor;

@@ -26,32 +26,7 @@ struct PhysicsManifolds
 struct PhysicsWorld
 {
     Table<PhysicsBody> bodies;
+
+    PhysicsManifolds detect_collisions();
+    void resolve_physics(PhysicsManifolds &manifolds);
 };
-
-void resolve_dynamic_vs_static(PhysicsBody &dynamic, PhysicsBody static_);
-
-PhysicsManifolds dGGetect_collisions(PhysicsWorld &world);
-void resolve_physics(PhysicsWorld &world, PhysicsManifolds &manifolds);
-
-struct WorldPrototype
-{
-    char tiles[16 * 16];
-};
-
-struct WorldState
-{
-    PhysicsWorld physics;
-    TableId player_id;
-
-    void deinit()
-    {
-        physics.bodies.deinit();
-    }
-};
-
-WorldState world_prototype_to_world_state(WorldPrototype &prototype);
-Rect &world_state_player_rect(WorldState &world);
-void render_physics_world_via_boxdraw(PhysicsWorld &world,
-                                      BoxdrawRenderer &boxdraw,
-                                      ResourceSpec &resources);
-bool move_player(WorldState &world, Vector2 delta, int &floor);

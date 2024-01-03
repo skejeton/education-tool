@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_CORE_PATCHER_PATCH_EXPLORER
-#define HPP_CATEDU_CORE_PATCHER_PATCH_EXPLORER
-
+#pragma once
 #include "patch.hpp"
 
 /**
@@ -17,5 +15,3 @@ struct PatchExplorer
 
     PatchSection get_section(const char *section);
 };
-
-#endif

@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_GUI_GAME_GAME
-#define HPP_CATEDU_GUI_GAME_GAME
-
+#pragma once
 #include "catedu/ui/user.hpp"
 #include <sokol/sokol_app.h>
 
@@ -31,5 +29,3 @@ struct GuiGame
 
     int show(int currency, int reals, char **script);
 };
-
-#endif // HPP_CATEDU_GUI_GAME_GAME

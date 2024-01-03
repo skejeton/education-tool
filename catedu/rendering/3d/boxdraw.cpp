@@ -208,7 +208,7 @@ void boxdraw_flush(BoxdrawRenderer *renderer, Matrix4 view_projection)
     sg_image prev_image_id = {0};
     sg_sampler prev_sampler_id = {0};
 
-    boxdraw_vs_params_t vs_params;
+    boxdraw_vs_params_t vs_params = {};
     for (size_t i = 0; i < renderer->commands_count; i++)
     {
         bool flush = false;
