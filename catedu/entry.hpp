@@ -17,10 +17,12 @@
 #include "sokol/sokol_log.h"
 #include "catedu/rendering/resource_spec.hpp"
 #include "catedu/sys/sokol_setup.hpp"
+#include "catedu/scene/legacy_scene.hpp"
 
 struct Entry : SokolSetup
 {
     UiState ui_state;
+    LegacyScene scene;
     GuiMainMenu main_menu;
     GuiEditor editor;
     GuiGame game_gui;

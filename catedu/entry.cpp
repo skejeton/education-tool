@@ -5,6 +5,8 @@
 #include "math.hpp"
 #include "resources/resources.hpp"
 #include <cstdlib>
+#include "catedu/core/fs/read_file_temp.hpp"
+#include "catedu/camera_input.hpp"
 
 void render_layer(const char *s, Vector3 pos, BoxdrawRenderer &boxdraw,
                   Texture tileset)
@@ -105,15 +107,16 @@ void show_menu_animation(Entry *entry)
     boxdraw_flush(&entry->boxdraw_renderer, camera.vp);
 }
 
+Camera camera = Camera::init(45);
 void show_debug(Entry *entry)
 {
     const float width = sapp_widthf();
     const float height = sapp_heightf();
 
-    Camera camera = Camera::init(45);
     camera.set_aspect(width / height);
+    camera_input_apply(&camera, &entry->input_state);
 
-    camera.rotate(0, -75);
+    entry->scene.render(entry->boxdraw_renderer, entry->res);
 
     boxdraw_flush(&entry->boxdraw_renderer, camera.vp);
 }
@@ -157,6 +160,11 @@ void Entry::init()
     main_menu = GuiMainMenu::init(&ui_state);
     editor = GuiEditor::init(&ui_state);
     game_gui = GuiGame::init(&ui_state);
+
+    READ_FILE_TEMP(file, "./data/world.dat", {
+        scene = LegacyScene::init(file);
+    })
+
     this->boxdraw_renderer = boxdraw_create();
 }
 

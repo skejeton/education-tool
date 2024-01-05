@@ -2,7 +2,7 @@
 #include "coordinates.hpp"
 
 /**
- * @brief Generates a point on a quintic superellipse.
+ * @brief Generates a point on a superellipse.
  *
  * @param n The power of the superellipse.
  * @param a The x-radius of the superellipse.
@@ -13,7 +13,7 @@
 Polar2 superellipse_generate(float n, float a, float b, float theta);
 
 /**
- * @brief Checks if a point is inside a quintic superellipse.
+ * @brief Checks if a point is inside a superellipse.
  *
  * @param n The power of the superellipse.
  * @param a The x-radius of the superellipse.

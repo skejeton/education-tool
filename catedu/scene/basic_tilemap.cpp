@@ -43,7 +43,7 @@ void BasicTilemapSerial::deinit()
 TilePositionToTile BasicTilemapSerial::next()
 {
     for (; chunk_id < tilemap->chunks.count; chunk_id++) {
-        ChunkPositionToChunk &chunk = tilemap->chunks.get_assert({(size_t)chunk_id, 0});
+        ChunkPositionToChunk &chunk = tilemap->chunks.get_assert({(size_t)chunk_id+1, 0});
         for (; tile_id < BASIC_TILEMAP_CHUNK_SIZE; tile_id++) {
             if (chunk.chunk.data[tile_id] != 0) {
                 TilePositionToTile tile = {};
@@ -55,6 +55,10 @@ TilePositionToTile BasicTilemapSerial::next()
         }
         tile_id = 0;
     }
+
+    TilePositionToTile tile = {};
+    tile.id = -1;
+    return tile;
 }
 
 BasicTilemap BasicTilemap::init()

@@ -11,7 +11,7 @@ static Matrix4 make_vp(Camera *camera)
     Vector3 p = camera->position;
     Matrix4 view = Matrix4::look_at(p, p + eye, {0.0f, 1.0f, 0.0f});
     Matrix4 proj = Matrix4::perspective(camera->fov_deg * (MATH_TAU / 360),
-                                        camera->aspect, 0.1f, 20.0f);
+                                        camera->aspect, 0.1f, 1000.0f);
 
     return proj * view;
 }

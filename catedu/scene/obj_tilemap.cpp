@@ -1,4 +1,5 @@
 #include "obj_tilemap.hpp"
+#include "catedu/rendering/render_model.hpp"
 
 ObjTilemap ObjTilemap::init()
 {
@@ -25,9 +26,18 @@ int ObjTilemap::get_tile(Vector2i tile_position)
 void ObjTilemap::render(BoxdrawRenderer &renderer, ResourceSpec &resources)
 {
     BasicTilemapSerial serial = BasicTilemapSerial::init(this->tilemap);
-    for (TilePositionToTile tile = serial.next(); tile.id != 0; tile = serial.next())
+    for (TilePositionToTile tile = serial.next(); tile.id != -1; tile = serial.next())
     {
+        if (tile.id == 0)
+        {
+            continue;
+        }
+
         Vector3 pos = {(float)tile.position.x, 0, (float)tile.position.y};
-        // TODO make link between tile_id and tileset
+
+        // FIXME: Assumes that tile ID's in the tilemap are the same as in the resource spec.
+        SpecTile tile_spec = resources.tiles.get_assert({(size_t)tile.id});
+        SpecModel model_spec = resources.models.get_assert(tile_spec.model_id);
+        render_model_at(pos, resources, tile_spec.model_id, renderer, false);
     }
 }
