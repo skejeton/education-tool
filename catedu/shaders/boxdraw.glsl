@@ -80,9 +80,8 @@ void main() {
                    dist *
                    LOG2 );
     fogFactor = clamp(fogFactor, 0.0, 1.0);
-
-    uv = clamp(uv, vec2(min_bound_x, min_bound_y), vec2(max_bound_x, max_bound_y));
     */
+    uv = clamp(uv, vec2(min_bound_x, min_bound_y), vec2(max_bound_x, max_bound_y));
 
     vec4 sample_value = texture(sampler2D(image, image_sampler), uv);
     frag_color = sample_value * color;
