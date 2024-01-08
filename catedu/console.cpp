@@ -25,14 +25,9 @@ static void last_error_fatal()
     //   No need to free message as the app already exited.
 }
 
+// NOTE: Always creates a new console on windows.
 void console_create_or_bind_existing()
 {
-    if (GetConsoleWindow() != NULL)
-    {
-        // Already has console
-        return;
-    }
-
     if (!AllocConsole())
     {
         last_error_fatal();
