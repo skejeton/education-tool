@@ -13,7 +13,41 @@ ObjEntity ObjEntity::init(const char *model_name, Vector2 pos)
 
 void ObjEntity::deinit()
 {
+}
 
+void ObjEntity::update(PhysicsWorld &world, ResourceSpec &resources)
+{
+    if (body_id.id == 0)
+    {
+        PhysicsBody body = {0};
+        TableId model_id = resources.find_model_by_name(this->model_name);
+        if (model_id.id == 0)
+        {
+            model_id = resources.find_model_by_name("invalid");
+        }
+        SpecModel model = resources.models.get_assert(model_id);
+
+        this->pos.x += (model.model.max.x - model.model.min.x) / 2.0f;
+        this->pos.y += (model.model.max.z - model.model.min.z) / 2.0f;
+
+        body.area = {(float)this->pos.x + model.model.min.x,
+                     (float)this->pos.y + model.model.min.z,
+                     model.model.max.x - model.model.min.x,
+                     model.model.max.z - model.model.min.z};
+        if (strcmp(model.name, "player") == 0 ||
+            strcmp(model.name, "entity") == 0)
+        {
+            body.solid = true;
+            body.dynamic = true;
+        }
+
+        body_id = world.bodies.allocate(body);
+    }
+    else
+    {
+        PhysicsBody &body = world.bodies.get_assert(body_id);
+        this->pos = body.area.pos;
+    }
 }
 
 void ObjEntity::render(BoxdrawRenderer &renderer, ResourceSpec &resources)

@@ -31,6 +31,7 @@ More system dependencies
 - cmake
 - python3
 - some x11 libs on linux
+  - on ubuntu: libx11-dev libxi-dev libxcursor-dev libgl-dev
 
 ## Build and Run
 ```

@@ -1,12 +1,13 @@
 #include "entry.hpp"
 #include "camera.hpp"
+#include "catedu/camera_input.hpp"
+#include "catedu/core/fs/read_file_temp.hpp"
+#include "catedu/scene/legacy_scene.hpp"
 #include "catedu/sys/sg_tricks.hpp"
 #include "console.hpp"
 #include "math.hpp"
 #include "resources/resources.hpp"
 #include <cstdlib>
-#include "catedu/core/fs/read_file_temp.hpp"
-#include "catedu/camera_input.hpp"
 
 void render_layer(const char *s, Vector3 pos, BoxdrawRenderer &boxdraw,
                   Texture tileset)
@@ -116,6 +117,27 @@ void show_debug(Entry *entry)
     camera.set_aspect(width / height);
     camera_input_apply(&camera, &entry->input_state);
 
+    Object *player =
+        entry->scene.get_object(entry->scene.find_object("player"));
+    PhysicsBody *body = entry->scene.physics.bodies.get(player->entity.body_id);
+    if (entry->input_state.key_states[SAPP_KEYCODE_LEFT].held)
+    {
+        body->area.pos.x -= 0.1;
+    }
+    if (entry->input_state.key_states[SAPP_KEYCODE_RIGHT].held)
+    {
+        body->area.pos.x += 0.1;
+    }
+    if (entry->input_state.key_states[SAPP_KEYCODE_UP].held)
+    {
+        body->area.pos.y += 0.1;
+    }
+    if (entry->input_state.key_states[SAPP_KEYCODE_DOWN].held)
+    {
+        body->area.pos.y -= 0.1;
+    }
+
+    entry->scene.update(entry->res);
     entry->scene.render(entry->boxdraw_renderer, entry->res);
 
     boxdraw_flush(&entry->boxdraw_renderer, camera.vp);
@@ -161,9 +183,8 @@ void Entry::init()
     editor = GuiEditor::init(&ui_state);
     game_gui = GuiGame::init(&ui_state);
 
-    READ_FILE_TEMP(file, "./data/world.dat", {
-        scene = LegacyScene::init(file);
-    })
+    READ_FILE_TEMP(file, "./data/world.dat",
+                   { scene = LegacyScene::load_data_to_scene(file); })
 
     this->boxdraw_renderer = boxdraw_create();
 }

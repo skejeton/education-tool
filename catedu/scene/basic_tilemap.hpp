@@ -3,23 +3,28 @@
 #include "catedu/table.hpp"
 
 #define BASIC_TILEMAP_CHUNK_DIM 64
-#define BASIC_TILEMAP_CHUNK_SIZE (BASIC_TILEMAP_CHUNK_DIM * BASIC_TILEMAP_CHUNK_DIM)
+#define BASIC_TILEMAP_CHUNK_SIZE                                               \
+    (BASIC_TILEMAP_CHUNK_DIM * BASIC_TILEMAP_CHUNK_DIM)
 
-struct Chunk {
+struct Chunk
+{
     int data[BASIC_TILEMAP_CHUNK_SIZE];
 };
 
-struct ChunkPositionToChunk {
+struct ChunkPositionToChunk
+{
     Vector2i chunk_position;
     Chunk chunk;
 };
 
-struct TilePositionToTile {
+struct TilePositionToTile
+{
     Vector2i position;
     int id;
 };
 
-struct BasicTilemap {
+struct BasicTilemap
+{
     Table<ChunkPositionToChunk> chunks;
 
     static BasicTilemap init();
@@ -28,7 +33,8 @@ struct BasicTilemap {
     int get_tile(Vector2i tile_position);
 };
 
-struct BasicTilemapSerial {
+struct BasicTilemapSerial
+{
     BasicTilemap *tilemap;
     int chunk_id;
     int tile_id;

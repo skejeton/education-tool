@@ -40,7 +40,7 @@ static void event_callback(const sapp_event *event, void *userdata)
 
 sapp_desc sokol_setup_default(const char *title, SokolSetup *setup)
 {
-    // Wish C++ had using for variables...
+    // Wish C++ had `using` for variables...
     sapp_desc r = {};
 
     // Instead of using a global variable
@@ -55,8 +55,8 @@ sapp_desc sokol_setup_default(const char *title, SokolSetup *setup)
     // Window settings
     r.window_title = title;
     r.high_dpi = true;
-    r.width = 1024;
-    r.height = 768;
+    r.width = 1024 * sapp_dpi_scale();
+    r.height = 768 * sapp_dpi_scale();
     r.sample_count = 1;
     r.icon.sokol_default = false;
 

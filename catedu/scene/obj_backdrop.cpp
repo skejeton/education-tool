@@ -1,7 +1,5 @@
 #include "obj_backdrop.hpp"
 
-
-
 ObjBackdrop ObjBackdrop::init(Rect texture_rect)
 {
     ObjBackdrop result = {};
@@ -11,7 +9,10 @@ ObjBackdrop ObjBackdrop::init(Rect texture_rect)
 
 void ObjBackdrop::deinit()
 {
+}
 
+void ObjBackdrop::update(PhysicsWorld &world, ResourceSpec &resources)
+{
 }
 
 void ObjBackdrop::render(BoxdrawRenderer &renderer, ResourceSpec &resources)

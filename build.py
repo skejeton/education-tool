@@ -97,7 +97,7 @@ def target_build(p: CompileProperties):
     command += "&& lib/sokol-tools-bin/bin/linux/sokol-shdc --input catedu/shaders/amalgamation.glsl --output catedu/shaders.hxx --slang glsl330 "
     command += "&& cd bin "
     command += f"&& cmake -DCMAKE_BUILD_TYPE={mode_string} {test_string} .. "
-    command += "&& make "
+    command += "&& make -j4 "
     command += "&& cd .. "
     if p.run_mode:
       command += "&& ./bin/catedu"

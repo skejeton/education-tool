@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <string.h>
 
 // Returns a malloc-allocated string
 char *string_duplicate(const char *string)

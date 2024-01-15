@@ -1,11 +1,11 @@
 #include "boxdraw.hpp"
-#include "catedu/sys/sg_tricks.hpp"
 #include "catedu/shaders.hxx"
+#include "catedu/sys/sg_tricks.hpp"
 #include <cassert>
 #include <cstdlib>
 #include <stdio.h>
 
-#define INSTANCE_MAX 1024
+#define INSTANCE_MAX 2048
 
 // clang-format off
 const float static cube_vertices[] = {
@@ -102,13 +102,17 @@ BoxdrawRenderer boxdraw_create()
     pipeline_desc.layout.attrs[1].format = SG_VERTEXFORMAT_FLOAT3; // normal
     pipeline_desc.layout.attrs[2].format = SG_VERTEXFORMAT_FLOAT2; // UV
     // Instance data
-    pipeline_desc.layout.attrs[3].format = SG_VERTEXFORMAT_FLOAT4; // matrix row 1
+    pipeline_desc.layout.attrs[3].format =
+        SG_VERTEXFORMAT_FLOAT4; // matrix row 1
     pipeline_desc.layout.attrs[3].buffer_index = 1;
-    pipeline_desc.layout.attrs[4].format = SG_VERTEXFORMAT_FLOAT4; // matrix row 2
+    pipeline_desc.layout.attrs[4].format =
+        SG_VERTEXFORMAT_FLOAT4; // matrix row 2
     pipeline_desc.layout.attrs[4].buffer_index = 1;
-    pipeline_desc.layout.attrs[5].format = SG_VERTEXFORMAT_FLOAT4; // matrix row 3
+    pipeline_desc.layout.attrs[5].format =
+        SG_VERTEXFORMAT_FLOAT4; // matrix row 3
     pipeline_desc.layout.attrs[5].buffer_index = 1;
-    pipeline_desc.layout.attrs[6].format = SG_VERTEXFORMAT_FLOAT4; // matrix row 4
+    pipeline_desc.layout.attrs[6].format =
+        SG_VERTEXFORMAT_FLOAT4; // matrix row 4
     pipeline_desc.layout.attrs[6].buffer_index = 1;
     pipeline_desc.layout.attrs[7].format = SG_VERTEXFORMAT_FLOAT2; // uv min
     pipeline_desc.layout.attrs[7].buffer_index = 1;
@@ -116,10 +120,9 @@ BoxdrawRenderer boxdraw_create()
     pipeline_desc.layout.attrs[8].buffer_index = 1;
     pipeline_desc.layout.attrs[9].format = SG_VERTEXFORMAT_FLOAT2; // size
     pipeline_desc.layout.attrs[9].buffer_index = 1;
-    pipeline_desc.layout.attrs[10].format = SG_VERTEXFORMAT_FLOAT2; // tile count
+    pipeline_desc.layout.attrs[10].format =
+        SG_VERTEXFORMAT_FLOAT2; // tile count
     pipeline_desc.layout.attrs[10].buffer_index = 1;
-
-
 
     pipeline_desc.colors[0].blend.enabled = true;
     pipeline_desc.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
@@ -190,11 +193,45 @@ static void rflush(BoxdrawRenderer *renderer, boxdraw_vs_params_t vs_params)
         return;
 
     sg_range params_range = SG_RANGE(vs_params);
-    sg_update_buffer(renderer->instance_buffer, {instance_data, instance_count * sizeof(Instance)});
-    sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_boxdraw_vs_params,
-                        &params_range);
+    sg_update_buffer(renderer->instance_buffer,
+                     {instance_data, instance_count * sizeof(Instance)});
+    sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_boxdraw_vs_params, &params_range);
     sg_draw(0, 36, instance_count);
     instance_count = 0;
+}
+
+void boxdraw_render_command(BoxdrawRenderer *renderer, Matrix4 view_projection,
+                            BoxdrawCommand &command,
+                            boxdraw_vs_params_t &vs_params)
+{
+    Matrix4 model = create_box_transform(command.box);
+    instance_data[instance_count++] = {
+        view_projection * model, command.texture.uv_min(),
+        command.texture.uv_max(), command.texture.size,
+        command.texture.tile_count};
+
+    vs_params.color_top = command.top_color;
+    vs_params.color_bottom = command.bottom_color;
+    vs_params.color_mul = {1, 1, 1, 1};
+
+    if (command.texture.if_valid())
+    {
+        renderer->bindings.fs.images[0] = command.texture.sysid_texture;
+        renderer->bindings.fs.samplers[0] = command.texture.sysid_sampler;
+    }
+    else
+    {
+        sg_tricks_get_white_texture(renderer->bindings.fs.images[0],
+                                    renderer->bindings.fs.samplers[0]);
+    }
+
+    // FIXME: Only the last texture will be used for drawing, if previous
+    //        commands use a different texture, the output will be broken.
+    sg_apply_bindings(renderer->bindings);
+    if (instance_count >= INSTANCE_MAX)
+    {
+        assert(false);
+    }
 }
 
 void boxdraw_flush(BoxdrawRenderer *renderer, Matrix4 view_projection)
@@ -205,49 +242,28 @@ void boxdraw_flush(BoxdrawRenderer *renderer, Matrix4 view_projection)
     sg_begin_default_pass(&renderer->pass_action, width, height);
     sg_apply_pipeline(renderer->pipeline);
 
-    sg_image prev_image_id = {0};
-    sg_sampler prev_sampler_id = {0};
-
     boxdraw_vs_params_t vs_params = {};
+
     for (size_t i = 0; i < renderer->commands_count; i++)
     {
-        bool flush = false;
         BoxdrawCommand command = renderer->commands[i];
-
-        Matrix4 model = create_box_transform(command.box);
-        instance_data[instance_count++] = {
-            view_projection * model,
-            command.texture.uv_min(),
-            command.texture.uv_max(),
-            command.texture.size,
-            command.texture.tile_count
-        };
-
-        vs_params.color_top = command.top_color;
-        vs_params.color_bottom = command.bottom_color;
-        vs_params.color_mul = {1, 1, 1, 1};
-
-        if (command.texture.if_valid())
+        if (command.transparent)
         {
-            renderer->bindings.fs.images[0] = command.texture.sysid_texture;
-            renderer->bindings.fs.samplers[0] = command.texture.sysid_sampler;
+            // render transparent objects last
+            continue;
         }
-        else
-        {
-            sg_tricks_get_white_texture(renderer->bindings.fs.images[0],
-                                        renderer->bindings.fs.samplers[0]);
-        }
+        boxdraw_render_command(renderer, view_projection, command, vs_params);
+    }
 
-        if (prev_image_id.id != renderer->bindings.fs.images[0].id ||
-            prev_sampler_id.id != renderer->bindings.fs.samplers[0].id)
+    for (size_t i = 0; i < renderer->commands_count; i++)
+    {
+        BoxdrawCommand command = renderer->commands[i];
+        if (!command.transparent)
         {
-            sg_apply_bindings(renderer->bindings);
-        } else if (instance_count >= INSTANCE_MAX) {
-            assert(false);
+            // render opaque objects first
+            continue;
         }
-
-        prev_image_id = command.texture.sysid_texture;
-        prev_sampler_id = command.texture.sysid_sampler;
+        boxdraw_render_command(renderer, view_projection, command, vs_params);
     }
 
     rflush(renderer, vs_params);

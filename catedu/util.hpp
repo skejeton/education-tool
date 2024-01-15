@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "math.hpp"
+#include "catedu/math.hpp"
 
 char*
 string_duplicate(const char*);

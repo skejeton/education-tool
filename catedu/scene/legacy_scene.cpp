@@ -1,40 +1,43 @@
 #include "legacy_scene.hpp"
 
-
-LegacyScene LegacyScene::init(Buffer file)
+Scene LegacyScene::load_data_to_scene(Buffer file)
 {
-    LegacyScene scene = {};
+    Scene result = Scene::init();
 
-    scene.ground = ObjTilemap::init();
-    scene.middle = ObjTilemap::init();
-    scene.backdrop = ObjBackdrop::init({0, 32, 32, 32});
+    auto backdrop = ObjBackdrop::init({0, 32, 32, 32});
+    auto ground = ObjTilemap::init();
+    auto middle = ObjTilemap::init();
 
     // ground
     for (int i = 0; i < 64; i++)
     {
         for (int j = 0; j < 64; j++)
         {
-            scene.ground.set_tile({i, j}, ((int*)file.data)[i*64+j]);
+            ground.set_tile({i, j}, ((int *)file.data)[i * 64 + j]);
         }
     }
 
-    file.data = (uint8_t*)file.data + sizeof(int) * 64 * 64;
+    file.data = (uint8_t *)file.data + sizeof(int) * 64 * 64;
 
     // middle
     for (int i = 0; i < 64; i++)
     {
         for (int j = 0; j < 64; j++)
         {
-            scene.middle.set_tile({i, j}, ((int*)file.data)[i*64+j]);
+            middle.set_tile({i, j}, ((int *)file.data)[i * 64 + j]);
         }
     }
 
-    file.data = (uint8_t*)file.data + sizeof(int) * 64 * 64;
+    file.data = (uint8_t *)file.data + sizeof(int) * 64 * 64;
+
+    result.add_object(Scene::object(backdrop));
+    result.add_object(Scene::object(ground));
+    result.add_object(Scene::object(middle));
 
     // entities
-    scene.entity_count = *((uint64_t*)file.data);
-    file.data = (uint8_t*)file.data + sizeof(uint64_t);
-    for (int i = 0; i < scene.entity_count; i++)
+    uint32_t entity_count = *((uint64_t *)file.data) - 1;
+    file.data = (uint8_t *)file.data + sizeof(uint64_t);
+    for (int i = 0; i < entity_count; i++)
     {
         struct WorldEntity
         {
@@ -45,34 +48,15 @@ LegacyScene LegacyScene::init(Buffer file)
             Vector2 pos;
         };
 
-        scene.entities[i] = ObjEntity::init(
-            ((WorldEntity*)file.data)->model_name,
-            ((WorldEntity*)file.data)->pos+Vector2{32, 32});
-        file.data = (uint8_t*)file.data + sizeof(WorldEntity);
+        Object obj = Scene::object(
+            ObjEntity::init(((WorldEntity *)file.data)->model_name,
+                            ((WorldEntity *)file.data)->pos + Vector2{32, 32}));
+
+        memcpy(obj.id, ((WorldEntity *)file.data)->id, 32);
+        result.add_object(obj);
+
+        file.data = (uint8_t *)file.data + sizeof(WorldEntity);
     }
 
-
-    return scene;
-}
-
-void LegacyScene::render(BoxdrawRenderer &renderer, ResourceSpec &resources)
-{
-    this->backdrop.render(renderer, resources);
-    this->ground.render(renderer, resources);
-    this->middle.render(renderer, resources);
-    for (size_t i = 0; i < this->entity_count; i++)
-    {
-        this->entities[i].render(renderer, resources);
-    }
-}
-
-void LegacyScene::deinit()
-{
-    this->backdrop.deinit();
-    this->ground.deinit();
-    this->middle.deinit();
-    for (size_t i = 0; i < this->entity_count; i++)
-    {
-        this->entities[i].deinit();
-    }
+    return result;
 }

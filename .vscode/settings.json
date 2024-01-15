@@ -77,5 +77,6 @@
     "xtree": "cpp"
   },
   "C_Cpp.errorSquiggles": "enabled",
-  "todo-tree.tree.scanMode": "workspace only"
+  "todo-tree.tree.scanMode": "workspace only",
+  "cmake.configureOnOpen": false
 }

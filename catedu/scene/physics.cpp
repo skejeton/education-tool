@@ -1,11 +1,5 @@
 #include "physics.hpp"
 
-#define TAG_WALL 0
-#define TAG_PLAYER 1
-#define TAG_BOX 2
-#define TAG_UP 3
-#define TAG_DOWN 4
-
 void resolve_bodies(PhysicsBody &a, PhysicsBody b)
 {
     if (a.dynamic && !b.dynamic)
