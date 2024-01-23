@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_CORE_PATCHER_PATCH_CREATOR
-#define HPP_CATEDU_CORE_PATCHER_PATCH_CREATOR
-
+#pragma once
 #include "patch.hpp"
 
 /**
@@ -15,5 +13,3 @@ struct PatchCreator
     void value(const char *section, Buffer data);
     void string(const char *section, const char *value);
 };
-
-#endif

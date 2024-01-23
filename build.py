@@ -10,17 +10,17 @@ class Arguments:
 class CompileProperties:
   def __init__(self):
     self.test_mode = False
-    self.env_test = False
+    self.testbed = False
     self.release_mode = False
-    self.env_test_name = ""
+    self.testbed_name = ""
     self.run_mode = False
 
   def set_test(self):
     self.test_mode = True
 
-  def set_env_test(self, name):
-    self.env_test = True
-    self.env_test_name = name
+  def set_testbed(self, name):
+    self.testbed = True
+    self.testbed_name = name
 
   def set_release(self):
     self.release_mode = True
@@ -62,8 +62,8 @@ def target_build_wasm():
 
 def target_build(p: CompileProperties):
   test_string = ""
-  if p.test_mode and p.env_test:
-    test_string += f"-DENV_TYPE=ENVTEST -DENV_TEST_NAME={p.env_test_name}"
+  if p.test_mode and p.testbed:
+    test_string += f"-DENV_TYPE=TESTBED -DTESTBED_NAME={p.testbed_name}"
   elif p.test_mode:
     test_string += "-DENV_TYPE=UNITTEST"
   else:
@@ -97,7 +97,7 @@ def target_build(p: CompileProperties):
     command += "&& lib/sokol-tools-bin/bin/linux/sokol-shdc --input catedu/shaders/amalgamation.glsl --output catedu/shaders.hxx --slang glsl330 "
     command += "&& cd bin "
     command += f"&& cmake -DCMAKE_BUILD_TYPE={mode_string} {test_string} .. "
-    command += "&& make "
+    command += "&& make -j4 "
     command += "&& cd .. "
     if p.run_mode:
       command += "&& ./bin/catedu"
@@ -120,11 +120,12 @@ def main():
 
   if arguments.target == "build-wasm":
     script = target_build_wasm()
-  elif arguments.target == "test-unit":
+  elif arguments.target == "test":
     p.set_test()
     p.set_run()
-  elif arguments.target == "test-env":
-    p.set_env_test(arguments.switches[0])
+  elif arguments.target == "testbed":
+    p.set_testbed(arguments.switches[0])
+    p.set_test()
     p.set_run()
   elif arguments.target == "run":
     p.set_run()

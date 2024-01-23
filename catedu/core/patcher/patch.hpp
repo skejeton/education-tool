@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_CORE_PATCHER_PATCH
-#define HPP_CATEDU_CORE_PATCHER_PATCH
-
+#pragma once
 #include "catedu/core/memory/buffer.hpp"
 #include <stddef.h>
 #include <stdint.h>
@@ -39,5 +37,3 @@ struct PatchSection
         PatchSectionScope scope;
     };
 };
-
-#endif

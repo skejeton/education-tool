@@ -1,7 +1,5 @@
-#ifndef HPP_CATEDU_CORE_STORAGE_ID_RETAINER
-#define HPP_CATEDU_CORE_STORAGE_ID_RETAINER
-
-#include "catedu/util.hpp"
+#pragma once
+#include "catedu/misc/util.hpp"
 #include <assert.h>
 #include <map>
 #include <stddef.h>
@@ -112,5 +110,3 @@ template <typename T> inline void IdRetainer<T>::pop(int n)
         this->current_path.pop_back();
     }
 }
-
-#endif

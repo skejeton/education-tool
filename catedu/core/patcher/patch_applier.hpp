@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_CORE_PATCHER_PATCH_APPLIER
-#define HPP_CATEDU_CORE_PATCHER_PATCH_APPLIER
-
+#pragma once
 #include "catedu/core/memory/buffer.hpp"
 #include "patch_explorer.hpp"
 
@@ -14,5 +12,3 @@ struct PatchApplier
     void value(const char *section, Buffer data);
     void string(const char *section, char **value);
 };
-
-#endif

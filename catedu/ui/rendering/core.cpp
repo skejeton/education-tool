@@ -1,9 +1,10 @@
 #include "core.hpp"
+#include "catedu/misc/util.hpp"
 #include "catedu/rendering/2d/generate_mesh.hpp"
 #include "catedu/shaders.hxx"
-#include "catedu/util.hpp"
 #include <assert.h>
 #include <sokol/sokol_app.h>
+
 
 #define DEFAULT_SAMPLE_COUNT 256
 

@@ -2,12 +2,10 @@
 /// BRIEF: Rendering core for UI
 ///
 
-#ifndef HPP_CATEDU_UI_RENDERING_CORE
-#define HPP_CATEDU_UI_RENDERING_CORE
-
+#pragma once
+#include "catedu/core/math/math.hpp"
 #include "catedu/core/memory/buffer.hpp"
-#include "catedu/math.hpp"
-#include "catedu/table.hpp"
+#include "catedu/core/storage/table.hpp"
 #include "sokol/sokol_gfx.h"
 
 struct UiBuffer
@@ -72,5 +70,3 @@ struct UiRenderingCore
 };
 
 UiImage ui_image_make_from_data(Buffer data, Vector2i size);
-
-#endif // HPP_CATEDU_UI_RENDERING_CORE

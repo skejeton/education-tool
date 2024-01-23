@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_CORE_PATCHER_USER
-#define HPP_CATEDU_CORE_PATCHER_USER
-
+#pragma once
 #include "patch_applier.hpp"
 #include "patch_creator.hpp"
 #include "patch_debugger.hpp"
@@ -42,5 +40,3 @@ struct Patcher
 
     void string(const char *name, char **string);
 };
-
-#endif

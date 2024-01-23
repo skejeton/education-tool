@@ -1,6 +1,4 @@
-#ifndef HPP_CATEDU_RENDERING_RENDER_BUFFER
-#define HPP_CATEDU_RENDERING_RENDER_BUFFER
-
+#pragma once
 #include <stddef.h>
 #include <stdint.h>
 
@@ -37,5 +35,3 @@ struct RenderGeo {
  * @param count The number of elements to write.
  */
 void render_populate_all(RenderGeo *geo, RenderWriteDesc desc, float *data, size_t data_size);
-
-#endif

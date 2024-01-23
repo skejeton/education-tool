@@ -1,7 +1,5 @@
-#ifndef HPP_CATEDU_CORE_MATH_INTERPOLATION
-#define HPP_CATEDU_CORE_MATH_INTERPOLATION
-
-#include "catedu/math.hpp"
+#pragma once
+#include "math.hpp"
 
 inline float math_lerp(float a, float b, float t)
 {
@@ -54,4 +52,3 @@ inline Rect math_rerp(Rect a, Rect b, float t)
         math_rerp(a.siz, b.siz, t),
     };
 }
-#endif

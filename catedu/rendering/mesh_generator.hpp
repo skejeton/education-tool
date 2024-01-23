@@ -1,12 +1,12 @@
-#ifndef HPP_CATEDU_RENDERING_MESH_GENERATOR
-#define HPP_CATEDU_RENDERING_MESH_GENERATOR
-
-#include <vector>
+#pragma once
+#include "catedu/core/math/math.hpp"
 #include "render_buffer.hpp"
-#include "catedu/math.hpp"
+#include <vector>
+
 
 /// @brief A generator for render meshes.
-struct RenderMeshGenerator {
+struct RenderMeshGenerator
+{
     std::vector<float> vertices;
     std::vector<uint16_t> indices;
     size_t vertex_stride;
@@ -21,5 +21,3 @@ struct RenderMeshGenerator {
     ///       allow to merge buffers instead.
     RenderGeo convert(RenderWriteDesc desc);
 };
-
-#endif

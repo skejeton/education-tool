@@ -1,5 +1,4 @@
-#ifndef HPP_CATEDU_CORE_ALLOC_BUMP_ALLOCATOR
-#define HPP_CATEDU_CORE_ALLOC_BUMP_ALLOCATOR
+#pragma once
 #include <stddef.h>
 
 // TODO: Allocator chaining, for now using `malloc`
@@ -20,5 +19,3 @@ struct BumpAllocator
     // @warning All data allocated with this allocator will be lost.
     void deinit();
 };
-
-#endif

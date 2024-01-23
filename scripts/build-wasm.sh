@@ -1,3 +1,22 @@
+set -e
 mkdir -p ./bin/wasm-out
-lib/sokol-tools-bin/bin/linux/sokol-shdc --input src/shaders/amalgamation.glsl --output src/shaders.hxx --slang glsl100
-em++ -Ilib -O3 --shell-file=scripts/shell.html -sASYNCIFY=1 -sSTACK_SIZE=1MB -sFULL_ES2 -s ALLOW_MEMORY_GROWTH=1 -s EXPORTED_FUNCTIONS="['_malloc', '_calloc', '_free', '_main']" -lGL -lc -lm lib/imgui/imgui.cpp lib/imgui/imgui_demo.cpp lib/imgui/imgui_draw.cpp lib/imgui/imgui_tables.cpp lib/imgui/imgui_widgets.cpp src/*.cpp -o bin/wasm-out/output.html
+lib/sokol-tools-bin/bin/linux/sokol-shdc --input catedu/shaders/amalgamation.glsl --output catedu/shaders.hxx --slang glsl100
+em++ -I.\
+  -Ilib\
+  -O3\
+  --preload-file assets\
+  --preload-file data\
+  --shell-file scripts/shell.html\
+  -sASYNCIFY=1\
+  -sSTACK_SIZE=8MB\
+  -sFULL_ES3\
+  -sTOTAL_MEMORY=64MB\
+  -s ALLOW_MEMORY_GROWTH=1\
+  -s EXPORTED_FUNCTIONS="['_malloc', '_calloc', '_free', '_main']"\
+  -lGL\
+  -lc\
+  -lm\
+  catedu/**/*.cpp\
+  catedu/**/**/*.cpp\
+  catedu/*.cpp\
+  -o bin/wasm-out/output.html

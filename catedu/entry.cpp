@@ -1,61 +1,13 @@
 #include "entry.hpp"
-#include "boxdraw.hpp"
-#include "camera.hpp"
+#include "catedu/core/math/math.hpp"
+#include "catedu/misc/camera_input.hpp"
+#include "catedu/rendering/3d/camera.hpp"
+#include "catedu/scene/legacy_scene.hpp"
+#include "catedu/sys/console.hpp"
+#include "catedu/sys/fs/read_file_temp.hpp"
 #include "catedu/sys/sg_tricks.hpp"
-#include "console.hpp"
-#include "enet/enet.h"
-#include "math.hpp"
 #include "resources/resources.hpp"
 #include <cstdlib>
-
-WorldPrototype world_prototypes[3] = {{"XXXXXXXXXXXXXXXX"
-                                       "X      X ^     X"
-                                       "X      X       X"
-                                       "X      X       X"
-                                       "X      X       X"
-                                       "X    XXXXX     X"
-                                       "X    X   X     X"
-                                       "X    X P       X"
-                                       "XX  XX         X"
-                                       "X          D   X"
-                                       "X              X"
-                                       "X    D   D     X"
-                                       "X              X"
-                                       "X              X"
-                                       "X              X"
-                                       "XXXXXX   XXXXXX"},
-                                      {"XXXXXXXXXXXXXXXX"
-                                       "X        v     X"
-                                       "X              X"
-                                       "X        P     X"
-                                       "XXXXXXX XXXXXXXX"
-                                       "X     X X      X"
-                                       "X XXXXX X XXXX X"
-                                       "X      DX X    X"
-                                       "X XXXXX X X X  X"
-                                       "X     X X XXXX X"
-                                       "X X X X    D   X"
-                                       "X X     XXX X  X"
-                                       "X XXXXXXX X X  X"
-                                       "X         X X  X"
-                                       "XXXXXXXXXXX XXXX"
-                                       "X      ^       "},
-                                      {"XXXXXXXXXXXXXXXX"
-                                       "X              X"
-                                       "XXXXXX   XXXXXXX"
-                                       "X              X"
-                                       "X D  X   X  D  X"
-                                       "X    X   X     X"
-                                       "XXXXXX   XXXXXXX"
-                                       "X              X"
-                                       "X D  X   X  D  X"
-                                       "X    X   X     X"
-                                       "XXXXXX   XXXXXXX"
-                                       "X              X"
-                                       "X      P       X"
-                                       "X              X"
-                                       "X      v       X"
-                                       "XXXXXXXXXXXXXXX"}};
 
 void render_layer(const char *s, Vector3 pos, BoxdrawRenderer &boxdraw,
                   Texture tileset)
@@ -119,13 +71,13 @@ void show_menu_animation(Entry *entry)
     camera.rotate_around({0, 0, 0}, -time * 5, 0);
 
     const char *l0 = "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
-                     "GGGGGGGGG\n"
+                     "G       G\n"
+                     "G       G\n"
+                     "G       G\n"
+                     "G       G\n"
+                     "G       G\n"
+                     "G       G\n"
+                     "G       G\n"
                      "GGGGGGGGG\n";
     const char *l1 = "###_###\n"
                      "#_____#\n"
@@ -156,53 +108,37 @@ void show_menu_animation(Entry *entry)
     boxdraw_flush(&entry->boxdraw_renderer, camera.vp);
 }
 
-void change_floor(Entry *entry, int floor)
-{
-    entry->floor = floor;
-    entry->world_state =
-        world_prototype_to_world_state(world_prototypes[entry->floor % 3]);
-}
-
-void move_player(Entry *entry, Vector2 delta)
-{
-    if (move_player(entry->world_state, delta, entry->floor))
-    {
-        change_floor(entry, entry->floor);
-    }
-}
-
+Camera camera = Camera::init(45);
 void show_debug(Entry *entry)
 {
-    if (entry->input_state.key_states[SAPP_KEYCODE_LEFT].held)
-    {
-        move_player(entry, {-0.05, 0});
-    }
-    if (entry->input_state.key_states[SAPP_KEYCODE_RIGHT].held)
-    {
-        move_player(entry, {0.05, 0});
-    }
-    if (entry->input_state.key_states[SAPP_KEYCODE_UP].held)
-    {
-        move_player(entry, {0, 0.05});
-    }
-    if (entry->input_state.key_states[SAPP_KEYCODE_DOWN].held)
-    {
-        move_player(entry, {0, -0.05});
-    }
-
     const float width = sapp_widthf();
     const float height = sapp_heightf();
 
-    Camera camera = Camera::init(45);
     camera.set_aspect(width / height);
-    Rect player_rect = world_state_player_rect(entry->world_state);
+    camera_input_apply(&camera, &entry->input_state);
 
-    camera.move(0 + player_rect.pos.x, 10, -3 + player_rect.pos.y);
+    Object *player =
+        entry->scene.get_object(entry->scene.find_object("player"));
+    PhysicsBody *body = entry->scene.physics.bodies.get(player->entity.body_id);
+    if (entry->input_state.key_states[SAPP_KEYCODE_LEFT].held)
+    {
+        body->area.pos.x -= 0.1;
+    }
+    if (entry->input_state.key_states[SAPP_KEYCODE_RIGHT].held)
+    {
+        body->area.pos.x += 0.1;
+    }
+    if (entry->input_state.key_states[SAPP_KEYCODE_UP].held)
+    {
+        body->area.pos.y += 0.1;
+    }
+    if (entry->input_state.key_states[SAPP_KEYCODE_DOWN].held)
+    {
+        body->area.pos.y -= 0.1;
+    }
 
-    camera.rotate(0, -75);
-
-    render_physics_world_via_boxdraw(entry->world_state.physics,
-                                     entry->boxdraw_renderer, entry->res);
+    entry->scene.update(entry->res);
+    entry->scene.render(entry->boxdraw_renderer, entry->res, true);
 
     boxdraw_flush(&entry->boxdraw_renderer, camera.vp);
 }
@@ -216,9 +152,13 @@ void Entry::frame(void)
         break;
     case 1: // Main Menu
         show_menu_animation(this);
-        main_menu.show();
         break;
     case 2: // Editor
+        // scamera_input_apply(&this->editor.camera, &this->input_state);
+        boxdraw_flush(&this->boxdraw_renderer, this->editor.camera.vp);
+        editor.show(this->boxdraw_renderer, this->res, this->scene,
+                    this->input_state);
+        break;
     case 3: // Gameplay
         break;
     }
@@ -234,29 +174,23 @@ void Entry::cleanup(void)
     boxdraw_destroy(&this->boxdraw_renderer);
     sg_tricks_deinit();
     sg_shutdown();
-    enet_deinitialize();
 }
 
 void Entry::init()
 {
     console_create_or_bind_existing();
-
-    this->ui_mode = 1;
-    sg_desc desc = {};
-    desc.context = sapp_sgcontext();
-    desc.logger.func = slog_func;
-    sg_setup(&desc);
     sg_tricks_init();
 
     res = load_resource_spec("./assets/tileset.png");
-
-    change_floor(this, 0);
-    enet_initialize();
 
     ui_state = UiState::init("./assets/Roboto-Regular.ttf");
     main_menu = GuiMainMenu::init(&ui_state);
     editor = GuiEditor::init(&ui_state);
     game_gui = GuiGame::init(&ui_state);
+
+    READ_FILE_TEMP(file, "./assets/world.dat",
+                   { scene = LegacyScene::load_data_to_scene(file); })
+
     this->boxdraw_renderer = boxdraw_create();
 }
 

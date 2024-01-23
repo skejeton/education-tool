@@ -1,7 +1,5 @@
-#ifndef HPP_CATEDU_UI_RENDERING_MAKE_BRUSH
-#define HPP_CATEDU_UI_RENDERING_MAKE_BRUSH
-
-#include "catedu/math.hpp"
+#pragma once
+#include "catedu/core/math/math.hpp"
 #include "core.hpp"
 
 struct UiMakeBrush
@@ -19,5 +17,3 @@ struct UiMakeBrush
     UiMakeBrush &with_image_region(Rect region);
     UiBrush build();
 };
-
-#endif // HPP_CATEDU_UI_RENDERING_MAKE_BRUSH

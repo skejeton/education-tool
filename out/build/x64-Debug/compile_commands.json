@@ -1,0 +1,260 @@
+[
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\boxdraw.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\boxdraw.cpp",
+  "file": "W:\\catedu\\catedu\\boxdraw.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\boxdraw.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\camera.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\camera.cpp",
+  "file": "W:\\catedu\\catedu\\camera.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\camera.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\console.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\console.cpp",
+  "file": "W:\\catedu\\catedu\\console.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\console.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\core\\alloc\\bump_allocator.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\core\\alloc\\bump_allocator.cpp",
+  "file": "W:\\catedu\\catedu\\core\\alloc\\bump_allocator.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\core\\alloc\\bump_allocator.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\core\\math\\coordinates.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\core\\math\\coordinates.cpp",
+  "file": "W:\\catedu\\catedu\\core\\math\\coordinates.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\core\\math\\coordinates.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\core\\math\\point_intersect.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\core\\math\\point_intersect.cpp",
+  "file": "W:\\catedu\\catedu\\core\\math\\point_intersect.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\core\\math\\point_intersect.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\core\\math\\quintic_superellipse.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\core\\math\\quintic_superellipse.cpp",
+  "file": "W:\\catedu\\catedu\\core\\math\\quintic_superellipse.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\core\\math\\quintic_superellipse.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\core\\memory\\serial_mem.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\core\\memory\\serial_mem.cpp",
+  "file": "W:\\catedu\\catedu\\core\\memory\\serial_mem.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\core\\memory\\serial_mem.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\core\\patcher\\patch_applier.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\core\\patcher\\patch_applier.cpp",
+  "file": "W:\\catedu\\catedu\\core\\patcher\\patch_applier.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\core\\patcher\\patch_applier.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\core\\patcher\\patch_creator.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\core\\patcher\\patch_creator.cpp",
+  "file": "W:\\catedu\\catedu\\core\\patcher\\patch_creator.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\core\\patcher\\patch_creator.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\core\\patcher\\patch_debugger.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\core\\patcher\\patch_debugger.cpp",
+  "file": "W:\\catedu\\catedu\\core\\patcher\\patch_debugger.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\core\\patcher\\patch_debugger.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\core\\patcher\\patch_explorer.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\core\\patcher\\patch_explorer.cpp",
+  "file": "W:\\catedu\\catedu\\core\\patcher\\patch_explorer.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\core\\patcher\\patch_explorer.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\core\\patcher\\user.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\core\\patcher\\user.cpp",
+  "file": "W:\\catedu\\catedu\\core\\patcher\\user.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\core\\patcher\\user.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\core\\storage\\id_retainer.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\core\\storage\\id_retainer.cpp",
+  "file": "W:\\catedu\\catedu\\core\\storage\\id_retainer.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\core\\storage\\id_retainer.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\core\\text_editing\\text_editing.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\core\\text_editing\\text_editing.cpp",
+  "file": "W:\\catedu\\catedu\\core\\text_editing\\text_editing.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\core\\text_editing\\text_editing.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\diag\\diag_monitor.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\diag\\diag_monitor.cpp",
+  "file": "W:\\catedu\\catedu\\diag\\diag_monitor.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\diag\\diag_monitor.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\entry.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\entry.cpp",
+  "file": "W:\\catedu\\catedu\\entry.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\entry.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\file_buffer.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\file_buffer.cpp",
+  "file": "W:\\catedu\\catedu\\file_buffer.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\file_buffer.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\gui\\main_menu\\main_menu.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\gui\\main_menu\\main_menu.cpp",
+  "file": "W:\\catedu\\catedu\\gui\\main_menu\\main_menu.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\gui\\main_menu\\main_menu.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\impl.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\impl.cpp",
+  "file": "W:\\catedu\\catedu\\impl.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\impl.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\input.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\input.cpp",
+  "file": "W:\\catedu\\catedu\\input.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\input.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\main.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\main.cpp",
+  "file": "W:\\catedu\\catedu\\main.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\main.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\rendering\\2d\\generate_mesh.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\rendering\\2d\\generate_mesh.cpp",
+  "file": "W:\\catedu\\catedu\\rendering\\2d\\generate_mesh.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\rendering\\2d\\generate_mesh.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\rendering\\mesh_generator.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\rendering\\mesh_generator.cpp",
+  "file": "W:\\catedu\\catedu\\rendering\\mesh_generator.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\rendering\\mesh_generator.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\rendering\\render_buffer.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\rendering\\render_buffer.cpp",
+  "file": "W:\\catedu\\catedu\\rendering\\render_buffer.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\rendering\\render_buffer.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\staging\\ui\\ui_autolayout.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\staging\\ui\\ui_autolayout.cpp",
+  "file": "W:\\catedu\\catedu\\staging\\ui\\ui_autolayout.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\staging\\ui\\ui_autolayout.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\staging\\ui\\ui_user.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\staging\\ui\\ui_user.cpp",
+  "file": "W:\\catedu\\catedu\\staging\\ui\\ui_user.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\staging\\ui\\ui_user.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\ui\\rendering\\core.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\ui\\rendering\\core.cpp",
+  "file": "W:\\catedu\\catedu\\ui\\rendering\\core.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\ui\\rendering\\core.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\ui\\rendering\\font.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\ui\\rendering\\font.cpp",
+  "file": "W:\\catedu\\catedu\\ui\\rendering\\font.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\ui\\rendering\\font.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\ui\\rendering\\make_brush.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\ui\\rendering\\make_brush.cpp",
+  "file": "W:\\catedu\\catedu\\ui\\rendering\\make_brush.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\ui\\rendering\\make_brush.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\ui\\rendering\\pass.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\ui\\rendering\\pass.cpp",
+  "file": "W:\\catedu\\catedu\\ui\\rendering\\pass.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\ui\\rendering\\pass.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\ui\\rendering\\transform.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\ui\\rendering\\transform.cpp",
+  "file": "W:\\catedu\\catedu\\ui\\rendering\\transform.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\ui\\rendering\\transform.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\ui\\resources\\load_image.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\ui\\resources\\load_image.cpp",
+  "file": "W:\\catedu\\catedu\\ui\\resources\\load_image.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\ui\\resources\\load_image.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo /TP -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /EHsc /Zi /Ob0 /Od /RTC1 -std:c++17 -MDd /FoCMakeFiles\\catedu.dir\\catedu\\util.cpp.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\catedu\\util.cpp",
+  "file": "W:\\catedu\\catedu\\util.cpp",
+  "output": "CMakeFiles\\catedu.dir\\catedu\\util.cpp.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /Zi /Ob0 /Od /RTC1 -MDd /FoCMakeFiles\\catedu.dir\\lib\\lib-enet\\callbacks.c.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\lib\\lib-enet\\callbacks.c",
+  "file": "W:\\catedu\\lib\\lib-enet\\callbacks.c",
+  "output": "CMakeFiles\\catedu.dir\\lib\\lib-enet\\callbacks.c.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /Zi /Ob0 /Od /RTC1 -MDd /FoCMakeFiles\\catedu.dir\\lib\\lib-enet\\compress.c.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\lib\\lib-enet\\compress.c",
+  "file": "W:\\catedu\\lib\\lib-enet\\compress.c",
+  "output": "CMakeFiles\\catedu.dir\\lib\\lib-enet\\compress.c.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /Zi /Ob0 /Od /RTC1 -MDd /FoCMakeFiles\\catedu.dir\\lib\\lib-enet\\host.c.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\lib\\lib-enet\\host.c",
+  "file": "W:\\catedu\\lib\\lib-enet\\host.c",
+  "output": "CMakeFiles\\catedu.dir\\lib\\lib-enet\\host.c.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /Zi /Ob0 /Od /RTC1 -MDd /FoCMakeFiles\\catedu.dir\\lib\\lib-enet\\list.c.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\lib\\lib-enet\\list.c",
+  "file": "W:\\catedu\\lib\\lib-enet\\list.c",
+  "output": "CMakeFiles\\catedu.dir\\lib\\lib-enet\\list.c.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /Zi /Ob0 /Od /RTC1 -MDd /FoCMakeFiles\\catedu.dir\\lib\\lib-enet\\packet.c.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\lib\\lib-enet\\packet.c",
+  "file": "W:\\catedu\\lib\\lib-enet\\packet.c",
+  "output": "CMakeFiles\\catedu.dir\\lib\\lib-enet\\packet.c.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /Zi /Ob0 /Od /RTC1 -MDd /FoCMakeFiles\\catedu.dir\\lib\\lib-enet\\peer.c.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\lib\\lib-enet\\peer.c",
+  "file": "W:\\catedu\\lib\\lib-enet\\peer.c",
+  "output": "CMakeFiles\\catedu.dir\\lib\\lib-enet\\peer.c.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /Zi /Ob0 /Od /RTC1 -MDd /FoCMakeFiles\\catedu.dir\\lib\\lib-enet\\protocol.c.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\lib\\lib-enet\\protocol.c",
+  "file": "W:\\catedu\\lib\\lib-enet\\protocol.c",
+  "output": "CMakeFiles\\catedu.dir\\lib\\lib-enet\\protocol.c.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /Zi /Ob0 /Od /RTC1 -MDd /FoCMakeFiles\\catedu.dir\\lib\\lib-enet\\unix.c.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\lib\\lib-enet\\unix.c",
+  "file": "W:\\catedu\\lib\\lib-enet\\unix.c",
+  "output": "CMakeFiles\\catedu.dir\\lib\\lib-enet\\unix.c.obj"
+},
+{
+  "directory": "W:/catedu/out/build/x64-Debug",
+  "command": "C:\\PROGRA~1\\MICROS~1\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1437~1.328\\bin\\Hostx64\\x64\\cl.exe  /nologo -IW:\\catedu\\. -IW:\\catedu\\lib -IW:\\catedu\\lib\\tau -IW:\\catedu\\lib\\lib-enet\\include /DWIN32 /D_WINDOWS /Zi /Ob0 /Od /RTC1 -MDd /FoCMakeFiles\\catedu.dir\\lib\\lib-enet\\win32.c.obj /FdTARGET_COMPILE_PDB /FS -c W:\\catedu\\lib\\lib-enet\\win32.c",
+  "file": "W:\\catedu\\lib\\lib-enet\\win32.c",
+  "output": "CMakeFiles\\catedu.dir\\lib\\lib-enet\\win32.c.obj"
+}
+]
