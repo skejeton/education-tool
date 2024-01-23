@@ -1,11 +1,11 @@
 #pragma once
+#include "catedu/core/math/math.hpp"
 #include "catedu/core/storage/id_retainer.hpp"
-#include "catedu/math.hpp"
 #include "catedu/ui/rendering/core.hpp"
 #include "catedu/ui/rendering/font.hpp"
 #include "catedu/ui/rendering/pass.hpp"
-#include "sokol/sokol_app.h"
 #include "layout/autolayout.hpp"
+#include "sokol/sokol_app.h"
 
 struct UiInput
 {
@@ -58,7 +58,7 @@ struct UiUser
     void begin_pass();
     void end_pass();
 
-    void input(char *id, char *out, int max);
+    void input(const char *id, char *out, int max);
     bool button(const char *text);
     void label(const char *text, Vector2 scale = {1, 1},
                UiBrush style = {

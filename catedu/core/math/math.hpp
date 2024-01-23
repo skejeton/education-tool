@@ -11,12 +11,12 @@
 #undef near
 #endif
 
-#include "stadef.h"
 #include <cmath>
+#include <float.h>
 #include <stdint.h>
 
 #define MATH_TAU 6.283185307179586
-#define MATH_EPSILON DEF_EPSILON_MIN
+#define MATH_EPSILON FLT_MIN
 
 struct Vector2i
 {
@@ -98,8 +98,6 @@ inline Vector2i operator%(Vector2i &a, Vector2i b)
 {
     return {a.x % b.x, a.y % b.y};
 }
-
-
 
 inline Vector2i operator%=(Vector2i &a, int32_t b)
 {

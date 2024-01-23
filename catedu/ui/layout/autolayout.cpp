@@ -48,18 +48,21 @@ void recurse(AutoLayoutProcess *process, AutoLayoutNodeId n)
         Vector2 size = cel.margin_box.siz;
         Vector2 delta;
 
-        switch (el.layout.type)
+        if (cel.position == AutoLayoutPosition::Embedded)
         {
-        case AutoLayout::Column:
-            delta = {0, my_size.y};
-            my_size.y += size.y;
-            my_size.x = std::max(size.x, my_size.x);
-            break;
-        case AutoLayout::Row:
-            delta = {my_size.x, 0};
-            my_size.x += size.x;
-            my_size.y = std::max(size.y, my_size.y);
-            break;
+            switch (el.layout.type)
+            {
+            case AutoLayout::Column:
+                delta = {0, my_size.y};
+                my_size.y += size.y;
+                my_size.x = std::max(size.x, my_size.x);
+                break;
+            case AutoLayout::Row:
+                delta = {my_size.x, 0};
+                my_size.x += size.x;
+                my_size.y = std::max(size.y, my_size.y);
+                break;
+            }
         }
 
         child_node->element.margin_box.pos += delta;
@@ -113,6 +116,8 @@ void align_to_parents(AutoLayoutProcess *process, AutoLayoutNodeId n)
             (node->element.padding_box.siz -
              child_node->element.margin_box.siz) *
             Vector2{node->element.align_width, node->element.align_height};
+
+        delta += child_node->element.offset;
 
         child_node->element.padding_box.pos += delta;
         child_node->element.base_box.pos += delta;

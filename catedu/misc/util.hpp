@@ -10,19 +10,15 @@
 #include <string>
 #include <vector>
 
-#include "catedu/math.hpp"
+#include "catedu/core/math/math.hpp"
 
-char*
-string_duplicate(const char*);
-void
-center_next_window(Vector2 size);
-void
-rect_to_uv(Rect rect, Vector2 texture_size, Vector2* uv0, Vector2* uv1);
-std::string
-join_vector_into_string(std::vector<std::string>& v, const char* delim);
-template<typename... Args>
-std::string
-stdstrfmt(const std::string& format, Args... args)
+char *string_duplicate(const char *);
+void center_next_window(Vector2 size);
+void rect_to_uv(Rect rect, Vector2 texture_size, Vector2 *uv0, Vector2 *uv1);
+std::string join_vector_into_string(std::vector<std::string> &v,
+                                    const char *delim);
+template <typename... Args>
+std::string stdstrfmt(const std::string &format, Args... args)
 {
     int size = snprintf(nullptr, 0, format.c_str(), args...) + 1;
     assert(size > 0 && "stdstrfmt: invalid format string");

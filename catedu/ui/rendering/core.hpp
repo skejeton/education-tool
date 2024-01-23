@@ -3,9 +3,9 @@
 ///
 
 #pragma once
+#include "catedu/core/math/math.hpp"
 #include "catedu/core/memory/buffer.hpp"
-#include "catedu/math.hpp"
-#include "catedu/table.hpp"
+#include "catedu/core/storage/table.hpp"
 #include "sokol/sokol_gfx.h"
 
 struct UiBuffer

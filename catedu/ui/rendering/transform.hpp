@@ -1,5 +1,5 @@
 #pragma once
-#include "catedu/math.hpp"
+#include "catedu/core/math/math.hpp"
 #include "core.hpp"
 #include <vector>
 

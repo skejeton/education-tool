@@ -1,6 +1,6 @@
 #pragma once
 #include "../render_buffer.hpp"
-#include "catedu/math.hpp"
+#include "catedu/core/math/math.hpp"
 #include <functional>
 
 /**

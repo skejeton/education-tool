@@ -223,9 +223,14 @@ template <class T> struct TableIterator
     }
 };
 
-template <class T>
-struct CxxTableIterator : public std::iterator<std::forward_iterator_tag, T>
+template <class T> struct CxxTableIterator
 {
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = std::pair<TableId, T &>;
+    using difference_type = std::ptrdiff_t;
+    using pointer = std::pair<TableId, T *> *;
+    using reference = std::pair<TableId, T &>;
+
     TableIterator<T> iterator;
 
     CxxTableIterator(TableIterator<T> iterator) : iterator(iterator)

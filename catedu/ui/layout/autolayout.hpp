@@ -1,7 +1,7 @@
 #pragma once
 #include "catedu/core/alloc/bump_allocator.hpp"
-#include "catedu/math.hpp"
-#include "catedu/table.hpp"
+#include "catedu/core/math/math.hpp"
+#include "catedu/core/storage/table.hpp"
 
 // Top, right, bottom, left.
 struct TRBL
@@ -52,9 +52,19 @@ struct AutoLayoutDimension
     float value;
 };
 
+enum AutoLayoutPosition
+{
+    Embedded, // Affects the parent's layout.
+    Relative, // Doesn't affect the parent's layout, positioned relative to the
+              // parent.
+    Absolute  // Doesn't affect the parent's layout, positioned relative to the
+              // screen.
+};
+
 struct AutoLayoutElement
 {
     TableId userdata; // Reference to userdata.
+    Vector2 offset;
     AutoLayoutDimension width;
     AutoLayoutDimension height;
     float align_width;
@@ -63,7 +73,8 @@ struct AutoLayoutElement
     TRBL border;
     TRBL padding;
     AutoLayout layout; // Layout-specific data.
-    char *note;        // Note for debugging.
+    AutoLayoutPosition position;
+    char *note; // Note for debugging.
     //----------------------------------------------- Calculated data.
     Rect padding_box; // Box inside padding.
     Rect base_box;    // Box inside border.

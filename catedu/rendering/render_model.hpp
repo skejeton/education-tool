@@ -1,9 +1,8 @@
 #pragma once
-#include "catedu/math.hpp"
+#include "catedu/core/math/math.hpp"
+#include "catedu/core/storage/table.hpp"
 #include "catedu/rendering/3d/boxdraw.hpp"
-#include "catedu/table.hpp"
 #include "resource_spec.hpp"
-
 
 static inline void render_model_at(Vector3 pos, ResourceSpec &res, TableId id,
                                    BoxdrawRenderer &boxdraw, bool if_editor)

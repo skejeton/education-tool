@@ -27,13 +27,11 @@ void ObjEntity::update(PhysicsWorld &world, ResourceSpec &resources)
         }
         SpecModel model = resources.models.get_assert(model_id);
 
-        this->pos.x += (model.model.max.x - model.model.min.x) / 2.0f;
-        this->pos.y += (model.model.max.z - model.model.min.z) / 2.0f;
-
         body.area = {(float)this->pos.x + model.model.min.x,
                      (float)this->pos.y + model.model.min.z,
                      model.model.max.x - model.model.min.x,
                      model.model.max.z - model.model.min.z};
+
         if (strcmp(model.name, "player") == 0 ||
             strcmp(model.name, "entity") == 0)
         {
@@ -46,13 +44,13 @@ void ObjEntity::update(PhysicsWorld &world, ResourceSpec &resources)
     else
     {
         PhysicsBody &body = world.bodies.get_assert(body_id);
-        this->pos = body.area.pos;
+        this->pos = body.area.pos + body.area.siz / 2.0f;
     }
 }
 
 void ObjEntity::render(BoxdrawRenderer &renderer, ResourceSpec &resources)
 {
-    Vector3 pos = {this->pos.x, 0, this->pos.y};
+    Vector3 pos = {this->pos.x + 0.5f, 0, this->pos.y + 0.5f};
 
     TableId model = resources.find_model_by_name(model_name);
     if (model.id == 0)

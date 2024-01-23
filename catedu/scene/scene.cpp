@@ -35,7 +35,7 @@ void Scene::remove_object(ObjectId id)
 
 Object Scene::object(ObjTilemap t)
 {
-    Object result;
+    Object result = {};
     result.type = Object::Tilemap;
     result.tilemap = t;
     return result;
@@ -43,7 +43,7 @@ Object Scene::object(ObjTilemap t)
 
 Object Scene::object(ObjEntity e)
 {
-    Object result;
+    Object result = {};
     result.type = Object::Entity;
     result.entity = e;
     return result;
@@ -51,7 +51,7 @@ Object Scene::object(ObjEntity e)
 
 Object Scene::object(ObjBackdrop b)
 {
-    Object result;
+    Object result = {};
     result.type = Object::Backdrop;
     result.backdrop = b;
     return result;
@@ -85,6 +85,11 @@ void Scene::render(BoxdrawRenderer &renderer, ResourceSpec &resources,
 {
     for (auto [id, object] : iter(objects))
     {
+        if (object.hide)
+        {
+            continue;
+        }
+
         switch (object.type)
         {
         case Object::Tilemap:
@@ -112,10 +117,9 @@ void Scene::render(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
             Texture tex = resources.tileset.cropped({64, 192, 32, 32});
             Box3 box = {};
-            box.min = {body.area.pos.x - body.area.siz.x / 2, 0 - 0.5f,
-                       body.area.pos.y - body.area.siz.y / 2};
-            box.max = {body.area.pos.x + body.area.siz.x / 2, 1 - 0.5f,
-                       body.area.pos.y + body.area.siz.y / 2};
+            box.min = {body.area.pos.x, 0 - 0.5f, body.area.pos.y};
+            box.max = {body.area.pos.x + body.area.siz.x, 1 - 0.5f,
+                       body.area.pos.y + body.area.siz.y};
 
             boxdraw_push(&renderer, boxdraw_cmdtexture(box, tex, true));
         }

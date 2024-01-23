@@ -30,9 +30,24 @@ Scene LegacyScene::load_data_to_scene(Buffer file)
 
     file.data = (uint8_t *)file.data + sizeof(int) * 64 * 64;
 
-    result.add_object(Scene::object(backdrop));
-    result.add_object(Scene::object(ground));
-    result.add_object(Scene::object(middle));
+    {
+        Object obj = Scene::object(backdrop);
+        strcpy(obj.id, "backdrop");
+        strcpy(obj.name, "backdrop");
+        result.add_object(obj);
+    }
+    {
+        Object obj = Scene::object(ground);
+        strcpy(obj.id, "ground");
+        strcpy(obj.name, "ground");
+        result.add_object(obj);
+    }
+    {
+        Object obj = Scene::object(middle);
+        strcpy(obj.id, "middle");
+        strcpy(obj.name, "middle");
+        result.add_object(obj);
+    }
 
     // entities
     uint32_t entity_count = *((uint64_t *)file.data) - 1;
@@ -53,6 +68,7 @@ Scene LegacyScene::load_data_to_scene(Buffer file)
                             ((WorldEntity *)file.data)->pos + Vector2{32, 32}));
 
         memcpy(obj.id, ((WorldEntity *)file.data)->id, 32);
+        memcpy(obj.name, ((WorldEntity *)file.data)->name, 32);
         result.add_object(obj);
 
         file.data = (uint8_t *)file.data + sizeof(WorldEntity);

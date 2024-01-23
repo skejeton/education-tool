@@ -1,5 +1,5 @@
 #pragma once
-#include "catedu/file_buffer.hpp"
+#include "catedu/sys/fs/file_buffer.hpp"
 #include "core.hpp"
 #include "pass.hpp"
 #include "stb/stb_truetype.h"

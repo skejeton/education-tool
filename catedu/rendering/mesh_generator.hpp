@@ -1,10 +1,12 @@
 #pragma once
-#include <vector>
+#include "catedu/core/math/math.hpp"
 #include "render_buffer.hpp"
-#include "catedu/math.hpp"
+#include <vector>
+
 
 /// @brief A generator for render meshes.
-struct RenderMeshGenerator {
+struct RenderMeshGenerator
+{
     std::vector<float> vertices;
     std::vector<uint16_t> indices;
     size_t vertex_stride;

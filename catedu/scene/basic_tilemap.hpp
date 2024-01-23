@@ -1,6 +1,6 @@
 #pragma once
-#include "catedu/math.hpp"
-#include "catedu/table.hpp"
+#include "catedu/core/math/math.hpp"
+#include "catedu/core/storage/table.hpp"
 
 #define BASIC_TILEMAP_CHUNK_DIM 64
 #define BASIC_TILEMAP_CHUNK_SIZE                                               \

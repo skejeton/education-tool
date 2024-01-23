@@ -1,13 +1,14 @@
 #include "entry.hpp"
-#include "camera.hpp"
-#include "catedu/camera_input.hpp"
-#include "catedu/core/fs/read_file_temp.hpp"
+#include "catedu/core/math/math.hpp"
+#include "catedu/misc/camera_input.hpp"
+#include "catedu/rendering/3d/camera.hpp"
 #include "catedu/scene/legacy_scene.hpp"
+#include "catedu/sys/console.hpp"
+#include "catedu/sys/fs/read_file_temp.hpp"
 #include "catedu/sys/sg_tricks.hpp"
-#include "console.hpp"
-#include "math.hpp"
 #include "resources/resources.hpp"
 #include <cstdlib>
+
 
 void render_layer(const char *s, Vector3 pos, BoxdrawRenderer &boxdraw,
                   Texture tileset)
@@ -138,7 +139,7 @@ void show_debug(Entry *entry)
     }
 
     entry->scene.update(entry->res);
-    entry->scene.render(entry->boxdraw_renderer, entry->res);
+    entry->scene.render(entry->boxdraw_renderer, entry->res, true);
 
     boxdraw_flush(&entry->boxdraw_renderer, camera.vp);
 }
@@ -154,6 +155,11 @@ void Entry::frame(void)
         show_menu_animation(this);
         break;
     case 2: // Editor
+        // scamera_input_apply(&this->editor.camera, &this->input_state);
+        this->scene.render(this->boxdraw_renderer, this->res, true);
+        boxdraw_flush(&this->boxdraw_renderer, this->editor.camera.vp);
+        editor.show(this->scene, this->input_state);
+        break;
     case 3: // Gameplay
         break;
     }
@@ -183,7 +189,7 @@ void Entry::init()
     editor = GuiEditor::init(&ui_state);
     game_gui = GuiGame::init(&ui_state);
 
-    READ_FILE_TEMP(file, "./data/world.dat",
+    READ_FILE_TEMP(file, "./assets/world.dat",
                    { scene = LegacyScene::load_data_to_scene(file); })
 
     this->boxdraw_renderer = boxdraw_create();

@@ -74,9 +74,15 @@
     "cassert": "cpp",
     "map": "cpp",
     "variant": "cpp",
-    "xtree": "cpp"
+    "xtree": "cpp",
+    "*.tcc": "cpp",
+    "random": "cpp",
+    "numeric": "cpp"
   },
   "C_Cpp.errorSquiggles": "enabled",
   "todo-tree.tree.scanMode": "workspace only",
-  "cmake.configureOnOpen": false
+"cmake.configureOnOpen": false,
+"explorer.compactFolders": true,
+"explorer.excludeGitIgnore": false,
+"explorer.fileNesting.enabled": true
 }

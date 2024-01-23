@@ -1,7 +1,7 @@
 #pragma once
-#include "catedu/math.hpp"
+#include "catedu/core/math/math.hpp"
+#include "catedu/core/storage/table.hpp"
 #include "catedu/rendering/texture.hpp"
-#include "catedu/table.hpp"
 
 struct SpecModel
 {

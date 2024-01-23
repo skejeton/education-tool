@@ -84,7 +84,7 @@ void UiUser::end_pass()
     this->bump.deinit();
 }
 
-void UiUser::input(char *id, char *out, int max)
+void UiUser::input(const char *id, char *out, int max)
 {
     this->state->elements.push(id, {});
     UiPersistentElement *pe = this->state->elements.value();
@@ -128,7 +128,7 @@ void UiUser::input(char *id, char *out, int max)
     t[strlen(out)] = '|';
     t[strlen(out) + 1] = 0;
 
-    this->label(t, {2, 2}, UiMakeBrush::make_solid(theme[2]));
+    this->label(t, {1.2, 1.2}, UiMakeBrush::make_solid(theme[2]));
     free(t);
     this->end_generic();
 
@@ -144,8 +144,8 @@ bool UiUser::button(const char *text)
     el.layout = {AutoLayout::Row};
     el.width = {AutoLayoutDimension::Auto};
     el.height = {AutoLayoutDimension::Auto};
-    el.padding = {10, 10, 10, 10};
-    el.margin = {5, 5, 5, 5};
+    el.padding = {3, 3, 3, 3};
+    el.margin = {1, 1, 1, 1};
     el.border = {1, 1, 1, 1};
 
     Vector4 color_top = theme[1];
@@ -167,7 +167,7 @@ bool UiUser::button(const char *text)
     this->begin_generic(el, UiMakeBrush::make_gradient(color_bottom, color_top),
                         UiMakeBrush::make_solid(theme[2]), pe);
 
-    this->label(text, {2, 2}, UiMakeBrush::make_solid(theme[3]));
+    this->label(text, {1, 1}, UiMakeBrush::make_solid(theme[3]));
 
     this->end_generic();
     this->state->elements.pop();
@@ -177,6 +177,7 @@ bool UiUser::button(const char *text)
 
 void UiUser::label(const char *text, Vector2 scale, UiBrush style)
 {
+    scale *= 1.2;
     Vector2 size = this->state->font.bounds_text_utf8({0, 0}, text, scale).siz;
 
     void *ptr = this->bump.alloc(strlen(text) + 1);
@@ -258,6 +259,8 @@ bool UiState::feed_event(const sapp_event *event)
                 event->char_code;
         }
         return this->textfieldfocus;
+    default:
+        break;
     }
     return false;
 }

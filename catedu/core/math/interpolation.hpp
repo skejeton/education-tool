@@ -1,5 +1,5 @@
 #pragma once
-#include "catedu/math.hpp"
+#include "math.hpp"
 
 inline float math_lerp(float a, float b, float t)
 {

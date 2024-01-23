@@ -61,7 +61,8 @@ void ObjTilemap::render(BoxdrawRenderer &renderer, ResourceSpec &resources)
             continue;
         }
 
-        Vector3 pos = {(float)tile.position.x, 0, (float)tile.position.y};
+        Vector3 pos = {(float)tile.position.x + 0.5f, 0,
+                       (float)tile.position.y + 0.5f};
 
         // FIXME: Assumes that tile ID's in the tilemap are the same as in the
         // resource spec.

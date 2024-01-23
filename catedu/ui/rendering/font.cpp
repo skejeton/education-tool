@@ -1,6 +1,5 @@
 #include "font.hpp"
-#include "catedu/file_buffer.hpp"
-#include "catedu/util.hpp"
+#include "catedu/misc/util.hpp"
 #include "make_brush.hpp"
 #include "pass.hpp"
 #include "transform.hpp"

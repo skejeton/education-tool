@@ -8,6 +8,8 @@
 struct Object
 {
     char id[32];
+    char name[32];
+    bool hide;
 
     enum Type
     {

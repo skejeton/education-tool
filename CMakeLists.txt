@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.20.0)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-
 project(catedu)
 
 set(ADDITIONAL_FILES "")
@@ -22,8 +21,6 @@ if (${ENV_TYPE} MATCHES "TESTBED")
     list(REMOVE_ITEM CATEDU_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/catedu/main.cpp)
     list(APPEND CATEDU_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/testbed/${TESTBED_NAME}/tb_main.cpp)
 endif()
-
-message(${CATEDU_SRC_FILES})
 
 add_executable(${PROJECT_NAME} ${CATEDU_SRC_FILES})
 

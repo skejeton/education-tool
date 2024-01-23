@@ -1,23 +1,40 @@
+# Binaries
 bin/
-src/shaders.hxx
+
+
+# Compiled headers
 catedu/shaders.hxx
-ske.rdbg
 
+
+# Debugger files
+*.rdbg
+
+
+# User files
 user/
-.vs
-out
-build
-.idea
-cmake-build-debug
-cmake-build-release
+.cache
 
-# VS Build info
+
+# IDE files
+# ( .vs folder is extremely bloated for no reason )
+.vs
+.idea
+# ( except for these two files )
 !launch.vs.json
 !tasks.vs.json
 
-# MacOS
-.DS_Store
 
-# user data
-savestate.sav
-.cache
+# OS files
+# macOS
+.DS_Store
+# Windows
+Thumbs.db
+
+
+# Vim files
+# ( .swp files are temporary files )
+.*.sw?
+
+# Emacs files
+# ( .# files are temporary files )
+.#*

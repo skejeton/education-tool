@@ -1,5 +1,5 @@
 #pragma once
-#include "catedu/math.hpp"
+#include "math.hpp"
 
 /**
  * @brief A polar coordinate in 2D space.

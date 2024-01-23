@@ -1,5 +1,5 @@
 #pragma once
-#include "catedu/util.hpp"
+#include "catedu/misc/util.hpp"
 #include <assert.h>
 #include <map>
 #include <stddef.h>

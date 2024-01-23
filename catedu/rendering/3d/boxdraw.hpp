@@ -5,7 +5,7 @@
 #pragma once
 #define BOXDRAW_CMD_MAX (1 << 14)
 
-#include "catedu/math.hpp"
+#include "catedu/core/math/math.hpp"
 #include "catedu/rendering/texture.hpp"
 #include "sokol/sokol_app.h"
 #include "sokol/sokol_gfx.h"

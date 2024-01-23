@@ -3,7 +3,7 @@
 ///
 
 #pragma once
-#include "math.hpp"
+#include "catedu/core/math/math.hpp"
 #include "sokol/sokol_app.h"
 
 struct InputKey
