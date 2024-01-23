@@ -46,7 +46,7 @@ void recurse(AutoLayoutProcess *process, AutoLayoutNodeId n)
 
         AutoLayoutElement &cel = child_node->element;
         Vector2 size = cel.margin_box.siz;
-        Vector2 delta;
+        Vector2 delta = {0, 0};
 
         if (cel.position == AutoLayoutPosition::Embedded)
         {
