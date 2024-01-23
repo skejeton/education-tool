@@ -9,7 +9,6 @@
 #include "resources/resources.hpp"
 #include <cstdlib>
 
-
 void render_layer(const char *s, Vector3 pos, BoxdrawRenderer &boxdraw,
                   Texture tileset)
 {
@@ -156,9 +155,9 @@ void Entry::frame(void)
         break;
     case 2: // Editor
         // scamera_input_apply(&this->editor.camera, &this->input_state);
-        this->scene.render(this->boxdraw_renderer, this->res, true);
         boxdraw_flush(&this->boxdraw_renderer, this->editor.camera.vp);
-        editor.show(this->scene, this->input_state);
+        editor.show(this->boxdraw_renderer, this->res, this->scene,
+                    this->input_state);
         break;
     case 3: // Gameplay
         break;

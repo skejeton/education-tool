@@ -18,5 +18,6 @@ struct Camera
     void rotate(float yaw, float pitch);
     void rotate_around(Vector3 point, float yaw, float pitch);
     Ray3 ray();
+    Ray3 screen_to_world_ray(Vector2 screen_pos, Vector2 viewport);
     void move(float sideways, float upward, float forward);
 };

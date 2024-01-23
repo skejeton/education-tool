@@ -1,4 +1,5 @@
 #pragma once
+#include "catedu/rendering/3d/boxdraw.hpp"
 #include "catedu/rendering/3d/camera.hpp"
 #include "catedu/rendering/resource_spec.hpp"
 #include "catedu/scene/scene.hpp"
@@ -17,6 +18,7 @@ struct GuiEditor
     Camera camera;
 
     static GuiEditor init(UiState *ui_state);
-    void show(Scene &scene, Input &input);
+    void show(BoxdrawRenderer &renderer, ResourceSpec &resources, Scene &scene,
+              Input &input);
     void deinit();
 };

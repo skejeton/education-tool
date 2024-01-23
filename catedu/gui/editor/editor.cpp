@@ -1,12 +1,13 @@
 #include "editor.hpp"
 #include "catedu/misc/camera_input.hpp"
+#include "catedu/rendering/render_model.hpp"
 #include "catedu/ui/widgets.hpp"
 
 GuiEditor GuiEditor::init(UiState *ui_state)
 {
     Camera camera = Camera::init(45);
-    camera.move(0, 7, 0);
-    camera.rotate(0, -45);
+    camera.move(0, 10, 0);
+    camera.rotate(0, -89.99);
 
     GuiEditor result = {};
     result.ui_state = ui_state;
@@ -183,13 +184,35 @@ size_t show_pagination(UiUser &user, size_t page, size_t page_count)
     return page;
 }
 
-void GuiEditor::show(Scene &scene, Input &input)
+void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
+                     Scene &scene, Input &input)
 {
-    camera.set_aspect(sapp_widthf() / sapp_heightf());
+    scene.render(renderer, resources);
+
+    float window_width = sapp_widthf(), window_height = sapp_heightf();
+    float aspect = window_width / window_height;
+
+    camera.set_aspect(aspect);
     camera_input_top_view_apply(&this->camera, &input);
+
+    float distance;
+    Ray3 ray = this->camera.screen_to_world_ray(
+        input.mouse_pos, Vector2{window_width, window_height});
+
+    if (ray3_vs_horizontal_plane(ray, 0, &distance))
+    {
+        TableId model_id = resources.find_model_by_name("pointer");
+
+        render_model_at(ray3_at(ray, distance), resources, model_id, renderer,
+                        true);
+    }
 
     UiUser user = UiUser::init(*this->ui_state);
     user.begin_pass();
+
+    begin_show_window(user,
+                      {" ", {input.mouse_pos.x, input.mouse_pos.y, 20, 0}});
+    end_show_window(user);
 
     char title[256];
     sprintf(title, "Objects | Page %zu", this->entity_list_page);

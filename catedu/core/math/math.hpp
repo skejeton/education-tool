@@ -548,6 +548,8 @@ inline bool ray3_vs_box3(Ray3 r, Box3 b, float max_distance, float *distance)
 
 inline bool ray3_vs_horizontal_plane(Ray3 r, float y, float *t)
 {
+    r.direction = vector3_normalize(r.direction);
+
     if (r.origin.y < y)
     {
         if (r.direction.y > 0)
@@ -570,7 +572,7 @@ inline bool ray3_vs_horizontal_plane(Ray3 r, float y, float *t)
 
 inline Vector3 ray3_at(Ray3 r, float t)
 {
-    return r.origin + r.direction * t;
+    return r.origin + vector3_normalize(r.direction) * t;
 }
 
 struct Matrix4
@@ -766,6 +768,22 @@ struct Matrix4
         return true;
     }
 };
+
+inline Vector4 operator*(Matrix4 a, Vector4 b)
+{
+    float data[4] = {b.x, b.y, b.z, b.w};
+    float ret[4] = {};
+
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            ret[i] += a.values[j * 4 + i] * data[j];
+        }
+    }
+
+    return {ret[0], ret[1], ret[2], ret[3]};
+}
 
 inline Matrix4 operator*(Matrix4 a, Matrix4 b)
 {
