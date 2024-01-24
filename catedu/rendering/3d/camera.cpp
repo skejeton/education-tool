@@ -77,11 +77,6 @@ Ray3 Camera::screen_to_world_ray(Vector2 screen_pos, Vector2 viewport)
     float ndc_x = (2.0f * screen_pos.x) / viewport.x - 1.0f;
     float ndc_y = 1.0f - (2.0f * screen_pos.y) / viewport.y;
 
-    ndc_x /= 1.05;
-    ndc_y /= 1.05;
-
-    printf("ndc_x: %f, ndc_y: %f\n", ndc_x, ndc_y);
-
     // Convert NDC to camera space
     Vector3 eye = rotation_matrix(this) * Vector3{0.0f, 0.0f, -1.0f};
     Matrix4 view = Matrix4::look_at({0, 0, 0}, eye, {0.0f, 1.0f, 0.0f});
@@ -90,19 +85,9 @@ Ray3 Camera::screen_to_world_ray(Vector2 screen_pos, Vector2 viewport)
     Matrix4 inv_vp;
     assert((proj * view).inverse(&inv_vp));
     Vector4 clip_coords = Vector4{ndc_x, ndc_y, -1.0f, 1.0f};
-    printf("Inv-vp:\t\t%f %f %f %f\n\t\t%f %f %f %f\n\t\t%f %f %f %f\n\t\t%f "
-           "%f %f %f\n",
-           inv_vp.values[0], inv_vp.values[1], inv_vp.values[2],
-           inv_vp.values[3], inv_vp.values[4], inv_vp.values[5],
-           inv_vp.values[6], inv_vp.values[7], inv_vp.values[8],
-           inv_vp.values[9], inv_vp.values[10], inv_vp.values[11],
-           inv_vp.values[12], inv_vp.values[13], inv_vp.values[14],
-           inv_vp.values[15]);
 
     Vector4 eye_coords = inv_vp * clip_coords;
     Vector3 camera_ray = Vector3{eye_coords.x, eye_coords.y, eye_coords.z};
-
-    printf("Camera ray:\t%f %f %f\n", camera_ray.x, camera_ray.y, camera_ray.z);
 
     // Create the camera ray
     return {this->position, camera_ray};

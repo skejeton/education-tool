@@ -93,7 +93,7 @@ const SpecModel models[] = {
      true},
     {"pointer",
      {96, 192, 32, 32},
-     box3_extrude_from_point({0.0, 0.49, 0.0}, {0.5, 0.01, 0.5}),
+     box3_extrude_from_point({0.0, 0.0, 0.0}, {0.5, 0.01, 0.5}),
      false,
      true,
      true},

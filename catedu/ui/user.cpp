@@ -1,4 +1,5 @@
 #include "user.hpp"
+#include "catedu/ui/layout/dpi_scale.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 
 const Vector4 theme[] = {{0.8, 0.8, 0.8, 1.0}, {0.6, 0.6, 0.6, 1.0},
@@ -36,6 +37,7 @@ void render_out(UiUser &user)
     auto alloc = BumpAllocator::init();
     AutoLayoutResult *result;
     user.layout.process(alloc, result);
+    dpi_rescale_autolayout_result(result, user.state->dpi_scale);
 
     while (result)
     {
@@ -50,7 +52,7 @@ void render_out(UiUser &user)
             {
                 user.state->font.render_text_utf8(
                     &user.pass, result->base_box.pos, styles->text,
-                    styles->brush, styles->text_scale);
+                    styles->brush, styles->text_scale * user.state->dpi_scale);
             }
             else
             {
@@ -177,7 +179,6 @@ bool UiUser::button(const char *text)
 
 void UiUser::label(const char *text, Vector2 scale, UiBrush style)
 {
-    scale *= 1.2;
     Vector2 size = this->state->font.bounds_text_utf8({0, 0}, text, scale).siz;
 
     void *ptr = this->bump.alloc(strlen(text) + 1);
@@ -211,9 +212,10 @@ void UiUser::end_generic()
     this->current_node = node->parent;
 }
 
-UiState UiState::init(const char *font_path)
+UiState UiState::init(const char *font_path, float dpi_scale)
 {
     UiState state = {};
+    state.dpi_scale = dpi_scale;
     state.core = (UiRenderingCore *)malloc(sizeof(UiRenderingCore));
     *state.core = UiRenderingCore::init();
     state.font = UiFontRenderer::init(state.core, {font_path, 16});

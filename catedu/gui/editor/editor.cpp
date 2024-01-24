@@ -7,7 +7,7 @@ GuiEditor GuiEditor::init(UiState *ui_state)
 {
     Camera camera = Camera::init(45);
     camera.move(0, 10, 0);
-    camera.rotate(0, -89.99);
+    camera.rotate(0, -45);
 
     GuiEditor result = {};
     result.ui_state = ui_state;
@@ -20,10 +20,10 @@ void show_generic_icon(UiUser &user, const char *s, Vector4 color,
                        float w = 0.0f)
 {
     AutoLayoutElement element = {};
-    element.width.value = 20;
+    element.width.value = 16;
     element.width.type =
         w == 0.0f ? AutoLayoutDimension::Auto : AutoLayoutDimension::Pixel;
-    element.height.value = 20;
+    element.height.value = 16;
     element.height.type = AutoLayoutDimension::Pixel;
     element.border = {1, 1, 1, 1};
     element.padding = {2, 2, 2, 2};
@@ -199,7 +199,7 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     Ray3 ray = this->camera.screen_to_world_ray(
         input.mouse_pos, Vector2{window_width, window_height});
 
-    if (ray3_vs_horizontal_plane(ray, 0, &distance))
+    if (ray3_vs_horizontal_plane(ray, -0.5, &distance))
     {
         TableId model_id = resources.find_model_by_name("pointer");
 
@@ -210,14 +210,10 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     UiUser user = UiUser::init(*this->ui_state);
     user.begin_pass();
 
-    begin_show_window(user,
-                      {" ", {input.mouse_pos.x, input.mouse_pos.y, 20, 0}});
-    end_show_window(user);
-
     char title[256];
     sprintf(title, "Objects | Page %zu", this->entity_list_page);
 
-    begin_show_window(user, {title, {20, 20, 200, 410}});
+    begin_show_window(user, {title, {20, 50, 200, 410}});
 
     const size_t page_count =
         scene.objects.count > 0 ? (scene.objects.count - 1) / 10 : 0;

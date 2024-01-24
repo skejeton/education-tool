@@ -28,9 +28,10 @@ struct UiState
     UiFontRenderer font;
     UiInput input;
     IdRetainer<UiPersistentElement> elements;
+    float dpi_scale;
     bool textfieldfocus;
 
-    static UiState init(const char *font_path);
+    static UiState init(const char *font_path, float dpi_scale = 1);
     bool feed_event(const sapp_event *event);
     void deinit();
 };
