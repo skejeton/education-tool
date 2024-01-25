@@ -235,7 +235,7 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         char idstr[256];
         sprintf(idstr, "%zu", id.id);
 
-        user.state->elements.push(idstr, {});
+        user.state->element_storage.push(idstr, {});
         switch (show_object_row(user, obj, this->selection == id))
         {
         case Select:
@@ -251,8 +251,12 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         default:
             break;
         }
-        user.state->elements.pop();
+        user.state->element_storage.pop();
     }
+
+    user.button("TEST1");
+    user.button("TEST2", 20);
+    user.button("TEST3", 20);
 
     end_show_window(user);
 

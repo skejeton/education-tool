@@ -198,6 +198,8 @@ void Entry::input(const sapp_event *event)
 {
     if (ui_state.feed_event(event))
     {
+        // Invalidate the input state if the event was consumed by the UI.
+        this->input_state = {};
         return;
     }
 

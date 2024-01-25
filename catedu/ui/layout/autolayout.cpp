@@ -48,7 +48,7 @@ void recurse(AutoLayoutProcess *process, AutoLayoutNodeId n)
         Vector2 size = cel.margin_box.siz;
         Vector2 delta = {0, 0};
 
-        if (cel.position == AutoLayoutPosition::Embedded)
+        if (cel.position != AutoLayoutPosition::Absolute)
         {
             switch (el.layout.type)
             {
@@ -107,15 +107,20 @@ void align_to_parents(AutoLayoutProcess *process, AutoLayoutNodeId n)
         AutoLayoutNode *child_node = process->nodes.get(child.id);
         assert(child_node);
 
-        child_node->element.padding_box.pos += node->element.padding_box.pos;
-        child_node->element.base_box.pos += node->element.padding_box.pos;
-        child_node->element.border_box.pos += node->element.padding_box.pos;
-        child_node->element.margin_box.pos += node->element.padding_box.pos;
+        Vector2 delta = {0, 0};
 
-        Vector2 delta =
-            (node->element.padding_box.siz -
-             child_node->element.margin_box.siz) *
-            Vector2{node->element.align_width, node->element.align_height};
+        if (child_node->element.position != AutoLayoutPosition::Absolute)
+        {
+            child_node->element.padding_box.pos +=
+                node->element.padding_box.pos;
+            child_node->element.base_box.pos += node->element.padding_box.pos;
+            child_node->element.border_box.pos += node->element.padding_box.pos;
+            child_node->element.margin_box.pos += node->element.padding_box.pos;
+            delta =
+                (node->element.padding_box.siz -
+                 child_node->element.margin_box.siz) *
+                Vector2{node->element.align_width, node->element.align_height};
+        }
 
         delta += child_node->element.offset;
 

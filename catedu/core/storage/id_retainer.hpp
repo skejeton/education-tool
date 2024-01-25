@@ -31,6 +31,8 @@ template <typename T> struct IdRetainer
     /// @param value The value of the branch.
     void push(const char *id, T value = {});
     void pop(int n = 1);
+
+    bool has(const char *id);
 };
 
 template <typename T> inline IdRetainer<T> IdRetainer<T>::init()
@@ -109,4 +111,15 @@ template <typename T> inline void IdRetainer<T>::pop(int n)
     {
         this->current_path.pop_back();
     }
+}
+
+template <typename T> inline bool IdRetainer<T>::has(const char *id)
+{
+    std::string path = join_vector_into_string(this->current_path, "/");
+    if (path != "")
+    {
+        path += "/";
+    }
+    path += id;
+    return this->values.count(path) > 0;
 }

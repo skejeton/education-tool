@@ -79,7 +79,7 @@ def target_build(p: CompileProperties):
     command += "lib\\sokol-tools-bin\\bin\\win32\\sokol-shdc.exe --input catedu/shaders/amalgamation.glsl --output catedu/shaders.hxx --slang hlsl5 "
     command += "&& cd bin "
     command += f"&& cmake -DCMAKE_BUILD_TYPE={mode_string} {test_string} .. "
-    command += f"&& msbuild catedu.sln /property:Configuration={mode_string} "
+    command += f"&& msbuild catedu.sln /maxcpucount /property:Configuration={mode_string} "
     command += "&& cd .. "
     if p.run_mode:
       command += f"&& .\\bin\\{mode_string}\\catedu.exe"
