@@ -13,6 +13,7 @@ struct GuiEditor
 {
     UiState *ui_state;
     TableId selection;
+    TableId tile_selection;
     bool create_entity;
     size_t entity_list_page;
     Camera camera;

@@ -183,7 +183,8 @@ void Entry::init()
 
     res = load_resource_spec("./assets/tileset.png");
 
-    ui_state = UiState::init("./assets/Roboto-Regular.ttf", sapp_dpi_scale());
+    ui_state =
+        UiState::init("./assets/Roboto-Regular.ttf", sapp_dpi_scale() * 1.2);
     main_menu = GuiMainMenu::init(&ui_state);
     editor = GuiEditor::init(&ui_state);
     game_gui = GuiGame::init(&ui_state);

@@ -184,36 +184,80 @@ size_t show_pagination(UiUser &user, size_t page, size_t page_count)
     return page;
 }
 
+struct SelectionState
+{
+    ObjTilemap *tilemap_selected;
+    Vector2 position;
+};
+
+SelectionState show_selection(GuiEditor &editor, BoxdrawRenderer &renderer,
+                              ResourceSpec &resources, Scene &scene,
+                              Input &input)
+{
+    float window_width = sapp_widthf(), window_height = sapp_heightf();
+    float aspect = window_width / window_height;
+
+    float distance;
+    Ray3 ray = editor.camera.screen_to_world_ray(
+        input.mouse_pos, Vector2{window_width, window_height});
+
+    ObjTilemap *tilemap_selected = nullptr;
+    Vector2 pos = {};
+
+    if (ray3_vs_horizontal_plane(ray, 0.0, &distance))
+    {
+        TableId model_id = resources.find_model_by_name("selector");
+        Vector3 pos3d = ray3_at(ray, distance);
+        pos = {pos3d.x, pos3d.z};
+
+        Object *selected = scene.get_object(editor.selection);
+        if (selected)
+        {
+            if (selected->type == Object::Type::Tilemap)
+            {
+                pos.x = round(pos.x);
+                pos.y = round(pos.y);
+
+                tilemap_selected = &selected->tilemap;
+            }
+        }
+
+        pos3d.x = pos.x;
+        pos3d.z = pos.y;
+
+        render_model_at(pos3d, resources, model_id, renderer, true);
+    }
+
+    return {tilemap_selected, pos};
+}
+
 void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
                      Scene &scene, Input &input)
 {
     scene.render(renderer, resources);
 
-    float window_width = sapp_widthf(), window_height = sapp_heightf();
-    float aspect = window_width / window_height;
-
-    camera.set_aspect(aspect);
+    camera.set_aspect(sapp_widthf() / sapp_heightf());
     camera_input_top_view_apply(&this->camera, &input);
-
-    float distance;
-    Ray3 ray = this->camera.screen_to_world_ray(
-        input.mouse_pos, Vector2{window_width, window_height});
-
-    if (ray3_vs_horizontal_plane(ray, -0.5, &distance))
-    {
-        TableId model_id = resources.find_model_by_name("pointer");
-
-        render_model_at(ray3_at(ray, distance), resources, model_id, renderer,
-                        true);
-    }
 
     UiUser user = UiUser::init(*this->ui_state);
     user.begin_pass();
 
+    SelectionState sel =
+        show_selection(*this, renderer, resources, scene, input);
+    if (sel.tilemap_selected && input.mouse_states[1].held)
+    {
+        sel.tilemap_selected->set_tile(vector2_to_vector2i(sel.position), 0);
+    }
+    if (sel.tilemap_selected && input.mouse_states[0].held)
+    {
+        sel.tilemap_selected->set_tile(vector2_to_vector2i(sel.position),
+                                       this->tile_selection.id);
+    }
+
     char title[256];
     sprintf(title, "Objects | Page %zu", this->entity_list_page);
 
-    begin_show_window(user, {title, {20, 50, 200, 410}});
+    begin_show_window(user, {title, {20, 20, 200, 410}});
 
     const size_t page_count =
         scene.objects.count > 0 ? (scene.objects.count - 1) / 10 : 0;
@@ -254,10 +298,6 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         user.state->element_storage.pop();
     }
 
-    user.button("TEST1");
-    user.button("TEST2", 20);
-    user.button("TEST3", 20);
-
     end_show_window(user);
 
     Object *selected = scene.get_object(this->selection);
@@ -266,12 +306,33 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     {
         begin_show_window(user, {"Properties", {220, 20, 200, 200}});
         show_object_icon_ex(user, selected->type);
-        user.label("Name:", {1, 1.2},
+        user.label("Name:", {1, 1},
                    UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
         user.input("SelObjName", selected->name, 32);
-        user.label("Id:", {1, 1.2},
+        user.label("Id:", {1, 1},
                    UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
         user.input("SelObjId", selected->id, 32);
+        if (selected->type == Object::Type::Entity)
+        {
+            user.label("Model:", {1, 1},
+                       UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
+            user.input("SelObjModel", selected->entity.model_name, 32);
+        }
+        end_show_window(user);
+
+        begin_show_window(
+            user,
+            {"Tiles",
+             {sapp_widthf() / (sapp_dpi_scale() * 1.2f) - 100, 20, 100, 800}});
+
+        for (auto [id, tile] : iter(resources.tiles))
+        {
+            if (user.button(tile.name))
+            {
+                this->tile_selection = id;
+            }
+        }
+
         end_show_window(user);
     }
 

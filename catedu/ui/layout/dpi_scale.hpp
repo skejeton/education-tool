@@ -23,11 +23,11 @@ static inline void fix_wacky_box(Rect &parent, Rect &child)
     }
     if (ceilf(r) > r)
     {
-        child.siz.x = parent.siz.x - floorf(r + rx);
+        child.siz.x = parent.siz.x - roundf(r + rx);
     }
     if (ceilf(b) > b)
     {
-        child.siz.y = parent.siz.y - floorf(b + ry);
+        child.siz.y = parent.siz.y - roundf(b + ry);
     }
 }
 

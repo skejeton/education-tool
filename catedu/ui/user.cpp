@@ -154,8 +154,8 @@ void UiUser::input(const char *id, char *out, int max)
     el.layout = {AutoLayout::Row};
     el.width = {AutoLayoutDimension::Auto};
     el.height = {AutoLayoutDimension::Auto};
-    el.padding = {10, 10, 10, 10};
-    el.margin = {5, 5, 5, 5};
+    el.padding = {2, 2, 2, 2};
+    el.margin = {0, 0, 0, 0};
     el.border = {1, 1, 1, 1};
 
     this->begin_generic(el, UiMakeBrush::make_solid(theme[0]),
@@ -311,7 +311,8 @@ bool UiState::feed_event(const sapp_event *event)
     default:
         break;
     }
-    return this->interaction_table.focused != NULL_ID;
+    return this->interaction_table.focused != NULL_ID ||
+           this->interaction_table.hovered != NULL_ID;
 }
 
 void UiState::deinit()
