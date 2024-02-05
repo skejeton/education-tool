@@ -13,3 +13,6 @@
 [submodule "lib/stb"]
 	path = lib/stb
 	url = https://github.com/nothings/stb
+[submodule "lib/cgltf"]
+	path = lib/cgltf
+	url = https://github.com/jkuhlmann/cgltf

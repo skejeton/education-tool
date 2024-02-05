@@ -26,3 +26,6 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "lib/stb/stb_image.h"
 #include "lib/stb/stb_truetype.h"
+
+#define CGLTF_IMPLEMENTATION
+#include "lib/cgltf/cgltf.h"

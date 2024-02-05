@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "catedu/core/memory/buffer.hpp"
 #include "file_buffer.hpp"
 
 #define READ_FILE_TEMP(name, path, code)                                       \

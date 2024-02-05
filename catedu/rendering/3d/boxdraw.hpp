@@ -27,6 +27,7 @@ struct BoxdrawRenderer
     sg_bindings bindings;
     sg_pipeline pipeline;
     sg_shader shader;
+    size_t index_count;
     BoxdrawCommand *commands;
     size_t commands_count;
 };

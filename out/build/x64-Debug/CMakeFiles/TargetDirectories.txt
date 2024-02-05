@@ -1,3 +1,0 @@
-W:/catedu/out/build/x64-Debug/CMakeFiles/catedu.dir
-W:/catedu/out/build/x64-Debug/CMakeFiles/edit_cache.dir
-W:/catedu/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir

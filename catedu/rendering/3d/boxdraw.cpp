@@ -1,4 +1,5 @@
 #include "boxdraw.hpp"
+#include "catedu/rendering/3d/model.hpp"
 #include "catedu/shaders.hxx"
 #include "catedu/sys/sg_tricks.hpp"
 #include <cassert>
@@ -7,63 +8,14 @@
 
 #define INSTANCE_MAX 2048
 
-// clang-format off
-const float static cube_vertices[] = {
-    // pos                normal    uv
-    // +y
-    -0.5, 0.5, 0.5,      0, 1, 0,  0, 1,
-    -0.5, 0.5, -0.5,       0, 1, 0,  1, 1,
-    0.5, 0.5, -0.5,        0, 1, 0,  1, 0,
-    0.5, 0.5, 0.5,       0, 1, 0,  0, 0,
-
-    // -x
-    -0.5, 0.5, -0.5,      -1, 0, 0,  0, 0,
-    -0.5, -0.5, -0.5,     -1, 0, 0,  0, 1,
-    -0.5, -0.5, 0.5,    -1, 0, 0,  1, 1,
-    -0.5, 0.5, 0.5,     -1, 0, 0,  1, 0,
-
-    // +x
-    0.5, 0.5, -0.5,        1, 0, 0,  0, 0,
-    0.5, -0.5, -0.5,       1, 0, 0,  0, 1,
-    0.5, -0.5, 0.5,      1, 0, 0,  1, 1,
-    0.5, 0.5, 0.5,       1, 0, 0,  1, 0,
-
-    // -z
-    0.5, 0.5, -0.5,        0, 0,-1,  0, 0,
-    0.5, -0.5, -0.5,       0, 0,-1,  0, 1,
-    -0.5, -0.5, -0.5,      0, 0,-1,  1, 1,
-    -0.5, 0.5, -0.5,       0, 0,-1,  1, 0,
-
-    // +z
-    0.5, 0.5, 0.5,       0, 0, 1,  0, 0,
-    0.5, -0.5, 0.5,      0, 0, 1,  0, 1,
-    -0.5, -0.5, 0.5,     0, 0, 1,  1, 1,
-    -0.5, 0.5, 0.5,      0, 0, 1,  1, 0,
-
-    // -y
-    -0.5, -0.5, 0.5,     0,-1, 0,  0, 1,
-    -0.5, -0.5, -0.5,      0,-1, 0,  1, 1,
-    0.5, -0.5, -0.5,       0,-1, 0,  1, 0,
-    0.5, -0.5, 0.5,      0,-1, 0,  0, 0
-};
-
-struct Instance {
+struct Instance
+{
     Matrix4 transform;
     Vector2 uv_min;
     Vector2 uv_max;
     Vector2 size;
     Vector2 tile_count;
 };
-
-const static uint16_t cube_indices[] = {
-    0, 1, 2,  0, 2, 3,       // +y
-    6, 5, 4,  7, 6, 4,       // -x
-    8, 9, 10,  8, 10, 11,    // +x
-    14, 13, 12,  15, 14, 12, // -z
-    16, 17, 18,  16, 18, 19, // +z
-    22, 21, 20,  23, 22, 20  // -y
-};
-// clang-format on
 
 BoxdrawRenderer boxdraw_create()
 {
@@ -80,17 +32,16 @@ BoxdrawRenderer boxdraw_create()
     instance_buffer_desc.usage = SG_USAGE_STREAM;
     result.instance_buffer = sg_make_buffer(instance_buffer_desc);
 
-    sg_buffer_desc vertex_buffer_desc = {};
-    vertex_buffer_desc.data = SG_RANGE(cube_vertices);
-    vertex_buffer_desc.label = "cube-vertices";
-    vertex_buffer_desc.type = SG_BUFFERTYPE_VERTEXBUFFER;
-    result.vertex_buffer = sg_make_buffer(vertex_buffer_desc);
+    catedu::RawModel raw_model;
+    assert(catedu::RawModel::load_gltf("assets/models/cube.gltf", raw_model));
+    catedu::print_info(raw_model);
 
-    sg_buffer_desc index_buffer_desc = {};
-    index_buffer_desc.data = SG_RANGE(cube_indices);
-    index_buffer_desc.label = "cube-indices";
-    index_buffer_desc.type = SG_BUFFERTYPE_INDEXBUFFER;
-    result.index_buffer = sg_make_buffer(index_buffer_desc);
+    catedu::Model model;
+    assert(catedu::Model::load_from_raw(raw_model, model));
+
+    result.vertex_buffer = model.vertex_buffer;
+    result.index_buffer = model.index_buffer;
+    result.index_count = model.index_count;
 
     sg_pipeline_desc pipeline_desc = {};
 
@@ -132,7 +83,7 @@ BoxdrawRenderer boxdraw_create()
     pipeline_desc.colors[0].blend.dst_factor_alpha = SG_BLENDFACTOR_ZERO;
     pipeline_desc.shader = result.shader;
     pipeline_desc.index_type = SG_INDEXTYPE_UINT16;
-    pipeline_desc.cull_mode = SG_CULLMODE_FRONT;
+    pipeline_desc.cull_mode = SG_CULLMODE_BACK;
     pipeline_desc.depth.write_enabled = true;
     pipeline_desc.depth.compare = SG_COMPAREFUNC_LESS_EQUAL;
     pipeline_desc.label = "cube-pipeline";
@@ -196,7 +147,7 @@ static void rflush(BoxdrawRenderer *renderer, boxdraw_vs_params_t vs_params)
     sg_update_buffer(renderer->instance_buffer,
                      {instance_data, instance_count * sizeof(Instance)});
     sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_boxdraw_vs_params, &params_range);
-    sg_draw(0, 36, instance_count);
+    sg_draw(0, renderer->index_count, instance_count);
     instance_count = 0;
 }
 
