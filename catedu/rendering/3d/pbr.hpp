@@ -5,11 +5,29 @@
 
 #pragma once
 
+// The include order matters here.
+// clang-format off
+#include "sokol/sokol_gfx.h"
+#include "catedu/core/math/math.hpp"
+#include "catedu/shaders.hxx"
+// clang-format on
+
+#include "model.hpp"
+
 namespace catedu::pbr
 {
 
 struct Renderer
 {
+    sg_pipeline pipeline;
+    sg_pass_action pass_action;
+
+    static Renderer init();
+    void deinit();
+
+    void begin_pass();
+    void render_model(Model &model, pbr_vs_params_t vs_params);
+    void end_pass();
 };
 
 } // namespace catedu::pbr

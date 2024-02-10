@@ -1,7 +1,9 @@
 #include "texture.hpp"
 #include "catedu/core/memory/buffer.hpp"
 #include "lib/stb/stb_image.h"
+#include <assert.h>
 #include <stdio.h>
+
 #ifdef _WIN32
 #include <io.h>
 #define F_OK 0
@@ -32,6 +34,7 @@ void init_sampler_tex(sg_sampler &s, sg_image &i, Vector2 size, Buffer data)
 
 Texture Texture::init(const char *png_path)
 {
+    assert(png_path && "Texture::init: png_path is null");
     if (access(png_path, F_OK) != 0)
     {
         fprintf(stderr, "Texture::init: file %s does not exist\n", png_path);

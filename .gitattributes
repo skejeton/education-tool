@@ -4,6 +4,7 @@
 *.wav filter=lfs diff=lfs merge=lfs -text
 *.ogg filter=lfs diff=lfs merge=lfs -text
 *.glb filter=lfs diff=lfs merge=lfs -text
+*.bin filter=lfs diff=lfs merge=lfs -text
 *.sh		             text eol=lf
 compile_flags.txt        text eol=lf
 *.cpp 		             text eol=crlf

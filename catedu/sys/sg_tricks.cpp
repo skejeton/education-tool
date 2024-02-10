@@ -2,12 +2,12 @@
 
 static sg_image t_white_image;
 static sg_sampler t_white_sampler;
+static bool is_init;
 
-void
-sg_tricks_init()
+void sg_tricks_init()
 {
     // init white pixel
-    uint8_t dat[4] = { 0xff, 0xff, 0xff, 0xff };
+    uint8_t dat[4] = {0xff, 0xff, 0xff, 0xff};
     sg_image_desc image_desc = {};
     image_desc.width = 1;
     image_desc.height = 1;
@@ -26,15 +26,19 @@ sg_tricks_init()
     t_white_sampler = sg_make_sampler(sampler_desc);
 }
 
-void
-sg_tricks_get_white_texture(sg_image& image, sg_sampler& sampler)
+void sg_tricks_get_white_texture(sg_image &image, sg_sampler &sampler)
 {
+    if (!is_init)
+    {
+        sg_tricks_init();
+        is_init = true;
+    }
+
     image = t_white_image;
     sampler = t_white_sampler;
 }
 
-void
-sg_tricks_deinit()
+void sg_tricks_deinit()
 {
     sg_destroy_sampler(t_white_sampler);
     sg_destroy_image(t_white_image);

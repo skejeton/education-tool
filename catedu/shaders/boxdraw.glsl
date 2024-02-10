@@ -56,11 +56,11 @@ uniform texture2D image;
 uniform sampler image_sampler;
 in vec4 color;
 in vec2 frag_uv;
-out vec4 frag_color;
 in vec2 frag_uv_min;
 in vec2 frag_uv_max;
 in vec2 frag_size;
 in vec2 frag_tile_count;
+out vec4 frag_color;
 
 void main() {
     vec2 uv = mod(frag_tile_count * frag_uv, vec2(1, 1)) * (frag_uv_max - frag_uv_min) + frag_uv_min;

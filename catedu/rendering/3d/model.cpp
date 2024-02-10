@@ -4,6 +4,7 @@
 #include "cgltf/cgltf.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 using namespace catedu;
 
@@ -15,9 +16,6 @@ float *merge_buffers(float *pos, float *norm, float *uv, size_t vertex_count)
 
     for (size_t i = 0; i < vertex_count; i++)
     {
-        printf("POS %zu: %f %f %f\n", i, pos[i * 3 + 0], pos[i * 3 + 1],
-               pos[i * 3 + 2]);
-
         result[i * 8 + 0] = pos[i * 3 + 0];
         result[i * 8 + 1] = pos[i * 3 + 1];
         result[i * 8 + 2] = pos[i * 3 + 2];
@@ -52,8 +50,28 @@ bool RawModel::load_gltf(const char *path, RawModel &dest)
         return false;
     }
 
+    dest.texture_path = (char *)calloc(1024, 1);
+    OOM_HANDLER(dest.texture_path);
+
+    assert(data->images_count == 1 && "One image is required");
+
+    strncpy(dest.texture_path, path, 1024);
+
+    const char *s0 = strrchr(path, '/');
+    const char *s1 = strrchr(path, '\\');
+    const char *slash = s0 ? (s1 && s1 > s0 ? s1 : s0) : s1;
+
+    snprintf(dest.texture_path, 1024, "%.*s/%s", (int)(slash - path), path,
+             data->images[0].uri);
+
     dest.data = data;
     return true;
+}
+
+void RawModel::deinit()
+{
+    free(texture_path);
+    cgltf_free(data);
 }
 
 void catedu::print_info(RawModel &model)
@@ -172,16 +190,13 @@ bool catedu::Model::load_from_raw(RawModel &raw, Model &dest)
 
     float *buf = merge_buffers(pos, norm, uv, vertex_count);
 
-    for (size_t i = 0; i < index_count; i++)
-    {
-        fprintf(stderr, "Index %zu: %u\n", i, indices[i]);
-    }
-
     sg_buffer_desc vertex_buffer_desc = {};
     vertex_buffer_desc.data = {buf, vertex_count * 8 * sizeof(float)};
     vertex_buffer_desc.label = "model-vertex-buffer";
     vertex_buffer_desc.type = SG_BUFFERTYPE_VERTEXBUFFER;
     dest.vertex_buffer = sg_make_buffer(vertex_buffer_desc);
+
+    free(buf);
 
     sg_buffer_desc index_buffer_desc = {};
     index_buffer_desc.data = {indices, index_count * sizeof(uint16_t)};
@@ -191,7 +206,13 @@ bool catedu::Model::load_from_raw(RawModel &raw, Model &dest)
 
     dest.index_count = index_count;
 
-    free(buf);
+    dest.texture = Texture::init(raw.texture_path);
 
     return true;
+}
+
+void catedu::Model::deinit()
+{
+    sg_destroy_buffer(vertex_buffer);
+    sg_destroy_buffer(index_buffer);
 }
