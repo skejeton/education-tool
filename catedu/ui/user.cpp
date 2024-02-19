@@ -20,6 +20,19 @@ void draw_rectangle_gradient(UiRenderingPass &pass, Rect rect,
     pass.pop_transform();
 }
 
+void draw_brush(UiRenderingPass &pass, Rect rect, UiBrush brush)
+{
+    UiTransform transform = {};
+    transform.scale = {1, 1};
+    transform.base = rect;
+
+    pass.push_transform(transform);
+
+    pass.render_brush(brush);
+
+    pass.pop_transform();
+}
+
 UiUser UiUser::init(UiState &state)
 {
     return UiUser{&state};
@@ -68,12 +81,8 @@ void render_out(UiUser &user)
             }
             else
             {
-                draw_rectangle_gradient(user.pass, result->border_box,
-                                        styles->border.color_bottom,
-                                        styles->border.color_top);
-                draw_rectangle_gradient(user.pass, result->base_box,
-                                        styles->brush.color_bottom,
-                                        styles->brush.color_top);
+                draw_brush(user.pass, result->border_box, styles->border);
+                draw_brush(user.pass, result->base_box, styles->brush);
             }
             if (hovered)
             {
@@ -124,118 +133,6 @@ void UiUser::end_pass()
     this->bump.deinit();
 }
 
-void UiUser::input(const char *id, char *out, int max)
-{
-    this->state->element_storage.push(id, {true});
-    UiPersistentElement *pe = this->state->element_storage.value();
-
-    bool focused = this->state->interaction_table.focused ==
-                   this->state->element_storage.id();
-    if (focused)
-    {
-        for (int i = 0; i < this->state->input.inputchars_count; i++)
-        {
-            if (this->state->input.inputchars[i] == '\b')
-            {
-                if (strlen(out) > 0)
-                    out[strlen(out) - 1] = 0;
-            }
-            else if (this->state->input.inputchars[i])
-            {
-                if (strlen(out) < max - 1)
-                {
-                    out[strlen(out)] = this->state->input.inputchars[i];
-                }
-            }
-        }
-    }
-
-    AutoLayoutElement el = {};
-    el.layout = {AutoLayout::Row};
-    el.width = {AutoLayoutDimension::Auto};
-    el.height = {AutoLayoutDimension::Auto};
-    el.padding = {2, 2, 2, 2};
-    el.margin = {0, 0, 0, 0};
-    el.border = {1, 1, 1, 1};
-
-    this->begin_generic(el, UiMakeBrush::make_solid(theme[0]),
-                        focused ? UiMakeBrush::make_solid(theme[3])
-                                : UiMakeBrush::make_solid(theme[1]),
-                        this->state->element_storage.id());
-
-    char *t = (char *)malloc(max + 3);
-    memcpy(t, out, strlen(out));
-    t[strlen(out)] = '|';
-    t[strlen(out) + 1] = 0;
-
-    this->label(t, {1.2, 1.2}, UiMakeBrush::make_solid(theme[2]));
-    free(t);
-    this->end_generic();
-
-    this->state->element_storage.pop();
-}
-
-bool UiUser::button(const char *text, int offs)
-{
-    this->state->element_storage.push(text, {});
-    UiPersistentElement *pe = this->state->element_storage.value();
-
-    AutoLayoutElement el = {};
-    el.layout = {AutoLayout::Row};
-    el.width = {AutoLayoutDimension::Auto};
-    el.height = {AutoLayoutDimension::Auto};
-    el.padding = {3, 3, 3, 3};
-    el.margin = {1, 1, 1, 1};
-    el.border = {1, 1, 1, 1};
-    el.position = AutoLayoutPosition::Relative;
-    el.offset = {(float)offs, (float)-offs};
-
-    Vector4 color_top = theme[1];
-    Vector4 color_bottom = theme[0];
-
-    bool pressed = false;
-
-    if (this->state->interaction_table.hovered ==
-        this->state->element_storage.id())
-    {
-        color_top = theme[5];
-        color_bottom = theme[4];
-        if (this->state->input.mouse_down)
-        {
-            std::swap(color_top, color_bottom);
-        }
-        pressed = this->state->input.mouse_pressed;
-    }
-
-    this->begin_generic(el, UiMakeBrush::make_gradient(color_bottom, color_top),
-                        UiMakeBrush::make_solid(theme[2]),
-                        this->state->element_storage.id());
-
-    this->label(text, {1, 1}, UiMakeBrush::make_solid(theme[3]));
-
-    this->end_generic();
-    this->state->element_storage.pop();
-
-    return pressed;
-}
-
-void UiUser::label(const char *text, Vector2 scale, UiBrush style)
-{
-    Vector2 size = this->state->font.bounds_text_utf8({0, 0}, text, scale).siz;
-
-    void *ptr = this->bump.alloc(strlen(text) + 1);
-    strcpy((char *)ptr, text);
-
-    AutoLayoutElement el = {};
-    el.layout = {AutoLayout::Row};
-    el.width = {AutoLayoutDimension::Pixel, size.x};
-    el.height = {AutoLayoutDimension::Pixel, size.y};
-    el.userdata =
-        this->styles.allocate(UiGenericStyles{style, {}, (char *)ptr, scale});
-
-    this->layout.add_element(this->current_node, el);
-}
-
 void UiUser::begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,
                            TableId persistent_id)
 {
@@ -258,7 +155,8 @@ UiState UiState::init(const char *font_path, float dpi_scale)
 {
     UiState state = {};
     state.dpi_scale = dpi_scale;
-    state.core = (UiRenderingCore *)malloc(sizeof(UiRenderingCore));
+    state.core =
+        (UiRenderingCore *)OOM_HANDLER(malloc(sizeof(UiRenderingCore)));
     *state.core = UiRenderingCore::init();
     state.font = UiFontRenderer::init(state.core, {font_path, 16});
     return state;

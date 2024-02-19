@@ -4,10 +4,12 @@
 
 #include "catedu/core/memory/buffer.hpp"
 #include "file_buffer.hpp"
+#include <assert.h>
 
 #define READ_FILE_TEMP(name, path, code)                                       \
     {                                                                          \
         FILE *f___ = fopen(path, "rb");                                        \
+        assert(f___ && "Failed to open file");                                 \
         FileBuffer file___ = FileBuffer::read_whole_file(f___);                \
         fclose(f___);                                                          \
         Buffer name = {file___.size, file___.data};                            \

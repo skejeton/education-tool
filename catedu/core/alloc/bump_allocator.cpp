@@ -1,4 +1,5 @@
 #include "bump_allocator.hpp"
+#include "catedu/sys/oom.hpp"
 #include <cassert>
 #include <stdlib.h>
 
@@ -14,7 +15,7 @@ void *allocate_after_we_have_enough_space(BumpAllocator *allocator, size_t size)
 
 BumpAllocator BumpAllocator::init()
 {
-    return BumpAllocator{malloc(MAX_ALLOC), 0};
+    return BumpAllocator{OOM_HANDLER(malloc(MAX_ALLOC)), 0};
 }
 
 void *BumpAllocator::alloc(size_t size)

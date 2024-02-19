@@ -14,6 +14,7 @@ class CompileProperties:
     self.release_mode = False
     self.testbed_name = ""
     self.run_mode = False
+    self.prof = False
 
   def set_test(self):
     self.test_mode = True
@@ -27,6 +28,9 @@ class CompileProperties:
 
   def set_run(self):
     self.run_mode = True
+
+  def set_prof(self):
+    self.prof = True
 
 def parse_arguments(argv):
   target = ""
@@ -81,7 +85,13 @@ def target_build(p: CompileProperties):
     command += f"&& cmake -DCMAKE_BUILD_TYPE={mode_string} {test_string} .. "
     command += f"&& msbuild catedu.sln /maxcpucount /property:Configuration={mode_string} "
     command += "&& cd .. "
-    if p.run_mode:
+    if p.prof:
+      sleepy = "C:\\PROGRA~1\\VERYSL~1\\sleepy.exe"
+      if not os.path.isfile(sleepy):
+        raise Exception("Very Sleepy is not installed, it is required for profiling on Windows")
+      command += f"&& {sleepy} /r .\\bin\\{mode_string}\\catedu.exe"
+      print(command)
+    elif p.run_mode:
       command += f"&& .\\bin\\{mode_string}\\catedu.exe"
   elif sys.platform == "darwin":
     command += "mkdir -p bin "
@@ -90,7 +100,9 @@ def target_build(p: CompileProperties):
     command += f"&& cmake -DCMAKE_BUILD_TYPE={mode_string} {test_string} .. "
     command += "&& make "
     command += "&& cd .. "
-    if p.run_mode:
+    if p.prof:
+      raise Exception("Profiling is not yet supported on macOS")
+    elif p.run_mode:
       command += "&& ./bin/catedu"
   else:
     command += "mkdir -p bin "
@@ -99,7 +111,9 @@ def target_build(p: CompileProperties):
     command += f"&& cmake -DCMAKE_BUILD_TYPE={mode_string} {test_string} .. "
     command += "&& make -j4 "
     command += "&& cd .. "
-    if p.run_mode:
+    if p.prof:
+      raise Exception("Profiling is not yet supported on Linux/other")
+    elif p.run_mode:
       command += "&& ./bin/catedu"
   return command
 
@@ -117,6 +131,8 @@ def main():
 
   if "release" in arguments.switches:
     p.set_release()
+  if "prof" in arguments.switches:
+    p.set_prof()
 
   if arguments.target == "build-wasm":
     script = target_build_wasm()

@@ -15,6 +15,7 @@ enum class ModelTypes
     barrel,
     skybox,
     counter,
+    car,
     count_
 };
 
@@ -50,7 +51,7 @@ char *layer3 = "T    C   T"
                "     b   C"
                "          "
                "          "
-               "          "
+               "      c   "
                "          "
                "          "
                "          "
@@ -89,6 +90,9 @@ void render_tile(char tile, int x, int y, pbr::Renderer &renderer,
         break;
     case '_':
         renderer.render_model(models[(int)ModelTypes::tile], vs_params);
+        break;
+    case 'c':
+        renderer.render_model(models[(int)ModelTypes::car], vs_params);
         break;
     default:
         break;
@@ -165,6 +169,7 @@ struct TestEntry : SokolSetup
             load_model("assets/models/skybox.gltf");
         models[(int)ModelTypes::counter] =
             load_model("assets/models/counter.gltf");
+        models[(int)ModelTypes::car] = load_model("assets/models/car.gltf");
 
         renderer = pbr::Renderer::init();
         input_state = input_state.init();

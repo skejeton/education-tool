@@ -19,10 +19,10 @@ struct TestEntry : SokolSetup
         UiUser user = UiUser::init(this->ui);
         user.begin_pass();
         begin_show_window(user, {"Entities", {100, 100, 200, 200}});
-        user.button("Hello, world!");
+        button(user, "Hello, world!");
         end_show_window(user);
         begin_show_window(user, {"Test", {0, 0, 600, 50}});
-        user.button("Hello, wordld!");
+        button(user, "Hello, wordld!");
         end_show_window(user);
 
         user.end_pass();

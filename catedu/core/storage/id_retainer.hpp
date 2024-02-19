@@ -1,5 +1,6 @@
 #pragma once
 #include "catedu/misc/util.hpp"
+#include "catedu/sys/oom.hpp"
 #include <assert.h>
 #include <map>
 #include <stddef.h>
@@ -92,7 +93,7 @@ template <typename T> inline void IdRetainer<T>::push(const char *s, T value)
     std::string path = join_vector_into_string(this->current_path, "/");
     if (this->values.count(path) == 0)
     {
-        T *v_ptr = (T *)malloc(sizeof(T));
+        T *v_ptr = (T *)OOM_HANDLER(malloc(sizeof(T)));
         *v_ptr = value;
         this->values[path] = {this->cycle_number + 1, v_ptr};
     }

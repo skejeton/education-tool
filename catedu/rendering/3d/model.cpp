@@ -10,9 +10,8 @@ using namespace catedu;
 
 float *merge_buffers(float *pos, float *norm, float *uv, size_t vertex_count)
 {
-    float *result = (float *)malloc(vertex_count * 8 * sizeof(float));
-
-    OOM_HANDLER(result);
+    float *result =
+        (float *)OOM_HANDLER(malloc(vertex_count * 8 * sizeof(float)));
 
     for (size_t i = 0; i < vertex_count; i++)
     {
@@ -33,6 +32,8 @@ bool RawModel::load_gltf(const char *path, RawModel &dest)
     cgltf_data *data = NULL;
     cgltf_options options = {};
 
+    dest = {};
+
     READ_FILE_TEMP(buf, path, {
         cgltf_result result = cgltf_parse(&options, buf.data, buf.size, &data);
 
@@ -50,20 +51,21 @@ bool RawModel::load_gltf(const char *path, RawModel &dest)
         return false;
     }
 
-    dest.texture_path = (char *)calloc(1024, 1);
-    OOM_HANDLER(dest.texture_path);
+    assert(data->images_count <= 1 && "Only one image is supported for now");
+    if (data->images_count > 0)
+    {
+        dest.texture_path = (char *)calloc(1024, 1);
+        OOM_HANDLER(dest.texture_path);
 
-    assert(data->images_count == 1 && "One image is required");
+        strncpy(dest.texture_path, path, 1024);
 
-    strncpy(dest.texture_path, path, 1024);
+        const char *s0 = strrchr(path, '/');
+        const char *s1 = strrchr(path, '\\');
+        const char *slash = s0 ? (s1 && s1 > s0 ? s1 : s0) : s1;
 
-    const char *s0 = strrchr(path, '/');
-    const char *s1 = strrchr(path, '\\');
-    const char *slash = s0 ? (s1 && s1 > s0 ? s1 : s0) : s1;
-
-    snprintf(dest.texture_path, 1024, "%.*s/%s", (int)(slash - path), path,
-             data->images[0].uri);
-
+        snprintf(dest.texture_path, 1024, "%.*s/%s", (int)(slash - path), path,
+                 data->images[0].uri);
+    }
     dest.data = data;
     return true;
 }
@@ -206,7 +208,10 @@ bool catedu::Model::load_from_raw(RawModel &raw, Model &dest)
 
     dest.index_count = index_count;
 
-    dest.texture = Texture::init(raw.texture_path);
+    if (raw.texture_path)
+    {
+        dest.texture = Texture::init(raw.texture_path);
+    }
 
     return true;
 }

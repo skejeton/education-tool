@@ -12,10 +12,11 @@ RenderMeshGenerator RenderMeshGenerator::init(size_t vertex_stride)
 uint16_t RenderMeshGenerator::push_vert(float *vertex, size_t count)
 {
     assert(count == vertex_stride);
-    for (size_t i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; i++)
+    {
         vertices.push_back(vertex[i]);
     }
-    return vertices.size()/vertex_stride - 1;
+    return vertices.size() / vertex_stride - 1;
 }
 
 void RenderMeshGenerator::push_tri(uint16_t a, uint16_t b, uint16_t c)
@@ -29,15 +30,18 @@ RenderGeo RenderMeshGenerator::convert(RenderWriteDesc desc)
 {
     RenderGeo geo;
     geo.ibuf_size = this->indices.size();
-    geo.ibuf = memory_copy_via_malloc(this->indices.data(), this->indices.size());
-    geo.vbuf_size = this->vertices.size()/this->vertex_stride*desc.stride;
-    geo.vbuf = (float*)malloc(geo.vbuf_size*sizeof(float));
-    memset(geo.vbuf, 0, geo.vbuf_size*sizeof(float));
+    geo.ibuf =
+        memory_copy_via_malloc(this->indices.data(), this->indices.size());
+    geo.vbuf_size = this->vertices.size() / this->vertex_stride * desc.stride;
+    geo.vbuf = (float *)OOM_HANDLER(malloc(geo.vbuf_size * sizeof(float)));
+    memset(geo.vbuf, 0, geo.vbuf_size * sizeof(float));
     geo.stride = desc.stride;
 
-    for (size_t i = 0, k = 0; i < this->vertices.size(); i += this->vertex_stride, k += desc.stride)
+    for (size_t i = 0, k = 0; i < this->vertices.size();
+         i += this->vertex_stride, k += desc.stride)
     {
-        memcpy(geo.vbuf+k+desc.offset, this->vertices.data()+i, sizeof(float)*vertex_stride);
+        memcpy(geo.vbuf + k + desc.offset, this->vertices.data() + i,
+               sizeof(float) * vertex_stride);
     }
 
     assert(geo.validate());

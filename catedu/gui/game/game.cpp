@@ -1,5 +1,6 @@
 #include "game.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
+#include "catedu/ui/widgets.hpp"
 
 AutoLayoutElement make_element(AutoLayout layout, Vector2 size, bool autox,
                                bool autoy, Vector2 align = {0, 0}, float p = 3);
@@ -36,8 +37,8 @@ int GuiGame::show(int currency, int reals, char **script)
                        UiMakeBrush::make_solid({0, 0, 0, 0}));
 
     user.begin_generic(make_auto({AutoLayout::Column}), {}, {});
-    user.label(stdstrfmt("S$%d", currency).c_str(), {3, 3});
-    user.label(stdstrfmt("R$%d", reals).c_str(), {3, 3});
+    label(user, stdstrfmt("S$%d", currency).c_str(), {3, 3});
+    label(user, stdstrfmt("R$%d", reals).c_str(), {3, 3});
 
     if (this->dialog.open)
     {
@@ -47,21 +48,21 @@ int GuiGame::show(int currency, int reals, char **script)
                            UiMakeBrush::make_gradient({0.5, 0.5, 0.5, 0.5f},
                                                       {0.6, 0.6, 0.6, 0.5f}),
                            UiMakeBrush::make_solid({0, 0, 0, 1.0}));
-        user.label(this->dialog.title, {3, 3},
-                   UiMakeBrush::make_gradient({0.5, 0.5, 0.9, 1.0f},
-                                              {0.5, 0.5, 1.0, 1.0f}));
+        label(user, this->dialog.title, {3, 3},
+              UiMakeBrush::make_gradient({0.5, 0.5, 0.9, 1.0f},
+                                         {0.5, 0.5, 1.0, 1.0f}));
 
-        user.label(this->dialog.text, {2, 2});
-        user.label(this->dialog.translation, {1.5, 1.5},
-                   UiMakeBrush::make_gradient({1.0, 1.0, 1.0, 0.8f},
-                                              {1.0, 1.0, 1.0, 0.8f}));
+        label(user, this->dialog.text, {2, 2});
+        label(user, this->dialog.translation, {1.5, 1.5},
+              UiMakeBrush::make_gradient({1.0, 1.0, 1.0, 0.8f},
+                                         {1.0, 1.0, 1.0, 0.8f}));
 
         user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
         for (int i = 0; i < 8; i++)
         {
             if (this->dialog.buttons[i].text)
             {
-                if (user.button(this->dialog.buttons[i].text))
+                if (button(user, this->dialog.buttons[i].text))
                 {
                     this->dialog.open = false;
                     *script = this->dialog.buttons[i].script;
@@ -74,7 +75,7 @@ int GuiGame::show(int currency, int reals, char **script)
     }
     else
     {
-        ui_mode = user.button("Exit") ? 1 : ui_mode;
+        ui_mode = button(user, "Exit") ? 1 : ui_mode;
     }
     user.end_generic();
 

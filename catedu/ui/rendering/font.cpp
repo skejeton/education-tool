@@ -1,8 +1,10 @@
 #include "font.hpp"
 #include "catedu/misc/util.hpp"
+#include "catedu/sys/oom.hpp"
 #include "make_brush.hpp"
 #include "pass.hpp"
 #include "transform.hpp"
+
 
 #define PAGE_IMAGE_SIZE 2048
 
@@ -23,7 +25,8 @@ void populate_chunk(UiFontRenderer *renderer, int i)
         return;
     }
 
-    UiFontChunk *chunk = (UiFontChunk *)malloc(sizeof(UiFontChunk));
+    UiFontChunk *chunk =
+        (UiFontChunk *)OOM_HANDLER(malloc(sizeof(UiFontChunk)));
     *chunk = {0};
 
     stbtt_pack_context pack_context = {};
@@ -92,7 +95,7 @@ UiFontRenderer UiFontRenderer::init(UiRenderingCore *core, UiFontDef def)
     result.def = def;
 
     FILE *f = fopen(def.path, "rb");
-    assert(f && "I like shorts! They're comfy and easy to wear! (No file)");
+    assert(f && "Failed to open file");
     FileBuffer buf = FileBuffer::read_whole_file(f);
     result.buf = buf;
 

@@ -1,5 +1,6 @@
 #include "main_menu.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
+#include "catedu/ui/widgets.hpp"
 #include "sokol/sokol_app.h"
 
 AutoLayoutElement make_element(AutoLayout layout, Vector2 size, bool autox,
@@ -38,7 +39,7 @@ int GuiMainMenu::show()
                            UiMakeBrush::make_solid({0.7, 0.7, 0.7, 1.0}),
                            UiMakeBrush::make_solid({0, 0, 0, 1.0}));
 
-        if (user.button("x"))
+        if (button(user, "x"))
         {
             popuptype = 0;
         }
@@ -51,7 +52,7 @@ int GuiMainMenu::show()
                                UiMakeBrush::make_gradient({0.0, 0.0, 0.7, 1.0},
                                                           {0, 0.2, 1.0, 1.0}),
                                UiMakeBrush::make_solid({1, 1, 1, 1.0}));
-            user.label("?", {5, 5}, UiMakeBrush::make_solid({1, 1, 1, 1.0}));
+            label(user, "?", {5, 5}, UiMakeBrush::make_solid({1, 1, 1, 1.0}));
             user.end_generic();
         }
         else
@@ -61,38 +62,38 @@ int GuiMainMenu::show()
                                UiMakeBrush::make_gradient({0.8, 0.5, 0.0, 1.0},
                                                           {1.0, 0.7, 0.0, 1.0}),
                                UiMakeBrush::make_solid({1, 1, 1, 1.0}));
-            user.label(":/", {5, 5}, UiMakeBrush::make_solid({1, 1, 1, 1.0}));
+            label(user, ":/", {5, 5}, UiMakeBrush::make_solid({1, 1, 1, 1.0}));
             user.end_generic();
         }
 
         if (popuptype == 1)
         {
-            user.label("\nAre you sure you want to exit?\n", {2, 2},
-                       UiMakeBrush::make_solid({0, 0, 0, 1.0}));
+            label(user, "\nAre you sure you want to exit?\n", {2, 2},
+                  UiMakeBrush::make_solid({0, 0, 0, 1.0}));
         }
         else
         {
-            user.label("\nThis feature is not implemented yet.\n", {2, 2},
-                       UiMakeBrush::make_solid({0, 0, 0, 1.0}));
+            label(user, "\nThis feature is not implemented yet.\n", {2, 2},
+                  UiMakeBrush::make_solid({0, 0, 0, 1.0}));
         }
 
         user.end_generic();
         user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
         if (popuptype == 1)
         {
-            if (user.button("Yes"))
+            if (button(user, "Yes"))
             {
                 popuptype = 0;
                 sapp_request_quit();
             }
-            if (user.button("No"))
+            if (button(user, "No"))
             {
                 popuptype = 0;
             }
         }
         else
         {
-            if (user.button("Ok"))
+            if (button(user, "Ok"))
             {
                 popuptype = 0;
             }
@@ -106,22 +107,22 @@ int GuiMainMenu::show()
     UiBrush brush =
         UiMakeBrush::make_gradient({0.2, 0.8, 0.0, 1.0}, {0.5, 1.0, 0.0, 1.0});
 
-    user.label("Educat!", {5, 5}, brush);
+    label(user, "Educat!", {5, 5}, brush);
 
     // FIXME: Yes, I added paddings to the buttons using spaces.
-    if (user.button("Play"))
+    if (button(user, "Play"))
     {
         exitcode = 2;
     }
-    if (user.button("Editor"))
+    if (button(user, "Editor"))
     {
         exitcode = 1;
     }
-    if (user.button("Settings"))
+    if (button(user, "Settings"))
     {
         popuptype = 2;
     }
-    if (user.button("Exit"))
+    if (button(user, "Exit"))
     {
         popuptype = 1;
     }

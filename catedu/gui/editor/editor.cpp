@@ -12,6 +12,7 @@ GuiEditor GuiEditor::init(UiState *ui_state)
     GuiEditor result = {};
     result.ui_state = ui_state;
     result.camera = camera;
+    result.debug_tree = GuiDebugTree::init();
 
     return result;
 }
@@ -32,7 +33,7 @@ void show_generic_icon(UiUser &user, const char *s, Vector4 color,
     user.begin_generic(element, UiMakeBrush::make_solid(color),
                        UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
 
-    user.label(s, {1, 1});
+    label(user, s, {1, 1});
 
     user.end_generic();
 }
@@ -116,21 +117,21 @@ ObjectInteractionEvent show_object_row(UiUser &user, Object &obj,
     user.begin_generic(element, UiMakeBrush::make_solid(bgc),
                        UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
 
-    if (user.button("H"))
+    if (button(user, "H"))
     {
         obj.hide = !obj.hide;
     }
-    if (user.button(">"))
+    if (button(user, ">"))
     {
         result = Select;
     }
-    if (user.button("X"))
+    if (button(user, "X"))
     {
         result = Delete;
     }
     show_object_icon(user, obj.type);
-    user.label(obj.name, {1, 1.2},
-               UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
+    label(user, obj.name, {1, 1.2},
+          UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
 
     user.end_generic();
 
@@ -157,19 +158,19 @@ size_t show_pagination(UiUser &user, size_t page, size_t page_count)
                        UiMakeBrush::make_solid({0.6f, 0.6f, 0.6f, 1.0f}),
                        UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
 
-    if (user.button(" First "))
+    if (button(user, " First "))
     {
         page = 0;
     }
-    if (user.button(" < ") && page != 0)
+    if (button(user, " < ") && page != 0)
     {
         page -= 1;
     }
-    if (user.button(" > "))
+    if (button(user, " > "))
     {
         page += 1;
     }
-    if (user.button(" Last "))
+    if (button(user, " Last "))
     {
         page = page_count;
     }
@@ -234,6 +235,11 @@ SelectionState show_selection(GuiEditor &editor, BoxdrawRenderer &renderer,
 void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
                      Scene &scene, Input &input)
 {
+    debug_tree.reset();
+
+    debug_tree.value("Mouse Pos X", input.mouse_pos.x);
+    debug_tree.value("Mouse Pos Y", input.mouse_pos.y);
+
     scene.render(renderer, resources);
 
     camera.set_aspect(sapp_widthf() / sapp_heightf());
@@ -302,21 +308,31 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
     Object *selected = scene.get_object(this->selection);
 
+    if (input.key_states[SAPP_KEYCODE_TAB].held)
+    {
+        begin_show_window(user, {"Debug", {0, 0, 300, 400}});
+        debug_tree.show(user);
+        end_show_window(user);
+    }
+
     if (selected)
     {
         begin_show_window(user, {"Properties", {220, 20, 200, 200}});
+
+        img(user, "./assets/example.png", {0.5, 0.5});
+
         show_object_icon_ex(user, selected->type);
-        user.label("Name:", {1, 1},
-                   UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
-        user.input("SelObjName", selected->name, 32);
-        user.label("Id:", {1, 1},
-                   UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
-        user.input("SelObjId", selected->id, 32);
+        label(user, "Name:", {1, 1},
+              UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
+        ::input(user, "SelObjName", selected->name, 32);
+        label(user, "Id:", {1, 1},
+              UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
+        ::input(user, "SelObjId", selected->id, 32);
         if (selected->type == Object::Type::Entity)
         {
-            user.label("Model:", {1, 1},
-                       UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
-            user.input("SelObjModel", selected->entity.model_name, 32);
+            label(user, "Model:", {1, 1},
+                  UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
+            ::input(user, "SelObjModel", selected->entity.model_name, 32);
         }
         end_show_window(user);
 
@@ -327,7 +343,7 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
         for (auto [id, tile] : iter(resources.tiles))
         {
-            if (user.button(tile.name))
+            if (button(user, tile.name))
             {
                 this->tile_selection = id;
             }
@@ -341,5 +357,6 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
 void GuiEditor::deinit()
 {
+    debug_tree.deinit();
     // Nothing yet
 }

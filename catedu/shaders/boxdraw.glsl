@@ -65,7 +65,6 @@ out vec4 frag_color;
 void main() {
     vec2 uv = mod(frag_tile_count * frag_uv, vec2(1, 1)) * (frag_uv_max - frag_uv_min) + frag_uv_min;
 
-    /*
     float offs_bound_x = 1.0 / frag_size.x;
     float offs_bound_y = 1.0 / frag_size.y;
     float min_bound_x = frag_uv_min.x + offs_bound_x;
@@ -73,6 +72,7 @@ void main() {
     float min_bound_y = frag_uv_min.y + offs_bound_y;
     float max_bound_y = frag_uv_max.y - offs_bound_y;
 
+    /*
     const float LOG2 = 1.442695;
     float fogFactor = pow(10, -0.03 *
                    0.03 *
@@ -80,8 +80,8 @@ void main() {
                    dist *
                    LOG2 );
     fogFactor = clamp(fogFactor, 0.0, 1.0);
-    uv = clamp(uv, vec2(min_bound_x, min_bound_y), vec2(max_bound_x, max_bound_y));
     */
+    uv = clamp(uv, vec2(min_bound_x, min_bound_y), vec2(max_bound_x, max_bound_y));
 
     vec4 sample_value = texture(sampler2D(image, image_sampler), uv);
     frag_color = sample_value * color;

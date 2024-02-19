@@ -49,6 +49,12 @@ struct UiInteractionStateTable
     TableId focused;
 };
 
+struct UiImageCache
+{
+    char *path;
+    UiImageId id;
+};
+
 struct UiState
 {
     UiRenderingCore *core;
@@ -56,6 +62,7 @@ struct UiState
     UiInput input;
     UiElementStorage element_storage;
     UiInteractionStateTable interaction_table;
+    Table<UiImageCache> image_cache;
 
     float dpi_scale;
 
@@ -99,16 +106,6 @@ struct UiUser
 
     void begin_pass();
     void end_pass();
-
-    void input(const char *id, char *out, int max);
-    bool button(const char *text, int offs = 0);
-    void label(const char *text, Vector2 scale = {1, 1},
-               UiBrush style = {
-                   UiBuffers::Rectangle, {1, 1, 1, 1}, {1, 1, 1, 1}});
-    void label_tooltip(const char *text, const char *tooltip,
-                       Vector2 scale = {1, 1},
-                       UiBrush style = {
-                           UiBuffers::Rectangle, {1, 1, 1, 1}, {1, 1, 1, 1}});
 
     void begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,
                        TableId persistent = NULL_ID);

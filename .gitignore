@@ -13,6 +13,7 @@ catedu/shaders.hxx
 # User files
 user/
 .cache
+*.sleepy
 
 
 # IDE files
