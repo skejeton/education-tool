@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up emscripten
-        uses: emscripten-core/emsdk@main
+        uses: mymindstorm/setup-emsdk@v14
         with:
           version: latest
       - name: Checkout code
