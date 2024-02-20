@@ -5,7 +5,6 @@ em++ -I.\
   -Ilib\
   -O3\
   --preload-file assets\
-  --preload-file data\
   --shell-file scripts/shell.html\
   -sASYNCIFY=1\
   -sSTACK_SIZE=8MB\
