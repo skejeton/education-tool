@@ -59,6 +59,7 @@ struct UiState
 {
     UiRenderingCore *core;
     UiFontRenderer font;
+    UiFontRenderer font_bold;
     UiInput input;
     UiElementStorage element_storage;
     UiInteractionStateTable interaction_table;
@@ -66,7 +67,8 @@ struct UiState
 
     float dpi_scale;
 
-    static UiState init(const char *font_path, float dpi_scale = 1);
+    static UiState init(const char *font_path, const char *font_bold_path,
+                        float dpi_scale = 1);
     void deinit();
 
     bool feed_event(const sapp_event *event);
@@ -91,6 +93,7 @@ struct UiGenericStyles
     const char *text;
     Vector2 text_scale;
     TableId persistent;
+    bool bold;
 };
 
 struct UiUser
@@ -101,11 +104,16 @@ struct UiUser
     AutoLayoutNodeId current_node;
     Table<UiGenericStyles> styles;
     BumpAllocator bump;
+    bool bold;
 
     static UiUser init(UiState &state);
 
     void begin_pass();
     void end_pass();
+
+    void push_id(int64_t id);
+    void push_id(const char *id);
+    void pop_id();
 
     void begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,
                        TableId persistent = NULL_ID);

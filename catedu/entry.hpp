@@ -17,6 +17,14 @@
 #include "sokol/sokol_glue.h"
 #include "sokol/sokol_log.h"
 
+enum
+{
+    MENU_DEBUG,
+    MENU_MAIN_MENU,
+    MENU_EDITOR,
+    MENU_GAME,
+};
+
 struct Entry : SokolSetup
 {
     UiState ui_state;
@@ -25,7 +33,7 @@ struct Entry : SokolSetup
     GuiEditor editor;
     GuiGame game_gui;
     ResourceSpec res;
-    int ui_mode = 2;
+    int ui_mode = MENU_MAIN_MENU;
     BoxdrawRenderer boxdraw_renderer;
     Vector2 target_camera_pos;
     bool zoomout = false;

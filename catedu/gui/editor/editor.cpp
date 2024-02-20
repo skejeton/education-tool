@@ -239,6 +239,7 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
     debug_tree.value("Mouse Pos X", input.mouse_pos.x);
     debug_tree.value("Mouse Pos Y", input.mouse_pos.y);
+    debug_tree.value("Boolean value", false);
 
     scene.render(renderer, resources);
 
@@ -318,8 +319,6 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     if (selected)
     {
         begin_show_window(user, {"Properties", {220, 20, 200, 200}});
-
-        img(user, "./assets/example.png", {0.5, 0.5});
 
         show_object_icon_ex(user, selected->type);
         label(user, "Name:", {1, 1},

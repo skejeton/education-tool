@@ -2,10 +2,6 @@
 #include "catedu/ui/layout/dpi_scale.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 
-const Vector4 theme[] = {{0.8, 0.8, 0.8, 1.0}, {0.6, 0.6, 0.6, 1.0},
-                         {0.0, 0.0, 0.0, 1.0}, {0.0, 0.0, 0.0, 1.0},
-                         {0.7, 0.7, 0.7, 1.0}, {0.5, 0.5, 0.5, 1.0}};
-
 void draw_rectangle_gradient(UiRenderingPass &pass, Rect rect,
                              Vector4 color_top, Vector4 color_bottom)
 {
@@ -75,9 +71,20 @@ void render_out(UiUser &user)
             }
             if (styles->text)
             {
-                user.state->font.render_text_utf8(
-                    &user.pass, result->base_box.pos, styles->text,
-                    styles->brush, styles->text_scale * user.state->dpi_scale);
+                if (styles->bold)
+                {
+                    user.state->font_bold.render_text_utf8(
+                        &user.pass, result->base_box.pos, styles->text,
+                        styles->brush,
+                        styles->text_scale * user.state->dpi_scale);
+                }
+                else
+                {
+                    user.state->font.render_text_utf8(
+                        &user.pass, result->base_box.pos, styles->text,
+                        styles->brush,
+                        styles->text_scale * user.state->dpi_scale);
+                }
             }
             else
             {
@@ -133,6 +140,20 @@ void UiUser::end_pass()
     this->bump.deinit();
 }
 
+void UiUser::push_id(int64_t id)
+{
+}
+
+void UiUser::push_id(const char *id)
+{
+    this->state->element_storage.push(id, {});
+}
+
+void UiUser::pop_id()
+{
+    this->state->element_storage.pop();
+}
+
 void UiUser::begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,
                            TableId persistent_id)
 {
@@ -151,7 +172,8 @@ void UiUser::end_generic()
     this->current_node = node->parent;
 }
 
-UiState UiState::init(const char *font_path, float dpi_scale)
+UiState UiState::init(const char *font_path, const char *font_bold_path,
+                      float dpi_scale)
 {
     UiState state = {};
     state.dpi_scale = dpi_scale;
@@ -159,6 +181,7 @@ UiState UiState::init(const char *font_path, float dpi_scale)
         (UiRenderingCore *)OOM_HANDLER(malloc(sizeof(UiRenderingCore)));
     *state.core = UiRenderingCore::init();
     state.font = UiFontRenderer::init(state.core, {font_path, 16});
+    state.font_bold = UiFontRenderer::init(state.core, {font_bold_path, 16});
     return state;
 }
 

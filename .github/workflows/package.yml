@@ -1,4 +1,4 @@
-name: EduTool Workflow
+name: Educore Workflow
 on: [push]
 jobs:
   MakePkg-Msbuild:

@@ -15,4 +15,4 @@ void input(UiUser &user, const char *id, char *out, int max);
 bool button(UiUser &user, const char *text, int offs = 0);
 void img(UiUser &user, const char *path, Vector2 scale = {1, 1});
 void label(UiUser &user, const char *text, Vector2 scale = {1, 1},
-           UiBrush style = {UiBuffers::Rectangle, {1, 1, 1, 1}, {1, 1, 1, 1}});
+           UiBrush style = {UiBuffers::Rectangle, {0, 0, 0, 1}, {0, 0, 0, 1}});

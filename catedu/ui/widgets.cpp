@@ -27,7 +27,8 @@ void begin_show_window(UiUser &user, WindowInfo info)
         UiBrush border = UiMakeBrush::make_solid({0.7f, 0.7f, 0.7f, 1.0f});
         UiBrush background = UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f});
         user.begin_generic(el, background, border);
-        label(user, info.title, {1, 1});
+        label(user, info.title, {1, 1},
+              UiMakeBrush::make_solid({1.0f, 1.0f, 1.0f, 1.0f}));
         user.end_generic();
     }
 
@@ -137,6 +138,10 @@ void img(UiUser &user, const char *path, Vector2 scale)
 void label(UiUser &user, const char *text, Vector2 scale, UiBrush style)
 {
     Vector2 size = user.state->font.bounds_text_utf8({0, 0}, text, scale).siz;
+    if (user.bold)
+    {
+        size = user.state->font_bold.bounds_text_utf8({0, 0}, text, scale).siz;
+    }
 
     void *ptr = user.bump.alloc(strlen(text) + 1);
     strcpy((char *)ptr, text);
@@ -145,8 +150,11 @@ void label(UiUser &user, const char *text, Vector2 scale, UiBrush style)
     el.layout = {AutoLayout::Row};
     el.width = {AutoLayoutDimension::Pixel, size.x};
     el.height = {AutoLayoutDimension::Pixel, size.y};
-    el.userdata =
-        user.styles.allocate(UiGenericStyles{style, {}, (char *)ptr, scale});
+
+    UiGenericStyles styles = {style, {}, (char *)ptr, scale, 0};
+    styles.bold = user.bold;
+
+    el.userdata = user.styles.allocate(styles);
 
     user.layout.add_element(user.current_node, el);
 }

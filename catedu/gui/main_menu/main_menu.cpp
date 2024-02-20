@@ -20,16 +20,18 @@ void GuiMainMenu::deinit()
 
 int GuiMainMenu::show()
 {
-    int exitcode = 0;
+    int exitcode = 1;
     static int popuptype = 0;
     auto user = UiUser::init(*this->ui_state);
     user.begin_pass();
 
-    user.begin_generic(make_element({AutoLayout::Row},
-                                    {sapp_widthf(), sapp_heightf()}, false,
-                                    false, {1, 0.5}, 0),
-                       UiMakeBrush::make_solid({1, 1, 1, 0.0}),
-                       UiMakeBrush::make_solid({1, 1, 0.5, 0.0}));
+    user.begin_generic(
+        make_element({AutoLayout::Row},
+                     {sapp_widthf() / this->ui_state->dpi_scale,
+                      sapp_heightf() / this->ui_state->dpi_scale},
+                     false, false, {1, 0.5}, 0),
+        UiMakeBrush::make_solid({1, 1, 1, 0.0}),
+        UiMakeBrush::make_solid({1, 1, 0.5, 0.0}));
 
     user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
     if (popuptype)
@@ -107,16 +109,24 @@ int GuiMainMenu::show()
     UiBrush brush =
         UiMakeBrush::make_gradient({0.2, 0.8, 0.0, 1.0}, {0.5, 1.0, 0.0, 1.0});
 
-    label(user, "Educat!", {5, 5}, brush);
+    AutoLayoutElement el = make_element({AutoLayout::Row}, {0, 0}, true, true);
+    user.begin_generic(el, {}, {});
+
+    user.bold = true;
+    label(user, "Edu", {5, 5}, brush);
+    user.bold = false;
+    label(user, "core", {5, 5}, brush);
+
+    user.end_generic();
 
     // FIXME: Yes, I added paddings to the buttons using spaces.
     if (button(user, "Play"))
     {
-        exitcode = 2;
+        exitcode = 3;
     }
     if (button(user, "Editor"))
     {
-        exitcode = 1;
+        exitcode = 2;
     }
     if (button(user, "Settings"))
     {

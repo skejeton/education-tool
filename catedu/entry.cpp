@@ -145,13 +145,16 @@ void show_debug(Entry *entry)
 
 void Entry::frame(void)
 {
+    this->boxdraw_renderer.pass_action.colors->clear_value = {0, 0, 0.5, 1};
     switch (ui_mode)
     {
     case 0: // Debug
         show_debug(this);
         break;
     case 1: // Main Menu
-        show_menu_animation(this);
+        this->boxdraw_renderer.pass_action.colors->clear_value = {0, 0, 0, 1};
+        boxdraw_flush(&this->boxdraw_renderer, this->editor.camera.vp);
+        ui_mode = main_menu.show();
         break;
     case 2: // Editor
         // scamera_input_apply(&this->editor.camera, &this->input_state);
@@ -184,7 +187,8 @@ void Entry::init()
     res = load_resource_spec("./assets/tileset.png");
 
     ui_state =
-        UiState::init("./assets/Roboto-Regular.ttf", sapp_dpi_scale() * 1.2);
+        UiState::init("./assets/Roboto-Regular.ttf", "./assets/Roboto-Bold.ttf",
+                      sapp_dpi_scale() * 1.2);
     main_menu = GuiMainMenu::init(&ui_state);
     editor = GuiEditor::init(&ui_state);
     game_gui = GuiGame::init(&ui_state);

@@ -1,0 +1,24 @@
+on:
+  schedule:
+  - cron: "0 0 * * 1"
+
+jobs:
+  emscripten_compile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up emscripten
+        uses: emscripten-core/emsdk@main
+        with:
+          version: latest
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Initialize submodules/LFS
+        run: |
+          git submodule init
+          git submodule update --remote
+          git lfs install
+          git lfs pull
+      - name: Build with emscripten
+        run: |
+          sh -c ./scripts/build_wasm.sh
+
