@@ -1,3 +1,5 @@
+name: Educore Weekly Build
+
 on: [push]
   # schedule:
   # - cron: "0 0 * * 1"
@@ -21,5 +23,6 @@ jobs:
       - name: Build with emscripten
         run: |
           pwd
+          ls
           sh -c ./scripts/build_wasm.sh
 
