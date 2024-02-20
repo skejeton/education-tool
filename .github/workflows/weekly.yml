@@ -20,5 +20,6 @@ jobs:
           git lfs pull
       - name: Build with emscripten
         run: |
+          pwd
           sh -c ./scripts/build_wasm.sh
 
