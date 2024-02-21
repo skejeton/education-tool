@@ -2,32 +2,33 @@
 
 #include "autolayout.hpp"
 
+// Applies hinting for the DPI scale
 static inline void fix_wacky_box(Rect &parent, Rect &child)
 {
     float l = child.pos.x - parent.pos.x;
     float r = (parent.pos.x + parent.siz.x) - (child.pos.x + child.siz.x);
     float t = child.pos.y - parent.pos.y;
     float b = (parent.pos.y + parent.siz.y) - (child.pos.y + child.siz.y);
-    float rx = 0;
-    float ry = 0;
+    float fl = floorf(l);
+    float fr = floorf(r);
+    float ft = floorf(t);
+    float fb = floorf(b);
 
     if (ceilf(l) > l)
     {
-        child.pos.x = parent.pos.x + floorf(l);
-        rx += floorf(l);
+        child.pos.x = parent.pos.x + fl;
     }
     if (ceilf(t) > t)
     {
-        child.pos.y = parent.pos.y + floorf(t);
-        ry += floorf(t);
+        child.pos.y = parent.pos.y + ft;
     }
     if (ceilf(r) > r)
     {
-        child.siz.x = parent.siz.x - floor(r + rx);
+        child.siz.x = parent.siz.x - (fl + fr);
     }
     if (ceilf(b) > b)
     {
-        child.siz.y = parent.siz.y - floor(b + ry);
+        child.siz.y = parent.siz.y - (ft + fb);
     }
 }
 
