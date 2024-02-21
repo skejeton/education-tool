@@ -225,7 +225,12 @@ bool UiState::feed_event(const sapp_event *event)
         }
         break;
     case SAPP_EVENTTYPE_CHAR:
-        printf("Char: %x\n", event->char_code);
+        if (event->char_code == 0x7F)
+        {
+            // macOS does it for some reason
+            break;
+        }
+
         if (this->input.inputchars_count < 8)
         {
             this->input.inputchars[this->input.inputchars_count++] =
