@@ -5,7 +5,6 @@
 #include "pass.hpp"
 #include "transform.hpp"
 
-
 #define PAGE_IMAGE_SIZE 2048
 
 bool valid_glyph(int glyph)
@@ -39,8 +38,8 @@ void populate_chunk(UiFontRenderer *renderer, int i)
 
     stbtt_PackSetOversampling(&pack_context, 1, 1);
     stbtt_PackFontRange(&pack_context, renderer->buf.data, 0,
-                        renderer->def.font_size * 10, i * 256, 256,
-                        chunk->packed_chars);
+                        renderer->def.font_size * renderer->scale_factor,
+                        i * 256, 256, chunk->packed_chars);
     stbtt_PackEnd(&pack_context);
 
     for (int i = 0; i < pixels.size(); i += 1)
@@ -100,8 +99,9 @@ UiFontRenderer UiFontRenderer::init(UiRenderingCore *core, UiFontDef def)
     result.buf = buf;
 
     stbtt_InitFont(&result.font_info, buf.data, 0);
-    result.scale =
-        stbtt_ScaleForPixelHeight(&result.font_info, def.font_size * 10);
+    result.scale_factor = 10;
+    result.scale = stbtt_ScaleForPixelHeight(
+        &result.font_info, def.font_size * result.scale_factor);
     int ascent, descent;
     stbtt_GetFontVMetrics(&result.font_info, &ascent, &descent, nullptr);
     result.ascent = ascent;
@@ -189,7 +189,7 @@ void UiFontRenderer::render_text_utf8(UiRenderingPass *pass, Vector2 position,
                                       const char *text, UiBrush brush,
                                       Vector2 scale)
 {
-    scale /= {10, 10};
+    scale /= this->scale_factor;
     Vector2 pos = {0, 0};
 
     for (size_t i = 0; text[i];)
@@ -222,7 +222,7 @@ void UiFontRenderer::render_text_utf8(UiRenderingPass *pass, Vector2 position,
 Rect UiFontRenderer::bounds_text_utf8(Vector2 position, const char *text,
                                       Vector2 scale, size_t until)
 {
-    scale /= {10, 10};
+    scale /= this->scale_factor;
     Vector2 pos = {0, 0};
     float max_w = 0;
     int line_count = 1;

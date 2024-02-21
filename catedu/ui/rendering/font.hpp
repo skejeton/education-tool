@@ -28,6 +28,7 @@ struct UiFontRenderer
     float ascent;
     float descent;
     float scale;
+    float scale_factor;
 
     static UiFontRenderer init(UiRenderingCore *core, UiFontDef def);
     void render_glyph(UiRenderingPass *pass, Vector2 position, int glyph,
