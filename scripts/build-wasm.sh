@@ -18,4 +18,4 @@ em++ -I.\
   catedu/**/*.cpp\
   catedu/**/**/*.cpp\
   catedu/*.cpp\
-  -o bin/wasm-out/output.html
+  -o bin/wasm-out/index.html
