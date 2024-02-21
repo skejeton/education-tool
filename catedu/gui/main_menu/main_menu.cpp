@@ -44,9 +44,9 @@ int GuiMainMenu::show()
     user.begin_generic(el, {}, {});
 
     user.bold = true;
-    label(user, "Edu", {5, 5}, brush);
+    label(user, "Edu", {2.5, 2.5}, brush);
     user.bold = false;
-    label(user, "core", {5, 5}, brush);
+    label(user, "core", {2.5, 2.5}, brush);
 
     user.end_generic();
 
@@ -77,29 +77,29 @@ int GuiMainMenu::show()
         begin_show_window(
             user, {"Alert", rect_center_rect(
                                 sapp_screen_rect_scaled(ui_state->dpi_scale),
-                                {0, 0, 350, 110})});
+                                {0, 0, 350, 75})});
         user.begin_generic(make_auto({AutoLayout::Column}, {0, 0}), {}, {});
 
         user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
 
         if (popuptype == 1)
         {
-            user.begin_generic(make_element({AutoLayout::Column}, {64, 64},
+            user.begin_generic(make_element({AutoLayout::Column}, {32, 32},
                                             false, false, {0.5, 0.5}, 3),
                                UiMakeBrush::make_gradient({0.0, 0.0, 0.7, 1.0},
                                                           {0, 0.2, 1.0, 1.0}),
                                UiMakeBrush::make_solid({1, 1, 1, 1.0}));
-            label(user, "?", {5, 5}, UiMakeBrush::make_solid({1, 1, 1, 1.0}));
+            label(user, "?", {2, 2}, UiMakeBrush::make_solid({1, 1, 1, 1.0}));
             user.end_generic();
         }
         else
         {
-            user.begin_generic(make_element({AutoLayout::Column}, {64, 64},
+            user.begin_generic(make_element({AutoLayout::Column}, {32, 32},
                                             false, false, {0.5, 0.5}, 3),
                                UiMakeBrush::make_gradient({0.8, 0.5, 0.0, 1.0},
                                                           {1.0, 0.7, 0.0, 1.0}),
                                UiMakeBrush::make_solid({1, 1, 1, 1.0}));
-            label(user, ":/", {5, 5}, UiMakeBrush::make_solid({1, 1, 1, 1.0}));
+            label(user, ":/", {2, 2}, UiMakeBrush::make_solid({1, 1, 1, 1.0}));
             user.end_generic();
         }
 
