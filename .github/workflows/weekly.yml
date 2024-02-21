@@ -31,5 +31,5 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
-          source: "./bin/wasm-out/output.html,./bin/wasm-out/output.wasm,./bin/wasm-out/output.js,./bin/wasm-out/output.data"
+          source: "./bin/wasm-out/index.html,./bin/wasm-out/index.wasm,./bin/wasm-out/index.js,./bin/wasm-out/index.data"
           target: "/home/ubuntu/dat/ci/educore"
