@@ -6,6 +6,7 @@ on: [push]
 
 jobs:
   emscripten_compile:
+    environment: "ske's secrets"
     runs-on: ubuntu-latest
     steps:
       - name: Set up emscripten
