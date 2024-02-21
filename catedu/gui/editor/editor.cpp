@@ -337,8 +337,7 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
         begin_show_window(
             user,
-            {"Tiles",
-             {sapp_widthf() / (sapp_dpi_scale() * 1.2f) - 100, 20, 100, 800}});
+            {"Tiles", {sapp_widthf() / sapp_dpi_scale() - 100, 20, 100, 800}});
 
         for (auto [id, tile] : iter(resources.tiles))
         {
