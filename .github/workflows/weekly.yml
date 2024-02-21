@@ -25,11 +25,12 @@ jobs:
         run: |
           chmod +x ./scripts/build-wasm.sh
           ./scripts/build-wasm.sh
+          mv bin/wasm-out/* .
       - name: Copy artifacts to the server via SSH
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
-          source: "./bin/wasm-out/index.html,./bin/wasm-out/index.wasm,./bin/wasm-out/index.js,./bin/wasm-out/index.data"
+          source: "index.html,index.wasm,index.js,index.data"
           target: "/home/ubuntu/dat/ci/educore"
