@@ -290,7 +290,14 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         switch (show_object_row(user, obj, this->selection == id))
         {
         case Select:
-            this->selection = id;
+            if (this->selection.id == 0)
+            {
+                this->selection = id;
+            }
+            else
+            {
+                this->selection = {};
+            }
             break;
         case Delete:
             scene.remove_object(id);
@@ -335,19 +342,22 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         }
         end_show_window(user);
 
-        begin_show_window(
-            user,
-            {"Tiles", {sapp_widthf() / sapp_dpi_scale() - 100, 20, 100, 800}});
-
-        for (auto [id, tile] : iter(resources.tiles))
+        if (selected->type == Object::Type::Tilemap)
         {
-            if (button(user, tile.name))
-            {
-                this->tile_selection = id;
-            }
-        }
+            begin_show_window(
+                user, {"Tiles",
+                       {sapp_widthf() / sapp_dpi_scale() - 100, 20, 100, 800}});
 
-        end_show_window(user);
+            for (auto [id, tile] : iter(resources.tiles))
+            {
+                if (button(user, tile.name))
+                {
+                    this->tile_selection = id;
+                }
+            }
+
+            end_show_window(user);
+        }
     }
 
     user.end_pass();
