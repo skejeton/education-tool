@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-
 // Returns a malloc-allocated string
 char *string_duplicate(const char *string)
 {
@@ -47,4 +46,14 @@ std::string join_vector_into_string(std::vector<std::string> &v,
         }
     }
     return result;
+}
+
+Rect sapp_screen_rect()
+{
+    return {0, 0, sapp_widthf(), sapp_heightf()};
+}
+
+Rect sapp_screen_rect_scaled(float dpi_scale)
+{
+    return {0, 0, sapp_widthf() / dpi_scale, sapp_heightf() / dpi_scale};
 }

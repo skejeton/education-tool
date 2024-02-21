@@ -1,4 +1,5 @@
 #include "main_menu.hpp"
+#include "catedu/misc/util.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/widgets.hpp"
 #include "sokol/sokol_app.h"
@@ -34,17 +35,51 @@ int GuiMainMenu::show()
         UiMakeBrush::make_solid({1, 1, 0.5, 0.0}));
 
     user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
+    user.begin_generic(make_auto({AutoLayout::Column}, {1.0, 0}), {}, {});
+    // Pretty colorful gradient brush
+    UiBrush brush =
+        UiMakeBrush::make_gradient({0.2, 0.8, 0.0, 1.0}, {0.5, 1.0, 0.0, 1.0});
+
+    AutoLayoutElement el = make_element({AutoLayout::Row}, {0, 0}, true, true);
+    user.begin_generic(el, {}, {});
+
+    user.bold = true;
+    label(user, "Edu", {5, 5}, brush);
+    user.bold = false;
+    label(user, "core", {5, 5}, brush);
+
+    user.end_generic();
+
+    // FIXME: Yes, I added paddings to the buttons using spaces.
+    if (button(user, "Play"))
+    {
+        popuptype = 2;
+    }
+    if (button(user, "Editor"))
+    {
+        exitcode = 2;
+    }
+    if (button(user, "Settings"))
+    {
+        popuptype = 2;
+    }
+    if (button(user, "Exit"))
+    {
+        popuptype = 1;
+    }
+
+    user.end_generic();
+    user.end_generic();
+    user.end_generic();
+
     if (popuptype)
     {
-        user.begin_generic(make_element({AutoLayout::Column}, {520, 250}, false,
-                                        true, {0.0, 0.0}, 1),
-                           UiMakeBrush::make_solid({0.7, 0.7, 0.7, 1.0}),
-                           UiMakeBrush::make_solid({0, 0, 0, 1.0}));
+        begin_show_window(
+            user, {"Alert", rect_center_rect(
+                                sapp_screen_rect_scaled(ui_state->dpi_scale),
+                                {0, 0, 350, 110})});
+        user.begin_generic(make_auto({AutoLayout::Column}, {0, 0}), {}, {});
 
-        if (button(user, "x"))
-        {
-            popuptype = 0;
-        }
         user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
 
         if (popuptype == 1)
@@ -70,16 +105,17 @@ int GuiMainMenu::show()
 
         if (popuptype == 1)
         {
-            label(user, "\nAre you sure you want to exit?\n", {2, 2},
+            label(user, "\nAre you sure you want to exit?\n", {1, 1},
                   UiMakeBrush::make_solid({0, 0, 0, 1.0}));
         }
         else
         {
-            label(user, "\nThis feature is not implemented yet.\n", {2, 2},
+            label(user, "\nThis feature is not implemented yet.\n", {1, 1},
                   UiMakeBrush::make_solid({0, 0, 0, 1.0}));
         }
 
         user.end_generic();
+
         user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
         if (popuptype == 1)
         {
@@ -100,46 +136,11 @@ int GuiMainMenu::show()
                 popuptype = 0;
             }
         }
-        user.end_generic();
 
         user.end_generic();
+        user.end_generic();
+        end_show_window(user);
     }
-    user.begin_generic(make_auto({AutoLayout::Column}, {1.0, 0}), {}, {});
-    // Pretty colorful gradient brush
-    UiBrush brush =
-        UiMakeBrush::make_gradient({0.2, 0.8, 0.0, 1.0}, {0.5, 1.0, 0.0, 1.0});
-
-    AutoLayoutElement el = make_element({AutoLayout::Row}, {0, 0}, true, true);
-    user.begin_generic(el, {}, {});
-
-    user.bold = true;
-    label(user, "Edu", {5, 5}, brush);
-    user.bold = false;
-    label(user, "core", {5, 5}, brush);
-
-    user.end_generic();
-
-    // FIXME: Yes, I added paddings to the buttons using spaces.
-    if (button(user, "Play"))
-    {
-        exitcode = 3;
-    }
-    if (button(user, "Editor"))
-    {
-        exitcode = 2;
-    }
-    if (button(user, "Settings"))
-    {
-        popuptype = 2;
-    }
-    if (button(user, "Exit"))
-    {
-        popuptype = 1;
-    }
-
-    user.end_generic();
-    user.end_generic();
-    user.end_generic();
     user.end_pass();
 
     return exitcode;

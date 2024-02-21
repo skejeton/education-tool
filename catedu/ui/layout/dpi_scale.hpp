@@ -14,20 +14,20 @@ static inline void fix_wacky_box(Rect &parent, Rect &child)
     if (ceilf(l) > l)
     {
         child.pos.x = parent.pos.x + floorf(l);
-        rx += ceilf(l) - l;
+        rx += l;
     }
     if (ceilf(t) > t)
     {
         child.pos.y = parent.pos.y + floorf(t);
-        ry += ceilf(t) - t;
+        ry += t;
     }
     if (ceilf(r) > r)
     {
-        child.siz.x = parent.siz.x - roundf(r + rx);
+        child.siz.x = parent.siz.x - floor(r + rx);
     }
     if (ceilf(b) > b)
     {
-        child.siz.y = parent.siz.y - roundf(b + ry);
+        child.siz.y = parent.siz.y - floor(b + ry);
     }
 }
 

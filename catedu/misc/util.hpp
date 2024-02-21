@@ -26,4 +26,8 @@ std::string stdstrfmt(const std::string &format, Args... args)
     snprintf(buf.get(), size, format.c_str(), args...);
     return std::string(buf.get(), buf.get() + size - 1);
 }
+
+Rect sapp_screen_rect();
+Rect sapp_screen_rect_scaled(float dpi_scale);
+
 #endif // H_CATEDU_UTIL

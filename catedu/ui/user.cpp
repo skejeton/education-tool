@@ -223,7 +223,9 @@ bool UiState::feed_event(const sapp_event *event)
         {
             this->input.tab = true;
         }
+        break;
     case SAPP_EVENTTYPE_CHAR:
+        printf("Char: %x\n", event->char_code);
         if (this->input.inputchars_count < 8)
         {
             this->input.inputchars[this->input.inputchars_count++] =
