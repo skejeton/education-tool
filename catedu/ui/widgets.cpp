@@ -8,14 +8,40 @@ static const Vector4 theme[] = {{0.8, 0.8, 0.8, 1.0}, {0.6, 0.6, 0.6, 1.0},
 
 void begin_show_window(UiUser &user, WindowInfo info)
 {
+    user.state->element_storage.push(info.title, {false, {}, {}, info.rect});
+
+    UiPersistentElement *pe = user.state->element_storage.value();
+
+    bool hovered = user.state->interaction_table.hovered ==
+                   user.state->element_storage.id();
+
+    if (hovered && user.state->input.mouse_pressed)
+    {
+        pe->pin = user.state->input.mouse_pos -
+                  pe->persistent_box.pos * user.state->dpi_scale;
+        pe->pinned = true;
+    }
+    if (pe->pinned && user.state->input.mouse_down)
+    {
+        pe->persistent_box.pos +=
+            ((user.state->input.mouse_pos -
+              pe->persistent_box.pos * user.state->dpi_scale) -
+             pe->pin);
+    }
+    else
+    {
+        pe->pinned = false;
+    }
+
+    info.rect = pe->persistent_box;
+
     AutoLayoutElement cel = {};
     cel.position = AutoLayoutPosition::Absolute;
     cel.offset = info.rect.pos;
     cel.width.type = AutoLayoutDimension::Auto;
     cel.height.type = AutoLayoutDimension::Auto;
     cel.layout.type = AutoLayout::Column;
-
-    user.begin_generic(cel, {}, {});
+    user.begin_generic(cel, {}, {}, user.state->element_storage.id());
 
     // Titlebar
     {
@@ -52,6 +78,8 @@ void end_show_window(UiUser &user)
 {
     user.end_generic();
     user.end_generic();
+
+    user.state->element_storage.pop();
 }
 
 bool button(UiUser &user, const char *text, int offs)

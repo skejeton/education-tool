@@ -185,6 +185,11 @@ inline Vector2 operator/(Vector2 a, float b)
     return {a.x / b, a.y / b};
 }
 
+inline Vector2 operator/=(Vector2 &a, float b)
+{
+    return a = {a.x / b, a.y / b};
+}
+
 inline Vector2 operator/=(Vector2 &a, Vector2 b)
 {
     return a = {a.x / b.x, a.y / b.y};

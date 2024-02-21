@@ -132,6 +132,7 @@ void UiUser::end_pass()
     state->input.mouse_pressed = false;
     this->state->input.inputchars[0] = 0;
     this->state->input.escape = false;
+    this->state->input.mouse_delta = {};
     this->state->input.tab = false;
     this->state->input.inputchars_count = 0;
     this->state->element_storage.end_cycle();
@@ -272,8 +273,7 @@ void UiElementStorage::push(const char *id, UiPersistentElement value)
     }
     else
     {
-        // TODO: This is a hack to make sure that the element is not freed
-        //       the empty id isn't used.
+        // TODO: This is a hack to make sure that the element isn't reallocated.
         this->element_retainer.push(id, {});
     }
     this->value()->order = this->order;

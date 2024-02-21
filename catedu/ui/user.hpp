@@ -23,6 +23,9 @@ struct UiPersistentElement
     bool focusable;
     int order;
     Rect border_box;
+    Rect persistent_box;
+    Vector2 pin;
+    bool pinned;
 };
 
 struct UiElementStorage
