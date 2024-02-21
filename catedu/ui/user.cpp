@@ -225,7 +225,8 @@ bool UiState::feed_event(const sapp_event *event)
         }
         break;
     case SAPP_EVENTTYPE_CHAR:
-        if (event->char_code == 0x7F)
+        if (event->char_code == 0x7F || event->char_code == '\t' ||
+            event->char_code == '\n')
         {
             // macOS does it for some reason
             break;
