@@ -17,16 +17,15 @@ void begin_show_window(UiUser &user, WindowInfo info)
 
     if (hovered && user.state->input.mouse_pressed)
     {
-        pe->pin = user.state->input.mouse_pos -
-                  pe->persistent_box.pos * user.state->dpi_scale;
+        pe->pin = user.state->input.mouse_pos - pe->persistent_box.pos;
         pe->pinned = true;
     }
     if (pe->pinned && user.state->input.mouse_down)
     {
         pe->persistent_box.pos +=
-            ((user.state->input.mouse_pos -
-              pe->persistent_box.pos * user.state->dpi_scale) -
-             pe->pin);
+            ((user.state->input.mouse_pos - pe->persistent_box.pos) - pe->pin) /
+            user.state->dpi_scale;
+        pe->pin = user.state->input.mouse_pos - pe->persistent_box.pos;
     }
     else
     {
