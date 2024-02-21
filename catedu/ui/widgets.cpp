@@ -14,6 +14,7 @@ void begin_show_window(UiUser &user, WindowInfo info)
     cel.width.type = AutoLayoutDimension::Auto;
     cel.height.type = AutoLayoutDimension::Auto;
     cel.layout.type = AutoLayout::Column;
+
     user.begin_generic(cel, {}, {});
 
     // Titlebar
