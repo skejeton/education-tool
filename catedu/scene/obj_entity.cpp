@@ -58,5 +58,5 @@ void ObjEntity::render(BoxdrawRenderer &renderer, ResourceSpec &resources)
         model = resources.find_model_by_name("invalid");
     }
 
-    render_model_at(pos, resources, model, renderer, false);
+    render_model_at(pos, resources, model, renderer, true);
 }

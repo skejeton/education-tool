@@ -84,7 +84,7 @@ const SpecModel models[] = {
      box3_extrude_from_point({0.0, 0.0, 0.0}, {0.3, 0.5, 0.3}),
      false,
      false,
-     true},
+     false},
     {"selector",
      {96, 0, 32, 32},
      box3_extrude_from_point({0.0, 0.0, 0.0}, {0.51, 0.51, 0.51}),
@@ -120,8 +120,6 @@ const SpecModel models[] = {
 ResourceSpec load_resource_spec(const char *path)
 {
     ResourceSpec result = {};
-
-    // "bricks", "tile", "debug", "player", "counter", "glass", "door"
 
     result.tileset = Texture::init("./assets/test_spritesheet_01.png");
     for (auto &model : models)

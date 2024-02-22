@@ -204,11 +204,19 @@ SelectionState show_selection(GuiEditor &editor, BoxdrawRenderer &renderer,
 
     ObjTilemap *tilemap_selected = nullptr;
     Vector2 pos = {};
+    Vector3 pos3d = {};
+    bool is_selected = editor.placing_object;
+    TableId model_id = resources.find_model_by_name("selector");
 
-    if (ray3_vs_horizontal_plane(ray, 0.0, &distance))
+    if (is_selected)
     {
-        TableId model_id = resources.find_model_by_name("selector");
-        Vector3 pos3d = ray3_at(ray, distance);
+        pos3d.x = editor.object_cursor_at.x;
+        pos3d.z = editor.object_cursor_at.y;
+        pos = editor.object_cursor_at;
+    }
+    else if (ray3_vs_horizontal_plane(ray, 0.0, &distance))
+    {
+        pos3d = ray3_at(ray, distance);
         pos = {pos3d.x, pos3d.z};
 
         Object *selected = scene.get_object(editor.selection);
@@ -226,6 +234,10 @@ SelectionState show_selection(GuiEditor &editor, BoxdrawRenderer &renderer,
         pos3d.x = pos.x;
         pos3d.z = pos.y;
 
+        is_selected = true;
+    }
+    if (is_selected)
+    {
         render_model_at(pos3d, resources, model_id, renderer, true);
     }
 
@@ -249,6 +261,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
     SelectionState sel =
         show_selection(*this, renderer, resources, scene, input);
+    this->object_cursor_at = sel.position;
     if (sel.tilemap_selected && input.mouse_states[1].held)
     {
         sel.tilemap_selected->set_tile(vector2_to_vector2i(sel.position), 0);
@@ -257,6 +270,10 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     {
         sel.tilemap_selected->set_tile(vector2_to_vector2i(sel.position),
                                        this->tile_selection.id);
+    }
+    if (!sel.tilemap_selected && input.mouse_states[0].pressed)
+    {
+        this->placing_object = true;
     }
 
     boxdraw_flush(&renderer, this->camera.vp);
@@ -331,7 +348,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         end_show_window(user);
     }
 
-    begin_show_window(user, {"Help", {0, 0, 250, 250}});
+    begin_show_window(user, {"Help", {0, 0, 250, 380}});
     user.bold = true;
     label(user, "On object screen: ", {1.2, 1.2},
           UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
@@ -355,7 +372,27 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     label(user, "Back - Go back");
     label(user, "Hold LMB on window to move it");
     label(user, "Press RMB on window to collapse it");
+    label(user, "Press LMB on the scene to place objects");
+    user.bold = true;
+    label(user, "Models:", {1.2, 1.2},
+          UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
+    user.bold = false;
 
+    char model_names[512] = {};
+    char *cur = model_names;
+    int model_i = 0;
+    for (auto [id, model] : iter(resources.models))
+    {
+        cur = strcat(cur, model.name);
+        cur = strcat(cur, ", ");
+        model_i++;
+        if (model_i % 4 == 0)
+        {
+            cur = strcat(cur, "\n");
+        }
+    }
+
+    label(user, model_names);
     end_show_window(user);
 
     if (selected)
@@ -394,6 +431,56 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
             end_show_window(user);
         }
+    }
+    if (this->placing_object)
+    {
+        Rect scr = sapp_screen_rect_scaled(this->ui_state->dpi_scale);
+        Rect rect = rect_center_rect(scr, {0, 0, 100, 200});
+        begin_show_window(user, {"Place object", rect});
+        label(user, "Type:");
+        if (button(user, "Entity"))
+        {
+            Object new_obj = {};
+            new_obj.type = Object::Type::Entity;
+            strcpy(
+                new_obj.name,
+                stdstrfmt("Unnamed Entity %zu", scene.objects.count).c_str());
+            new_obj.entity =
+                ObjEntity::init("", this->object_cursor_at - Vector2{0.5, 0.5});
+
+            this->selection = scene.add_object(new_obj);
+            this->placing_object = false;
+        }
+        if (button(user, "Tilemap"))
+        {
+            Object new_obj = {};
+            new_obj.type = Object::Type::Tilemap;
+            new_obj.tilemap = ObjTilemap::init();
+            strcpy(
+                new_obj.name,
+                stdstrfmt("Unnamed Tilemap %zu", scene.objects.count).c_str());
+
+            this->selection = scene.add_object(new_obj);
+            this->placing_object = false;
+        }
+        if (button(user, "Backdrop"))
+        {
+            Object new_obj = {};
+            new_obj.type = Object::Type::Backdrop;
+            new_obj.backdrop = ObjBackdrop::init({0, 32, 32, 32});
+            strcpy(
+                new_obj.name,
+                stdstrfmt("Unnamed Backdrop %zu", scene.objects.count).c_str());
+
+            this->selection = scene.add_object(new_obj);
+            this->placing_object = false;
+        }
+        if (button(user, "Cancel"))
+        {
+            this->placing_object = false;
+        }
+
+        end_show_window(user);
     }
 
     user.end_pass();

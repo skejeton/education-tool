@@ -67,6 +67,6 @@ void ObjTilemap::render(BoxdrawRenderer &renderer, ResourceSpec &resources)
         // resource spec.
         SpecTile tile_spec = resources.tiles.get_assert({(size_t)tile.id});
         SpecModel model_spec = resources.models.get_assert(tile_spec.model_id);
-        render_model_at(pos, resources, tile_spec.model_id, renderer, false);
+        render_model_at(pos, resources, tile_spec.model_id, renderer, true);
     }
 }

@@ -19,6 +19,8 @@ struct GuiEditor
     size_t entity_list_page;
     Camera camera;
     GuiDebugTree debug_tree;
+    Vector2 object_cursor_at;
+    bool placing_object;
 
     static GuiEditor init(UiState *ui_state);
     bool show(BoxdrawRenderer &renderer, ResourceSpec &resources, Scene &scene,
