@@ -290,7 +290,7 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         switch (show_object_row(user, obj, this->selection == id))
         {
         case Select:
-            if (this->selection.id == 0)
+            if (this->selection != id)
             {
                 this->selection = id;
             }
