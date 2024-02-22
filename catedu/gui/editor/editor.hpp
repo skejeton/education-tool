@@ -10,7 +10,6 @@
 #include "catedu/ui/user.hpp"
 #include <sokol/sokol_app.h>
 
-
 struct GuiEditor
 {
     UiState *ui_state;
@@ -22,7 +21,7 @@ struct GuiEditor
     GuiDebugTree debug_tree;
 
     static GuiEditor init(UiState *ui_state);
-    void show(BoxdrawRenderer &renderer, ResourceSpec &resources, Scene &scene,
+    bool show(BoxdrawRenderer &renderer, ResourceSpec &resources, Scene &scene,
               Input &input);
     void deinit();
 };

@@ -232,9 +232,10 @@ SelectionState show_selection(GuiEditor &editor, BoxdrawRenderer &renderer,
     return {tilemap_selected, pos};
 }
 
-void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
+bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
                      Scene &scene, Input &input)
 {
+    bool return_back = false;
     debug_tree.reset();
 
     debug_tree.value("Mouse Pos X", input.mouse_pos.x);
@@ -246,9 +247,6 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     camera.set_aspect(sapp_widthf() / sapp_heightf());
     camera_input_top_view_apply(&this->camera, &input);
 
-    UiUser user = UiUser::init(*this->ui_state);
-    user.begin_pass();
-
     SelectionState sel =
         show_selection(*this, renderer, resources, scene, input);
     if (sel.tilemap_selected && input.mouse_states[1].held)
@@ -259,6 +257,16 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     {
         sel.tilemap_selected->set_tile(vector2_to_vector2i(sel.position),
                                        this->tile_selection.id);
+    }
+
+    boxdraw_flush(&renderer, this->camera.vp);
+
+    UiUser user = UiUser::init(*this->ui_state);
+    user.begin_pass();
+
+    if (button(user, "Back"))
+    {
+        return_back = true;
     }
 
     char title[256];
@@ -345,8 +353,9 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         if (selected->type == Object::Type::Tilemap)
         {
             begin_show_window(
-                user, {"Tiles",
-                       {sapp_widthf() / sapp_dpi_scale() - 100, 20, 100, 800}});
+                user,
+                {"Tiles",
+                 {sapp_widthf() / user.state->dpi_scale - 100, 20, 100, 800}});
 
             for (auto [id, tile] : iter(resources.tiles))
             {
@@ -361,6 +370,8 @@ void GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     }
 
     user.end_pass();
+
+    return return_back;
 }
 
 void GuiEditor::deinit()

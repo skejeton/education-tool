@@ -21,6 +21,7 @@ void GuiMainMenu::deinit()
 
 int GuiMainMenu::show()
 {
+    float scale_delta = 0;
     int exitcode = 1;
     static int popuptype = 0;
     auto user = UiUser::init(*this->ui_state);
@@ -51,21 +52,39 @@ int GuiMainMenu::show()
     user.end_generic();
 
     // FIXME: Yes, I added paddings to the buttons using spaces.
-    if (button(user, "Play"))
+    if (!settings)
     {
-        popuptype = 2;
+        if (button(user, "Play"))
+        {
+            popuptype = 2;
+        }
+        if (button(user, "Editor"))
+        {
+            exitcode = 2;
+        }
+        if (button(user, "Settings"))
+        {
+            settings = true;
+        }
+        if (button(user, "Exit"))
+        {
+            popuptype = 1;
+        }
     }
-    if (button(user, "Editor"))
+    else
     {
-        exitcode = 2;
-    }
-    if (button(user, "Settings"))
-    {
-        popuptype = 2;
-    }
-    if (button(user, "Exit"))
-    {
-        popuptype = 1;
+        if (button(user, "Back"))
+        {
+            settings = false;
+        }
+        if (button(user, "Scale+"))
+        {
+            scale_delta += 0.1;
+        }
+        if (button(user, "Scale-"))
+        {
+            scale_delta -= 0.1;
+        }
     }
 
     user.end_generic();
@@ -142,6 +161,8 @@ int GuiMainMenu::show()
         end_show_window(user);
     }
     user.end_pass();
+
+    user.state->dpi_scale += scale_delta;
 
     return exitcode;
 }

@@ -157,10 +157,11 @@ void Entry::frame(void)
         ui_mode = main_menu.show();
         break;
     case 2: // Editor
-        // scamera_input_apply(&this->editor.camera, &this->input_state);
-        boxdraw_flush(&this->boxdraw_renderer, this->editor.camera.vp);
-        editor.show(this->boxdraw_renderer, this->res, this->scene,
-                    this->input_state);
+        if (editor.show(this->boxdraw_renderer, this->res, this->scene,
+                        this->input_state))
+        {
+            ui_mode = 1;
+        }
         break;
     case 3: // Gameplay
         break;

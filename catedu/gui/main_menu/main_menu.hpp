@@ -5,6 +5,7 @@
 struct GuiMainMenu
 {
     UiState *ui_state;
+    bool settings;
 
     static GuiMainMenu init(UiState *ui_state);
     void deinit();
