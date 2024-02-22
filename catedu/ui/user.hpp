@@ -14,6 +14,7 @@ struct UiInput
     bool escape, tab;
     bool mouse_down;
     bool mouse_pressed;
+    bool mouse_right_pressed;
     char inputchars[8];
     int inputchars_count;
 };
@@ -26,6 +27,7 @@ struct UiPersistentElement
     Rect persistent_box;
     Vector2 pin;
     bool pinned;
+    bool hidden;
 };
 
 struct UiElementStorage

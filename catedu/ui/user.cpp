@@ -63,11 +63,20 @@ void render_out(UiUser &user)
                     user.state->element_storage.elements.get(
                         styles->persistent);
                 order = pe->order;
+                if (result->hidden)
+                {
+                    pe->border_box = {};
+                }
                 pe->border_box = result->border_box;
                 if (user.state->interaction_table.hovered == styles->persistent)
                 {
                     hovered = true;
                 }
+            }
+            if (result->hidden)
+            {
+                result = result->next;
+                continue;
             }
             if (styles->text)
             {
@@ -130,6 +139,7 @@ void UiUser::end_pass()
     render_out(*this);
 
     state->input.mouse_pressed = false;
+    state->input.mouse_right_pressed = false;
     this->state->input.inputchars[0] = 0;
     this->state->input.escape = false;
     this->state->input.mouse_delta = {};
@@ -200,6 +210,9 @@ bool UiState::feed_event(const sapp_event *event)
             (event->mouse_button == SAPP_MOUSEBUTTON_LEFT) &&
             event->type == SAPP_EVENTTYPE_MOUSE_DOWN;
         this->input.mouse_pressed = this->input.mouse_down;
+        this->input.mouse_right_pressed =
+            (event->mouse_button == SAPP_MOUSEBUTTON_RIGHT) &&
+            event->type == SAPP_EVENTTYPE_MOUSE_UP;
         break;
     case SAPP_EVENTTYPE_KEY_DOWN:
         if (event->key_code == SAPP_KEYCODE_BACKSPACE)

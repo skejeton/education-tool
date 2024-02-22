@@ -331,6 +331,33 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         end_show_window(user);
     }
 
+    begin_show_window(user, {"Help", {0, 0, 250, 250}});
+    user.bold = true;
+    label(user, "On object screen: ", {1.2, 1.2},
+          UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
+    user.bold = false;
+    label(user, "`>` - Select object");
+    label(user, "`X` - Delete object");
+    label(user, "`H` - Hide object");
+    user.bold = true;
+    label(user, "There's different types of objects:", {1.2, 1.2},
+          UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
+    user.bold = false;
+    label(user, "[T] - Tilemap");
+    label(user, "[E] - Entity");
+    label(user, "[B] - Backdrop");
+    user.bold = true;
+    label(user, "Controls:", {1.2, 1.2},
+          UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
+    user.bold = false;
+    label(user, "WASD - Move camera");
+    label(user, "Tab - Debug window");
+    label(user, "Back - Go back");
+    label(user, "Hold LMB on window to move it");
+    label(user, "Press RMB on window to collapse it");
+
+    end_show_window(user);
+
     if (selected)
     {
         begin_show_window(user, {"Properties", {220, 20, 200, 200}});

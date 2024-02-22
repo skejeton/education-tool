@@ -20,6 +20,10 @@ void begin_show_window(UiUser &user, WindowInfo info)
         pe->pin = user.state->input.mouse_pos - pe->persistent_box.pos;
         pe->pinned = true;
     }
+    if (hovered && user.state->input.mouse_right_pressed)
+    {
+        pe->hidden = !pe->hidden;
+    }
     if (pe->pinned && user.state->input.mouse_down)
     {
         pe->persistent_box.pos +=
@@ -66,6 +70,7 @@ void begin_show_window(UiUser &user, WindowInfo info)
         el.width.value = info.rect.siz.x;
         el.height.type = AutoLayoutDimension::Pixel;
         el.height.value = info.rect.siz.y;
+        el.hidden = pe->hidden;
 
         UiBrush border = UiMakeBrush::make_solid({0.7f, 0.7f, 0.7f, 1.0f});
         UiBrush background = UiMakeBrush::make_solid({0.6f, 0.6f, 0.6f, 1.0f});

@@ -30,6 +30,10 @@ void recurse(AutoLayoutProcess *process, AutoLayoutNodeId n)
     AutoLayoutNode *node = process->nodes.get(n.id);
     assert(node);
     AutoLayoutElement el = node->element;
+    if (el.hidden)
+    {
+        return;
+    }
     Vector2 my_size = {0, 0};
 
     AutoLayoutNodeId child = node->child;
@@ -45,6 +49,7 @@ void recurse(AutoLayoutProcess *process, AutoLayoutNodeId n)
         assert(child_node);
 
         AutoLayoutElement &cel = child_node->element;
+
         Vector2 size = cel.margin_box.siz;
         Vector2 delta = {0, 0};
 
@@ -101,6 +106,10 @@ void align_to_parents(AutoLayoutProcess *process, AutoLayoutNodeId n)
     AutoLayoutNode *node = process->nodes.get(n.id);
     assert(node);
     AutoLayoutNodeId child = node->child;
+    if (node->element.hidden)
+    {
+        return;
+    }
 
     while (child.id.valid())
     {
@@ -134,10 +143,15 @@ void align_to_parents(AutoLayoutProcess *process, AutoLayoutNodeId n)
     }
 }
 
-void build_results(ResultBuilder &builder, AutoLayoutNodeId n)
+void build_results(ResultBuilder &builder, AutoLayoutNodeId n, bool hidden)
 {
     AutoLayoutNode *node = builder.process->nodes.get(n.id);
     assert(node);
+
+    if (node->element.hidden)
+    {
+        hidden = true;
+    }
 
     AutoLayoutResult *result = alloc_result(builder);
     result->padding_box = node->element.padding_box;
@@ -145,13 +159,14 @@ void build_results(ResultBuilder &builder, AutoLayoutNodeId n)
     result->border_box = node->element.border_box;
     result->margin_box = node->element.margin_box;
     result->userdata = node->element.userdata;
+    result->hidden = hidden;
 
     AutoLayoutNodeId child = node->child;
     while (child.id.valid())
     {
         AutoLayoutNode *child_node = builder.process->nodes.get(child.id);
         assert(child_node);
-        build_results(builder, child);
+        build_results(builder, child, hidden);
         child = child_node->sibling;
     }
 }
@@ -214,5 +229,5 @@ void AutoLayoutProcess::process(BumpAllocator alloc, AutoLayoutResult *&result)
 
     recurse(this, builder.begin());
     align_to_parents(this, builder.begin());
-    build_results(builder, builder.begin());
+    build_results(builder, builder.begin(), false);
 }
