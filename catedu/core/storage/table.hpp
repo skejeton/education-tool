@@ -118,7 +118,8 @@ template <class T> struct Table
     {
         while (capacity < id.id)
         {
-            assert(scale());
+            bool ok = scale();
+            assert(ok);
         }
 
         slots[id.id - 1].generation = id.generation;

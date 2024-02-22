@@ -26,8 +26,12 @@ static PatchSection parse_section(SerialMem *serial, PatchExplorer *explorer)
     PatchSection section = {};
     size_t section_name_length;
 
-    assert(serial->read_value(&section.type) == 0);
-    assert(ext::read_string(serial, &section.name, &section_name_length) == 0);
+    size_t rem_val = serial->read_value(&section.type);
+    size_t rem_str =
+        ext::read_string(serial, &section.name, &section_name_length);
+
+    assert(rem_val == 0);
+    assert(rem_str == 0);
 
     switch (section.type)
     {
