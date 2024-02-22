@@ -22,7 +22,6 @@ jobs:
           python3 build.py build -release
           mkdir package
           copy bin\Release\catedu.exe package
-          mkdir package
           move assets package
           cd package
           tar -acf ../catedu-windows.zip *
