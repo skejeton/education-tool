@@ -40,6 +40,10 @@ void UiUser::begin_pass()
     this->pass = UiRenderingPass::begin(state->core);
     this->bump = BumpAllocator::init();
     this->state->element_storage.begin_cycle();
+    if (this->state->dpi_scale > 10.0)
+    {
+        this->state->dpi_scale = 10.0;
+    }
 }
 
 void render_out(UiUser &user)
@@ -236,6 +240,16 @@ bool UiState::feed_event(const sapp_event *event)
         if (event->key_code == SAPP_KEYCODE_TAB)
         {
             this->input.tab = true;
+        }
+        if (event->modifiers & SAPP_MODIFIER_CTRL &&
+            event->key_code == SAPP_KEYCODE_EQUAL)
+        {
+            this->dpi_scale *= 1.125;
+        }
+        if (event->modifiers & SAPP_MODIFIER_CTRL &&
+            event->key_code == SAPP_KEYCODE_MINUS)
+        {
+            this->dpi_scale /= 1.125;
         }
         break;
     case SAPP_EVENTTYPE_CHAR:
