@@ -32,12 +32,18 @@ BoxdrawRenderer boxdraw_create()
     instance_buffer_desc.usage = SG_USAGE_STREAM;
     result.instance_buffer = sg_make_buffer(instance_buffer_desc);
 
-    catedu::RawModel raw_model;
-    assert(catedu::RawModel::load_gltf("assets/models/cube.gltf", raw_model));
-    catedu::print_info(raw_model);
+    catedu::RawModel raw_model = {};
+    catedu::Model model = {};
+    {
+        bool ok =
+            catedu::RawModel::load_gltf("assets/models/cube.gltf", raw_model);
+        assert(ok);
+    }
 
-    catedu::Model model;
-    assert(catedu::Model::load_from_raw(raw_model, model));
+    {
+        bool ok = catedu::Model::load_from_raw(raw_model, model);
+        assert(ok);
+    }
 
     result.vertex_buffer = model.vertex_buffer;
     result.index_buffer = model.index_buffer;

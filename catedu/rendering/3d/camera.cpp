@@ -82,7 +82,7 @@ Ray3 Camera::screen_to_world_ray(Vector2 screen_pos, Vector2 viewport)
     Matrix4 view = Matrix4::look_at({0, 0, 0}, eye, {0.0f, 1.0f, 0.0f});
     Matrix4 proj = Matrix4::perspective(this->fov_deg * (MATH_TAU / 360),
                                         aspect, 0.1f, 1000.0f);
-    Matrix4 inv_vp;
+    Matrix4 inv_vp = {};
     assert((proj * view).inverse(&inv_vp));
     Vector4 clip_coords = Vector4{ndc_x, ndc_y, -1.0f, 1.0f};
 
