@@ -5,7 +5,8 @@
 #include "resource_spec.hpp"
 
 static inline void render_model_at(Vector3 pos, ResourceSpec &res, TableId id,
-                                   BoxdrawRenderer &boxdraw, bool if_editor)
+                                   BoxdrawRenderer &boxdraw, bool if_editor,
+                                   bool if_shadow = false)
 
 {
     SpecModel &model = res.models.get_assert(id);
@@ -18,11 +19,15 @@ static inline void render_model_at(Vector3 pos, ResourceSpec &res, TableId id,
         return;
     }
 
-    boxdraw_push(&boxdraw, boxdraw_cmdtexture(box, tex, model.if_transparent));
+    BoxdrawCommand cmd =
+        boxdraw_cmdtexture(box, tex, model.if_transparent || if_shadow);
+    cmd.top_color.w = if_shadow ? 0.5f : 1.0f;
+
+    boxdraw_push(&boxdraw, cmd);
+
     if (model.if_tall)
     {
-        box = box3_translate(box, {0, 1, 0});
-        boxdraw_push(&boxdraw,
-                     boxdraw_cmdtexture(box, tex, model.if_transparent));
+        cmd.box = box3_translate(box, {0, 1, 0});
+        boxdraw_push(&boxdraw, cmd);
     }
 }

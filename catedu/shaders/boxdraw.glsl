@@ -18,6 +18,7 @@ in vec4 mr4;
 in vec2 uv_min, uv_max;
 in vec2 size;
 in vec2 tile_count;
+in float alpha;
 
 out vec4 color;
 out vec2 frag_uv;
@@ -39,7 +40,7 @@ void main() {
     float dp = dot(light_dir, normal);
     vec4 all = vec4(dp, dp, dp, 1) * light_color + ambient_color;
 
-    color = mix(color_top, color_bottom, -position.y+0.5)*all;
+    color = mix(color_top, color_bottom, -position.y+0.5)*all*vec4(1.0, 1.0, 1.0, alpha);
 
     frag_uv = uv;
     frag_uv_min = uv_min;

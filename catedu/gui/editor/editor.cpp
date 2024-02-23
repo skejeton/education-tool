@@ -206,7 +206,8 @@ SelectionState show_selection(GuiEditor &editor, BoxdrawRenderer &renderer,
     Vector2 pos = {};
     Vector3 pos3d = {};
     bool is_selected = editor.placing_object;
-    TableId model_id = resources.find_model_by_name("selector");
+    TableId selector_model_id = resources.find_model_by_name("selector");
+    TableId model_id = NULL_ID;
 
     if (is_selected)
     {
@@ -228,6 +229,13 @@ SelectionState show_selection(GuiEditor &editor, BoxdrawRenderer &renderer,
                 pos.y = round(pos.y);
 
                 tilemap_selected = &selected->tilemap;
+
+                if (editor.tile_selection != NULL_ID)
+                {
+                    SpecTile &tile =
+                        resources.tiles.get_assert(editor.tile_selection);
+                    model_id = tile.model_id;
+                }
             }
         }
 
@@ -238,7 +246,15 @@ SelectionState show_selection(GuiEditor &editor, BoxdrawRenderer &renderer,
     }
     if (is_selected)
     {
-        render_model_at(pos3d, resources, model_id, renderer, true);
+        if (model_id != NULL_ID)
+        {
+            render_model_at(pos3d, resources, model_id, renderer, true, true);
+        }
+        else
+        {
+            render_model_at(pos3d, resources, selector_model_id, renderer,
+                            true);
+        }
     }
 
     return {tilemap_selected, pos};

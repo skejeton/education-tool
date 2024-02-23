@@ -15,6 +15,7 @@ struct Instance
     Vector2 uv_max;
     Vector2 size;
     Vector2 tile_count;
+    float alpha;
 };
 
 BoxdrawRenderer boxdraw_create()
@@ -80,6 +81,8 @@ BoxdrawRenderer boxdraw_create()
     pipeline_desc.layout.attrs[10].format =
         SG_VERTEXFORMAT_FLOAT2; // tile count
     pipeline_desc.layout.attrs[10].buffer_index = 1;
+    pipeline_desc.layout.attrs[11].format = SG_VERTEXFORMAT_FLOAT; // alpha
+    pipeline_desc.layout.attrs[11].buffer_index = 1;
 
     pipeline_desc.colors[0].blend.enabled = true;
     pipeline_desc.colors[0].blend.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
@@ -163,9 +166,9 @@ void boxdraw_render_command(BoxdrawRenderer *renderer, Matrix4 view_projection,
 {
     Matrix4 model = create_box_transform(command.box);
     instance_data[instance_count++] = {
-        view_projection * model, command.texture.uv_min(),
-        command.texture.uv_max(), command.texture.size,
-        command.texture.tile_count};
+        view_projection * model,    command.texture.uv_min(),
+        command.texture.uv_max(),   command.texture.size,
+        command.texture.tile_count, command.top_color.w};
 
     vs_params.color_top = command.top_color;
     vs_params.color_bottom = command.bottom_color;
