@@ -33,7 +33,7 @@ struct Entry : SokolSetup
     GuiEditor editor;
     GuiGame game_gui;
     ResourceSpec res;
-    int ui_mode = MENU_MAIN_MENU;
+    int ui_mode = MENU_EDITOR;
     BoxdrawRenderer boxdraw_renderer;
     Vector2 target_camera_pos;
     bool zoomout = false;
