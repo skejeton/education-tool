@@ -11,7 +11,7 @@ UiImageId ui_resources_load_image(UiRenderingCore *core, const char *path)
 
     // Create image
     return ui_resources_load_image_from_memory(
-        core, {(size_t)(width * height * 4), data}, {width, height});
+        core, {data, (size_t)(width * height * 4)}, {width, height});
 }
 
 UiImageId ui_resources_load_image_from_memory(UiRenderingCore *core,

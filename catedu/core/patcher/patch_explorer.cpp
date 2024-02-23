@@ -53,7 +53,7 @@ PatchSection PatchExplorer::get_section(const char *section)
 {
 
     auto serial =
-        SerialMem::from_buffer({this->patch->size, this->patch->data});
+        SerialMem::from_buffer({this->patch->data, this->patch->size});
     /*
 
 

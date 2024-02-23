@@ -12,7 +12,7 @@
         assert(f___ && "Failed to open file");                                 \
         FileBuffer file___ = FileBuffer::read_whole_file(f___);                \
         fclose(f___);                                                          \
-        Buffer name = {file___.size, file___.data};                            \
+        Buffer name = {file___.data, file___.size};                            \
         code;                                                                  \
         file___.deinit();                                                      \
     }

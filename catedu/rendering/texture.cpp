@@ -42,7 +42,7 @@ Texture Texture::init(const char *png_path)
     Texture result = {};
     int width, height, channels;
     stbi_uc *data = stbi_load(png_path, &width, &height, &channels, 4);
-    Buffer data_buf = {size_t(width * height * 4), data};
+    Buffer data_buf = {data, size_t(width * height * 4)};
     Vector2 data_dims = {(float)width, (float)height};
     result.size = data_dims;
     result.tile_count = {1, 1};

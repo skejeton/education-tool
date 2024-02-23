@@ -64,7 +64,7 @@ struct SerialMem
      */
     template <class T> [[nodiscard]] size_t write_value(T value)
     {
-        return write_buffer({sizeof(value), &value});
+        return write_buffer({&value, sizeof(value)});
     }
 
     /**
@@ -74,7 +74,7 @@ struct SerialMem
      */
     template <class T> [[nodiscard]] size_t read_value(T *value)
     {
-        return read_buffer({sizeof(*value), value});
+        return read_buffer({value, sizeof(*value)});
     }
 
     /// @return Gives pointer to the current position in the buffer

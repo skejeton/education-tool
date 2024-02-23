@@ -36,5 +36,5 @@ void PatchCreator::value(const char *section, Buffer data)
 
 void PatchCreator::string(const char *section, const char *value)
 {
-    this->value(section, {strlen(value) + 1, (void *)value});
+    this->value(section, {(void *)value, strlen(value) + 1});
 }

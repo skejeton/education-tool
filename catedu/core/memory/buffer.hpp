@@ -3,6 +3,6 @@
 
 struct Buffer
 {
-    size_t size;
     void *data;
+    size_t size;
 };

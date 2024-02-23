@@ -56,7 +56,7 @@ void populate_chunk(UiFontRenderer *renderer, int i)
     printf("populating chunk %d...\n", i);
 
     chunk->image = renderer->core->alloc_image(
-        ui_image_make_from_data({pixels_rgba.size(), pixels_rgba.data()},
+        ui_image_make_from_data({pixels_rgba.data(), pixels_rgba.size()},
                                 {PAGE_IMAGE_SIZE, PAGE_IMAGE_SIZE}));
 
     renderer->chunks[i] = chunk;
