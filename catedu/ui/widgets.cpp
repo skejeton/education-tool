@@ -36,7 +36,10 @@ void begin_show_window(UiUser &user, WindowInfo info)
         pe->pinned = false;
     }
 
-    info.rect = pe->persistent_box;
+    if (!info.if_static)
+    {
+        info.rect = pe->persistent_box;
+    }
 
     AutoLayoutElement cel = {};
     cel.position = AutoLayoutPosition::Absolute;

@@ -6,6 +6,7 @@ struct WindowInfo
 {
     const char *title;
     Rect rect;
+    bool if_static;
 };
 
 void begin_show_window(UiUser &user, WindowInfo info);

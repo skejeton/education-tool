@@ -52,39 +52,21 @@ int GuiMainMenu::show()
     user.end_generic();
 
     // FIXME: Yes, I added paddings to the buttons using spaces.
-    if (!settings)
+    if (button(user, "Play"))
     {
-        if (button(user, "Play"))
-        {
-            popuptype = 2;
-        }
-        if (button(user, "Editor"))
-        {
-            exitcode = 2;
-        }
-        if (button(user, "Settings"))
-        {
-            settings = true;
-        }
-        if (button(user, "Exit"))
-        {
-            popuptype = 1;
-        }
+        popuptype = 2;
     }
-    else
+    if (button(user, "Editor"))
     {
-        if (button(user, "Back"))
-        {
-            settings = false;
-        }
-        if (button(user, "Scale+"))
-        {
-            scale_delta += 0.1;
-        }
-        if (button(user, "Scale-"))
-        {
-            scale_delta -= 0.1;
-        }
+        exitcode = 2;
+    }
+    if (button(user, "Settings"))
+    {
+        popuptype = 3;
+    }
+    if (button(user, "Exit"))
+    {
+        popuptype = 1;
     }
 
     user.end_generic();
@@ -94,9 +76,11 @@ int GuiMainMenu::show()
     if (popuptype)
     {
         begin_show_window(
-            user, {"Alert", rect_center_rect(
-                                sapp_screen_rect_scaled(ui_state->dpi_scale),
-                                {0, 0, 350, 75})});
+            user,
+            {"Alert",
+             rect_center_rect(sapp_screen_rect_scaled(ui_state->dpi_scale),
+                              {0, 0, 350, 75}),
+             true});
         user.begin_generic(make_auto({AutoLayout::Column}, {0, 0}), {}, {});
 
         user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
@@ -110,6 +94,9 @@ int GuiMainMenu::show()
                                UiMakeBrush::make_solid({1, 1, 1, 1.0}));
             label(user, "?", {2, 2}, UiMakeBrush::make_solid({1, 1, 1, 1.0}));
             user.end_generic();
+        }
+        else if (popuptype == 3)
+        {
         }
         else
         {
@@ -125,6 +112,11 @@ int GuiMainMenu::show()
         if (popuptype == 1)
         {
             label(user, "\nAre you sure you want to exit?\n", {1, 1},
+                  UiMakeBrush::make_solid({0, 0, 0, 1.0}));
+        }
+        else if (popuptype == 3)
+        {
+            label(user, "Settings\n", {1.5, 1.5},
                   UiMakeBrush::make_solid({0, 0, 0, 1.0}));
         }
         else
@@ -146,6 +138,21 @@ int GuiMainMenu::show()
             if (button(user, "No"))
             {
                 popuptype = 0;
+            }
+        }
+        else if (popuptype == 3)
+        {
+            if (button(user, "Close"))
+            {
+                popuptype = 0;
+            }
+            if (button(user, "Scale+"))
+            {
+                scale_delta += 0.1;
+            }
+            if (button(user, "Scale-"))
+            {
+                scale_delta -= 0.1;
             }
         }
         else
