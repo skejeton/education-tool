@@ -89,7 +89,7 @@ void end_show_window(UiUser &user)
     user.state->element_storage.pop();
 }
 
-bool button(UiUser &user, const char *text, int offs)
+bool button(UiUser &user, const char *text, Vector4 background)
 {
     user.state->element_storage.push(text, {});
     UiPersistentElement *pe = user.state->element_storage.value();
@@ -102,18 +102,17 @@ bool button(UiUser &user, const char *text, int offs)
     el.margin = {1, 1, 1, 1};
     el.border = {1, 1, 1, 1};
     el.position = AutoLayoutPosition::Relative;
-    el.offset = {(float)offs, (float)-offs};
 
-    Vector4 color_top = theme[1];
-    Vector4 color_bottom = theme[0];
+    Vector4 color_top = theme[1] * background;
+    Vector4 color_bottom = theme[0] * background;
 
     bool pressed = false;
 
     if (user.state->interaction_table.hovered ==
         user.state->element_storage.id())
     {
-        color_top = theme[5];
-        color_bottom = theme[4];
+        color_top = theme[5] * background;
+        color_bottom = theme[4] * background;
         if (user.state->input.mouse_down)
         {
             std::swap(color_top, color_bottom);

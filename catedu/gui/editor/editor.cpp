@@ -440,7 +440,11 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
             for (auto [id, tile] : iter(resources.tiles))
             {
-                if (button(user, tile.name))
+                bool selected = this->tile_selection == id;
+                Vector4 background = selected ? Vector4{0.8, 1.0, 0.8, 1.0}
+                                              : Vector4{1.0, 1.0, 1.0, 1.0};
+
+                if (button(user, tile.name, background))
                 {
                     this->tile_selection = id;
                 }
