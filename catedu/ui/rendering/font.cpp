@@ -87,11 +87,13 @@ static Vector2 get_glyph_size(UiFontRenderer *f, int glyph)
     return {0, 0};
 }
 
-UiFontRenderer UiFontRenderer::init(UiRenderingCore *core, UiFontDef def)
+UiFontRenderer UiFontRenderer::init(UiRenderingCore *core, UiFontDef def,
+                                    float scale)
 {
     UiFontRenderer result = {};
     result.core = core;
     result.def = def;
+    result.scale_factor = scale;
 
     FILE *f = fopen(def.path, "rb");
     assert(f && "Failed to open file");
@@ -99,7 +101,6 @@ UiFontRenderer UiFontRenderer::init(UiRenderingCore *core, UiFontDef def)
     result.buf = buf;
 
     stbtt_InitFont(&result.font_info, buf.data, 0);
-    result.scale_factor = 10;
     result.scale = stbtt_ScaleForPixelHeight(
         &result.font_info, def.font_size * result.scale_factor);
     int ascent, descent;

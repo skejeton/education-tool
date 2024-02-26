@@ -195,8 +195,10 @@ UiState UiState::init(const char *font_path, const char *font_bold_path,
     state.core =
         (UiRenderingCore *)OOM_HANDLER(malloc(sizeof(UiRenderingCore)));
     *state.core = UiRenderingCore::init();
-    state.font = UiFontRenderer::init(state.core, {font_path, 16});
-    state.font_bold = UiFontRenderer::init(state.core, {font_bold_path, 16});
+    state.font =
+        UiFontRenderer::init(state.core, {font_path, 16}, dpi_scale * 2);
+    state.font_bold =
+        UiFontRenderer::init(state.core, {font_bold_path, 16}, dpi_scale * 2);
     return state;
 }
 

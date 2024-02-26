@@ -30,7 +30,8 @@ struct UiFontRenderer
     float scale;
     float scale_factor;
 
-    static UiFontRenderer init(UiRenderingCore *core, UiFontDef def);
+    static UiFontRenderer init(UiRenderingCore *core, UiFontDef def,
+                               float scale);
     void render_glyph(UiRenderingPass *pass, Vector2 position, int glyph,
                       UiBrush brush, Vector2 scale = {1.0, 1.0});
     void render_text_utf8(UiRenderingPass *pass, Vector2 position,
