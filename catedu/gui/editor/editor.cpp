@@ -446,7 +446,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
                 if (button(user, tile.name, background))
                 {
-                    this->tile_selection = id;
+                    this->tile_selection = selected ? NULL_ID : id;
                 }
             }
 
