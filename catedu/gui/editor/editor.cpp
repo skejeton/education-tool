@@ -289,7 +289,24 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     }
     if (!sel.tilemap_selected && input.mouse_states[0].pressed)
     {
-        this->placing_object = true;
+        if (this->selection != NULL_ID)
+        {
+            // Path: catedu/gui/editor/editor.cpp
+            Object *selected = scene.get_object(this->selection);
+            if (selected && selected->type == Object::Type::Entity)
+            {
+                selected->entity.pos =
+                    this->object_cursor_at - Vector2{0.5, 0.5};
+            }
+            else
+            {
+                this->placing_object = true;
+            }
+        }
+        else
+        {
+            this->placing_object = true;
+        }
     }
 
     boxdraw_flush(&renderer, this->camera.vp);
