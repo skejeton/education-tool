@@ -215,7 +215,7 @@ SelectionState show_selection(GuiEditor &editor, BoxdrawRenderer &renderer,
         pos3d.z = editor.object_cursor_at.y;
         pos = editor.object_cursor_at;
     }
-    else if (ray3_vs_horizontal_plane(ray, 0.0, &distance))
+    else if (ray3_vs_horizontal_plane(ray, -0.5, &distance))
     {
         pos3d = ray3_at(ray, distance);
         pos = {pos3d.x, pos3d.z};
@@ -241,6 +241,7 @@ SelectionState show_selection(GuiEditor &editor, BoxdrawRenderer &renderer,
 
         pos3d.x = pos.x;
         pos3d.z = pos.y;
+        pos3d.y = 0;
 
         is_selected = true;
     }
