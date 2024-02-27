@@ -17,6 +17,12 @@ GuiEditor GuiEditor::init(UiState *ui_state)
     return result;
 }
 
+void select_object(GuiEditor *editor, TableId id)
+{
+    editor->selection = id;
+    editor->entity_list_page = id.id / 10;
+}
+
 void show_generic_icon(UiUser &user, const char *s, Vector4 color,
                        float w = 0.0f)
 {
@@ -487,7 +493,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
             new_obj.entity =
                 ObjEntity::init("", this->object_cursor_at - Vector2{0.5, 0.5});
 
-            this->selection = scene.add_object(new_obj);
+            select_object(this, scene.add_object(new_obj));
             this->placing_object = false;
         }
         if (button(user, "Tilemap"))
@@ -499,7 +505,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
                 new_obj.name,
                 stdstrfmt("Unnamed Tilemap %zu", scene.objects.count).c_str());
 
-            this->selection = scene.add_object(new_obj);
+            select_object(this, scene.add_object(new_obj));
             this->placing_object = false;
         }
         if (button(user, "Backdrop"))
@@ -511,7 +517,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
                 new_obj.name,
                 stdstrfmt("Unnamed Backdrop %zu", scene.objects.count).c_str());
 
-            this->selection = scene.add_object(new_obj);
+            select_object(this, scene.add_object(new_obj));
             this->placing_object = false;
         }
         if (button(user, "Cancel"))
