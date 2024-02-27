@@ -85,6 +85,7 @@ struct UiInteractionStatePass
     UiInteractionStateTable *interaction_table;
     Vector2 mouse_pos;
     bool interaction;
+    bool active_interaction;
     bool exit_interaction;
     bool switch_interaction; // e.g. tab is pressed
 

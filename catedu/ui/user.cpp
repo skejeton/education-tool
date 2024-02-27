@@ -136,6 +136,8 @@ void UiUser::end_pass()
     interaction.element_storage = &this->state->element_storage;
     interaction.mouse_pos = this->state->input.mouse_pos;
     interaction.interaction = this->state->input.mouse_pressed;
+    interaction.active_interaction = this->state->input.mouse_down;
+    ;
     interaction.exit_interaction = this->state->input.escape;
     interaction.switch_interaction = this->state->input.tab;
     interaction.process();
@@ -379,6 +381,11 @@ void UiInteractionStatePass::process()
         // TODO: This is a hack to avoid freeing elements in the table for now.
         //       This should be removed when the element storage is refactored.
         el.order = -1;
+    }
+
+    if (this->active_interaction)
+    {
+        hovered = this->interaction_table->hovered;
     }
 
     this->interaction_table->hovered = hovered;
