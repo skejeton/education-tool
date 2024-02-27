@@ -453,6 +453,11 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
                   UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
             ::input(user, "SelObjModel", selected->entity.model_name, 32);
         }
+        if (button(user, "OK"))
+        {
+            this->selection = NULL_ID;
+        }
+
         end_show_window(user);
 
         if (selected->type == Object::Type::Tilemap)
