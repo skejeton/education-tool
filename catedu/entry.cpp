@@ -107,6 +107,12 @@ void Entry::input(const sapp_event *event)
     {
         // Invalidate the input state if the event was consumed by the UI.
         this->input_state = {};
+
+        // Move the mouse out of the screen to avoid the cursor being detected
+        // in top left corner of the screen.
+        this->input_state.mouse_pos.x = FLT_MAX;
+        this->input_state.mouse_pos.y = FLT_MAX;
+
         return;
     }
 
