@@ -28,17 +28,17 @@ enum
 struct Entry : SokolSetup
 {
     UiState ui_state;
-    Scene scene;
+
+    int ui_mode = MENU_EDITOR;
     GuiMainMenu main_menu;
     GuiEditor editor;
     GuiGame game_gui;
     ResourceSpec res;
-    int ui_mode = MENU_EDITOR;
+
+    Scene scene;
+
     BoxdrawRenderer boxdraw_renderer;
-    Vector2 target_camera_pos;
-    bool zoomout = false;
     Input input_state;
-    int floor;
 
     void init();
     void frame();
