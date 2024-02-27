@@ -3,26 +3,6 @@
 #include "catedu/rendering/render_model.hpp"
 #include "catedu/ui/widgets.hpp"
 
-GuiEditor GuiEditor::init(UiState *ui_state)
-{
-    Camera camera = Camera::init(45);
-    camera.move(0, 10, 0);
-    camera.rotate(0, -45);
-
-    GuiEditor result = {};
-    result.ui_state = ui_state;
-    result.camera = camera;
-    result.debug_tree = GuiDebugTree::init();
-
-    return result;
-}
-
-void select_object(GuiEditor *editor, TableId id)
-{
-    editor->selection = id;
-    editor->entity_list_page = id.id / 10;
-}
-
 void show_generic_icon(UiUser &user, const char *s, Vector4 color,
                        float w = 0.0f)
 {
@@ -191,6 +171,218 @@ size_t show_pagination(UiUser &user, size_t page, size_t page_count)
     return page;
 }
 
+void select_object(GuiEditor &editor, TableId id)
+{
+    editor.selection = id;
+    editor.entity_list_page = id.id / 10;
+}
+
+void show_help(UiUser &user, ResourceSpec &resources)
+{
+    user.bold = true;
+    label(user, "On object screen: ", {1.2, 1.2},
+          UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
+    user.bold = false;
+    label(user, "`>` - Select object");
+    label(user, "`X` - Delete object");
+    label(user, "`H` - Hide object");
+    user.bold = true;
+    label(user, "There's different types of objects:", {1.2, 1.2},
+          UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
+    user.bold = false;
+    label(user, "[T] - Tilemap");
+    label(user, "[E] - Entity");
+    label(user, "[B] - Backdrop");
+    user.bold = true;
+    label(user, "Controls:", {1.2, 1.2},
+          UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
+    user.bold = false;
+    label(user, "WASD - Move camera");
+    label(user, "Tab - Debug window");
+    label(user, "Back - Go back");
+    label(user, "Hold LMB on window to move it");
+    label(user, "Press RMB on window to collapse it");
+    label(user, "Press LMB on the scene to place objects");
+    label(user, "Press Ctrl +/- to zoom in/out");
+    user.bold = true;
+    label(user, "Models:", {1.2, 1.2},
+          UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
+    user.bold = false;
+
+    char model_names[512] = {};
+    char *cur = model_names;
+    int model_i = 0;
+    for (auto [id, model] : iter(resources.models))
+    {
+        cur = strcat(cur, model.name);
+        cur = strcat(cur, ", ");
+        model_i++;
+        if (model_i % 4 == 0)
+        {
+            cur = strcat(cur, "\n");
+        }
+    }
+
+    label(user, model_names);
+}
+
+void show_place_object(UiUser &user, Scene &scene, GuiEditor &editor)
+{
+    Rect scr = sapp_screen_rect_scaled(editor.ui_state->dpi_scale);
+    Rect rect = rect_center_rect(scr, {0, 0, 100, 200});
+    begin_show_window(user, {"Place object", rect});
+    label(user, "Type:");
+    if (button(user, "Entity"))
+    {
+        Object new_obj = {};
+        new_obj.type = Object::Type::Entity;
+        strcpy(new_obj.name,
+               stdstrfmt("Unnamed Entity %zu", scene.objects.count).c_str());
+        new_obj.entity =
+            ObjEntity::init("", editor.object_cursor_at - Vector2{0.5, 0.5});
+
+        select_object(editor, scene.add_object(new_obj));
+        editor.placing_object = false;
+    }
+    if (button(user, "Tilemap"))
+    {
+        Object new_obj = {};
+        new_obj.type = Object::Type::Tilemap;
+        new_obj.tilemap = ObjTilemap::init();
+        strcpy(new_obj.name,
+               stdstrfmt("Unnamed Tilemap %zu", scene.objects.count).c_str());
+
+        select_object(editor, scene.add_object(new_obj));
+        editor.placing_object = false;
+    }
+    if (button(user, "Backdrop"))
+    {
+        Object new_obj = {};
+        new_obj.type = Object::Type::Backdrop;
+        new_obj.backdrop = ObjBackdrop::init({0, 32, 32, 32});
+        strcpy(new_obj.name,
+               stdstrfmt("Unnamed Backdrop %zu", scene.objects.count).c_str());
+
+        select_object(editor, scene.add_object(new_obj));
+        editor.placing_object = false;
+    }
+    if (button(user, "Cancel"))
+    {
+        editor.placing_object = false;
+    }
+
+    end_show_window(user);
+}
+
+void show_object_list(UiUser &user, GuiEditor &editor, Scene &scene)
+{
+    const size_t page_count =
+        scene.objects.count > 0 ? (scene.objects.count - 1) / 10 : 0;
+    editor.entity_list_page =
+        show_pagination(user, editor.entity_list_page, page_count);
+
+    size_t i = 0;
+
+    for (auto [id, obj] : iter(scene.objects))
+    {
+        if (i++ < editor.entity_list_page * 10)
+        {
+            continue;
+        }
+        if (i > (editor.entity_list_page + 1) * 10)
+        {
+            break;
+        }
+        char idstr[256];
+        sprintf(idstr, "%zu", id.id);
+
+        user.state->element_storage.push(idstr, {});
+        switch (show_object_row(user, obj, editor.selection == id))
+        {
+        case Select:
+            if (editor.selection != id)
+            {
+                editor.selection = id;
+            }
+            else
+            {
+                editor.selection = {};
+            }
+            break;
+        case Delete:
+            scene.remove_object(id);
+            if (editor.selection == id)
+            {
+                editor.selection = {};
+            }
+            break;
+        default:
+            break;
+        }
+        user.state->element_storage.pop();
+    }
+}
+
+void show_properties(UiUser &user, Object &obj, GuiEditor &editor)
+{
+    begin_show_window(user, {"Properties", {220, 20, 200, 200}});
+
+    show_object_icon_ex(user, obj.type);
+    label(user, "Name:", {1, 1},
+          UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
+    input(user, "SelObjName", obj.name, 32);
+    label(user, "Id:", {1, 1},
+          UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
+    input(user, "SelObjId", obj.id, 32);
+    if (obj.type == Object::Type::Entity)
+    {
+        label(user, "Model:", {1, 1},
+              UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
+        input(user, "SelObjModel", obj.entity.model_name, 32);
+    }
+    if (button(user, "OK"))
+    {
+        editor.selection = NULL_ID;
+    }
+
+    end_show_window(user);
+}
+
+void show_tile_picker(UiUser &user, ResourceSpec &resources, GuiEditor &editor)
+{
+    begin_show_window(
+        user,
+        {"Tiles", {sapp_widthf() / user.state->dpi_scale - 100, 20, 100, 800}});
+
+    for (auto [id, tile] : iter(resources.tiles))
+    {
+        bool selected = editor.tile_selection == id;
+        Vector4 background = selected ? Vector4{0.8, 1.0, 0.8, 1.0}
+                                      : Vector4{1.0, 1.0, 1.0, 1.0};
+
+        if (button(user, tile.name, background))
+        {
+            editor.tile_selection = selected ? NULL_ID : id;
+        }
+    }
+
+    end_show_window(user);
+}
+
+GuiEditor GuiEditor::init(UiState *ui_state)
+{
+    Camera camera = Camera::init(45);
+    camera.move(0, 10, 0);
+    camera.rotate(0, -45);
+
+    GuiEditor result = {};
+    result.ui_state = ui_state;
+    result.camera = camera;
+    result.debug_tree = GuiDebugTree::init();
+
+    return result;
+}
+
 struct SelectionState
 {
     ObjTilemap *tilemap_selected;
@@ -349,53 +541,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     sprintf(title, "Objects | Page %zu", this->entity_list_page);
 
     begin_show_window(user, {title, {20, 20, 200, 410}});
-
-    const size_t page_count =
-        scene.objects.count > 0 ? (scene.objects.count - 1) / 10 : 0;
-    this->entity_list_page =
-        show_pagination(user, this->entity_list_page, page_count);
-
-    size_t i = 0;
-
-    for (auto [id, obj] : iter(scene.objects))
-    {
-        if (i++ < this->entity_list_page * 10)
-        {
-            continue;
-        }
-        if (i > (this->entity_list_page + 1) * 10)
-        {
-            break;
-        }
-        char idstr[256];
-        sprintf(idstr, "%zu", id.id);
-
-        user.state->element_storage.push(idstr, {});
-        switch (show_object_row(user, obj, this->selection == id))
-        {
-        case Select:
-            if (this->selection != id)
-            {
-                this->selection = id;
-            }
-            else
-            {
-                this->selection = {};
-            }
-            break;
-        case Delete:
-            scene.remove_object(id);
-            if (this->selection == id)
-            {
-                this->selection = {};
-            }
-            break;
-        default:
-            break;
-        }
-        user.state->element_storage.pop();
-    }
-
+    show_object_list(user, *this, scene);
     end_show_window(user);
 
     Object *selected = scene.get_object(this->selection);
@@ -408,148 +554,21 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     }
 
     begin_show_window(user, {"Help", {0, 0, 250, 400}});
-    user.bold = true;
-    label(user, "On object screen: ", {1.2, 1.2},
-          UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
-    user.bold = false;
-    label(user, "`>` - Select object");
-    label(user, "`X` - Delete object");
-    label(user, "`H` - Hide object");
-    user.bold = true;
-    label(user, "There's different types of objects:", {1.2, 1.2},
-          UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
-    user.bold = false;
-    label(user, "[T] - Tilemap");
-    label(user, "[E] - Entity");
-    label(user, "[B] - Backdrop");
-    user.bold = true;
-    label(user, "Controls:", {1.2, 1.2},
-          UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
-    user.bold = false;
-    label(user, "WASD - Move camera");
-    label(user, "Tab - Debug window");
-    label(user, "Back - Go back");
-    label(user, "Hold LMB on window to move it");
-    label(user, "Press RMB on window to collapse it");
-    label(user, "Press LMB on the scene to place objects");
-    label(user, "Press Ctrl +/- to zoom in/out");
-    user.bold = true;
-    label(user, "Models:", {1.2, 1.2},
-          UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
-    user.bold = false;
-
-    char model_names[512] = {};
-    char *cur = model_names;
-    int model_i = 0;
-    for (auto [id, model] : iter(resources.models))
-    {
-        cur = strcat(cur, model.name);
-        cur = strcat(cur, ", ");
-        model_i++;
-        if (model_i % 4 == 0)
-        {
-            cur = strcat(cur, "\n");
-        }
-    }
-
-    label(user, model_names);
+    show_help(user, resources);
     end_show_window(user);
 
     if (selected)
     {
-        begin_show_window(user, {"Properties", {220, 20, 200, 200}});
-
-        show_object_icon_ex(user, selected->type);
-        label(user, "Name:", {1, 1},
-              UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
-        ::input(user, "SelObjName", selected->name, 32);
-        label(user, "Id:", {1, 1},
-              UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
-        ::input(user, "SelObjId", selected->id, 32);
-        if (selected->type == Object::Type::Entity)
-        {
-            label(user, "Model:", {1, 1},
-                  UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
-            ::input(user, "SelObjModel", selected->entity.model_name, 32);
-        }
-        if (button(user, "OK"))
-        {
-            this->selection = NULL_ID;
-        }
-
-        end_show_window(user);
-
+        show_properties(user, *selected, *this);
         if (selected->type == Object::Type::Tilemap)
         {
-            begin_show_window(
-                user,
-                {"Tiles",
-                 {sapp_widthf() / user.state->dpi_scale - 100, 20, 100, 800}});
-
-            for (auto [id, tile] : iter(resources.tiles))
-            {
-                bool selected = this->tile_selection == id;
-                Vector4 background = selected ? Vector4{0.8, 1.0, 0.8, 1.0}
-                                              : Vector4{1.0, 1.0, 1.0, 1.0};
-
-                if (button(user, tile.name, background))
-                {
-                    this->tile_selection = selected ? NULL_ID : id;
-                }
-            }
-
-            end_show_window(user);
+            show_tile_picker(user, resources, *this);
         }
     }
+
     if (this->placing_object)
     {
-        Rect scr = sapp_screen_rect_scaled(this->ui_state->dpi_scale);
-        Rect rect = rect_center_rect(scr, {0, 0, 100, 200});
-        begin_show_window(user, {"Place object", rect});
-        label(user, "Type:");
-        if (button(user, "Entity"))
-        {
-            Object new_obj = {};
-            new_obj.type = Object::Type::Entity;
-            strcpy(
-                new_obj.name,
-                stdstrfmt("Unnamed Entity %zu", scene.objects.count).c_str());
-            new_obj.entity =
-                ObjEntity::init("", this->object_cursor_at - Vector2{0.5, 0.5});
-
-            select_object(this, scene.add_object(new_obj));
-            this->placing_object = false;
-        }
-        if (button(user, "Tilemap"))
-        {
-            Object new_obj = {};
-            new_obj.type = Object::Type::Tilemap;
-            new_obj.tilemap = ObjTilemap::init();
-            strcpy(
-                new_obj.name,
-                stdstrfmt("Unnamed Tilemap %zu", scene.objects.count).c_str());
-
-            select_object(this, scene.add_object(new_obj));
-            this->placing_object = false;
-        }
-        if (button(user, "Backdrop"))
-        {
-            Object new_obj = {};
-            new_obj.type = Object::Type::Backdrop;
-            new_obj.backdrop = ObjBackdrop::init({0, 32, 32, 32});
-            strcpy(
-                new_obj.name,
-                stdstrfmt("Unnamed Backdrop %zu", scene.objects.count).c_str());
-
-            select_object(this, scene.add_object(new_obj));
-            this->placing_object = false;
-        }
-        if (button(user, "Cancel"))
-        {
-            this->placing_object = false;
-        }
-
-        end_show_window(user);
+        show_place_object(user, scene, *this);
     }
 
     user.end_pass();
