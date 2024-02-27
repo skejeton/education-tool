@@ -271,11 +271,25 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
                      Scene &scene, Input &input)
 {
     bool return_back = false;
+    bool no_ui = false;
+
     debug_tree.reset();
 
     debug_tree.value("Mouse Pos X", input.mouse_pos.x);
     debug_tree.value("Mouse Pos Y", input.mouse_pos.y);
     debug_tree.value("Boolean value", false);
+
+    if (input.mouse_states[2].held)
+    {
+        camera.move(-input.mouse_delta.x / (20 * ui_state->dpi_scale), 0,
+                    input.mouse_delta.y / (20 * ui_state->dpi_scale));
+        sapp_lock_mouse(true);
+        no_ui = true;
+    }
+    else
+    {
+        sapp_lock_mouse(false);
+    }
 
     scene.render(renderer, resources);
 
@@ -317,6 +331,11 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     }
 
     boxdraw_flush(&renderer, this->camera.vp);
+
+    if (no_ui)
+    {
+        return return_back;
+    }
 
     UiUser user = UiUser::init(*this->ui_state);
     user.begin_pass();
