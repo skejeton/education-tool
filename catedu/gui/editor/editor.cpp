@@ -472,6 +472,15 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     debug_tree.value("Mouse Pos Y", input.mouse_pos.y);
     debug_tree.value("Boolean value", false);
 
+    if (camera.position.y > 5 && input.mouse_wheel > 0)
+    {
+        camera.move(0, -input.mouse_wheel * 2, input.mouse_wheel * 2);
+    }
+    if (camera.position.y < 40 && input.mouse_wheel < 0)
+    {
+        camera.move(0, -input.mouse_wheel * 2, input.mouse_wheel * 2);
+    }
+
     if (input.mouse_states[2].held)
     {
         camera.move(-input.mouse_delta.x / (20 * ui_state->dpi_scale), 0,
