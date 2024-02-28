@@ -198,6 +198,7 @@ void show_help(UiUser &user, ResourceSpec &resources)
           UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
     user.bold = false;
     label(user, "WASD - Move camera");
+    label(user, "Middle click + drag - Move camera");
     label(user, "Tab - Debug window");
     label(user, "Back - Go back");
     label(user, "Hold LMB on window to move it");
