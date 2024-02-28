@@ -17,7 +17,6 @@ struct UiTransform
     Matrix4 combinem_;
 
     void stack(UiTransform transform);
-    void stack_pos(Vector2 pos);
     Matrix4 world_matrix();
     Matrix4 calculate_matrix(Vector2 screen_size);
 };
