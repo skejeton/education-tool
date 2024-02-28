@@ -199,12 +199,13 @@ void show_help(UiUser &user, ResourceSpec &resources)
     user.bold = false;
     label(user, "WASD - Move camera");
     label(user, "Middle click + drag - Move camera");
+    label(user, "Scroll - Zoom in/out");
     label(user, "Tab - Debug window");
     label(user, "Back - Go back");
     label(user, "Hold LMB on window to move it");
     label(user, "Press RMB on window to collapse it");
     label(user, "Press LMB on the scene to place objects");
-    label(user, "Press Ctrl +/- to zoom in/out");
+    label(user, "Press Ctrl +/- to zoom in/out the UI");
     user.bold = true;
     label(user, "Models:", {1.2, 1.2},
           UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
@@ -563,7 +564,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         end_show_window(user);
     }
 
-    begin_show_window(user, {"Help", {0, 0, 250, 420}});
+    begin_show_window(user, {"Help", {0, 0, 250, 430}});
     show_help(user, resources);
     end_show_window(user);
 
