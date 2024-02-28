@@ -461,6 +461,22 @@ SelectionState show_selection(GuiEditor &editor, BoxdrawRenderer &renderer,
     return {tilemap_selected, pos};
 }
 
+ObjectId find_object_within_distance(Scene &scene, Vector2 pos, float distance)
+{
+    for (auto [id, obj] : iter(scene.objects))
+    {
+        if (obj.type == Object::Type::Entity)
+        {
+            Vector2 obj_pos = obj.entity.pos + Vector2{0.5, 0.5};
+            if (vector2_cmp_distance(pos, obj_pos) < distance)
+            {
+                return id;
+            }
+        }
+    }
+    return NULL_ID;
+}
+
 bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
                      Scene &scene, Input &input)
 {
@@ -481,7 +497,6 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     {
         camera.move(0, -input.mouse_wheel * 2, input.mouse_wheel * 2);
     }
-
     if (input.mouse_states[2].held)
     {
         camera.move(-input.mouse_delta.x / (20 * ui_state->dpi_scale), 0,
@@ -511,25 +526,36 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         sel.tilemap_selected->set_tile(vector2_to_vector2i(sel.position),
                                        this->tile_selection.id);
     }
-    if (!sel.tilemap_selected && input.mouse_states[0].pressed)
+
+    if (input.mouse_states[0].pressed)
     {
-        if (this->selection != NULL_ID)
+        ObjectId closest_object =
+            find_object_within_distance(scene, object_cursor_at, 1);
+
+        if (closest_object != NULL_ID)
         {
-            // Path: catedu/gui/editor/editor.cpp
-            Object *selected = scene.get_object(this->selection);
-            if (selected && selected->type == Object::Type::Entity)
+            this->selection = closest_object;
+        }
+        else if (!sel.tilemap_selected)
+        {
+            if (this->selection != NULL_ID)
             {
-                selected->entity.pos =
-                    this->object_cursor_at - Vector2{0.5, 0.5};
+                // Path: catedu/gui/editor/editor.cpp
+                Object *selected = scene.get_object(this->selection);
+                if (selected && selected->type == Object::Type::Entity)
+                {
+                    selected->entity.pos =
+                        this->object_cursor_at - Vector2{0.5, 0.5};
+                }
+                else
+                {
+                    this->placing_object = true;
+                }
             }
             else
             {
                 this->placing_object = true;
             }
-        }
-        else
-        {
-            this->placing_object = true;
         }
     }
 

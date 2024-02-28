@@ -326,6 +326,12 @@ inline float vector2_length(Vector2 a)
     return sqrt(vector2_dot(a, a));
 }
 
+// For comparing distances, we don't need to take the square root
+inline float vector2_cmp_distance(Vector2 a, Vector2 b)
+{
+    return vector2_dot(a - b, a - b);
+}
+
 inline Vector2 vector2_normalize(Vector2 a)
 {
     return a / vector2_length(a);
