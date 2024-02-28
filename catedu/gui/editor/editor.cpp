@@ -554,7 +554,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         end_show_window(user);
     }
 
-    begin_show_window(user, {"Help", {0, 0, 250, 400}});
+    begin_show_window(user, {"Help", {0, 0, 250, 420}});
     show_help(user, resources);
     end_show_window(user);
 
