@@ -23,6 +23,13 @@ ObjectId Scene::find_object(const char *id)
     return {};
 }
 
+Object Scene::prune_object(ObjectId id)
+{
+    Object obj = objects.get_assert(id);
+    objects.remove(id);
+    return obj;
+}
+
 Object *Scene::get_object(ObjectId id)
 {
     return objects.get(id);

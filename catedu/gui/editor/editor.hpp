@@ -10,6 +10,45 @@
 #include "catedu/ui/user.hpp"
 #include <sokol/sokol_app.h>
 
+struct EditAction
+{
+    enum Type
+    {
+        None,
+        CreateEntity,
+        DeleteEntity,
+        MoveEntity,
+        PlaceTile,
+        Count_,
+    } type;
+
+    union Cmd {
+        struct CreateEntity
+        {
+            TableId entity_id;
+            Object entity;
+        } create_entity;
+        struct DeleteEntity
+        {
+            TableId entity_id;
+            Object entity_data;
+        } delete_entity;
+        struct MoveEntity
+        {
+            TableId entity;
+            Vector2 current_pos;
+            Vector2 pos;
+        } move_entity;
+        struct PlaceTile
+        {
+            TableId tilemap_entity;
+            Vector2i pos;
+            int prev_id; // 0 is empty
+            int tile_id; // 0 is empty
+        } place_tile;
+    } cmd;
+};
+
 struct GuiEditor
 {
     UiState *ui_state;
@@ -21,6 +60,8 @@ struct GuiEditor
     GuiDebugTree debug_tree;
     Vector2 object_cursor_at;
     bool placing_object;
+    EditAction actions[512];
+    size_t action_count;
 
     static GuiEditor init(UiState *ui_state);
     bool show(BoxdrawRenderer &renderer, ResourceSpec &resources, Scene &scene,

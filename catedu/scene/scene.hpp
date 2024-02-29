@@ -37,6 +37,9 @@ struct Scene
     static Scene init();
     ObjectId add_object(Object object);
     ObjectId find_object(const char *id);
+
+    /// @brief Removes the object without freeing the memory
+    Object prune_object(ObjectId id);
     Object *get_object(ObjectId id);
 
     void remove_object(ObjectId id);

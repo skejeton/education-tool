@@ -173,8 +173,103 @@ size_t show_pagination(UiUser &user, size_t page, size_t page_count)
 
 void select_object(GuiEditor &editor, TableId id)
 {
-    editor.selection = id;
-    editor.entity_list_page = id.id / 10;
+    if (editor.selection != id)
+    {
+        editor.selection = id;
+        editor.entity_list_page = id.id / 10;
+    }
+    else
+    {
+        editor.selection = {};
+    }
+}
+
+void do_action(GuiEditor &editor, Scene &scene, EditAction action)
+{
+    Object *obj;
+    switch (action.type)
+    {
+    case EditAction::CreateEntity:
+        editor.selection = scene.add_object(action.cmd.create_entity.entity);
+        action.cmd.create_entity.entity_id = editor.selection;
+        break;
+    case EditAction::DeleteEntity:
+        action.cmd.delete_entity.entity_data =
+            scene.prune_object(action.cmd.delete_entity.entity_id);
+        if (editor.selection == action.cmd.delete_entity.entity_id)
+        {
+            editor.selection = {};
+        }
+        break;
+    case EditAction::MoveEntity:
+        obj = scene.get_object(action.cmd.move_entity.entity);
+        assert(obj);
+        action.cmd.move_entity.current_pos = obj->entity.pos;
+        obj->entity.pos = action.cmd.move_entity.pos;
+        break;
+    case EditAction::PlaceTile:
+        obj = scene.get_object(action.cmd.place_tile.tilemap_entity);
+        assert(obj);
+        assert(obj->type == Object::Type::Tilemap);
+        action.cmd.place_tile.prev_id =
+            obj->tilemap.get_tile(action.cmd.place_tile.pos);
+        if (obj->tilemap.get_tile(action.cmd.place_tile.pos) ==
+            action.cmd.place_tile.tile_id)
+        {
+            return;
+        }
+        obj->tilemap.set_tile(action.cmd.place_tile.pos,
+                              action.cmd.place_tile.tile_id);
+        break;
+    default:
+        assert(false);
+        break;
+    }
+
+    if (editor.action_count < 512)
+    {
+        editor.actions[editor.action_count++] = action;
+    }
+}
+
+void undo_action(GuiEditor &editor, Scene &scene)
+{
+    if (editor.action_count <= 0)
+    {
+        return;
+    }
+
+    EditAction action = editor.actions[--editor.action_count];
+
+    Object *obj;
+    switch (action.type)
+    {
+    case EditAction::CreateEntity:
+        scene.remove_object(action.cmd.create_entity.entity_id);
+        if (editor.selection == action.cmd.create_entity.entity_id)
+        {
+            editor.selection = {};
+        }
+        break;
+    case EditAction::DeleteEntity:
+        scene.add_object(action.cmd.delete_entity.entity_data);
+        break;
+    case EditAction::MoveEntity:
+        obj = scene.get_object(action.cmd.move_entity.entity);
+        assert(obj);
+        obj->entity.pos = action.cmd.move_entity.current_pos;
+        break;
+    case EditAction::PlaceTile:
+        obj = scene.get_object(action.cmd.place_tile.tilemap_entity);
+        assert(obj);
+        assert(obj->type == Object::Type::Tilemap);
+        obj->tilemap.set_tile(action.cmd.place_tile.pos,
+                              action.cmd.place_tile.prev_id);
+        break;
+    default:
+        assert(false);
+        break;
+    }
 }
 
 void show_help(UiUser &user, ResourceSpec &resources)
@@ -232,44 +327,44 @@ void show_place_object(UiUser &user, Scene &scene, GuiEditor &editor)
 {
     Rect scr = sapp_screen_rect_scaled(editor.ui_state->dpi_scale);
     Rect rect = rect_center_rect(scr, {0, 0, 100, 200});
+    Object new_obj = {};
+
     begin_show_window(user, {"Place object", rect});
     label(user, "Type:");
     if (button(user, "Entity"))
     {
-        Object new_obj = {};
         new_obj.type = Object::Type::Entity;
         strcpy(new_obj.name,
                stdstrfmt("Unnamed Entity %zu", scene.objects.count).c_str());
         new_obj.entity =
             ObjEntity::init("", editor.object_cursor_at - Vector2{0.5, 0.5});
-
-        select_object(editor, scene.add_object(new_obj));
-        editor.placing_object = false;
     }
     if (button(user, "Tilemap"))
     {
-        Object new_obj = {};
         new_obj.type = Object::Type::Tilemap;
         new_obj.tilemap = ObjTilemap::init();
         strcpy(new_obj.name,
                stdstrfmt("Unnamed Tilemap %zu", scene.objects.count).c_str());
-
-        select_object(editor, scene.add_object(new_obj));
-        editor.placing_object = false;
     }
     if (button(user, "Backdrop"))
     {
-        Object new_obj = {};
         new_obj.type = Object::Type::Backdrop;
         new_obj.backdrop = ObjBackdrop::init({0, 32, 32, 32});
         strcpy(new_obj.name,
                stdstrfmt("Unnamed Backdrop %zu", scene.objects.count).c_str());
-
-        select_object(editor, scene.add_object(new_obj));
-        editor.placing_object = false;
     }
     if (button(user, "Cancel"))
     {
+        editor.placing_object = false;
+    }
+
+    if (new_obj.type != Object::Type::Generic)
+    {
+        EditAction action = {};
+        action.type = EditAction::CreateEntity;
+        action.cmd.create_entity.entity = new_obj;
+
+        do_action(editor, scene, action);
         editor.placing_object = false;
     }
 
@@ -302,22 +397,15 @@ void show_object_list(UiUser &user, GuiEditor &editor, Scene &scene)
         switch (show_object_row(user, obj, editor.selection == id))
         {
         case Select:
-            if (editor.selection != id)
-            {
-                editor.selection = id;
-            }
-            else
-            {
-                editor.selection = {};
-            }
+            select_object(editor, id);
             break;
-        case Delete:
-            scene.remove_object(id);
-            if (editor.selection == id)
-            {
-                editor.selection = {};
-            }
-            break;
+        case Delete: {
+            EditAction action = {};
+            action.type = EditAction::DeleteEntity;
+            action.cmd.delete_entity.entity_id = id;
+            do_action(editor, scene, action);
+        }
+        break;
         default:
             break;
         }
@@ -517,14 +605,31 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     SelectionState sel =
         show_selection(*this, renderer, resources, scene, input);
     this->object_cursor_at = sel.position;
+
     if (sel.tilemap_selected && input.mouse_states[1].held)
     {
-        sel.tilemap_selected->set_tile(vector2_to_vector2i(sel.position), 0);
+        EditAction action = {};
+        action.type = EditAction::PlaceTile;
+        action.cmd.place_tile.tilemap_entity = this->selection;
+        action.cmd.place_tile.pos = vector2_to_vector2i(sel.position);
+        action.cmd.place_tile.tile_id = 0;
+        do_action(*this, scene, action);
     }
+
     if (sel.tilemap_selected && input.mouse_states[0].held)
     {
-        sel.tilemap_selected->set_tile(vector2_to_vector2i(sel.position),
-                                       this->tile_selection.id);
+        EditAction action = {};
+        action.type = EditAction::PlaceTile;
+        action.cmd.place_tile.tilemap_entity = this->selection;
+        action.cmd.place_tile.pos = vector2_to_vector2i(sel.position);
+        action.cmd.place_tile.tile_id = this->tile_selection.id;
+        do_action(*this, scene, action);
+    }
+
+    if (input.key_states[SAPP_KEYCODE_LEFT_CONTROL].held &&
+        input.key_states[SAPP_KEYCODE_Z].pressed)
+    {
+        undo_action(*this, scene);
     }
 
     if (input.mouse_states[0].pressed)
@@ -544,8 +649,12 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
                 Object *selected = scene.get_object(this->selection);
                 if (selected && selected->type == Object::Type::Entity)
                 {
-                    selected->entity.pos =
+                    EditAction action = {};
+                    action.type = EditAction::MoveEntity;
+                    action.cmd.move_entity.entity = this->selection;
+                    action.cmd.move_entity.pos =
                         this->object_cursor_at - Vector2{0.5, 0.5};
+                    do_action(*this, scene, action);
                 }
                 else
                 {
@@ -572,6 +681,10 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     if (button(user, "Back"))
     {
         return_back = true;
+    }
+    if (button(user, "Undo"))
+    {
+        undo_action(*this, scene);
     }
 
     char title[256];
