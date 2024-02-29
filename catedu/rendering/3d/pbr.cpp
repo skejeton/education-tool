@@ -1,6 +1,7 @@
 #include "pbr.hpp"
 #include "catedu/sys/sg_tricks.hpp"
 #include "sokol/sokol_app.h"
+#include <sokol/sokol_glue.h>
 #include <stdio.h>
 
 using namespace catedu::pbr;
@@ -58,7 +59,11 @@ void Renderer::deinit()
 
 void catedu::pbr::Renderer::begin_pass()
 {
-    sg_begin_default_pass(&pass_action, sapp_width(), sapp_height());
+    sg_pass pass = {0};
+    pass.action = this->pass_action;
+    pass.swapchain = sglue_swapchain();
+    sg_begin_pass(&pass);
+
     sg_apply_pipeline(pipeline);
 }
 

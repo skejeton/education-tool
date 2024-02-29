@@ -10,7 +10,7 @@ static inline SokolSetup *userdata_to_setup(void *userdata)
 static void init_callback(void *userdata)
 {
     sg_desc desc = {};
-    desc.context = sapp_sgcontext();
+    desc.environment = sglue_environment();
     desc.logger.func = slog_func;
     sg_setup(&desc);
 

@@ -4,6 +4,7 @@
 #include "catedu/shaders.hxx"
 #include <assert.h>
 #include <sokol/sokol_app.h>
+#include <sokol/sokol_glue.h>
 
 #define DEFAULT_SAMPLE_COUNT 256
 
@@ -119,8 +120,11 @@ void UiRenderingCore::begin_pipeline()
 {
     this->pip_size = {sapp_widthf(), sapp_heightf()};
 
-    sg_begin_default_pass(&this->pass_action, this->pip_size.x,
-                          this->pip_size.y);
+    sg_pass pass = {0};
+    pass.action = this->pass_action;
+    pass.swapchain = sglue_swapchain();
+    sg_begin_pass(&pass);
+
     sg_apply_pipeline(this->pipeline);
 }
 

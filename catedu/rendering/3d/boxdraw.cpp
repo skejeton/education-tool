@@ -4,6 +4,7 @@
 #include "catedu/sys/sg_tricks.hpp"
 #include <cassert>
 #include <cstdlib>
+#include <sokol/sokol_glue.h>
 #include <stdio.h>
 
 #define INSTANCE_MAX 2048
@@ -199,7 +200,11 @@ void boxdraw_flush(BoxdrawRenderer *renderer, Matrix4 view_projection)
     const int width = sapp_width();
     const int height = sapp_height();
 
-    sg_begin_default_pass(&renderer->pass_action, width, height);
+    sg_pass pass = {0};
+    pass.action = renderer->pass_action;
+    pass.swapchain = sglue_swapchain();
+    sg_begin_pass(&pass);
+
     sg_apply_pipeline(renderer->pipeline);
 
     boxdraw_vs_params_t vs_params = {};
