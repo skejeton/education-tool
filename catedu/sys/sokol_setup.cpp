@@ -31,6 +31,7 @@ static void cleanup_callback(void *userdata)
     //        destruct some uninitialized STL structures so I have to use `new`.
     //        -_-
     delete (userdata_to_setup(userdata));
+    sg_shutdown();
 }
 
 static void event_callback(const sapp_event *event, void *userdata)

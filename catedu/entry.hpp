@@ -16,6 +16,7 @@
 #include "sokol/sokol_gfx.h"
 #include "sokol/sokol_glue.h"
 #include "sokol/sokol_log.h"
+#include <umka_api.h>
 
 enum
 {
@@ -34,6 +35,8 @@ struct Entry : SokolSetup
     GuiEditor editor;
     GuiGame game_gui;
     ResourceSpec res;
+
+    void *umka;
 
     Scene scene;
 

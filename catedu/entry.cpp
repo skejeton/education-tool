@@ -11,38 +11,8 @@
 
 Camera camera = Camera::init(45);
 
-void show_debug(Entry *entry)
+void on_umka_warning(UmkaError *warning)
 {
-    const float width = sapp_widthf();
-    const float height = sapp_heightf();
-
-    camera.set_aspect(width / height);
-    camera_input_apply(&camera, &entry->input_state);
-
-    Object *player =
-        entry->scene.get_object(entry->scene.find_object("player"));
-    PhysicsBody *body = entry->scene.physics.bodies.get(player->entity.body_id);
-    if (entry->input_state.key_states[SAPP_KEYCODE_LEFT].held)
-    {
-        body->area.pos.x -= 0.1;
-    }
-    if (entry->input_state.key_states[SAPP_KEYCODE_RIGHT].held)
-    {
-        body->area.pos.x += 0.1;
-    }
-    if (entry->input_state.key_states[SAPP_KEYCODE_UP].held)
-    {
-        body->area.pos.y += 0.1;
-    }
-    if (entry->input_state.key_states[SAPP_KEYCODE_DOWN].held)
-    {
-        body->area.pos.y -= 0.1;
-    }
-
-    entry->scene.update(entry->res);
-    entry->scene.render(entry->boxdraw_renderer, entry->res, true);
-
-    boxdraw_flush(&entry->boxdraw_renderer, camera.vp);
 }
 
 void Entry::frame(void)
@@ -51,7 +21,6 @@ void Entry::frame(void)
     switch (ui_mode)
     {
     case 0: // Debug
-        show_debug(this);
         break;
     case 1: // Main Menu
         this->boxdraw_renderer.pass_action.colors->clear_value = {0, 0, 0, 1};
@@ -79,12 +48,21 @@ void Entry::cleanup(void)
     res.deinit();
     boxdraw_destroy(&this->boxdraw_renderer);
     sg_tricks_deinit();
-    sg_shutdown();
+
+    umkaFree(this->umka);
 }
 
 void Entry::init()
 {
     console_create_or_bind_existing();
+
+    this->umka = umkaAlloc();
+    if (!umkaInit(this->umka, "assets/main.um", NULL, 4096, NULL, 0, NULL,
+                  false, false, on_umka_warning))
+    {
+        assert(false && "Failed to initialize umka");
+    }
+
     sg_tricks_init();
 
     res = load_resource_spec("./assets/tileset.png");
@@ -96,7 +74,7 @@ void Entry::init()
     game_gui = GuiGame::init(&ui_state);
 
     READ_FILE_TEMP(file, "./assets/world.dat",
-                   { scene = LegacyScene::load_data_to_scene(file); })
+                   { scene = LegacyScene::load_data_to_scene(file); });
 
     this->boxdraw_renderer = boxdraw_create();
 }
