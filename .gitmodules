@@ -16,3 +16,6 @@
 [submodule "lib/cgltf"]
 	path = lib/cgltf
 	url = https://github.com/jkuhlmann/cgltf
+[submodule "lib/umka-lang"]
+	path = lib/umka-lang
+	url = https://github.com/vtereshkov/umka-lang

@@ -9,7 +9,7 @@ if (APPLE)
     set(ADDITIONAL_FILES catedu/impl.m)
 endif()
 
-file(GLOB_RECURSE CATEDU_SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/catedu/*.cpp" ${ADDITIONAL_FILES} "lib/lib-enet/*.c")
+file(GLOB_RECURSE CATEDU_SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/catedu/*.cpp" ${ADDITIONAL_FILES} "lib/lib-enet/*.c" "lib/umka-lang/src/*.c")
 
 if (${ENV_TYPE} MATCHES "UNITTEST")
     add_compile_definitions(RUN_TESTS)
@@ -23,6 +23,7 @@ if (${ENV_TYPE} MATCHES "TESTBED")
 endif()
 
 add_executable(${PROJECT_NAME} ${CATEDU_SRC_FILES})
+target_compile_definitions(${PROJECT_NAME} PUBLIC UMKA_STATIC)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
