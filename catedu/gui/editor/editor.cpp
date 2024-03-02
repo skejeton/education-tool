@@ -2,6 +2,7 @@
 #include "catedu/misc/camera_input.hpp"
 #include "catedu/rendering/render_model.hpp"
 #include "catedu/ui/widgets.hpp"
+#include <umka_api.h>
 
 void show_generic_icon(UiUser &user, const char *s, Vector4 color,
                        float w = 0.0f)
@@ -566,7 +567,8 @@ ObjectId find_object_within_distance(Scene &scene, Vector2 pos, float distance)
 }
 
 bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
-                     Scene &scene, Input &input)
+                     Scene &scene, Input &input, UiUser **user_out, void *umka,
+                     bool *reload_module)
 {
     bool return_back = false;
     bool no_ui = false;
@@ -676,6 +678,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     }
 
     UiUser user = UiUser::init(*this->ui_state);
+    *user_out = &user;
     user.begin_pass();
 
     if (button(user, "Back"))
@@ -707,6 +710,33 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     show_help(user, resources);
     end_show_window(user);
 
+    begin_show_window(user, {"Umka window", {250, 0, 500, 430}});
+    if (button(user, "Reload module"))
+    {
+        *reload_module = true;
+    }
+    UmkaStackSlot empty;
+    int func = umkaGetFunc(umka, NULL, "doUI");
+    assert(func != -1);
+    UmkaError error;
+    if (umkaGetError(umka, &error), error.fnName[0] != 0)
+    {
+        label(user,
+              stdstrfmt("Error: %s at %s:%d", error.msg, error.fileName,
+                        error.line)
+                  .c_str(),
+              {1, 1}, UiMakeBrush::make_solid({0.5, 0, 0, 1}));
+    }
+    else
+    {
+        AutoLayoutElement element = {};
+        element.layout.type = AutoLayout::Row;
+        user.begin_generic(element, {}, {});
+        umkaCall(umka, func, 0, &empty, &empty);
+        user.end_generic();
+    }
+    end_show_window(user);
+
     if (selected)
     {
         show_properties(user, *selected, *this);
@@ -721,6 +751,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         show_place_object(user, scene, *this);
     }
 
+    *user_out = 0;
     user.end_pass();
 
     return return_back;

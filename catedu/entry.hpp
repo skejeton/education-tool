@@ -29,6 +29,7 @@ enum
 struct Entry : SokolSetup
 {
     UiState ui_state;
+    UiUser *ui_user;
 
     int ui_mode = MENU_EDITOR;
     GuiMainMenu main_menu;

@@ -9,7 +9,7 @@ if (APPLE)
     set(ADDITIONAL_FILES catedu/impl.m)
 endif()
 
-file(GLOB_RECURSE CATEDU_SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/catedu/*.cpp" ${ADDITIONAL_FILES} "lib/lib-enet/*.c" "lib/umka-lang/src/*.c")
+file(GLOB_RECURSE CATEDU_SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/catedu/*.cpp" ${ADDITIONAL_FILES} "lib/lib-enet/*.c" "lib/umka/src/*.c")
 
 if (${ENV_TYPE} MATCHES "UNITTEST")
     add_compile_definitions(RUN_TESTS)
@@ -23,7 +23,7 @@ if (${ENV_TYPE} MATCHES "TESTBED")
 endif()
 
 add_executable(${PROJECT_NAME} ${CATEDU_SRC_FILES})
-target_compile_definitions(${PROJECT_NAME} PUBLIC UMKA_STATIC)
+target_compile_definitions(${PROJECT_NAME} PUBLIC UMKA_STATIC UMKA_EXT_LIBS)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
@@ -47,5 +47,5 @@ endif()
 target_include_directories(${PROJECT_NAME} PUBLIC ./)
 target_include_directories(${PROJECT_NAME} PUBLIC lib/)
 target_include_directories(${PROJECT_NAME} PUBLIC lib/tau)
-target_include_directories(${PROJECT_NAME} PUBLIC lib/umka-lang/src)
+target_include_directories(${PROJECT_NAME} PUBLIC lib/umka/src)
 target_include_directories(${PROJECT_NAME} PUBLIC lib/lib-enet/include)
