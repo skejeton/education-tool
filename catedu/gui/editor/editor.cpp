@@ -579,93 +579,99 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     debug_tree.value("Mouse Pos Y", input.mouse_pos.y);
     debug_tree.value("Boolean value", false);
 
-    if (camera.position.y > 5 && input.mouse_wheel > 0)
+    if (!this->playtesting)
     {
-        camera.move(0, -input.mouse_wheel * 2, input.mouse_wheel * 2);
-    }
-    if (camera.position.y < 40 && input.mouse_wheel < 0)
-    {
-        camera.move(0, -input.mouse_wheel * 2, input.mouse_wheel * 2);
-    }
-    if (input.mouse_states[2].held)
-    {
-        camera.move(-input.mouse_delta.x / (20 * ui_state->dpi_scale), 0,
-                    input.mouse_delta.y / (20 * ui_state->dpi_scale));
-        sapp_lock_mouse(true);
-        no_ui = true;
-    }
-    else
-    {
-        sapp_lock_mouse(false);
+        if (camera.position.y > 5 && input.mouse_wheel > 0)
+        {
+            camera.move(0, -input.mouse_wheel * 2, input.mouse_wheel * 2);
+        }
+        if (camera.position.y < 40 && input.mouse_wheel < 0)
+        {
+            camera.move(0, -input.mouse_wheel * 2, input.mouse_wheel * 2);
+        }
+        if (input.mouse_states[2].held)
+        {
+            camera.move(-input.mouse_delta.x / (20 * ui_state->dpi_scale), 0,
+                        input.mouse_delta.y / (20 * ui_state->dpi_scale));
+            sapp_lock_mouse(true);
+            no_ui = true;
+        }
+        else
+        {
+            sapp_lock_mouse(false);
+        }
     }
 
     scene.render(renderer, resources);
 
     camera.set_aspect(sapp_widthf() / sapp_heightf());
-    camera_input_top_view_apply(&this->camera, &input);
-
-    SelectionState sel =
-        show_selection(*this, renderer, resources, scene, input);
-    this->object_cursor_at = sel.position;
-
-    if (sel.tilemap_selected && input.mouse_states[1].held)
+    if (!this->playtesting)
     {
-        EditAction action = {};
-        action.type = EditAction::PlaceTile;
-        action.cmd.place_tile.tilemap_entity = this->selection;
-        action.cmd.place_tile.pos = vector2_to_vector2i(sel.position);
-        action.cmd.place_tile.tile_id = 0;
-        do_action(*this, scene, action);
-    }
+        camera_input_top_view_apply(&this->camera, &input);
 
-    if (sel.tilemap_selected && input.mouse_states[0].held)
-    {
-        EditAction action = {};
-        action.type = EditAction::PlaceTile;
-        action.cmd.place_tile.tilemap_entity = this->selection;
-        action.cmd.place_tile.pos = vector2_to_vector2i(sel.position);
-        action.cmd.place_tile.tile_id = this->tile_selection.id;
-        do_action(*this, scene, action);
-    }
+        SelectionState sel =
+            show_selection(*this, renderer, resources, scene, input);
+        this->object_cursor_at = sel.position;
 
-    if (input.key_states[SAPP_KEYCODE_LEFT_CONTROL].held &&
-        input.key_states[SAPP_KEYCODE_Z].pressed)
-    {
-        undo_action(*this, scene);
-    }
-
-    if (input.mouse_states[0].pressed)
-    {
-        ObjectId closest_object =
-            find_object_within_distance(scene, object_cursor_at, 1);
-
-        if (closest_object != NULL_ID)
+        if (sel.tilemap_selected && input.mouse_states[1].held)
         {
-            this->selection = closest_object;
+            EditAction action = {};
+            action.type = EditAction::PlaceTile;
+            action.cmd.place_tile.tilemap_entity = this->selection;
+            action.cmd.place_tile.pos = vector2_to_vector2i(sel.position);
+            action.cmd.place_tile.tile_id = 0;
+            do_action(*this, scene, action);
         }
-        else if (!sel.tilemap_selected)
+
+        if (sel.tilemap_selected && input.mouse_states[0].held)
         {
-            if (this->selection != NULL_ID)
+            EditAction action = {};
+            action.type = EditAction::PlaceTile;
+            action.cmd.place_tile.tilemap_entity = this->selection;
+            action.cmd.place_tile.pos = vector2_to_vector2i(sel.position);
+            action.cmd.place_tile.tile_id = this->tile_selection.id;
+            do_action(*this, scene, action);
+        }
+
+        if (input.key_states[SAPP_KEYCODE_LEFT_CONTROL].held &&
+            input.key_states[SAPP_KEYCODE_Z].pressed)
+        {
+            undo_action(*this, scene);
+        }
+
+        if (input.mouse_states[0].pressed)
+        {
+            ObjectId closest_object =
+                find_object_within_distance(scene, object_cursor_at, 1);
+
+            if (closest_object != NULL_ID)
             {
-                // Path: catedu/gui/editor/editor.cpp
-                Object *selected = scene.get_object(this->selection);
-                if (selected && selected->type == Object::Type::Entity)
+                this->selection = closest_object;
+            }
+            else if (!sel.tilemap_selected)
+            {
+                if (this->selection != NULL_ID)
                 {
-                    EditAction action = {};
-                    action.type = EditAction::MoveEntity;
-                    action.cmd.move_entity.entity = this->selection;
-                    action.cmd.move_entity.pos =
-                        this->object_cursor_at - Vector2{0.5, 0.5};
-                    do_action(*this, scene, action);
+                    // Path: catedu/gui/editor/editor.cpp
+                    Object *selected = scene.get_object(this->selection);
+                    if (selected && selected->type == Object::Type::Entity)
+                    {
+                        EditAction action = {};
+                        action.type = EditAction::MoveEntity;
+                        action.cmd.move_entity.entity = this->selection;
+                        action.cmd.move_entity.pos =
+                            this->object_cursor_at - Vector2{0.5, 0.5};
+                        do_action(*this, scene, action);
+                    }
+                    else
+                    {
+                        this->placing_object = true;
+                    }
                 }
                 else
                 {
                     this->placing_object = true;
                 }
-            }
-            else
-            {
-                this->placing_object = true;
             }
         }
     }
@@ -685,70 +691,104 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     {
         return_back = true;
     }
-    if (button(user, "Undo"))
+    if (button(user, this->playtesting ? "Exit playtest" : "Playtest"))
     {
-        undo_action(*this, scene);
+        this->playtesting = !this->playtesting;
     }
 
-    char title[256];
-    sprintf(title, "Objects | Page %zu", this->entity_list_page);
+    if (!this->playtesting)
+    {
+        if (button(user, "Undo"))
+        {
+            undo_action(*this, scene);
+        }
 
-    begin_show_window(user, {title, {20, 20, 200, 410}});
-    show_object_list(user, *this, scene);
-    end_show_window(user);
+        char title[256];
+        sprintf(title, "Objects | Page %zu", this->entity_list_page);
 
-    Object *selected = scene.get_object(this->selection);
+        begin_show_window(user, {title, {20, 20, 200, 410}});
+        show_object_list(user, *this, scene);
+        end_show_window(user);
+
+        Object *selected = scene.get_object(this->selection);
+
+        begin_show_window(user, {"Help", {0, 0, 250, 430}});
+        show_help(user, resources);
+        end_show_window(user);
+
+        begin_show_window(user, {"Umka window", {250, 0, 500, 430}});
+        if (button(user, "Reload module"))
+        {
+            *reload_module = true;
+        }
+        UmkaStackSlot empty;
+        int func = umkaGetFunc(umka, NULL, "doUI");
+        assert(func != -1);
+        UmkaError error;
+        if (umkaGetError(umka, &error), error.fnName[0] != 0)
+        {
+            label(user,
+                  stdstrfmt("Error: %s at %s:%d", error.msg, error.fileName,
+                            error.line)
+                      .c_str(),
+                  {1, 1}, UiMakeBrush::make_solid({0.5, 0, 0, 1}));
+        }
+        else
+        {
+            AutoLayoutElement element = {};
+            element.layout.type = AutoLayout::Row;
+            user.begin_generic(element, {}, {});
+            umkaCall(umka, func, 0, &empty, &empty);
+            user.end_generic();
+        }
+        end_show_window(user);
+
+        if (selected)
+        {
+            show_properties(user, *selected, *this);
+            if (selected->type == Object::Type::Tilemap)
+            {
+                show_tile_picker(user, resources, *this);
+            }
+        }
+
+        if (this->placing_object)
+        {
+            show_place_object(user, scene, *this);
+        }
+    }
+    else
+    {
+        Object *obj = scene.get_object(scene.find_object("player"));
+        assert(obj);
+        assert(obj->type == Object::Type::Entity);
+
+        camera.position =
+            Vector3{obj->entity.pos.x, 10, obj->entity.pos.y - 10};
+        if (input.key_states[SAPP_KEYCODE_A].held)
+        {
+            obj->entity.pos.x -= 0.1;
+        }
+        if (input.key_states[SAPP_KEYCODE_D].held)
+        {
+            obj->entity.pos.x += 0.1;
+        }
+        if (input.key_states[SAPP_KEYCODE_W].held)
+        {
+            obj->entity.pos.y += 0.1;
+        }
+        if (input.key_states[SAPP_KEYCODE_S].held)
+        {
+            obj->entity.pos.y -= 0.1;
+        }
+        scene.update(resources);
+    }
 
     if (input.key_states[SAPP_KEYCODE_TAB].held)
     {
         begin_show_window(user, {"Debug", {0, 0, 300, 400}});
         debug_tree.show(user);
         end_show_window(user);
-    }
-
-    begin_show_window(user, {"Help", {0, 0, 250, 430}});
-    show_help(user, resources);
-    end_show_window(user);
-
-    begin_show_window(user, {"Umka window", {250, 0, 500, 430}});
-    if (button(user, "Reload module"))
-    {
-        *reload_module = true;
-    }
-    UmkaStackSlot empty;
-    int func = umkaGetFunc(umka, NULL, "doUI");
-    assert(func != -1);
-    UmkaError error;
-    if (umkaGetError(umka, &error), error.fnName[0] != 0)
-    {
-        label(user,
-              stdstrfmt("Error: %s at %s:%d", error.msg, error.fileName,
-                        error.line)
-                  .c_str(),
-              {1, 1}, UiMakeBrush::make_solid({0.5, 0, 0, 1}));
-    }
-    else
-    {
-        AutoLayoutElement element = {};
-        element.layout.type = AutoLayout::Row;
-        user.begin_generic(element, {}, {});
-        umkaCall(umka, func, 0, &empty, &empty);
-        user.end_generic();
-    }
-    end_show_window(user);
-
-    if (selected)
-    {
-        show_properties(user, *selected, *this);
-        if (selected->type == Object::Type::Tilemap)
-        {
-            show_tile_picker(user, resources, *this);
-        }
-    }
-
-    if (this->placing_object)
-    {
-        show_place_object(user, scene, *this);
     }
 
     *user_out = 0;

@@ -51,6 +51,7 @@ struct EditAction
 
 struct GuiEditor
 {
+    bool playtesting;
     UiState *ui_state;
     TableId selection;
     TableId tile_selection;
