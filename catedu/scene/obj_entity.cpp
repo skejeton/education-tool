@@ -44,13 +44,13 @@ void ObjEntity::update(PhysicsWorld &world, ResourceSpec &resources)
     else
     {
         PhysicsBody &body = world.bodies.get_assert(body_id);
-        this->pos = body.area.pos + body.area.siz / 2.0f;
+        this->pos = body.area.pos;
     }
 }
 
 void ObjEntity::render(BoxdrawRenderer &renderer, ResourceSpec &resources)
 {
-    Vector3 pos = {this->pos.x + 0.5f, 0, this->pos.y + 0.5f};
+    Vector3 pos = {this->pos.x, 0, this->pos.y};
 
     TableId model = resources.find_model_by_name(model_name);
     if (model.id == 0)

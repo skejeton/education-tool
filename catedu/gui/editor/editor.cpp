@@ -765,21 +765,24 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
         camera.position =
             Vector3{obj->entity.pos.x, 10, obj->entity.pos.y - 10};
+
+        PhysicsBody *body = scene.physics.bodies.get(obj->entity.body_id);
+
         if (input.key_states[SAPP_KEYCODE_A].held)
         {
-            obj->entity.pos.x -= 0.1;
+            body->area.pos.x -= 0.1;
         }
         if (input.key_states[SAPP_KEYCODE_D].held)
         {
-            obj->entity.pos.x += 0.1;
+            body->area.pos.x += 0.1;
         }
         if (input.key_states[SAPP_KEYCODE_W].held)
         {
-            obj->entity.pos.y += 0.1;
+            body->area.pos.y += 0.1;
         }
         if (input.key_states[SAPP_KEYCODE_S].held)
         {
-            obj->entity.pos.y -= 0.1;
+            body->area.pos.y -= 0.1;
         }
         scene.update(resources);
     }

@@ -63,9 +63,9 @@ Scene LegacyScene::load_data_to_scene(Buffer file)
             Vector2 pos;
         };
 
-        Object obj = Scene::object(ObjEntity::init(
-            ((WorldEntity *)file.data)->model_name,
-            ((WorldEntity *)file.data)->pos + Vector2{32 - 0.5f, 32 - 0.5f}));
+        Object obj = Scene::object(
+            ObjEntity::init(((WorldEntity *)file.data)->model_name,
+                            ((WorldEntity *)file.data)->pos + Vector2{32, 32}));
 
         memcpy(obj.id, ((WorldEntity *)file.data)->id, 32);
         memcpy(obj.name, ((WorldEntity *)file.data)->name, 32);
