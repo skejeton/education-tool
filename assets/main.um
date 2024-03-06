@@ -2,130 +2,14 @@ fn button(text: str): bool
 fn label(text: str, color: uint32)
 fn nextrow()
 
-mode := 0
-counter := 0
-
-mem := 0.0
-mem2 := 0.0
-op := 0
-err := 0
+interactions := ""
 
 fn main() {}
 
-fn counterExample() {
-    label(sprintf("Counter: %v", counter), 0x000077FF)
-
-    nextrow();
-    if button("Increment") {
-        counter += 1
-    }
-    if button("Decrement") {
-        counter -= 1
-    }
-    nextrow();
-    if button("Add 100") {
-        counter += 100
-    }
-    if button("Subtract 100") {
-        counter -= 100
-    }
-    nextrow();
-    if button("Multiply by 2") {
-        counter *= 2
-    }
-    if button("Divide by 2") {
-        counter /= 2
-    }
-    nextrow();
-    if button("Reset") {
-        counter = 0
-    }
-}
-
-fn calculatorExample() {
-    label(sprintf("%v", mem), 0x000077FF)
-
-    nextrow();
-    if button("1") {
-        mem = mem * 10 + 1
-    }
-    if button("2") {
-        mem = mem * 10 + 2
-    }
-    if button("3") {
-        mem = mem * 10 + 3
-    }
-    if button("+") {
-        mem2 = mem
-        mem = 0
-        op = 0
-    }
-    nextrow();
-    if button("4") {
-        mem = mem * 10 + 4
-    }
-    if button("5") {
-        mem = mem * 10 + 5
-    }
-    if button("6") {
-        mem = mem * 10 + 6
-    }
-    if button("-") {
-        mem2 = mem
-        mem = 0
-        op = 1
-    }
-    nextrow();
-    if button("7") {
-        mem = mem * 10 + 7
-    }
-    if button("8") {
-        mem = mem * 10 + 8
-    }
-    if button("9") {
-        mem = mem * 10 + 9
-    }
-    if button("*") {
-        mem2 = mem
-        mem = 0
-        op = 2
-    }
-    nextrow();
-    if button("C") {
-        mem = 0
-        mem2 = 0
-    }
-    if button("0") {
-        mem = mem * 10 + 0
-    }
-    if button("=") {
-        switch op {
-            case 0: mem = mem2 + mem
-            case 1: mem = mem2 - mem
-            case 2: mem = mem2 * mem
-            case 3: mem = mem2 / mem
-        }
-        mem2 = 0
-        op = 0
-    }
-    if button("/") {
-        mem2 = mem
-        mem = 0
-        op = 3
-    }
+fn onInteract*(id: str) {
+    interactions += id+"\n"
 }
 
 fn doUI*() {
-    if button("Counter") {
-        mode = 0
-    }
-    if button("Calculator") {
-        mode = 1
-    }
-    nextrow()
-
-    switch mode {
-        case 0: counterExample();
-        case 1: calculatorExample();
-    }
+    label(sprintf("Interactions: %v", interactions), 0x000000FF)
 }

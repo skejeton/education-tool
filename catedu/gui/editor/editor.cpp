@@ -566,6 +566,24 @@ ObjectId find_object_within_distance(Scene &scene, Vector2 pos, float distance)
     return NULL_ID;
 }
 
+ObjectId find_object_within_distance_not_player(Scene &scene, Vector2 pos,
+                                                float distance)
+{
+    for (auto [id, obj] : iter(scene.objects))
+    {
+        if (obj.type == Object::Type::Entity)
+        {
+            Vector2 obj_pos = obj.entity.pos + Vector2{0.5, 0.5};
+            if (vector2_cmp_distance(pos, obj_pos) < distance &&
+                strcmp(obj.id, "player") != 0)
+            {
+                return id;
+            }
+        }
+    }
+    return NULL_ID;
+}
+
 bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
                      Scene &scene, Input &input, UiUser **user_out, void *umka,
                      bool *reload_module)
@@ -696,6 +714,33 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         this->playtesting = !this->playtesting;
     }
 
+    begin_show_window(user, {"Umka window", {250, 0, 500, 430}});
+    if (button(user, "Reload module"))
+    {
+        *reload_module = true;
+    }
+    UmkaStackSlot empty;
+    int func = umkaGetFunc(umka, NULL, "doUI");
+    assert(func != -1);
+    UmkaError error;
+    if (umkaGetError(umka, &error), error.fnName[0] != 0)
+    {
+        label(user,
+              stdstrfmt("Error: %s at %s:%d", error.msg, error.fileName,
+                        error.line)
+                  .c_str(),
+              {1, 1}, UiMakeBrush::make_solid({0.5, 0, 0, 1}));
+    }
+    else
+    {
+        AutoLayoutElement element = {};
+        element.layout.type = AutoLayout::Row;
+        user.begin_generic(element, {}, {});
+        umkaCall(umka, func, 0, &empty, &empty);
+        user.end_generic();
+    }
+    end_show_window(user);
+
     if (!this->playtesting)
     {
         if (button(user, "Undo"))
@@ -714,33 +759,6 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
         begin_show_window(user, {"Help", {0, 0, 250, 430}});
         show_help(user, resources);
-        end_show_window(user);
-
-        begin_show_window(user, {"Umka window", {250, 0, 500, 430}});
-        if (button(user, "Reload module"))
-        {
-            *reload_module = true;
-        }
-        UmkaStackSlot empty;
-        int func = umkaGetFunc(umka, NULL, "doUI");
-        assert(func != -1);
-        UmkaError error;
-        if (umkaGetError(umka, &error), error.fnName[0] != 0)
-        {
-            label(user,
-                  stdstrfmt("Error: %s at %s:%d", error.msg, error.fileName,
-                            error.line)
-                      .c_str(),
-                  {1, 1}, UiMakeBrush::make_solid({0.5, 0, 0, 1}));
-        }
-        else
-        {
-            AutoLayoutElement element = {};
-            element.layout.type = AutoLayout::Row;
-            user.begin_generic(element, {}, {});
-            umkaCall(umka, func, 0, &empty, &empty);
-            user.end_generic();
-        }
         end_show_window(user);
 
         if (selected)
@@ -783,6 +801,57 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         if (input.key_states[SAPP_KEYCODE_S].held)
         {
             body->area.pos.y -= 0.1;
+        }
+        if (input.key_states[SAPP_KEYCODE_SPACE].pressed)
+        {
+            int func = umkaGetFunc(umka, NULL, "onInteract");
+
+            const char *source = "";
+
+            PhysicsManifolds manifolds = scene.physics.detect_collisions();
+
+            ObjectId coll_id = NULL_ID;
+
+            for (auto [id, manifold] : iter(manifolds.manifolds))
+            {
+                if (manifold.first == obj->entity.body_id)
+                {
+                    coll_id = manifold.second;
+                    for (auto [id, obj] : iter(scene.objects))
+                    {
+                        if (obj.type == Object::Type::Entity)
+                        {
+                            if (obj.entity.body_id == coll_id)
+                            {
+                                source = obj.id;
+                            }
+                        }
+                    }
+                }
+                else if (manifold.second == obj->entity.body_id)
+                {
+                    coll_id = manifold.first;
+                    for (auto [id, obj] : iter(scene.objects))
+                    {
+                        if (obj.type == Object::Type::Entity)
+                        {
+                            if (obj.entity.body_id == coll_id)
+                            {
+                                source = obj.id;
+                            }
+                        }
+                    }
+                }
+            }
+
+            assert(func);
+            UmkaStackSlot id;
+
+            id.ptrVal = umkaMakeStr(umka, (char *)source);
+            if (umkaGetError(umka, &error), error.fnName[0] == 0)
+            {
+                umkaCall(umka, func, 1, &id, NULL);
+            }
         }
         scene.update(resources);
     }
