@@ -94,22 +94,22 @@ void Entry::frame(void)
     this->boxdraw_renderer.pass_action.colors->clear_value = {0, 0, 0.5, 1};
     switch (ui_mode)
     {
-    case 0: // Debug
+    case MENU_DEBUG:
         break;
-    case 1: // Main Menu
+    case MENU_MAIN_MENU:
         this->boxdraw_renderer.pass_action.colors->clear_value = {0, 0, 0, 1};
         boxdraw_flush(&this->boxdraw_renderer, this->editor.camera.vp);
         ui_mode = main_menu.show();
         break;
-    case 2: // Editor
+    case MENU_EDITOR:
         if (editor.show(this->boxdraw_renderer, this->res, this->scene,
                         this->input_state, &this->ui_user, this->umka,
                         &reload_module))
         {
-            ui_mode = 1;
+            ui_mode = MENU_MAIN_MENU;
         }
         break;
-    case 3: // Gameplay
+    case MENU_GAME:
         break;
     }
 

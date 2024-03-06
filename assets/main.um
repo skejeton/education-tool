@@ -2,14 +2,33 @@ fn button(text: str): bool
 fn label(text: str, color: uint32)
 fn nextrow()
 
-interactions := ""
+interaction := 0
+interacted := ""
 
 fn main() {}
 
 fn onInteract*(id: str) {
-    interactions += id+"\n"
+    interacted = id
 }
 
 fn doUI*() {
-    label(sprintf("Interactions: %v", interactions), 0x000000FF)
+    dialog := [][]str{
+        {"Hello, how are you?", "I'm good", "I'm not so good."},
+        {"Can I help you?", "Yes", "No"},
+        {"Do you like this?", "Yes", "No"}
+    }
+
+    label("\""+interacted+"\"", 0x000000FF)
+
+    if interacted == "npc1" {
+        for i, d in dialog {
+            if interaction == i {
+                label(d[0], 0x000000FF)
+                nextrow()
+                if button(d[1]) { interaction++ }
+                if button(d[2]) { interaction++ }
+                return
+            }
+        }
+    }
 }
