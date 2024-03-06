@@ -20,6 +20,7 @@ static void init_callback(void *userdata)
 static void frame_callback(void *userdata)
 {
     userdata_to_setup(userdata)->frame();
+    sg_commit();
 }
 
 static void cleanup_callback(void *userdata)

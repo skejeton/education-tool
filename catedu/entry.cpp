@@ -119,7 +119,6 @@ void Entry::frame(void)
     }
 
     this->input_state.update();
-    sg_commit();
 }
 
 void Entry::cleanup(void)
