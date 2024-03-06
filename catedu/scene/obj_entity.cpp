@@ -45,6 +45,8 @@ void ObjEntity::update(PhysicsWorld &world, ResourceSpec &resources)
     {
         PhysicsBody &body = world.bodies.get_assert(body_id);
         this->pos = body.area.pos;
+        this->pos.x += body.area.siz.x / 2;
+        this->pos.y += body.area.siz.y / 2;
     }
 }
 

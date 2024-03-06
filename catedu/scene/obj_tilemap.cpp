@@ -40,8 +40,8 @@ void ObjTilemap::update(PhysicsWorld &world, ResourceSpec &resources)
             if (tile_spec.if_obstacle)
             {
                 PhysicsBody body = {0};
-                body.area = {(float)tile.position.x, (float)tile.position.y, 1,
-                             1};
+                body.area = {(float)tile.position.x - 0.5f,
+                             (float)tile.position.y - 0.5f, 1, 1};
                 body.solid = true;
                 world.bodies.allocate(body);
             }
