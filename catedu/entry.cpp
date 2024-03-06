@@ -150,9 +150,6 @@ void Entry::init()
     editor = GuiEditor::init(&ui_state);
     game_gui = GuiGame::init(&ui_state);
 
-    READ_FILE_TEMP(file, "./assets/world.dat",
-                   { scene = LegacyScene::load_data_to_scene(file); });
-
     this->boxdraw_renderer = boxdraw_create();
 }
 
