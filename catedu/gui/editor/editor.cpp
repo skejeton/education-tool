@@ -872,5 +872,4 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 void GuiEditor::deinit()
 {
     debug_tree.deinit();
-    // Nothing yet
 }

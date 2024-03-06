@@ -1,5 +1,5 @@
 #pragma once
-#include "catedu/math.hpp"
+#include "catedu/core/math/math.hpp"
 
 #define UI_COLOR_BLACK (Vector4{0.0, 0.0, 0.0, 1.0})
 #define UI_COLOR_WHITE (Vector4{1.0, 1.0, 1.0, 1.0})
