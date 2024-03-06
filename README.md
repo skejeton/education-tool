@@ -64,7 +64,9 @@ To create a pull request:
 
 ### Commit message convention
 
-`Keyword: Message` or `Keyword #issue: Message`.
+`Message`* `Keyword: Message` or `Keyword #issue: Message`.
+
+*If the commit is WIP or inconsequential, you can omit the message.
 
 | Keyword  | Description |
 |----------|-------------|
@@ -76,7 +78,6 @@ To create a pull request:
 |`Optimize`| Performance improvement |
 |`Remove`  | Remove feature |
 |`Test`    | Test change |
-
 
 Examples:
 - `Docs: Update README`
