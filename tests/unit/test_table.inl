@@ -1,4 +1,4 @@
-#include "catedu/table.hpp"
+#include "catedu/core/storage/table.hpp"
 #include "tau/tau.h"
 
 TEST(Table)

@@ -7,6 +7,9 @@
 #include "catedu/ui/widgets.hpp"
 #include <sokol/sokol_gfx.h>
 
+const char *FONT = "assets/Roboto-Regular.ttf";
+const char *BOLD_FONT = "assets/Roboto-Bold.ttf";
+
 struct TestEntry : SokolSetup
 {
     GuiText gui_text;
@@ -14,8 +17,10 @@ struct TestEntry : SokolSetup
 
     void init()
     {
-        this->ui = UiState::init("assets/Roboto-Regular.ttf", 3.0);
+        this->ui = UiState::init(FONT, BOLD_FONT, sapp_dpi_scale());
         this->gui_text = GuiText::init();
+
+        // @Hack
         this->ui.core->pass_action.colors->load_action = SG_LOADACTION_CLEAR;
     }
 

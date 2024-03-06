@@ -16,12 +16,12 @@ TEST(SerialMem)
     SECTION("write")
     {
         auto serial =
-            SerialMem::from_buffer({32, dest_buffer}, SerialMem::Write);
+            SerialMem::from_buffer({dest_buffer, 32}, SerialMem::Write);
 
         CHECK_EQ((unsigned long)serial.write_value<size_t>(64), 0);
         CHECK_EQ((unsigned long)serial.write_value(example_string_length), 0);
         CHECK_EQ((unsigned long)serial.write_buffer(
-                     {example_string_length, example_string}),
+                     {example_string, example_string_length}),
                  0);
         CHECK_EQ((unsigned long)serial.write_value<BigStructure>({}),
                  (unsigned long)(sizeof(BigStructure) - 3));
@@ -30,7 +30,7 @@ TEST(SerialMem)
     SECTION("read")
     {
         auto serial =
-            SerialMem::from_buffer({32, dest_buffer}, SerialMem::Read);
+            SerialMem::from_buffer({dest_buffer, 32}, SerialMem::Read);
 
         size_t value;
         size_t string_length;
@@ -40,7 +40,7 @@ TEST(SerialMem)
         CHECK_EQ((unsigned long)serial.read_value<size_t>(&value), 0);
         CHECK_EQ((unsigned long)serial.read_value(&string_length), 0);
         printf("%zu %zu %zu\n", value, serial.at, string_length);
-        CHECK_EQ((unsigned long)serial.read_buffer({string_length, string}), 0);
+        CHECK_EQ((unsigned long)serial.read_buffer({string, string_length}), 0);
         CHECK_GT((unsigned long)serial.read_value<BigStructure>(&dummy), 0);
 
         CHECK_EQ((unsigned long)value, 64);
