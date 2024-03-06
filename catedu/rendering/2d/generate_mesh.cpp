@@ -6,9 +6,11 @@
 
 #define PUSH_2D_V values, 2
 
-RenderGeo rendering_2d_generate_mesh_centered_function(
-    RenderWriteDesc desc, size_t sample_count, float range_begin,
-    float range_end, std::function<Vector2(float)> function)
+RenderGeo rendering_2d_generate_mesh_centered_function(RenderWriteDesc desc,
+                                                       size_t sample_count,
+                                                       float range_begin,
+                                                       float range_end,
+                                                       Float2Point function)
 {
     auto generator = RenderMeshGenerator::init(2);
     uint16_t center = generator.push_vert(Vector2{0, 0}.PUSH_2D_V);
@@ -35,11 +37,11 @@ RenderGeo rendering_2d_generate_mesh_centered_function(
 }
 
 RenderGeo rendering_2d_generate_squircle(RenderWriteDesc desc,
-                                         size_t sample_count, float n, float a,
-                                         float b)
+                                         size_t sample_count, float n,
+                                         Vector2 radius)
 {
-    auto generator = [n, a, b](float theta) {
-        Polar2 polar = superellipse_generate(n, a, b, theta);
+    auto generator = [n, radius](float theta) {
+        Polar2 polar = superellipse_generate(n, radius, theta);
         return polar2_into_cartesian(polar);
     };
 

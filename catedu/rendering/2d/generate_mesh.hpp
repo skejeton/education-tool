@@ -3,6 +3,8 @@
 #include "catedu/core/math/math.hpp"
 #include <functional>
 
+typedef std::function<Vector2(float)> Float2Point;
+
 /**
  * @brief Generates a mesh centered around the origin.
  *
@@ -15,13 +17,15 @@
  * @note The function should be defined on the range [range_begin, range_end].
  * @note The function only works for convex functions.
  */
-RenderGeo rendering_2d_generate_mesh_centered_function(
-    RenderWriteDesc desc, size_t sample_count, float range_begin,
-    float range_end, std::function<Vector2(float)> function);
+RenderGeo rendering_2d_generate_mesh_centered_function(RenderWriteDesc desc,
+                                                       size_t sample_count,
+                                                       float range_begin,
+                                                       float range_end,
+                                                       Float2Point sampler);
 
 RenderGeo rendering_2d_generate_squircle(RenderWriteDesc desc,
-                                         size_t sample_count, float n, float a,
-                                         float b);
+                                         size_t sample_count, float n,
+                                         Vector2 radius);
 
 RenderGeo rendering_2d_generate_circle(RenderWriteDesc desc,
                                        size_t sample_count);

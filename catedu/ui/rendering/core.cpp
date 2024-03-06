@@ -63,7 +63,7 @@ UiRenderingCore UiRenderingCore::init()
         rendering_2d_generate_circle({4, 0}, DEFAULT_SAMPLE_COUNT));
     result.buffers[(int)UiBuffers::Squircle] =
         generate_buffer(rendering_2d_generate_squircle(
-            {4, 0}, DEFAULT_SAMPLE_COUNT, 10, 0.5, 0.5));
+            {4, 0}, DEFAULT_SAMPLE_COUNT, 10, {0.5, 0.5}));
     result.buffers[(int)UiBuffers::Rectangle] =
         generate_buffer(rendering_2d_generate_square({4, 0}));
 
