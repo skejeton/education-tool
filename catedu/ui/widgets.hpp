@@ -9,7 +9,7 @@ struct WindowInfo
     bool if_static;
 };
 
-void begin_show_window(UiUser &user, WindowInfo info);
+bool begin_show_window(UiUser &user, WindowInfo info);
 void end_show_window(UiUser &user);
 
 void input(UiUser &user, const char *id, char *out, int max);

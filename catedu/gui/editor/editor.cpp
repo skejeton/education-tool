@@ -716,6 +716,27 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     {
         return_back = true;
     }
+    if (button(user, "Reload module"))
+    {
+        *reload_module = true;
+    }
+    UmkaStackSlot empty;
+    int func = umkaGetFunc(umka, NULL, "doUI");
+    assert(func != -1);
+    UmkaError error;
+    if (umkaGetError(umka, &error), error.fnName[0] != 0)
+    {
+        label(user,
+              stdstrfmt("Error: %s at %s:%d", error.msg, error.fileName,
+                        error.line)
+                  .c_str(),
+              {1, 1}, UiMakeBrush::make_solid({0.5, 0, 0, 1}));
+    }
+    else if (this->playtesting)
+    {
+        umkaCall(umka, func, 0, NULL, &empty);
+    }
+
     if (button(user, this->playtesting ? "Exit playtest" : "Playtest"))
     {
         if (this->playtesting)
@@ -736,33 +757,6 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         }
         this->playtesting = !this->playtesting;
     }
-
-    begin_show_window(user, {"Umka window", {250, 0, 500, 430}});
-    if (button(user, "Reload module"))
-    {
-        *reload_module = true;
-    }
-    UmkaStackSlot empty;
-    int func = umkaGetFunc(umka, NULL, "doUI");
-    assert(func != -1);
-    UmkaError error;
-    if (umkaGetError(umka, &error), error.fnName[0] != 0)
-    {
-        label(user,
-              stdstrfmt("Error: %s at %s:%d", error.msg, error.fileName,
-                        error.line)
-                  .c_str(),
-              {1, 1}, UiMakeBrush::make_solid({0.5, 0, 0, 1}));
-    }
-    else
-    {
-        AutoLayoutElement element = {};
-        element.layout.type = AutoLayout::Row;
-        user.begin_generic(element, {}, {});
-        umkaCall(umka, func, 0, &empty, &empty);
-        user.end_generic();
-    }
-    end_show_window(user);
 
     if (!this->playtesting)
     {

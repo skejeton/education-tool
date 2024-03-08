@@ -6,7 +6,7 @@ static const Vector4 theme[] = {{0.8, 0.8, 0.8, 1.0}, {0.6, 0.6, 0.6, 1.0},
                                 {0.0, 0.0, 0.0, 1.0}, {0.0, 0.0, 0.0, 1.0},
                                 {0.7, 0.7, 0.7, 1.0}, {0.5, 0.5, 0.5, 1.0}};
 
-void begin_show_window(UiUser &user, WindowInfo info)
+bool begin_show_window(UiUser &user, WindowInfo info)
 {
     user.state->element_storage.push(info.title, {false, {}, {}, info.rect});
 
@@ -79,6 +79,8 @@ void begin_show_window(UiUser &user, WindowInfo info)
         UiBrush background = UiMakeBrush::make_solid({0.6f, 0.6f, 0.6f, 1.0f});
         user.begin_generic(el, background, border);
     }
+
+    return !pe->hidden;
 }
 
 void end_show_window(UiUser &user)

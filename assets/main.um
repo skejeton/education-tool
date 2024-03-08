@@ -1,6 +1,15 @@
 fn button(text: str): bool
 fn label(text: str, color: uint32)
 fn nextrow()
+fn _begin_window(title: str, width: real, height: real): bool
+fn _end_window()
+
+fn window(title: str, width: real, height: real, body: fn(): void) {
+    if (_begin_window(title, width, height)) {
+        body()
+    }
+    _end_window()
+}
 
 interaction := 0
 interacted := ""
@@ -12,23 +21,11 @@ fn onInteract*(id: str) {
 }
 
 fn doUI*() {
-    dialog := [][]str{
-        {"Hello, how are you?", "I'm good", "I'm not so good."},
-        {"Can I help you?", "Yes", "No"},
-        {"Do you like this?", "Yes", "No"}
-    }
-
-    label("\""+interacted+"\"", 0x000000FF)
-
-    if interacted == "npc1" {
-        for i, d in dialog {
-            if interaction == i {
-                label(d[0], 0x000000FF)
-                nextrow()
-                if button(d[1]) { interaction++ }
-                if button(d[2]) { interaction++ }
-                return
-            }
+    window("Dialog", 200, 100, {
+        label("Hello!", 0x000000FF)
+        nextrow()
+        if button("hi!") {
+            interaction++
         }
-    }
+    })
 }

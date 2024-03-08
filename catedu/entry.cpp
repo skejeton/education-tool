@@ -57,6 +57,35 @@ void umka_nextrow(UmkaStackSlot *params, UmkaStackSlot *result)
     entry_ptr->ui_user->begin_generic(element, {}, {});
 }
 
+void umka_begin_window(UmkaStackSlot *params, UmkaStackSlot *result)
+{
+    assert(entry_ptr->ui_user);
+
+    WindowInfo info = {};
+
+    Rect sr = sapp_screen_rect_scaled(sapp_dpi_scale());
+    info.rect.siz.y = params[0].realVal;
+    info.rect.siz.x = params[1].realVal;
+    info.rect.pos.x = (sr.siz.x - info.rect.siz.x) / 2;
+    info.rect.pos.y = (sr.siz.y - info.rect.siz.y) / 2;
+    info.title = (const char *)params[2].ptrVal;
+
+    result->uintVal = begin_show_window(*entry_ptr->ui_user, info);
+
+    AutoLayoutElement element = {};
+    element.layout.type = AutoLayout::Row;
+    entry_ptr->ui_user->begin_generic(element, {}, {});
+}
+
+void umka_end_window(UmkaStackSlot *params, UmkaStackSlot *result)
+{
+    assert(entry_ptr->ui_user);
+
+    entry_ptr->ui_user->end_generic();
+
+    end_show_window(*entry_ptr->ui_user);
+}
+
 void load_umka(Entry &entry)
 {
     entry.umka = umkaAlloc();
@@ -72,6 +101,8 @@ void load_umka(Entry &entry)
     umkaAddFunc(entry.umka, "button", &umka_button);
     umkaAddFunc(entry.umka, "label", &umka_label);
     umkaAddFunc(entry.umka, "nextrow", &umka_nextrow);
+    umkaAddFunc(entry.umka, "_begin_window", &umka_begin_window);
+    umkaAddFunc(entry.umka, "_end_window", &umka_end_window);
 
     if (!umkaCompile(entry.umka))
     {
