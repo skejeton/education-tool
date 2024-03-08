@@ -32,12 +32,8 @@ void ObjEntity::update(PhysicsWorld &world, ResourceSpec &resources)
                      model.model.max.x - model.model.min.x,
                      model.model.max.z - model.model.min.z};
 
-        if (strcmp(model.name, "player") == 0 ||
-            strcmp(model.name, "entity") == 0)
-        {
-            body.solid = true;
-            body.dynamic = true;
-        }
+        body.solid = true;
+        body.dynamic = true;
 
         body_id = world.bodies.allocate(body);
     }

@@ -622,7 +622,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
     if (this->playtesting)
     {
-        this->playtest_scene->render(renderer, resources);
+        this->playtest_scene->render(renderer, resources, true);
     }
     else
     {
@@ -722,6 +722,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         {
             if (this->playtest_scene)
             {
+                this->playtest_scene->deinit();
                 free(this->playtest_scene);
             }
         }
@@ -878,6 +879,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
                 umkaCall(umka, func, 1, &id, NULL);
             }
         }
+
         this->playtest_scene->update(resources);
     }
 

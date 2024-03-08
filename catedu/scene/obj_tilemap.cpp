@@ -27,6 +27,8 @@ void ObjTilemap::update(PhysicsWorld &world, ResourceSpec &resources)
 {
     if (!physics_init)
     {
+        physics_init = true;
+
         BasicTilemapSerial serial = BasicTilemapSerial::init(this->tilemap);
         for (TilePositionToTile tile = serial.next(); tile.id != -1;
              tile = serial.next())
@@ -46,7 +48,6 @@ void ObjTilemap::update(PhysicsWorld &world, ResourceSpec &resources)
                 world.bodies.allocate(body);
             }
         }
-        physics_init = true;
     }
 }
 
@@ -82,8 +83,6 @@ ObjTilemap ObjTilemap::copy()
     {
         result.tilemap.set_tile(tile.position, tile.id);
     }
-
-    this->physics_init = false;
 
     return result;
 }
