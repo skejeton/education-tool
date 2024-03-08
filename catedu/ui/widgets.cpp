@@ -8,7 +8,8 @@ static const Vector4 theme[] = {{0.8, 0.8, 0.8, 1.0}, {0.6, 0.6, 0.6, 1.0},
 
 bool begin_show_window(UiUser &user, WindowInfo info)
 {
-    user.state->element_storage.push(info.title, {false, {}, {}, info.rect});
+    user.state->element_storage.push(stdstrfmt("%s#window", info.title).c_str(),
+                                     {false, {}, {}, info.rect});
 
     UiPersistentElement *pe = user.state->element_storage.value();
 
@@ -245,4 +246,72 @@ void input(UiUser &user, const char *id, char *out, int max)
     user.end_generic();
 
     user.state->element_storage.pop();
+}
+
+AutoLayoutElement make_element(AutoLayout layout, Vector2 size, bool autox,
+                               bool autoy, Vector2 align = {0, 0}, float p = 3);
+
+AutoLayoutElement make_auto(AutoLayout layout, Vector2 align = {0, 0});
+
+int msgbox(UiUser &user, const char *title, const char *text, MsgBoxType type,
+           const char *buttons[])
+{
+    begin_show_window(
+        user, {title,
+               rect_center_rect(sapp_screen_rect_scaled(user.state->dpi_scale),
+                                {0, 0, 350, 75}),
+               true});
+    user.begin_generic(make_auto({AutoLayout::Column}, {0, 0}), {}, {});
+
+    user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
+
+    switch (type)
+    {
+    case MsgBoxType::Info:
+        user.begin_generic(make_element({AutoLayout::Column}, {32, 32}, false,
+                                        false, {0.5, 0.5}, 3),
+                           UiMakeBrush::make_gradient({0.0, 0.0, 0.7, 1.0},
+                                                      {0, 0.2, 1.0, 1.0}),
+                           UiMakeBrush::make_solid({1, 1, 1, 1.0}));
+        label(user, "?", {2, 2}, UiMakeBrush::make_solid({1, 1, 1, 1.0}));
+        break;
+    case MsgBoxType::Warning:
+        user.begin_generic(make_element({AutoLayout::Column}, {32, 32}, false,
+                                        false, {0.5, 0.5}, 3),
+                           UiMakeBrush::make_gradient({0.8, 0.5, 0.0, 1.0},
+                                                      {1.0, 0.7, 0.0, 1.0}),
+                           UiMakeBrush::make_solid({1, 1, 1, 1.0}));
+        label(user, ":/", {2, 2}, UiMakeBrush::make_solid({1, 1, 1, 1.0}));
+        break;
+    case MsgBoxType::Error:
+        user.begin_generic(make_element({AutoLayout::Column}, {32, 32}, false,
+                                        false, {0.5, 0.5}, 3),
+                           UiMakeBrush::make_gradient({0.7, 0.0, 0.0, 1.0},
+                                                      {1.0, 0.0, 0.0, 1.0}),
+                           UiMakeBrush::make_solid({1, 1, 1, 1.0}));
+        label(user, "!", {2, 2}, UiMakeBrush::make_solid({1, 1, 1, 1.0}));
+        break;
+    }
+    user.end_generic();
+
+    label(user, text);
+
+    user.end_generic();
+    user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
+
+    int result = -1;
+    for (int i = 0; buttons[i]; i++)
+    {
+        if (button(user, buttons[i]))
+        {
+            result = i;
+        }
+    }
+
+    user.end_generic();
+    user.end_generic();
+
+    end_show_window(user);
+
+    return result;
 }

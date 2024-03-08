@@ -470,6 +470,7 @@ GuiEditor GuiEditor::init(UiState *ui_state)
     result.ui_state = ui_state;
     result.camera = camera;
     result.debug_tree = GuiDebugTree::init();
+    result.dirty = true;
 
     return result;
 }
@@ -882,6 +883,24 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         begin_show_window(user, {"Debug", {0, 0, 300, 400}});
         debug_tree.show(user);
         end_show_window(user);
+    }
+
+    if (this->exit_requested)
+    {
+        const char *options[] = {"Yes", "No", NULL};
+        switch (msgbox(user, "Exit requested",
+                       "Are you sure you want to exit?\nAll unsaved changes "
+                       "will be lost.",
+                       MsgBoxType::Warning, options))
+        {
+        case 0:
+            this->exit_requested = false;
+            this->dirty = false;
+            sapp_request_quit();
+        case 1:
+            this->exit_requested = false;
+            break;
+        }
     }
 
     *user_out = 0;

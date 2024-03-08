@@ -52,15 +52,17 @@ struct EditAction
 struct GuiEditor
 {
     bool playtesting;
+    bool create_entity;
+    bool placing_object;
+    bool dirty;
+    bool exit_requested;
     UiState *ui_state;
     TableId selection;
     TableId tile_selection;
-    bool create_entity;
     size_t entity_list_page;
     Camera camera;
     GuiDebugTree debug_tree;
     Vector2 object_cursor_at;
-    bool placing_object;
     EditAction actions[512];
     size_t action_count;
     Scene *playtest_scene;

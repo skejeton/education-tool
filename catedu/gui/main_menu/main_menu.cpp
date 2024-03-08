@@ -73,100 +73,48 @@ int GuiMainMenu::show()
     user.end_generic();
     user.end_generic();
 
-    if (popuptype)
+    if (popuptype == 1)
     {
-        begin_show_window(
-            user,
-            {"Alert",
-             rect_center_rect(sapp_screen_rect_scaled(ui_state->dpi_scale),
-                              {0, 0, 350, 75}),
-             true});
-        user.begin_generic(make_auto({AutoLayout::Column}, {0, 0}), {}, {});
-
-        user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
-
-        if (popuptype == 1)
+        const char *buttons[] = {"Yes", "No", NULL};
+        switch (msgbox(user, "Exit", "Are you sure you want to exit?",
+                       MsgBoxType::Warning, buttons))
         {
-            user.begin_generic(make_element({AutoLayout::Column}, {32, 32},
-                                            false, false, {0.5, 0.5}, 3),
-                               UiMakeBrush::make_gradient({0.0, 0.0, 0.7, 1.0},
-                                                          {0, 0.2, 1.0, 1.0}),
-                               UiMakeBrush::make_solid({1, 1, 1, 1.0}));
-            label(user, "?", {2, 2}, UiMakeBrush::make_solid({1, 1, 1, 1.0}));
-            user.end_generic();
+        case 0:
+            sapp_request_quit();
+            break;
+        case 1:
+            popuptype = 0;
+            break;
         }
-        else if (popuptype == 3)
-        {
-        }
-        else
-        {
-            user.begin_generic(make_element({AutoLayout::Column}, {32, 32},
-                                            false, false, {0.5, 0.5}, 3),
-                               UiMakeBrush::make_gradient({0.8, 0.5, 0.0, 1.0},
-                                                          {1.0, 0.7, 0.0, 1.0}),
-                               UiMakeBrush::make_solid({1, 1, 1, 1.0}));
-            label(user, ":/", {2, 2}, UiMakeBrush::make_solid({1, 1, 1, 1.0}));
-            user.end_generic();
-        }
-
-        if (popuptype == 1)
-        {
-            label(user, "\nAre you sure you want to exit?\n", {1, 1},
-                  UiMakeBrush::make_solid({0, 0, 0, 1.0}));
-        }
-        else if (popuptype == 3)
-        {
-            label(user, "Settings\n", {1.5, 1.5},
-                  UiMakeBrush::make_solid({0, 0, 0, 1.0}));
-        }
-        else
-        {
-            label(user, "\nThis feature is not implemented yet.\n", {1, 1},
-                  UiMakeBrush::make_solid({0, 0, 0, 1.0}));
-        }
-
-        user.end_generic();
-
-        user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
-        if (popuptype == 1)
-        {
-            if (button(user, "Yes"))
-            {
-                popuptype = 0;
-                sapp_request_quit();
-            }
-            if (button(user, "No"))
-            {
-                popuptype = 0;
-            }
-        }
-        else if (popuptype == 3)
-        {
-            if (button(user, "Close"))
-            {
-                popuptype = 0;
-            }
-            if (button(user, "Scale+"))
-            {
-                scale_delta += 0.1;
-            }
-            if (button(user, "Scale-"))
-            {
-                scale_delta -= 0.1;
-            }
-        }
-        else
-        {
-            if (button(user, "Ok"))
-            {
-                popuptype = 0;
-            }
-        }
-
-        user.end_generic();
-        user.end_generic();
-        end_show_window(user);
     }
+    else if (popuptype == 3)
+    {
+        const char *buttons[] = {"Close", "Scale+", "Scale-", NULL};
+        switch (msgbox(user, "Settings", "Change the scale of the UI.",
+                       MsgBoxType::Info, buttons))
+        {
+        case 0:
+            popuptype = 0;
+            break;
+        case 1:
+            scale_delta = 0.1;
+            break;
+        case 2:
+            scale_delta = -0.1;
+            break;
+        }
+    }
+    else if (popuptype != 0)
+    {
+        const char *buttons[] = {"Ok", NULL};
+        switch (msgbox(user, "Info", "This feature is not implemented yet.",
+                       MsgBoxType::Error, buttons))
+        {
+        case 0:
+            popuptype = 0;
+        }
+    }
+
     user.end_pass();
 
     user.state->dpi_scale += scale_delta;

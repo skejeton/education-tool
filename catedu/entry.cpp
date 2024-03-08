@@ -198,5 +198,14 @@ void Entry::input(const sapp_event *event)
         return;
     }
 
+    if (event->type == SAPP_EVENTTYPE_QUIT_REQUESTED)
+    {
+        if (this->editor.dirty)
+        {
+            sapp_cancel_quit();
+            this->editor.exit_requested = true;
+        }
+    }
+
     this->input_state.pass_event(event);
 }

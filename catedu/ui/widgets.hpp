@@ -9,6 +9,13 @@ struct WindowInfo
     bool if_static;
 };
 
+enum struct MsgBoxType
+{
+    Info,
+    Warning,
+    Error
+};
+
 bool begin_show_window(UiUser &user, WindowInfo info);
 void end_show_window(UiUser &user);
 
@@ -18,3 +25,7 @@ bool button(UiUser &user, const char *text,
 void img(UiUser &user, const char *path, Vector2 scale = {1, 1});
 void label(UiUser &user, const char *text, Vector2 scale = {1, 1},
            UiBrush style = {UiBuffers::Rectangle, {0, 0, 0, 1}, {0, 0, 0, 1}});
+
+/// @returns Which button was pressed. -1 if none.
+int msgbox(UiUser &user, const char *title, const char *text, MsgBoxType type,
+           const char *buttons[]);
