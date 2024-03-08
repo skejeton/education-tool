@@ -65,7 +65,7 @@ void ObjEntity::render(BoxdrawRenderer &renderer, ResourceSpec &resources)
 
 ObjEntity ObjEntity::copy()
 {
-    ObjEntity result = {};
+    ObjEntity result = *this;
     result.body_id = {0};
     return result;
 }

@@ -622,7 +622,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
     if (this->playtesting)
     {
-        this->playtest_scene->render(renderer, resources, true);
+        this->playtest_scene->render(renderer, resources);
     }
     else
     {
