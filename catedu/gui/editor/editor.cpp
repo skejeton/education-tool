@@ -227,6 +227,8 @@ void do_action(GuiEditor &editor, Scene &scene, EditAction action)
         break;
     }
 
+    editor.dirty = true;
+
     if (editor.action_count < 512)
     {
         editor.actions[editor.action_count++] = action;
@@ -271,6 +273,8 @@ void undo_action(GuiEditor &editor, Scene &scene)
         assert(false);
         break;
     }
+
+    editor.dirty = true;
 }
 
 void show_help(UiUser &user, ResourceSpec &resources)
@@ -399,6 +403,7 @@ void show_object_list(UiUser &user, GuiEditor &editor, Scene &scene)
         {
         case Select:
             select_object(editor, id);
+            editor.dirty = true;
             break;
         case Delete: {
             EditAction action = {};
@@ -470,7 +475,6 @@ GuiEditor GuiEditor::init(UiState *ui_state)
     result.ui_state = ui_state;
     result.camera = camera;
     result.debug_tree = GuiDebugTree::init();
-    result.dirty = true;
 
     return result;
 }
@@ -596,7 +600,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
     debug_tree.value("Mouse Pos X", input.mouse_pos.x);
     debug_tree.value("Mouse Pos Y", input.mouse_pos.y);
-    debug_tree.value("Boolean value", false);
+    debug_tree.value("Dirty", dirty);
 
     if (!this->playtesting)
     {
@@ -663,6 +667,13 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
             input.key_states[SAPP_KEYCODE_Z].pressed)
         {
             undo_action(*this, scene);
+        }
+
+        if (input.key_states[SAPP_KEYCODE_LEFT_CONTROL].held &&
+            input.key_states[SAPP_KEYCODE_S].pressed)
+        {
+            dirty = false;
+            // TODO: Save the scene
         }
 
         if (input.mouse_states[0].pressed)
