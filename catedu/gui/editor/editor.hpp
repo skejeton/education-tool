@@ -63,6 +63,7 @@ struct GuiEditor
     bool placing_object;
     EditAction actions[512];
     size_t action_count;
+    Scene *playtest_scene;
 
     static GuiEditor init(UiState *ui_state);
     bool show(BoxdrawRenderer &renderer, ResourceSpec &resources, Scene &scene,

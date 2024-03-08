@@ -23,3 +23,8 @@ void ObjBackdrop::render(BoxdrawRenderer &renderer, ResourceSpec &resources)
             box3_extrude_from_point({32, -1, 32}, {64, 0.5, 64}),
             resources.tileset.cropped({0, 32, 32, 32}).tiled({128, 128})));
 }
+
+ObjBackdrop ObjBackdrop::copy()
+{
+    return *this;
+}

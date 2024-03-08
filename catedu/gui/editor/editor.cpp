@@ -620,7 +620,14 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         }
     }
 
-    scene.render(renderer, resources);
+    if (this->playtesting)
+    {
+        this->playtest_scene->render(renderer, resources, true);
+    }
+    else
+    {
+        scene.render(renderer, resources);
+    }
 
     camera.set_aspect(sapp_widthf() / sapp_heightf());
     if (!this->playtesting)
@@ -711,6 +718,21 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     }
     if (button(user, this->playtesting ? "Exit playtest" : "Playtest"))
     {
+        if (this->playtesting)
+        {
+            if (this->playtest_scene)
+            {
+                free(this->playtest_scene);
+            }
+        }
+        else
+        {
+            Scene original = scene.copy();
+            Scene *scene = (Scene *)malloc(sizeof Scene);
+            memcpy(scene, &original, sizeof Scene);
+            scene->update(resources);
+            this->playtest_scene = scene;
+        }
         this->playtesting = !this->playtesting;
     }
 
@@ -777,14 +799,16 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     }
     else
     {
-        Object *obj = scene.get_object(scene.find_object("player"));
+        Object *obj = this->playtest_scene->get_object(
+            this->playtest_scene->find_object("player"));
         assert(obj);
         assert(obj->type == Object::Type::Entity);
 
         camera.position =
             Vector3{obj->entity.pos.x, 10, obj->entity.pos.y - 10};
 
-        PhysicsBody *body = scene.physics.bodies.get(obj->entity.body_id);
+        PhysicsBody *body =
+            this->playtest_scene->physics.bodies.get(obj->entity.body_id);
 
         if (input.key_states[SAPP_KEYCODE_A].held)
         {
@@ -808,7 +832,8 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
             const char *source = "";
 
-            PhysicsManifolds manifolds = scene.physics.detect_collisions();
+            PhysicsManifolds manifolds =
+                this->playtest_scene->physics.detect_collisions();
 
             ObjectId coll_id = NULL_ID;
 
@@ -817,7 +842,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
                 if (manifold.first == obj->entity.body_id)
                 {
                     coll_id = manifold.second;
-                    for (auto [id, obj] : iter(scene.objects))
+                    for (auto [id, obj] : iter(this->playtest_scene->objects))
                     {
                         if (obj.type == Object::Type::Entity)
                         {
@@ -831,7 +856,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
                 else if (manifold.second == obj->entity.body_id)
                 {
                     coll_id = manifold.first;
-                    for (auto [id, obj] : iter(scene.objects))
+                    for (auto [id, obj] : iter(this->playtest_scene->objects))
                     {
                         if (obj.type == Object::Type::Entity)
                         {
@@ -853,7 +878,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
                 umkaCall(umka, func, 1, &id, NULL);
             }
         }
-        scene.update(resources);
+        this->playtest_scene->update(resources);
     }
 
     if (input.key_states[SAPP_KEYCODE_TAB].held)

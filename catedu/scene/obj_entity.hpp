@@ -15,4 +15,6 @@ struct ObjEntity
     void deinit();
     void update(PhysicsWorld &world, ResourceSpec &resources);
     void render(BoxdrawRenderer &renderer, ResourceSpec &resources);
+
+    ObjEntity copy();
 };

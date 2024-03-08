@@ -64,6 +64,18 @@ Object Scene::object(ObjBackdrop b)
     return result;
 }
 
+Scene Scene::copy()
+{
+    Scene result = {};
+
+    for (auto [id, object] : iter(objects))
+    {
+        result.add_object(object.copy());
+    }
+
+    return result;
+}
+
 void Scene::update(ResourceSpec &resources)
 {
     PhysicsManifolds manifolds = physics.detect_collisions();
@@ -152,4 +164,29 @@ void Scene::deinit()
     }
 
     this->objects.deinit();
+}
+
+Object Object::copy()
+{
+    Object result = {};
+    result.type = type;
+
+    switch (type)
+    {
+    case Object::Tilemap:
+        result.tilemap = tilemap.copy();
+        break;
+    case Object::Entity:
+        result.entity = entity.copy();
+        break;
+    case Object::Backdrop:
+        result.backdrop = backdrop.copy();
+        break;
+    }
+
+    memcpy(result.id, id, 32);
+    memcpy(result.name, name, 32);
+    result.hide = hide;
+
+    return result;
 }

@@ -17,4 +17,6 @@ struct ObjTilemap
 
     void update(PhysicsWorld &world, ResourceSpec &resources);
     void render(BoxdrawRenderer &renderer, ResourceSpec &resources);
+
+    ObjTilemap copy();
 };

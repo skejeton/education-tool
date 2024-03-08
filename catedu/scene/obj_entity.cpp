@@ -62,3 +62,10 @@ void ObjEntity::render(BoxdrawRenderer &renderer, ResourceSpec &resources)
 
     render_model_at(pos, resources, model, renderer, true);
 }
+
+ObjEntity ObjEntity::copy()
+{
+    ObjEntity result = {};
+    result.body_id = {0};
+    return result;
+}

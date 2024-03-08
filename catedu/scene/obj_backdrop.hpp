@@ -13,4 +13,6 @@ struct ObjBackdrop
     void deinit();
     void update(PhysicsWorld &world, ResourceSpec &resources);
     void render(BoxdrawRenderer &renderer, ResourceSpec &resources);
+
+    ObjBackdrop copy();
 };

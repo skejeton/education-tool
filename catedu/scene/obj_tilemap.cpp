@@ -70,3 +70,20 @@ void ObjTilemap::render(BoxdrawRenderer &renderer, ResourceSpec &resources)
         render_model_at(pos, resources, tile_spec.model_id, renderer, true);
     }
 }
+
+ObjTilemap ObjTilemap::copy()
+{
+    ObjTilemap result = {};
+    result.tilemap = BasicTilemap::init();
+
+    BasicTilemapSerial serial = BasicTilemapSerial::init(this->tilemap);
+    for (TilePositionToTile tile = serial.next(); tile.id != -1;
+         tile = serial.next())
+    {
+        result.tilemap.set_tile(tile.position, tile.id);
+    }
+
+    this->physics_init = false;
+
+    return result;
+}

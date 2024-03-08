@@ -25,6 +25,8 @@ struct Object
         ObjEntity entity;
         ObjBackdrop backdrop;
     };
+
+    Object copy();
 };
 
 typedef TableId ObjectId;
@@ -47,6 +49,8 @@ struct Scene
     static Object object(ObjTilemap);
     static Object object(ObjEntity);
     static Object object(ObjBackdrop);
+
+    Scene copy();
 
     void update(ResourceSpec &resources);
     void render(BoxdrawRenderer &renderer, ResourceSpec &resources,
