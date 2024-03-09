@@ -1,4 +1,5 @@
 #include "scene.hpp"
+#include "catedu/core/alloc/bump_allocator.hpp"
 
 Scene Scene::init()
 {
@@ -71,6 +72,78 @@ Scene Scene::copy()
     for (auto [id, object] : iter(objects))
     {
         result.add_object(object.copy());
+    }
+
+    return result;
+}
+
+Buffer Scene::save()
+{
+    Buffer buf = {};
+
+    BumpAllocator alloc = BumpAllocator::init();
+    buf.data = alloc.memory;
+    *(uint32_t *)alloc.alloc(sizeof(uint32_t)) = objects.count;
+    for (auto [id, object] : iter(objects))
+    {
+        *(uint32_t *)alloc.alloc(sizeof(uint32_t)) = object.type;
+        *(uint32_t *)alloc.alloc(sizeof(uint32_t)) = object.hide;
+        memcpy(alloc.alloc(32), object.id, 32);
+        memcpy(alloc.alloc(32), object.name, 32);
+        switch (object.type)
+        {
+        case Object::Tilemap:
+            object.tilemap.save(alloc);
+            break;
+        case Object::Entity:
+            object.entity.save(alloc);
+            break;
+        case Object::Backdrop:
+            object.backdrop.save(alloc);
+            break;
+        }
+    }
+    buf.size = alloc.offset;
+
+    return buf;
+}
+
+Scene Scene::load(Buffer buffer)
+{
+    Scene result = {};
+
+    uint8_t *data = (uint8_t *)buffer.data;
+    uint32_t count = *(uint32_t *)buffer.data;
+
+    data += sizeof(uint32_t);
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        Object pobj = {}, obj;
+        pobj.type = (Object::Type)(*(uint32_t *)data);
+        data += sizeof(uint32_t);
+        pobj.hide = *(uint32_t *)data;
+        data += sizeof(uint32_t);
+        memcpy(pobj.id, data, 32);
+        data += 32;
+        memcpy(pobj.name, data, 32);
+        data += 32;
+        switch (pobj.type)
+        {
+        case Object::Tilemap:
+            obj = object(ObjTilemap::load((void **)&data));
+            break;
+        case Object::Entity:
+            obj = object(ObjEntity::load((void **)&data));
+            break;
+        case Object::Backdrop:
+            obj = object(ObjBackdrop::load((void **)&data));
+            break;
+        }
+        obj.hide = pobj.hide;
+        memcpy(obj.id, pobj.id, 32);
+        memcpy(obj.name, pobj.name, 32);
+        result.add_object(obj);
     }
 
     return result;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "catedu/core/alloc/bump_allocator.hpp"
 #include "catedu/core/math/math.hpp"
 #include "catedu/rendering/3d/boxdraw.hpp"
 #include "catedu/rendering/resource_spec.hpp"
@@ -17,4 +18,7 @@ struct ObjEntity
     void render(BoxdrawRenderer &renderer, ResourceSpec &resources);
 
     ObjEntity copy();
+
+    static ObjEntity load(void **data);
+    void save(BumpAllocator &alloc);
 };

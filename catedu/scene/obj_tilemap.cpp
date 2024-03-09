@@ -86,3 +86,48 @@ ObjTilemap ObjTilemap::copy()
 
     return result;
 }
+
+ObjTilemap ObjTilemap::load(void **data_)
+{
+    ObjTilemap result = {};
+
+    uint8_t *data = (uint8_t *)*data_;
+
+    uint32_t count = *(uint32_t *)data;
+    data += sizeof(uint32_t);
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        Vector2i pos = *(Vector2i *)data;
+        data += sizeof(Vector2i);
+        int32_t id = *(int32_t *)data;
+        data += sizeof(int32_t);
+
+        result.tilemap.set_tile(pos, id);
+    }
+
+    *data_ = data;
+
+    return result;
+}
+
+void ObjTilemap::save(BumpAllocator &alloc)
+{
+    BasicTilemapSerial serial = BasicTilemapSerial::init(this->tilemap);
+    uint32_t count = 0;
+    for (TilePositionToTile tile = serial.next(); tile.id != -1;
+         tile = serial.next())
+    {
+        count++;
+    }
+
+    *(uint32_t *)alloc.alloc(sizeof(uint32_t)) = count;
+
+    serial = BasicTilemapSerial::init(this->tilemap);
+    for (TilePositionToTile tile = serial.next(); tile.id != -1;
+         tile = serial.next())
+    {
+        *(Vector2i *)alloc.alloc(sizeof(Vector2i)) = tile.position;
+        *(int32_t *)alloc.alloc(sizeof(int32_t)) = tile.id;
+    }
+}

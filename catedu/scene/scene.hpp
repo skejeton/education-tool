@@ -1,9 +1,11 @@
 #pragma once
 
+#include "catedu/core/memory/buffer.hpp"
 #include "obj_backdrop.hpp"
 #include "obj_entity.hpp"
 #include "obj_tilemap.hpp"
 #include "physics.hpp"
+
 
 struct Object
 {
@@ -51,6 +53,9 @@ struct Scene
     static Object object(ObjBackdrop);
 
     Scene copy();
+
+    Buffer save();
+    static Scene load(Buffer buffer);
 
     void update(ResourceSpec &resources);
     void render(BoxdrawRenderer &renderer, ResourceSpec &resources,

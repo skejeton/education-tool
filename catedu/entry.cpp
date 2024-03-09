@@ -180,6 +180,8 @@ void Entry::init()
     editor = GuiEditor::init(&ui_state);
     game_gui = GuiGame::init(&ui_state);
 
+    READ_FILE_TEMP(world, "assets/world.dat", { scene = Scene::load(world); })
+
     this->boxdraw_renderer = boxdraw_create();
 }
 

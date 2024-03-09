@@ -65,3 +65,23 @@ ObjEntity ObjEntity::copy()
     result.body_id = {0};
     return result;
 }
+
+ObjEntity ObjEntity::load(void **data_)
+{
+    uint8_t *data = (uint8_t *)*data_;
+
+    ObjEntity result = {};
+    memcpy(result.model_name, data, 32);
+    data += 32;
+    memcpy(&result.pos, data, sizeof(Vector2));
+
+    *data_ = data + sizeof(Vector2);
+
+    return result;
+}
+
+void ObjEntity::save(BumpAllocator &alloc)
+{
+    memcpy(alloc.alloc(32), this->model_name, 32);
+    memcpy(alloc.alloc(sizeof(Vector2)), &this->pos, sizeof(Vector2));
+}

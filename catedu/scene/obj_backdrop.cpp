@@ -28,3 +28,15 @@ ObjBackdrop ObjBackdrop::copy()
 {
     return *this;
 }
+
+ObjBackdrop ObjBackdrop::load(void **data_)
+{
+    uint8_t *data = (uint8_t *)*data_;
+    *data_ = data + sizeof(Rect);
+    return {*(Rect *)(data)};
+}
+
+void ObjBackdrop::save(BumpAllocator &alloc)
+{
+    *(Rect *)alloc.alloc(sizeof(this->texture_rect)) = this->texture_rect;
+}

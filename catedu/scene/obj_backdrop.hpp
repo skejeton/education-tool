@@ -1,5 +1,6 @@
 #pragma once
 
+#include "catedu/core/alloc/bump_allocator.hpp"
 #include "catedu/core/math/math.hpp"
 #include "catedu/rendering/3d/boxdraw.hpp"
 #include "catedu/rendering/resource_spec.hpp"
@@ -15,4 +16,7 @@ struct ObjBackdrop
     void render(BoxdrawRenderer &renderer, ResourceSpec &resources);
 
     ObjBackdrop copy();
+
+    static ObjBackdrop load(void **data);
+    void save(BumpAllocator &alloc);
 };

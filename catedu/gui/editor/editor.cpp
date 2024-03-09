@@ -673,6 +673,12 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
             input.key_states[SAPP_KEYCODE_S].pressed)
         {
             dirty = false;
+
+            Buffer data = scene.save();
+            FILE *file = fopen("assets/world.dat", "wb");
+            fwrite(data.data, 1, data.size, file);
+            fclose(file);
+            free(data.data);
             // TODO: Save the scene
         }
 
