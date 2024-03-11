@@ -612,7 +612,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         {
             camera.move(0, -input.mouse_wheel * 2, input.mouse_wheel * 2);
         }
-        if (input.mouse_states[2].held)
+        if (input.k[INPUT_MB_MIDDLE].held)
         {
             camera.move(-input.mouse_delta.x / (20 * ui_state->dpi_scale), 0,
                         input.mouse_delta.y / (20 * ui_state->dpi_scale));
@@ -643,7 +643,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
             show_selection(*this, renderer, resources, scene, input);
         this->object_cursor_at = sel.position;
 
-        if (sel.tilemap_selected && input.mouse_states[1].held)
+        if (sel.tilemap_selected && input.k[INPUT_MB_RIGHT].held)
         {
             EditAction action = {};
             action.type = EditAction::PlaceTile;
@@ -653,7 +653,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
             do_action(*this, scene, action);
         }
 
-        if (sel.tilemap_selected && input.mouse_states[0].held)
+        if (sel.tilemap_selected && input.k[INPUT_MB_LEFT].held)
         {
             EditAction action = {};
             action.type = EditAction::PlaceTile;
@@ -663,14 +663,12 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
             do_action(*this, scene, action);
         }
 
-        if (input.key_states[SAPP_KEYCODE_LEFT_CONTROL].held &&
-            input.key_states[SAPP_KEYCODE_Z].pressed)
+        if (input.shortcut(INPUT_CTRL, SAPP_KEYCODE_Z))
         {
             undo_action(*this, scene);
         }
 
-        if (input.key_states[SAPP_KEYCODE_LEFT_CONTROL].held &&
-            input.key_states[SAPP_KEYCODE_S].pressed)
+        if (input.shortcut(INPUT_CTRL, SAPP_KEYCODE_S))
         {
             dirty = false;
 
@@ -682,7 +680,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
             // TODO: Save the scene
         }
 
-        if (input.mouse_states[0].pressed)
+        if (input.k[INPUT_MB_LEFT].pressed)
         {
             ObjectId closest_object =
                 find_object_within_distance(scene, object_cursor_at, 1);
@@ -823,23 +821,23 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         PhysicsBody *body =
             this->playtest_scene->physics.bodies.get(obj->entity.body_id);
 
-        if (input.key_states[SAPP_KEYCODE_A].held)
+        if (input.k[SAPP_KEYCODE_A].held)
         {
             body->area.pos.x -= 0.1;
         }
-        if (input.key_states[SAPP_KEYCODE_D].held)
+        if (input.k[SAPP_KEYCODE_D].held)
         {
             body->area.pos.x += 0.1;
         }
-        if (input.key_states[SAPP_KEYCODE_W].held)
+        if (input.k[SAPP_KEYCODE_W].held)
         {
             body->area.pos.y += 0.1;
         }
-        if (input.key_states[SAPP_KEYCODE_S].held)
+        if (input.k[SAPP_KEYCODE_S].held)
         {
             body->area.pos.y -= 0.1;
         }
-        if (input.key_states[SAPP_KEYCODE_SPACE].pressed)
+        if (input.k[SAPP_KEYCODE_SPACE].pressed)
         {
             int func = umkaGetFunc(umka, NULL, "onInteract");
 
@@ -895,7 +893,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         this->playtest_scene->update(resources);
     }
 
-    if (input.key_states[SAPP_KEYCODE_TAB].held)
+    if (input.k[SAPP_KEYCODE_TAB].held)
     {
         begin_show_window(user, {"Debug", {0, 0, 300, 400}});
         debug_tree.show(user);
