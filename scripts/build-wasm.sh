@@ -3,7 +3,7 @@ mkdir -p ./bin/wasm-out
 lib/sokol-tools-bin/bin/linux/sokol-shdc --input catedu/shaders/amalgamation.glsl --output catedu/shaders.hxx --slang glsl100
 em++ -I.\
   -Ilib\
-  -Ilib/umka\
+  -Ilib/umka/src\
   -O3\
   --preload-file assets\
   --shell-file scripts/shell.html\
