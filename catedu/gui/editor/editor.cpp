@@ -768,8 +768,8 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         else
         {
             Scene original = scene.copy();
-            Scene *scene = (Scene *)malloc(sizeof Scene);
-            memcpy(scene, &original, sizeof Scene);
+            Scene *scene = (Scene *)malloc(sizeof(Scene));
+            memcpy(scene, &original, sizeof(Scene));
             scene->update(resources);
             this->playtest_scene = scene;
         }
