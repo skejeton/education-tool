@@ -19,4 +19,5 @@ em++ -I.\
   catedu/**/*.cpp\
   catedu/**/**/*.cpp\
   catedu/*.cpp\
+  lib/umka/src/*.c\
   -o bin/wasm-out/index.html
