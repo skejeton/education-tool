@@ -2,7 +2,6 @@ set -e
 mkdir -p ./bin/wasm-out
 lib/sokol-tools-bin/bin/linux/sokol-shdc --input catedu/shaders/amalgamation.glsl --output catedu/shaders.hxx --slang glsl100
 emcc -I.\
-  --std=c++17\
   -Ilib\
   -Ilib/umka/src\
   -O3\
