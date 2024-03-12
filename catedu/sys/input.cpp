@@ -19,6 +19,15 @@ static void key_on(InputKey &key, bool down)
     }
 }
 
+static void write_char(Input &input, uint32_t chr)
+{
+    if (input.input_len < 31)
+    {
+        input.input[input.input_len++] = chr;
+        input.input[input.input_len] = 0;
+    }
+}
+
 static void handle_key_event(Input &input, int key_code, bool down)
 {
     key_on(input.k[key_code], down);
@@ -32,6 +41,24 @@ static void handle_key_event(Input &input, int key_code, bool down)
         break;
     case SAPP_KEYCODE_LEFT_ALT:
         key_on(input.k[INPUT_ALT], down);
+        break;
+    case SAPP_KEYCODE_ENTER:
+        if (down)
+        {
+            write_char(input, '\n');
+        }
+        break;
+    case SAPP_KEYCODE_BACKSPACE:
+        if (down)
+        {
+            write_char(input, '\b');
+        }
+        break;
+    case SAPP_KEYCODE_TAB:
+        if (down)
+        {
+            write_char(input, '\t');
+        }
         break;
     default:
         break;
@@ -55,6 +82,9 @@ void Input::update()
         this->k[i].pressed = false;
         this->k[i].released = false;
     }
+
+    this->input_len = 0;
+    this->input[0] = 0;
 }
 
 void Input::pass_event(const sapp_event *event)
