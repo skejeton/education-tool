@@ -24,6 +24,8 @@ struct InputKey
 struct Input
 {
     InputKey k[INPUT_COUNT];
+    char input[32];
+    size_t input_len;
     Vector2 mouse_pos;
     Vector2 mouse_delta;
     int mouse_wheel;

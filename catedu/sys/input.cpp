@@ -82,6 +82,14 @@ void Input::pass_event(const sapp_event *event)
         this->mouse_wheel =
             event->scroll_y == 0 ? 0 : (event->scroll_y < 0 ? -1 : 1);
         break;
+    case SAPP_EVENTTYPE_CHAR:
+        if (event->char_code >= 32 && event->char_code < 127 &&
+            this->input_len < 31)
+        {
+            this->input[this->input_len++] = event->char_code;
+            this->input[this->input_len] = 0;
+        }
+        break;
     default:
         break;
     }
