@@ -5,18 +5,9 @@
 
 static void key_on(InputKey &key, bool down)
 {
-    if (down)
-    {
-        key.pressed = true;
-        key.held = true;
-        key.released = false;
-    }
-    else
-    {
-        key.pressed = false;
-        key.held = false;
-        key.released = true;
-    }
+    key.pressed = down;
+    key.held = down;
+    key.released = !down;
 }
 
 static void write_char(Input &input, uint32_t chr)
@@ -31,6 +22,7 @@ static void write_char(Input &input, uint32_t chr)
 static void handle_key_event(Input &input, int key_code, bool down)
 {
     key_on(input.k[key_code], down);
+
     switch (key_code)
     {
     case SAPP_KEYCODE_LEFT_CONTROL:

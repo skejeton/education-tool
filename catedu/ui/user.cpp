@@ -37,7 +37,6 @@ UiUser UiUser::init(UiState &state)
 void UiUser::begin_pass()
 {
     this->layout = AutoLayoutProcess::init(this->current_node);
-    this->pass = UiRenderingPass::begin(state->core);
     this->bump = BumpAllocator::init();
     this->state->element_storage.begin_cycle();
     if (this->state->dpi_scale > 10.0)
@@ -104,12 +103,6 @@ void render_out(UiUser &user)
                 draw_brush(user.pass, result->border_box, styles->border);
                 draw_brush(user.pass, result->base_box, styles->brush);
             }
-            if (hovered)
-            {
-                draw_rectangle_gradient(user.pass, result->border_box,
-                                        {0.0, 0.3, 0.0, 0.2},
-                                        {0.0, 0.3, 0.0, 0.2});
-            }
             if (order >= 0)
             {
                 user.state->font.render_text_utf8(
@@ -143,11 +136,12 @@ void UiUser::end_pass()
         this->state->input.k[SAPP_KEYCODE_TAB].pressed;
     interaction.process();
 
+    this->pass = UiRenderingPass::begin(state->core);
     render_out(*this);
+    this->pass.end();
 
     this->state->input.update();
     this->state->element_storage.end_cycle();
-    this->pass.end();
     this->styles.deinit();
     this->bump.deinit();
 }
@@ -164,6 +158,16 @@ void UiUser::push_id(const char *id)
 void UiUser::pop_id()
 {
     this->state->element_storage.pop();
+}
+
+bool UiUser::focused()
+{
+    return state->interaction_table.focused == state->element_storage.id();
+}
+
+bool UiUser::hovered()
+{
+    return state->interaction_table.hovered == state->element_storage.id();
 }
 
 void UiUser::begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,

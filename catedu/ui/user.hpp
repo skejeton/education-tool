@@ -110,6 +110,9 @@ struct UiUser
     void push_id(const char *id);
     void pop_id();
 
+    bool focused();
+    bool hovered();
+
     void begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,
                        TableId persistent = NULL_ID);
     void end_generic();

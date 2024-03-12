@@ -133,8 +133,7 @@ void Entry::frame(void)
         break;
     case MENU_EDITOR:
         if (editor.show(this->boxdraw_renderer, this->res, this->scene,
-                        this->input_state, &this->ui_user, this->umka,
-                        &reload_module))
+                        &this->ui_user, this->umka, &reload_module))
         {
             ui_mode = MENU_MAIN_MENU;
         }
@@ -147,8 +146,6 @@ void Entry::frame(void)
     {
         reload_umka(*this);
     }
-
-    this->input_state.update();
 }
 
 void Entry::cleanup(void)
@@ -188,14 +185,6 @@ void Entry::input(const sapp_event *event)
 {
     if (ui_state.feed_event(event))
     {
-        // Invalidate the input state if the event was consumed by the UI.
-        this->input_state = {};
-
-        // Move the mouse out of the screen to avoid the cursor being detected
-        // in top left corner of the screen.
-        this->input_state.mouse_pos.x = FLT_MAX;
-        this->input_state.mouse_pos.y = FLT_MAX;
-
         return;
     }
 
@@ -207,6 +196,4 @@ void Entry::input(const sapp_event *event)
             this->editor.exit_requested = true;
         }
     }
-
-    this->input_state.pass_event(event);
 }

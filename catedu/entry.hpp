@@ -42,7 +42,6 @@ struct Entry : SokolSetup
     Scene scene;
 
     BoxdrawRenderer boxdraw_renderer;
-    Input input_state;
 
     void init();
     void frame();

@@ -69,6 +69,6 @@ struct GuiEditor
 
     static GuiEditor init(UiState *ui_state);
     bool show(BoxdrawRenderer &renderer, ResourceSpec &resources, Scene &scene,
-              Input &input, UiUser **user, void *umka, bool *reload_module);
+              UiUser **user, void *umka, bool *reload_module);
     void deinit();
 };

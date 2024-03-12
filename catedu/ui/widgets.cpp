@@ -13,15 +13,12 @@ bool begin_show_window(UiUser &user, WindowInfo info)
 
     UiPersistentElement *pe = user.state->element_storage.value();
 
-    bool hovered = user.state->interaction_table.hovered ==
-                   user.state->element_storage.id();
-
-    if (hovered && user.state->input.k[INPUT_MB_LEFT].pressed)
+    if (user.hovered() && user.state->input.k[INPUT_MB_LEFT].pressed)
     {
         pe->pin = user.state->input.mouse_pos - pe->persistent_box.pos;
         pe->pinned = true;
     }
-    if (hovered && user.state->input.k[INPUT_MB_RIGHT].pressed)
+    if (user.hovered() && user.state->input.k[INPUT_MB_RIGHT].pressed)
     {
         pe->hidden = !pe->hidden;
     }
@@ -202,9 +199,7 @@ void input(UiUser &user, const char *id, char *out, int max)
     user.state->element_storage.push(id, {true});
     UiPersistentElement *pe = user.state->element_storage.value();
 
-    bool focused = user.state->interaction_table.focused ==
-                   user.state->element_storage.id();
-    if (focused)
+    if (user.focused())
     {
         for (int i = 0; i < user.state->input.input_len; i++)
         {
@@ -232,8 +227,8 @@ void input(UiUser &user, const char *id, char *out, int max)
     el.border = {1, 1, 1, 1};
 
     user.begin_generic(el, UiMakeBrush::make_solid(theme[0]),
-                       focused ? UiMakeBrush::make_solid(theme[3])
-                               : UiMakeBrush::make_solid(theme[1]),
+                       user.focused() ? UiMakeBrush::make_solid(theme[3])
+                                      : UiMakeBrush::make_solid(theme[1]),
                        user.state->element_storage.id());
 
     char *t = (char *)OOM_HANDLER(malloc(max + 3));

@@ -590,9 +590,24 @@ ObjectId find_object_within_distance_not_player(Scene &scene, Vector2 pos,
 }
 
 bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
-                     Scene &scene, Input &input, UiUser **user_out, void *umka,
+                     Scene &scene, UiUser **user_out, void *umka,
                      bool *reload_module)
 {
+    UiUser user = UiUser::init(*this->ui_state);
+    *user_out = &user;
+    user.begin_pass();
+
+    Input &input = this->ui_state->input;
+
+    AutoLayoutElement element = {};
+    element.position = AutoLayoutPosition::Absolute;
+    element.width.type = AutoLayoutDimension::Pixel;
+    element.width.value = sapp_widthf() / this->ui_state->dpi_scale;
+    element.height.type = AutoLayoutDimension::Pixel;
+    element.height.value = sapp_heightf() / this->ui_state->dpi_scale;
+    user.state->element_storage.push("Main", {});
+    user.begin_generic(element, {}, {}, user.state->element_storage.id());
+
     bool return_back = false;
     bool no_ui = false;
 
@@ -612,7 +627,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         {
             camera.move(0, -input.mouse_wheel * 2, input.mouse_wheel * 2);
         }
-        if (input.k[INPUT_MB_MIDDLE].held)
+        if (input.k[INPUT_MB_MIDDLE].held && user.hovered())
         {
             camera.move(-input.mouse_delta.x / (20 * ui_state->dpi_scale), 0,
                         input.mouse_delta.y / (20 * ui_state->dpi_scale));
@@ -637,31 +652,6 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     camera.set_aspect(sapp_widthf() / sapp_heightf());
     if (!this->playtesting)
     {
-        camera_input_top_view_apply(&this->camera, &input);
-
-        SelectionState sel =
-            show_selection(*this, renderer, resources, scene, input);
-        this->object_cursor_at = sel.position;
-
-        if (sel.tilemap_selected && input.k[INPUT_MB_RIGHT].held)
-        {
-            EditAction action = {};
-            action.type = EditAction::PlaceTile;
-            action.cmd.place_tile.tilemap_entity = this->selection;
-            action.cmd.place_tile.pos = vector2_to_vector2i(sel.position);
-            action.cmd.place_tile.tile_id = 0;
-            do_action(*this, scene, action);
-        }
-
-        if (sel.tilemap_selected && input.k[INPUT_MB_LEFT].held)
-        {
-            EditAction action = {};
-            action.type = EditAction::PlaceTile;
-            action.cmd.place_tile.tilemap_entity = this->selection;
-            action.cmd.place_tile.pos = vector2_to_vector2i(sel.position);
-            action.cmd.place_tile.tile_id = this->tile_selection.id;
-            do_action(*this, scene, action);
-        }
 
         if (input.shortcut(INPUT_CTRL, SAPP_KEYCODE_Z))
         {
@@ -680,38 +670,70 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
             // TODO: Save the scene
         }
 
-        if (input.k[INPUT_MB_LEFT].pressed)
-        {
-            ObjectId closest_object =
-                find_object_within_distance(scene, object_cursor_at, 1);
+        camera_input_top_view_apply(&this->camera, &input);
 
-            if (closest_object != NULL_ID)
+        if (user.hovered() || this->placing_object)
+        {
+            SelectionState sel =
+                show_selection(*this, renderer, resources, scene, input);
+
+            this->object_cursor_at = sel.position;
+
+            if (sel.tilemap_selected && user.hovered() &&
+                input.k[INPUT_MB_RIGHT].held)
             {
-                this->selection = closest_object;
+                EditAction action = {};
+                action.type = EditAction::PlaceTile;
+                action.cmd.place_tile.tilemap_entity = this->selection;
+                action.cmd.place_tile.pos = vector2_to_vector2i(sel.position);
+                action.cmd.place_tile.tile_id = 0;
+                do_action(*this, scene, action);
             }
-            else if (!sel.tilemap_selected)
+
+            if (sel.tilemap_selected && user.hovered() &&
+                input.k[INPUT_MB_LEFT].held)
             {
-                if (this->selection != NULL_ID)
+                EditAction action = {};
+                action.type = EditAction::PlaceTile;
+                action.cmd.place_tile.tilemap_entity = this->selection;
+                action.cmd.place_tile.pos = vector2_to_vector2i(sel.position);
+                action.cmd.place_tile.tile_id = this->tile_selection.id;
+                do_action(*this, scene, action);
+            }
+
+            if (input.k[INPUT_MB_LEFT].pressed && user.hovered())
+            {
+                ObjectId closest_object =
+                    find_object_within_distance(scene, object_cursor_at, 1);
+
+                if (closest_object != NULL_ID)
                 {
-                    // Path: catedu/gui/editor/editor.cpp
-                    Object *selected = scene.get_object(this->selection);
-                    if (selected && selected->type == Object::Type::Entity)
+                    this->selection = closest_object;
+                }
+                else if (!sel.tilemap_selected)
+                {
+                    if (this->selection != NULL_ID)
                     {
-                        EditAction action = {};
-                        action.type = EditAction::MoveEntity;
-                        action.cmd.move_entity.entity = this->selection;
-                        action.cmd.move_entity.pos =
-                            this->object_cursor_at - Vector2{0.5, 0.5};
-                        do_action(*this, scene, action);
+                        // Path: catedu/gui/editor/editor.cpp
+                        Object *selected = scene.get_object(this->selection);
+                        if (selected && selected->type == Object::Type::Entity)
+                        {
+                            EditAction action = {};
+                            action.type = EditAction::MoveEntity;
+                            action.cmd.move_entity.entity = this->selection;
+                            action.cmd.move_entity.pos =
+                                this->object_cursor_at - Vector2{0.5, 0.5};
+                            do_action(*this, scene, action);
+                        }
+                        else
+                        {
+                            this->placing_object = true;
+                        }
                     }
                     else
                     {
                         this->placing_object = true;
                     }
-                }
-                else
-                {
-                    this->placing_object = true;
                 }
             }
         }
@@ -719,14 +741,14 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
     boxdraw_flush(&renderer, this->camera.vp);
 
+    user.end_generic();
+    this->ui_state->element_storage.pop();
+
     if (no_ui)
     {
+        user.end_pass();
         return return_back;
     }
-
-    UiUser user = UiUser::init(*this->ui_state);
-    *user_out = &user;
-    user.begin_pass();
 
     if (button(user, "Back"))
     {
