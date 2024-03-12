@@ -135,22 +135,17 @@ void UiUser::end_pass()
     interaction.interaction_table = &this->state->interaction_table;
     interaction.element_storage = &this->state->element_storage;
     interaction.mouse_pos = this->state->input.mouse_pos;
-    interaction.interaction = this->state->input.mouse_pressed;
-    interaction.active_interaction = this->state->input.mouse_down;
-    ;
-    interaction.exit_interaction = this->state->input.escape;
-    interaction.switch_interaction = this->state->input.tab;
+    interaction.interaction = this->state->input.k[INPUT_MB_LEFT].pressed;
+    interaction.active_interaction = this->state->input.k[INPUT_MB_LEFT].held;
+    interaction.exit_interaction =
+        this->state->input.k[SAPP_KEYCODE_ESCAPE].pressed;
+    interaction.switch_interaction =
+        this->state->input.k[SAPP_KEYCODE_TAB].pressed;
     interaction.process();
 
     render_out(*this);
 
-    state->input.mouse_pressed = false;
-    state->input.mouse_right_pressed = false;
-    this->state->input.inputchars[0] = 0;
-    this->state->input.escape = false;
-    this->state->input.mouse_delta = {};
-    this->state->input.tab = false;
-    this->state->input.inputchars_count = 0;
+    this->state->input.update();
     this->state->element_storage.end_cycle();
     this->pass.end();
     this->styles.deinit();
@@ -206,72 +201,16 @@ UiState UiState::init(const char *font_path, const char *font_bold_path,
 
 bool UiState::feed_event(const sapp_event *event)
 {
-    switch (event->type)
+    this->input.pass_event(event);
+    if (this->input.shortcut(INPUT_CTRL, SAPP_KEYCODE_MINUS))
     {
-    case SAPP_EVENTTYPE_MOUSE_MOVE:
-        this->input.mouse_pos = {event->mouse_x, event->mouse_y};
-        this->input.mouse_delta = {event->mouse_dx, event->mouse_dy};
-        break;
-    case SAPP_EVENTTYPE_MOUSE_DOWN:
-    case SAPP_EVENTTYPE_MOUSE_UP:
-        this->input.mouse_down =
-            (event->mouse_button == SAPP_MOUSEBUTTON_LEFT) &&
-            event->type == SAPP_EVENTTYPE_MOUSE_DOWN;
-        this->input.mouse_pressed = this->input.mouse_down;
-        this->input.mouse_right_pressed =
-            (event->mouse_button == SAPP_MOUSEBUTTON_RIGHT) &&
-            event->type == SAPP_EVENTTYPE_MOUSE_UP;
-        break;
-    case SAPP_EVENTTYPE_KEY_DOWN:
-        if (event->key_code == SAPP_KEYCODE_BACKSPACE)
-        {
-            if (this->input.inputchars_count < 8)
-            {
-                this->input.inputchars[this->input.inputchars_count++] = '\b';
-            }
-        }
-        if (event->key_code == SAPP_KEYCODE_ENTER)
-        {
-            if (this->input.inputchars_count < 8)
-            {
-                this->input.inputchars[this->input.inputchars_count++] = '\n';
-            }
-        }
-        if (event->key_code == SAPP_KEYCODE_ESCAPE)
-        {
-            this->input.escape = true;
-        }
-        if (event->key_code == SAPP_KEYCODE_TAB)
-        {
-            this->input.tab = true;
-        }
-        if (event->modifiers & SAPP_MODIFIER_CTRL &&
-            event->key_code == SAPP_KEYCODE_EQUAL)
-        {
-            this->dpi_scale *= 1.125;
-        }
-        if (event->modifiers & SAPP_MODIFIER_CTRL &&
-            event->key_code == SAPP_KEYCODE_MINUS)
-        {
-            this->dpi_scale /= 1.125;
-        }
-        break;
-    case SAPP_EVENTTYPE_CHAR:
-        if (event->char_code == 0x7F || event->char_code == '\t' ||
-            event->char_code == '\n')
-        {
-            // macOS does it for some reason
-            break;
-        }
-
-        if (this->input.inputchars_count < 8)
-        {
-            this->input.inputchars[this->input.inputchars_count++] =
-                event->char_code;
-        }
-    default:
-        break;
+        this->dpi_scale /= 1.125;
     }
+    if (this->input.shortcut(INPUT_CTRL, SAPP_KEYCODE_EQUAL))
+    {
+        this->dpi_scale *= 1.125;
+    }
+
     return this->interaction_table.focused != NULL_ID ||
            this->interaction_table.hovered != NULL_ID;
 }

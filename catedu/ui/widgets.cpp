@@ -16,16 +16,16 @@ bool begin_show_window(UiUser &user, WindowInfo info)
     bool hovered = user.state->interaction_table.hovered ==
                    user.state->element_storage.id();
 
-    if (hovered && user.state->input.mouse_pressed)
+    if (hovered && user.state->input.k[INPUT_MB_LEFT].pressed)
     {
         pe->pin = user.state->input.mouse_pos - pe->persistent_box.pos;
         pe->pinned = true;
     }
-    if (hovered && user.state->input.mouse_right_pressed)
+    if (hovered && user.state->input.k[INPUT_MB_RIGHT].pressed)
     {
         pe->hidden = !pe->hidden;
     }
-    if (pe->pinned && user.state->input.mouse_down)
+    if (pe->pinned && user.state->input.k[INPUT_MB_LEFT].held)
     {
         pe->persistent_box.pos +=
             ((user.state->input.mouse_pos - pe->persistent_box.pos) - pe->pin) /
@@ -116,11 +116,11 @@ bool button(UiUser &user, const char *text, Vector4 background)
     {
         color_top = theme[5] * background;
         color_bottom = theme[4] * background;
-        if (user.state->input.mouse_down)
+        if (user.state->input.k[INPUT_MB_LEFT].held)
         {
             std::swap(color_top, color_bottom);
         }
-        pressed = user.state->input.mouse_pressed;
+        pressed = user.state->input.k[INPUT_MB_LEFT].released;
     }
 
     user.begin_generic(el, UiMakeBrush::make_gradient(color_bottom, color_top),
@@ -206,18 +206,18 @@ void input(UiUser &user, const char *id, char *out, int max)
                    user.state->element_storage.id();
     if (focused)
     {
-        for (int i = 0; i < user.state->input.inputchars_count; i++)
+        for (int i = 0; i < user.state->input.input_len; i++)
         {
-            if (user.state->input.inputchars[i] == '\b')
+            if (user.state->input.input[i] == '\b')
             {
                 if (strlen(out) > 0)
                     out[strlen(out) - 1] = 0;
             }
-            else if (user.state->input.inputchars[i])
+            else if (user.state->input.input[i])
             {
                 if (strlen(out) < max - 1)
                 {
-                    out[strlen(out)] = user.state->input.inputchars[i];
+                    out[strlen(out)] = user.state->input.input[i];
                 }
             }
         }

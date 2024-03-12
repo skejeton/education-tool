@@ -1,23 +1,12 @@
 #pragma once
 #include "catedu/core/math/math.hpp"
 #include "catedu/core/storage/id_retainer.hpp"
+#include "catedu/sys/input.hpp"
 #include "catedu/ui/rendering/core.hpp"
 #include "catedu/ui/rendering/font.hpp"
 #include "catedu/ui/rendering/pass.hpp"
 #include "layout/autolayout.hpp"
 #include "sokol/sokol_app.h"
-
-struct UiInput
-{
-    Vector2 mouse_pos;
-    Vector2 mouse_delta;
-    bool escape, tab;
-    bool mouse_down;
-    bool mouse_pressed;
-    bool mouse_right_pressed;
-    char inputchars[8];
-    int inputchars_count;
-};
 
 struct UiPersistentElement
 {
@@ -65,7 +54,7 @@ struct UiState
     UiRenderingCore *core;
     UiFontRenderer font;
     UiFontRenderer font_bold;
-    UiInput input;
+    Input input;
     UiElementStorage element_storage;
     UiInteractionStateTable interaction_table;
     Table<UiImageCache> image_cache;
