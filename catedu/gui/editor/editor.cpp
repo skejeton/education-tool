@@ -185,7 +185,8 @@ void select_object(GuiEditor &editor, TableId id)
     }
 }
 
-void do_action(GuiEditor &editor, Scene &scene, EditAction action)
+void do_action(GuiEditor &editor, Scene &scene, EditAction action,
+               bool discard = true)
 {
     Object *obj;
     switch (action.type)
@@ -229,20 +230,36 @@ void do_action(GuiEditor &editor, Scene &scene, EditAction action)
 
     editor.dirty = true;
 
-    if (editor.action_count < 512)
+    if (editor.action_buoy < 512)
     {
-        editor.actions[editor.action_count++] = action;
+        editor.actions[editor.action_buoy++] = action;
+        if (discard)
+        {
+            editor.action_count = editor.action_buoy;
+        }
     }
 }
 
-void undo_action(GuiEditor &editor, Scene &scene)
+void redo_action(GuiEditor &editor, Scene &scene)
 {
-    if (editor.action_count <= 0)
+    if (editor.action_buoy >= editor.action_count)
     {
         return;
     }
 
-    EditAction action = editor.actions[--editor.action_count];
+    EditAction action = editor.actions[editor.action_buoy];
+
+    do_action(editor, scene, action, false);
+}
+
+void undo_action(GuiEditor &editor, Scene &scene)
+{
+    if (editor.action_buoy <= 0)
+    {
+        return;
+    }
+
+    EditAction action = editor.actions[--editor.action_buoy];
 
     Object *obj;
     switch (action.type)
@@ -656,6 +673,10 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         if (input.shortcut(INPUT_CTRL, SAPP_KEYCODE_Z))
         {
             undo_action(*this, scene);
+        }
+        if (input.shortcut(INPUT_CTRL, SAPP_KEYCODE_Y))
+        {
+            redo_action(*this, scene);
         }
 
         if (input.shortcut(INPUT_CTRL, SAPP_KEYCODE_S))

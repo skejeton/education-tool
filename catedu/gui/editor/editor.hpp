@@ -64,6 +64,7 @@ struct GuiEditor
     GuiDebugTree debug_tree;
     Vector2 object_cursor_at;
     EditAction actions[512];
+    size_t action_buoy;
     size_t action_count;
     Scene *playtest_scene;
 
