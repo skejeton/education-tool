@@ -823,6 +823,10 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         {
             undo_action(*this, scene);
         }
+        if (button(user, "Redo"))
+        {
+            redo_action(*this, scene);
+        }
 
         char title[256];
         sprintf(title, "Objects | Page %zu", this->entity_list_page);

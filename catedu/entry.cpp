@@ -183,11 +183,6 @@ void Entry::init()
 
 void Entry::input(const sapp_event *event)
 {
-    if (ui_state.feed_event(event))
-    {
-        return;
-    }
-
     if (event->type == SAPP_EVENTTYPE_QUIT_REQUESTED)
     {
         if (this->editor.dirty)
@@ -195,5 +190,10 @@ void Entry::input(const sapp_event *event)
             sapp_cancel_quit();
             this->editor.exit_requested = true;
         }
+    }
+
+    if (ui_state.feed_event(event))
+    {
+        return;
     }
 }
