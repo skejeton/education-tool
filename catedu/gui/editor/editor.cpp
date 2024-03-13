@@ -90,10 +90,20 @@ ObjectInteractionEvent show_object_row(UiUser &user, Object &obj,
     element.margin = {1, 1, 1, 1};
     element.border = {0, 0, 1, 0};
 
+    user.state->element_storage.push(obj.id, {});
+
     Vector4 bgc = {0.6f, 0.6f, 0.6f, 1.0f};
     if (is_selected)
     {
         bgc = {0.8f, 0.8f, 0.6f, 1.0f};
+    }
+    if (user.hovered())
+    {
+        bgc = {0.7f, 0.7f, 0.6f, 1.0f};
+        if (user.state->input.k[INPUT_MB_LEFT].pressed)
+        {
+            result = Select;
+        }
     }
     if (obj.hide)
     {
@@ -102,15 +112,12 @@ ObjectInteractionEvent show_object_row(UiUser &user, Object &obj,
     }
 
     user.begin_generic(element, UiMakeBrush::make_solid(bgc),
-                       UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
+                       UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}),
+                       user.state->element_storage.id());
 
     if (button(user, "H"))
     {
         obj.hide = !obj.hide;
-    }
-    if (button(user, ">"))
-    {
-        result = Select;
     }
     if (button(user, "X"))
     {
@@ -121,6 +128,8 @@ ObjectInteractionEvent show_object_row(UiUser &user, Object &obj,
           UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
 
     user.end_generic();
+
+    user.state->element_storage.pop();
 
     return result;
 }
