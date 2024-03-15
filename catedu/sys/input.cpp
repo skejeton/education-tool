@@ -8,6 +8,7 @@ static void key_on(InputKey &key, bool down)
     key.pressed = down;
     key.held = down;
     key.released = !down;
+    key.repeats = down ? key.repeats + 1 : 0;
 }
 
 static void write_char(Input &input, uint32_t chr)
@@ -73,6 +74,7 @@ void Input::update()
     {
         this->k[i].pressed = false;
         this->k[i].released = false;
+        this->k[i].repeats = 0;
     }
 
     this->input_len = 0;

@@ -9,6 +9,7 @@
 struct InputKey
 {
     bool pressed, released, held;
+    int repeats;
 };
 
 #define INPUT_MB_LEFT 512
