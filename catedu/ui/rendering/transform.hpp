@@ -28,6 +28,7 @@ struct UiTransformer
     Vector2 screen_size;
 
     static UiTransformer init(UiRenderingCore *core, Vector2 screen_size);
+    // Optimized for most common case
     void push(UiTransform transform);
     void pop();
 

@@ -846,8 +846,10 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
         Object *selected = scene.get_object(this->selection);
 
-        begin_show_window(user, {"Help", {0, 0, 250, 430}});
-        show_help(user, resources);
+        if (begin_show_window(user, {"Help", {0, 0, 250, 430}}))
+        {
+            show_help(user, resources);
+        }
         end_show_window(user);
 
         if (selected)

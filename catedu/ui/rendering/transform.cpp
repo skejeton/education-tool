@@ -44,9 +44,7 @@ Matrix4 UiTransform::calculate_matrix(Vector2 screen_size)
         Matrix4::scale_v({2.0f / screen_size.x, 2.0f / screen_size.y, 1.0f});
 
     // Then we apply the transforms.
-    matrix *= this->scalem_;
-    matrix *= this->rotationm_;
-    matrix *= this->translationm_;
+    matrix *= this->combinem_;
 
     // First we scale the rect to the size of the texture so we can make use
     // of absolute pivots.
@@ -57,20 +55,13 @@ Matrix4 UiTransform::calculate_matrix(Vector2 screen_size)
 
 void UiTransform::stack(UiTransform previous)
 {
-    Matrix4 parent = Matrix4::identity();
-    parent *= previous.rotationm_;
-    parent *= previous.scalem_;
-    parent *= previous.translationm_;
+    Matrix4 parent = previous.combinem_;
 
-    this->scalem_ = Matrix4::identity();
-    this->rotationm_ = Matrix4::identity();
-    this->translationm_ = Matrix4::identity();
-
-    this->scalem_ *= pivoted_at_relative(
+    this->scalem_ = pivoted_at_relative(
         Matrix4::scale_v({this->scale.x, this->scale.y, 1.0f}), parent, *this);
-    this->rotationm_ *= pivoted_at_relative(
+    this->rotationm_ = pivoted_at_relative(
         Matrix4::rotate_z(-this->rotation * (MATH_TAU / 360)), parent, *this);
-    this->translationm_ *=
+    this->translationm_ =
         Matrix4::translate({this->base.pos.x + this->translate.x,
                             -this->base.pos.y - this->translate.y, 0.0f});
 
@@ -78,11 +69,10 @@ void UiTransform::stack(UiTransform previous)
     this->rotationm_ *= previous.rotationm_;
     this->translationm_ *= previous.translationm_;
 
-    Matrix4 combine = Matrix4::identity();
+    Matrix4 combine = parent;
     combine *= this->scalem_;
     combine *= this->rotationm_;
-    combine *=
-        Matrix4::translate({this->translate.x, -this->translate.y, 0.0f});
+    combine *= this->translationm_;
 
     this->combinem_ = combine;
 }
@@ -126,9 +116,13 @@ Vector2 UiTransformer::transform_point(Vector2 point)
     UiTransform transform = this->transforms.size() > 0
                                 ? this->transforms.back()
                                 : default_transform();
-
     Matrix4 inv = Matrix4::identity();
-    transform.combinem_.inverse(&inv);
+    Matrix4 combined = transform.scalem_;
+    combined *= transform.rotationm_;
+    combined *= Matrix4::translate(
+        {transform.translate.x, -transform.translate.y, 0.0f});
+
+    combined.inverse(&inv);
 
     Vector3 result = inv * Vector3{point.x, -point.y, 0.0f};
     return {result.x, -result.y};

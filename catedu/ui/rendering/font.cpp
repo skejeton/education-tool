@@ -125,18 +125,16 @@ void UiFontRenderer::render_glyph(UiRenderingPass *pass, Vector2 position,
                          {float(packed_char->x0) - float(packed_char->x1),
                           float(packed_char->y1) - float(packed_char->y0)}};
 
-    UiTransform transform = {};
-    transform.base = {position, get_glyph_size(this, glyph)};
-    transform.rotation = 0;
-    transform.origin = {0, 0};
-    transform.scale = scale;
-
     auto new_brush =
         UiMakeBrush::make_image_brush(UiBuffers::Rectangle, pass->core,
                                       this->chunks[glyph / 256]->image)
             .with_image_region(image_region)
             .with_gradient(brush.color_bottom, brush.color_top)
             .build();
+
+    UiTransform transform = {};
+    transform.base = {position, get_glyph_size(this, glyph)};
+    transform.scale = scale;
 
     pass->push_transform(transform);
     pass->core->render_object(new_brush);
