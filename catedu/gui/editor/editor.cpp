@@ -20,7 +20,7 @@ void show_generic_icon(UiUser &user, const char *s, Vector4 color,
     user.begin_generic(element, UiMakeBrush::make_solid(color),
                        UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
 
-    label(user, s, {1, 1});
+    label(user, s, {1, 1}, UiMakeBrush::make_solid({1.0f, 1.0f, 1.0f, 1.0f}));
 
     user.end_generic();
 }
