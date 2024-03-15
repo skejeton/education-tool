@@ -10,6 +10,7 @@ bool begin_show_window(UiUser &user, WindowInfo info)
 {
     user.state->element_storage.push(stdstrfmt("%s#window", info.title).c_str(),
                                      {false, {}, {}, info.rect});
+    user.state->element_storage.element_retainer.bump(9999999);
 
     UiPersistentElement *pe = user.state->element_storage.value();
 

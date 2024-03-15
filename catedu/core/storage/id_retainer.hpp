@@ -32,6 +32,7 @@ template <typename T> struct IdRetainer
     /// @param value The value of the branch.
     void push(const char *id, T value = {});
     void pop(int n = 1);
+    void bump(int times = 1);
 
     bool has(const char *id);
 };
@@ -101,6 +102,14 @@ template <typename T> inline void IdRetainer<T>::push(const char *s, T value)
     {
         this->values[path].death = this->cycle_number + 1;
     }
+}
+
+template <typename T> inline void IdRetainer<T>::bump(int times)
+{
+    std::string path = join_vector_into_string(this->current_path, "/");
+    auto it = this->values.find(path);
+    assert(it != this->values.end() && "IdRetainer: Invalid path");
+    it->second.death = this->cycle_number + times;
 }
 
 template <typename T> inline void IdRetainer<T>::pop(int n)
