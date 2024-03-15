@@ -804,11 +804,13 @@ inline Matrix4 operator*(Matrix4 a, Matrix4 b)
     {
         for (int j = 0; j < 4; ++j)
         {
+            float sum = 0;
             for (int k = 0; k < 4; ++k)
             {
-                result.values[i * 4 + j] +=
-                    a.values[k * 4 + j] * b.values[i * 4 + k];
+                sum += a.values[k * 4 + j] * b.values[i * 4 + k];
             }
+
+            result.values[i * 4 + j] = sum;
         }
     }
 

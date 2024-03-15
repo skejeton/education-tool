@@ -69,10 +69,8 @@ void UiTransform::stack(UiTransform previous)
     this->rotationm_ *= previous.rotationm_;
     this->translationm_ *= previous.translationm_;
 
-    Matrix4 combine = parent;
-    combine *= this->scalem_;
-    combine *= this->rotationm_;
-    combine *= this->translationm_;
+    Matrix4 combine =
+        parent * this->scalem_ * this->rotationm_ * this->translationm_;
 
     this->combinem_ = combine;
 }

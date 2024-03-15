@@ -700,7 +700,10 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
             // TODO: Save the scene
         }
 
-        camera_input_top_view_apply(&this->camera, &input);
+        if (user.hovered())
+        {
+            camera_input_top_view_apply(&this->camera, &input);
+        }
 
         if (user.hovered() || this->placing_object)
         {
