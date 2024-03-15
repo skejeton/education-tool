@@ -1008,6 +1008,27 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         }
     }
 
+    if (return_back && this->dirty || this->tried_to_return_back)
+    {
+        this->tried_to_return_back = true;
+        return_back = false;
+        const char *options[] = {"Yes", "No", NULL};
+        switch (msgbox(user, "Unsaved changes",
+                       "Are you sure you want to go back?\nAll unsaved changes "
+                       "will be lost.",
+                       MsgBoxType::Warning, options))
+        {
+        case 0:
+            this->dirty = false;
+            return_back = true;
+            this->tried_to_return_back = false;
+            break;
+        case 1:
+            this->tried_to_return_back = false;
+            break;
+        }
+    }
+
     *user_out = 0;
     user.end_pass();
 

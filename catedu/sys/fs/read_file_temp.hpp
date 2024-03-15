@@ -7,6 +7,7 @@
 #include <assert.h>
 
 #define READ_FILE_TEMP(name, path, code)                                       \
+    do                                                                         \
     {                                                                          \
         FILE *f___ = fopen(path, "rb");                                        \
         assert(f___ && "Failed to open file");                                 \
@@ -15,4 +16,4 @@
         Buffer name = {file___.data, file___.size};                            \
         code;                                                                  \
         file___.deinit();                                                      \
-    }
+    } while (0)

@@ -130,12 +130,18 @@ void Entry::frame(void)
         this->boxdraw_renderer.pass_action.colors->clear_value = {0, 0, 0, 1};
         boxdraw_flush(&this->boxdraw_renderer, this->editor.camera.vp);
         ui_mode = main_menu.show();
+        if (ui_mode == MENU_EDITOR)
+        {
+            READ_FILE_TEMP(world, "assets/world.dat",
+                           { scene = Scene::load(world); });
+        }
         break;
     case MENU_EDITOR:
         if (editor.show(this->boxdraw_renderer, this->res, this->scene,
                         &this->ui_user, this->umka, &reload_module))
         {
             ui_mode = MENU_MAIN_MENU;
+            this->scene.deinit();
         }
         break;
     case MENU_GAME:
@@ -176,7 +182,11 @@ void Entry::init()
     editor = GuiEditor::init(&ui_state);
     game_gui = GuiGame::init(&ui_state);
 
-    READ_FILE_TEMP(world, "assets/world.dat", { scene = Scene::load(world); })
+    if (ui_mode == MENU_EDITOR)
+    {
+        READ_FILE_TEMP(world, "assets/world.dat",
+                       { scene = Scene::load(world); });
+    }
 
     this->boxdraw_renderer = boxdraw_create();
 }
