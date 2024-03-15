@@ -817,16 +817,32 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
                 this->playtest_scene->deinit();
                 free(this->playtest_scene);
             }
+            this->playtesting = false;
         }
         else
         {
-            Scene original = scene.copy();
-            Scene *scene = (Scene *)malloc(sizeof(Scene));
-            memcpy(scene, &original, sizeof(Scene));
-            scene->update(resources);
-            this->playtest_scene = scene;
+            if (scene.find_object("player") == NULL_ID)
+            {
+                this->playtest_no_player = true;
+            }
+            else
+            {
+                if (scene.get_object(scene.find_object("player"))->type !=
+                    Object::Type::Entity)
+                {
+                    this->playtest_no_player = true;
+                }
+                else
+                {
+                    Scene original = scene.copy();
+                    Scene *scene = (Scene *)malloc(sizeof(Scene));
+                    memcpy(scene, &original, sizeof(Scene));
+                    scene->update(resources);
+                    this->playtest_scene = scene;
+                    this->playtesting = true;
+                }
+            }
         }
-        this->playtesting = !this->playtesting;
     }
 
     if (!this->playtesting)
@@ -873,6 +889,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     {
         Object *obj = this->playtest_scene->get_object(
             this->playtest_scene->find_object("player"));
+
         assert(obj);
         assert(obj->type == Object::Type::Entity);
 
@@ -959,6 +976,18 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         begin_show_window(user, {"Debug", {0, 0, 300, 400}});
         debug_tree.show(user);
         end_show_window(user);
+    }
+
+    if (this->playtest_no_player)
+    {
+        const char *options[] = {"Ok", NULL};
+        switch (msgbox(user, "Error!",
+                       "To playtest, add an entity with id 'player'.",
+                       MsgBoxType::Error, options))
+        {
+        case 0:
+            this->playtest_no_player = false;
+        }
     }
 
     if (this->exit_requested)

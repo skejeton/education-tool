@@ -56,6 +56,7 @@ struct GuiEditor
     bool placing_object;
     bool dirty;
     bool exit_requested;
+    bool playtest_no_player;
     UiState *ui_state;
     TableId selection;
     TableId tile_selection;
