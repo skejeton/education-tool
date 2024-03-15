@@ -1,4 +1,5 @@
 #include "input.hpp"
+#include <memory.h>
 
 #define DOWN true
 #define UP false
@@ -8,7 +9,7 @@ static void key_on(InputKey &key, bool down)
     key.pressed = down;
     key.held = down;
     key.released = !down;
-    key.repeats = down ? key.repeats + 1 : 0;
+    key.repeats += int(down);
 }
 
 static void write_char(Input &input, uint32_t chr)
@@ -78,7 +79,7 @@ void Input::update()
     }
 
     this->input_len = 0;
-    this->input[0] = 0;
+    memset(this->input, 0, 32 * sizeof(char));
 }
 
 void Input::pass_event(const sapp_event *event)
