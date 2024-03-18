@@ -785,24 +785,37 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
     {
         return_back = true;
     }
-    if (button(user, "Reload module"))
+
+    if (this->playtesting)
     {
-        *reload_module = true;
-    }
-    UmkaStackSlot empty;
-    int func = umkaGetFunc(umka, NULL, "onUI");
-    UmkaError error;
-    if (umkaGetError(umka, &error), error.fnName[0] != 0)
-    {
-        label(user,
-              stdstrfmt("Error: %s at %s:%d", error.msg, error.fileName,
-                        error.line)
-                  .c_str(),
-              {1, 1}, UiMakeBrush::make_solid({0.5, 0, 0, 1}));
-    }
-    else if (this->playtesting)
-    {
-        umkaCall(umka, func, 0, NULL, &empty);
+        UmkaStackSlot empty;
+        int func = umkaGetFunc(umka, NULL, "onUI");
+        UmkaError error;
+        if (umkaGetError(umka, &error), error.fnName[0] != 0)
+        {
+            if (!this->suppress_errors)
+            {
+                const char *buttons[] = {"Retry", "Ignore", NULL};
+
+                switch (msgbox(user, "Umka Error",
+                               stdstrfmt("%s\n    at %s:%d", error.msg,
+                                         error.fileName, error.line)
+                                   .c_str(),
+                               MsgBoxType::Error, buttons))
+                {
+                case 0:
+                    *reload_module = true;
+                    break;
+                case 1:
+                    this->suppress_errors = true;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            umkaCall(umka, func, 0, NULL, &empty);
+        }
     }
 
     if (button(user, this->playtesting ? "Exit playtest" : "Playtest"))
@@ -837,6 +850,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
                     scene->update(resources);
                     this->playtest_scene = scene;
                     this->playtesting = true;
+                    *reload_module = true;
                 }
             }
         }
@@ -959,6 +973,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
             UmkaStackSlot id;
 
             id.ptrVal = umkaMakeStr(umka, (char *)source);
+            UmkaError error;
             if (umkaGetError(umka, &error), error.fnName[0] == 0)
             {
                 umkaCall(umka, func, 1, &id, NULL);
@@ -1024,6 +1039,11 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
             this->tried_to_return_back = false;
             break;
         }
+    }
+
+    if (*reload_module)
+    {
+        this->suppress_errors = false;
     }
 
     *user_out = 0;

@@ -58,6 +58,7 @@ struct GuiEditor
     bool exit_requested;
     bool playtest_no_player;
     bool tried_to_return_back;
+    bool suppress_errors;
     UiState *ui_state;
     TableId selection;
     TableId tile_selection;
