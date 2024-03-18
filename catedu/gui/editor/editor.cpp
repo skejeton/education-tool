@@ -326,7 +326,10 @@ void show_help(UiUser &user, ResourceSpec &resources)
     label(user, "WASD - Move camera");
     label(user, "Middle click + drag - Move camera");
     label(user, "Scroll - Zoom in/out");
-    label(user, "Tab - Debug window");
+    label(user, "F3 - Debug window");
+    label(user, "Ctrl + Z - Undo");
+    label(user, "Ctrl + Y - Redo");
+    label(user, "Ctrl + S - Save");
     label(user, "Back - Go back");
     label(user, "Hold LMB on window to move it");
     label(user, "Press RMB on window to collapse it");
@@ -624,6 +627,11 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
     Input &input = this->ui_state->input;
 
+    if (input.k[SAPP_KEYCODE_F3].pressed)
+    {
+        this->show_debug = !this->show_debug;
+    }
+
     AutoLayoutElement element = {};
     element.position = AutoLayoutPosition::Absolute;
     element.width.type = AutoLayoutDimension::Pixel;
@@ -876,7 +884,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
         Object *selected = scene.get_object(this->selection);
 
-        if (begin_show_window(user, {"Help", {0, 0, 250, 430}}))
+        if (begin_show_window(user, {"Help", {0, 0, 250, 500}}))
         {
             show_help(user, resources);
         }
@@ -983,9 +991,10 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         this->playtest_scene->update(resources);
     }
 
-    if (input.k[SAPP_KEYCODE_TAB].held)
+    if (this->show_debug)
     {
-        begin_show_window(user, {"Debug", {0, 0, 300, 400}});
+        WindowInfo info = {"Debug", {0, 0, 300, 400}};
+        begin_show_window(user, info);
         debug_tree.show(user);
         end_show_window(user);
     }
