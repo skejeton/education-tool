@@ -367,8 +367,7 @@ void show_place_object(UiUser &user, Scene &scene, GuiEditor &editor)
         new_obj.type = Object::Type::Entity;
         strcpy(new_obj.name,
                stdstrfmt("Unnamed Entity %zu", scene.objects.count).c_str());
-        new_obj.entity =
-            ObjEntity::init("", editor.object_cursor_at - Vector2{0.5, 0.5});
+        new_obj.entity = ObjEntity::init("", editor.object_cursor_at);
     }
     if (button(user, "Tilemap"))
     {
@@ -587,7 +586,7 @@ ObjectId find_object_within_distance(Scene &scene, Vector2 pos, float distance)
     {
         if (obj.type == Object::Type::Entity)
         {
-            Vector2 obj_pos = obj.entity.pos + Vector2{0.5, 0.5};
+            Vector2 obj_pos = obj.entity.pos;
             if (vector2_cmp_distance(pos, obj_pos) < distance)
             {
                 return id;
@@ -604,7 +603,7 @@ ObjectId find_object_within_distance_not_player(Scene &scene, Vector2 pos,
     {
         if (obj.type == Object::Type::Entity)
         {
-            Vector2 obj_pos = obj.entity.pos + Vector2{0.5, 0.5};
+            Vector2 obj_pos = obj.entity.pos;
             if (vector2_cmp_distance(pos, obj_pos) < distance &&
                 strcmp(obj.id, "player") != 0)
             {
@@ -754,8 +753,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
                             EditAction action = {};
                             action.type = EditAction::MoveEntity;
                             action.cmd.move_entity.entity = this->selection;
-                            action.cmd.move_entity.pos =
-                                this->object_cursor_at - Vector2{0.5, 0.5};
+                            action.cmd.move_entity.pos = this->object_cursor_at;
                             do_action(*this, scene, action);
                         }
                         else
