@@ -40,6 +40,7 @@ struct UiElementStorage
 struct UiInteractionStateTable
 {
     TableId hovered;
+    TableId active;
     TableId focused;
 };
 
@@ -111,6 +112,7 @@ struct UiUser
     void pop_id();
 
     bool focused();
+    bool active();
     bool hovered();
 
     void begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,

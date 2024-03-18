@@ -114,16 +114,16 @@ bool button(UiUser &user, const char *text, Vector4 background)
 
     bool pressed = false;
 
-    if (user.state->interaction_table.hovered ==
-        user.state->element_storage.id())
+    if (user.hovered())
     {
         color_top = theme[5] * background;
         color_bottom = theme[4] * background;
-        if (user.state->input.k[INPUT_MB_LEFT].held)
-        {
-            std::swap(color_top, color_bottom);
-        }
         pressed = user.state->input.k[INPUT_MB_LEFT].released;
+    }
+
+    if (user.state->input.k[INPUT_MB_LEFT].held && user.active())
+    {
+        std::swap(color_top, color_bottom);
     }
 
     user.begin_generic(el, UiMakeBrush::make_gradient(color_bottom, color_top),

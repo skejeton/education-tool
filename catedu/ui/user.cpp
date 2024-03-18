@@ -165,6 +165,11 @@ bool UiUser::focused()
     return state->interaction_table.focused == state->element_storage.id();
 }
 
+bool UiUser::active()
+{
+    return state->interaction_table.active == state->element_storage.id();
+}
+
 bool UiUser::hovered()
 {
     return state->interaction_table.hovered == state->element_storage.id();
@@ -326,11 +331,21 @@ void UiInteractionStatePass::process()
         el.order = -1;
     }
 
+    TableId active = NULL_ID;
+
     if (this->active_interaction)
     {
-        hovered = this->interaction_table->hovered;
+        if (this->interaction_table->active == NULL_ID)
+        {
+            active = this->interaction_table->hovered;
+        }
+        else
+        {
+            active = this->interaction_table->active;
+        }
     }
 
     this->interaction_table->hovered = hovered;
+    this->interaction_table->active = active;
     this->interaction_table->focused = focused;
 }
