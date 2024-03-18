@@ -790,7 +790,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         *reload_module = true;
     }
     UmkaStackSlot empty;
-    int func = umkaGetFunc(umka, NULL, "doUI");
+    int func = umkaGetFunc(umka, NULL, "onUI");
     UmkaError error;
     if (umkaGetError(umka, &error), error.fnName[0] != 0)
     {

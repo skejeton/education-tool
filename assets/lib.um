@@ -1,0 +1,42 @@
+// Internal, do not use.
+fn _begin_window(title: str, width: real, height: real): bool
+fn _end_window()
+fn _msgbox(msg: int, options: ^[]str, title: str, text: str): int
+
+// Shows as simple button with the provided text. Returns true if the button was clicked.
+fn button*(text: str): bool
+
+// Shows a piece of text with the provided color.
+fn label*(text: str, color: uint32)
+
+// Moves the next control to the next row.
+fn nextrow*()
+
+// Message box types.
+type MsgType* = enum {
+    info
+    warning
+    error
+    _count
+}
+
+// Shows a message box with the provided options. Returns the index of the selected option.
+// Example:
+// switch msgbox(.error, {"Abort", "Retry, "Ignore"}, "Error", "An error has occured.") {
+//   case 0: /* Abort  */
+//   case 1: /* Retry  */
+//   case 2: /* Ignore */
+// }
+fn msgbox*(msg: MsgType, options: []str, title: str, text: str): int {
+    return _msgbox(int(msg), &options, title, text)
+}
+
+// Shows a window with the provided title, width and height.
+// The body function is called to render the window content.
+fn window*(title: str, width: real, height: real, body: fn(): void) {
+    if (_begin_window(title, width, height)) {
+        body()
+    }
+    _end_window()
+}
+

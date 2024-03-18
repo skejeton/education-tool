@@ -1,56 +1,45 @@
-fn button(text: str): bool
-fn label(text: str, color: uint32)
-fn nextrow()
-fn _begin_window(title: str, width: real, height: real): bool
-fn _end_window()
-
-type MsgType = enum {
-    info
-    warning
-    error
-}
-
-fn msgbox(msg: MsgType, options: ^[]str, title: str, text: str): int
-
-fn window(title: str, width: real, height: real, body: fn(): void) {
-    if (_begin_window(title, width, height)) {
-        body()
-    }
-    _end_window()
-}
+import ("lib.um")
 
 interacted := ""
 lv := 0
 stop := false
 
-fn main() {}
-
+// When you interact with an entity (using Space key), this function is called
 fn onInteract*(id: str) {
     interacted = id
 }
 
-fn doUI*() {
+// This function is called every time you need to present some UI to the user.
+// Don't use UI functions outside of this function.
+fn onUI*() {
     if !stop {
-        btns := []str{"Elevator up", "Elevator down", "Exit"}
-        switch msgbox(.warning, &btns, "Elevator", sprintf("Floor: %d", lv)) {
-        case 0: lv += 1
-        case 1: lv -= 1
-        case 2: stop = true
+        switch lib.msgbox(
+            .warning,
+            {"Elevator up", "Elevator down", "Exit"},
+            "Elevator",
+            sprintf("Floor: %d", lv)
+        ) {
+            case 0: lv += 1
+            case 1: lv -= 1
+            case 2: stop = true
         }
     }
 
     if interacted != "" {
-        window("Dialog", 200, 100, {
+        lib.window("Dialog", 200, 100, {
             if interacted == "test_entity" {
-                label("Would you like to take a taxi?", 0x000000FF)
-                nextrow()
-                if button("Yes") {
+                lib.label("Would you like to take a taxi?", 0x000000FF)
+                lib.nextrow()
+                if lib.button("Yes") {
                     interacted = ""
                 }
-                if button("No") {
+                if lib.button("No") {
                     interacted = ""
                 }
             }
         })
     }
 }
+
+// Necessary, don't delete!
+fn main() {}

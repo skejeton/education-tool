@@ -121,7 +121,7 @@ void load_umka(Entry &entry)
     umkaAddFunc(entry.umka, "button", &umka_button);
     umkaAddFunc(entry.umka, "label", &umka_label);
     umkaAddFunc(entry.umka, "nextrow", &umka_nextrow);
-    umkaAddFunc(entry.umka, "msgbox", &umka_msgbox);
+    umkaAddFunc(entry.umka, "_msgbox", &umka_msgbox);
     umkaAddFunc(entry.umka, "_begin_window", &umka_begin_window);
     umkaAddFunc(entry.umka, "_end_window", &umka_end_window);
 
