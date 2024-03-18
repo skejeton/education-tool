@@ -2,9 +2,13 @@
 #include "catedu/sys/oom.hpp"
 #include "resources/load_image.hpp"
 
-static const Vector4 theme[] = {{0.8, 0.8, 0.8, 1.0}, {0.6, 0.6, 0.6, 1.0},
-                                {0.0, 0.0, 0.0, 1.0}, {0.0, 0.0, 0.0, 1.0},
-                                {0.7, 0.7, 0.7, 1.0}, {0.5, 0.5, 0.5, 1.0}};
+static const Vector4 theme[] = {
+    {0.9, 0.9, 1.0, 1.0}, {0.7, 0.7, 0.8, 1.0}, // Button
+    {0.1, 0.1, 0.2, 1.0},                       // Text
+    {0.1, 0.1, 0.2, 1.0},                       // Border
+    {0.7, 0.7, 0.9, 1.0}, {0.6, 0.6, 0.7, 1.0}, // Button Pressed
+    {0.9, 0.9, 0.9, 1.0}                        // Window
+};
 
 bool begin_show_window(UiUser &user, WindowInfo info)
 {
@@ -53,8 +57,9 @@ bool begin_show_window(UiUser &user, WindowInfo info)
         AutoLayoutElement el = {};
         el.border = {1, 1, 1, 1};
         el.width.type = AutoLayoutDimension::Pixel;
-        el.width.value = info.rect.siz.x;
+        el.width.value = info.rect.siz.x - 6;
         el.height.type = AutoLayoutDimension::Auto;
+        el.padding = {3, 3, 3, 3};
 
         UiBrush border = UiMakeBrush::make_solid({0.7f, 0.7f, 0.7f, 1.0f});
         UiBrush background = UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f});
@@ -75,7 +80,7 @@ bool begin_show_window(UiUser &user, WindowInfo info)
         el.hidden = pe->hidden;
 
         UiBrush border = UiMakeBrush::make_solid({0.7f, 0.7f, 0.7f, 1.0f});
-        UiBrush background = UiMakeBrush::make_solid({0.6f, 0.6f, 0.6f, 1.0f});
+        UiBrush background = UiMakeBrush::make_solid(theme[6]);
         user.begin_generic(el, background, border);
     }
 

@@ -92,10 +92,10 @@ ObjectInteractionEvent show_object_row(UiUser &user, Object &obj,
 
     user.state->element_storage.push(obj.id, {});
 
-    Vector4 bgc = {0.6f, 0.6f, 0.6f, 1.0f};
+    Vector4 bgc = {0.9f, 0.9f, 0.9f, 1.0f};
     if (is_selected)
     {
-        bgc = {0.8f, 0.8f, 0.6f, 1.0f};
+        bgc = {0.8f, 0.8f, 0.0f, 1.0f};
     }
     if (user.hovered())
     {
@@ -151,7 +151,7 @@ size_t show_pagination(UiUser &user, size_t page, size_t page_count)
     element.border = {0, 0, 1, 0};
 
     user.begin_generic(element,
-                       UiMakeBrush::make_solid({0.6f, 0.6f, 0.6f, 1.0f}),
+                       UiMakeBrush::make_solid({0.9f, 0.9f, 0.9f, 1.0f}),
                        UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
 
     if (button(user, " First "))
@@ -307,21 +307,21 @@ void show_help(UiUser &user, ResourceSpec &resources)
 {
     user.bold = true;
     label(user, "On object screen: ", {1.2, 1.2},
-          UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
+          UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
     user.bold = false;
     label(user, "`>` - Select object");
     label(user, "`X` - Delete object");
     label(user, "`H` - Hide object");
     user.bold = true;
     label(user, "There's different types of objects:", {1.2, 1.2},
-          UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
+          UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
     user.bold = false;
     label(user, "[T] - Tilemap");
     label(user, "[E] - Entity");
     label(user, "[B] - Backdrop");
     user.bold = true;
     label(user, "Controls:", {1.2, 1.2},
-          UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
+          UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
     user.bold = false;
     label(user, "WASD - Move camera");
     label(user, "Middle click + drag - Move camera");
@@ -334,7 +334,7 @@ void show_help(UiUser &user, ResourceSpec &resources)
     label(user, "Press Ctrl +/- to zoom in/out the UI");
     user.bold = true;
     label(user, "Models:", {1.2, 1.2},
-          UiMakeBrush::make_solid({0.0f, 1.0f, 1.0f, 1.0f}));
+          UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
     user.bold = false;
 
     char model_names[512] = {};
