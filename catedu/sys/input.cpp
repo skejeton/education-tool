@@ -48,12 +48,6 @@ static void handle_key_event(Input &input, int key_code, bool down)
             write_char(input, '\b');
         }
         break;
-    case SAPP_KEYCODE_TAB:
-        if (down)
-        {
-            write_char(input, '\t');
-        }
-        break;
     default:
         break;
     }
