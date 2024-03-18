@@ -85,6 +85,27 @@ void umka_end_window(UmkaStackSlot *params, UmkaStackSlot *result)
     end_show_window(*entry_ptr->ui_user);
 }
 
+void umka_msgbox(UmkaStackSlot *params, UmkaStackSlot *result)
+{
+    assert(entry_ptr->ui_user);
+
+    char *text = (char *)params[0].ptrVal;
+    char *title = (char *)params[1].ptrVal;
+    typedef UmkaDynArray(char *) CharArr;
+    CharArr *buttons = (CharArr *)params[2].ptrVal;
+    int length = umkaGetDynArrayLen(buttons);
+    int type = params[3].uintVal;
+
+    const char *ptrs[32] = {0};
+    for (int i = 0; i < std::min(31, length); i++)
+    {
+        ptrs[i] = buttons->data[i];
+    }
+
+    result->intVal =
+        msgbox(*entry_ptr->ui_user, title, text, MsgBoxType(type), ptrs);
+}
+
 void load_umka(Entry &entry)
 {
     entry.umka = umkaAlloc();
@@ -100,6 +121,7 @@ void load_umka(Entry &entry)
     umkaAddFunc(entry.umka, "button", &umka_button);
     umkaAddFunc(entry.umka, "label", &umka_label);
     umkaAddFunc(entry.umka, "nextrow", &umka_nextrow);
+    umkaAddFunc(entry.umka, "msgbox", &umka_msgbox);
     umkaAddFunc(entry.umka, "_begin_window", &umka_begin_window);
     umkaAddFunc(entry.umka, "_end_window", &umka_end_window);
 

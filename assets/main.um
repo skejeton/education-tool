@@ -4,6 +4,14 @@ fn nextrow()
 fn _begin_window(title: str, width: real, height: real): bool
 fn _end_window()
 
+type MsgType = enum {
+    info
+    warning
+    error
+}
+
+fn msgbox(msg: MsgType, options: ^[]str, title: str, text: str): int
+
 fn window(title: str, width: real, height: real, body: fn(): void) {
     if (_begin_window(title, width, height)) {
         body()
@@ -11,8 +19,8 @@ fn window(title: str, width: real, height: real, body: fn(): void) {
     _end_window()
 }
 
-interaction := 0
 interacted := ""
+lv := 0
 
 fn main() {}
 
@@ -21,11 +29,22 @@ fn onInteract*(id: str) {
 }
 
 fn doUI*() {
+    btns := []str{"Elevator up", "Elevator down"}
+    switch msgbox(.warning, &btns, "Elevator", sprintf("Floor: %d", lv)) {
+    case 0: lv += 1
+    case 1: lv -= 1
+    }
+
     window("Dialog", 200, 100, {
-        label("Hello!", 0x000000FF)
-        nextrow()
-        if button("hi!") {
-            interaction++
+        if interacted == "test_entity" {
+            label("Would you like to take a taxi?", 0x000000FF)
+            nextrow()
+            if button("Yes") {
+                interacted = ""
+            }
+            if button("No") {
+                interacted = ""
+            }
         }
     })
 }

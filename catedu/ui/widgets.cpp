@@ -263,6 +263,7 @@ int msgbox(UiUser &user, const char *title, const char *text, MsgBoxType type,
 
     switch (type)
     {
+    default:
     case MsgBoxType::Info:
         user.begin_generic(make_element({AutoLayout::Column}, {32, 32}, false,
                                         false, {0.5, 0.5}, 3),
