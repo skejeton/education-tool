@@ -21,6 +21,7 @@ fn window(title: str, width: real, height: real, body: fn(): void) {
 
 interacted := ""
 lv := 0
+stop := false
 
 fn main() {}
 
@@ -29,22 +30,27 @@ fn onInteract*(id: str) {
 }
 
 fn doUI*() {
-    btns := []str{"Elevator up", "Elevator down"}
-    switch msgbox(.warning, &btns, "Elevator", sprintf("Floor: %d", lv)) {
-    case 0: lv += 1
-    case 1: lv -= 1
+    if !stop {
+        btns := []str{"Elevator up", "Elevator down", "Exit"}
+        switch msgbox(.warning, &btns, "Elevator", sprintf("Floor: %d", lv)) {
+        case 0: lv += 1
+        case 1: lv -= 1
+        case 2: stop = true
+        }
     }
 
-    window("Dialog", 200, 100, {
-        if interacted == "test_entity" {
-            label("Would you like to take a taxi?", 0x000000FF)
-            nextrow()
-            if button("Yes") {
-                interacted = ""
+    if interacted != "" {
+        window("Dialog", 200, 100, {
+            if interacted == "test_entity" {
+                label("Would you like to take a taxi?", 0x000000FF)
+                nextrow()
+                if button("Yes") {
+                    interacted = ""
+                }
+                if button("No") {
+                    interacted = ""
+                }
             }
-            if button("No") {
-                interacted = ""
-            }
-        }
-    })
+        })
+    }
 }
