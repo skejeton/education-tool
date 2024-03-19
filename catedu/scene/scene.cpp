@@ -237,6 +237,7 @@ void Scene::deinit()
     }
 
     this->objects.deinit();
+    this->physics.bodies.deinit();
 }
 
 Object Object::copy()

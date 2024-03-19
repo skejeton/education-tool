@@ -977,6 +977,8 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
                 }
             }
 
+            manifolds.manifolds.deinit();
+
             assert(func);
             UmkaStackSlot id;
 

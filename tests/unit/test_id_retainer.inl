@@ -10,10 +10,10 @@ TEST(IdRetainer)
     SECTION("test single depth")
     {
         retainer.push("left", "right");
-        CHECK_TRUE(*retainer.value() == "right");
+        CHECK_TRUE(retainer.value() == "right");
         retainer.pop();
         retainer.push("up", "down");
-        CHECK_TRUE(*retainer.value() == "down");
+        CHECK_TRUE(retainer.value() == "down");
         retainer.pop();
     }
 
@@ -23,10 +23,10 @@ TEST(IdRetainer)
     SECTION("test single depth memory retention")
     {
         retainer.push("left");
-        CHECK_TRUE(*retainer.value() == "right");
+        CHECK_TRUE(retainer.value() == "right");
         retainer.pop();
         retainer.push("up");
-        CHECK_TRUE(*retainer.value() == "down");
+        CHECK_TRUE(retainer.value() == "down");
         retainer.pop();
     }
 
@@ -37,9 +37,9 @@ TEST(IdRetainer)
     {
         retainer.push("alpha", "a");
         retainer.push("beta", "b");
-        CHECK_TRUE(*retainer.value() == "b");
+        CHECK_TRUE(retainer.value() == "b");
         retainer.pop();
-        CHECK_TRUE(*retainer.value() == "a");
+        CHECK_TRUE(retainer.value() == "a");
         retainer.pop();
     }
 
@@ -50,9 +50,9 @@ TEST(IdRetainer)
     {
         retainer.push("alpha");
         retainer.push("beta");
-        CHECK_TRUE(*retainer.value() == "b");
+        CHECK_TRUE(retainer.value() == "b");
         retainer.pop();
-        CHECK_TRUE(*retainer.value() == "a");
+        CHECK_TRUE(retainer.value() == "a");
         retainer.pop();
     }
 
@@ -65,9 +65,9 @@ TEST(IdRetainer)
     {
         retainer.push("alpha");
         retainer.push("beta");
-        CHECK_FALSE(*retainer.value() == "b");
+        CHECK_FALSE(retainer.value() == "b");
         retainer.pop();
-        CHECK_FALSE(*retainer.value() == "a");
+        CHECK_FALSE(retainer.value() == "a");
         retainer.pop();
     }
 

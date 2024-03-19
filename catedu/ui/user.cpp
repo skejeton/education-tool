@@ -227,6 +227,7 @@ bool UiState::feed_event(const sapp_event *event)
 void UiState::deinit()
 {
     this->element_storage.deinit();
+    this->font_bold.deinit();
     this->font.deinit();
     this->core->deinit();
     free(this->core);
@@ -266,12 +267,12 @@ void UiElementStorage::pop()
 
 UiPersistentElement *UiElementStorage::value()
 {
-    return &this->elements.get_assert(*this->element_retainer.value());
+    return &this->elements.get_assert(this->element_retainer.value());
 }
 
 TableId UiElementStorage::id()
 {
-    return *this->element_retainer.value();
+    return this->element_retainer.value();
 }
 
 UiElementStorage UiElementStorage::init()

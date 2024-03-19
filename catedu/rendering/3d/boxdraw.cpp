@@ -1,5 +1,4 @@
 #include "boxdraw.hpp"
-#include "catedu/rendering/3d/model.hpp"
 #include "catedu/shaders.hxx"
 #include "catedu/sys/sg_tricks.hpp"
 #include <cassert>
@@ -46,6 +45,7 @@ BoxdrawRenderer boxdraw_create()
         bool ok = catedu::Model::load_from_raw(raw_model, model);
         assert(ok);
     }
+    raw_model.deinit();
 
     result.vertex_buffer = model.vertex_buffer;
     result.index_buffer = model.index_buffer;
@@ -102,6 +102,7 @@ BoxdrawRenderer boxdraw_create()
     result.bindings.vertex_buffers[0] = result.vertex_buffer;
     result.bindings.vertex_buffers[1] = result.instance_buffer;
     result.bindings.index_buffer = result.index_buffer;
+    result.model = model;
 
     // initial clear color
     result.pass_action.colors[0].load_action = SG_LOADACTION_CLEAR;
@@ -113,6 +114,9 @@ BoxdrawRenderer boxdraw_create()
 
 void boxdraw_destroy(BoxdrawRenderer *renderer)
 {
+    free(renderer->commands);
+    renderer->model.deinit();
+    sg_destroy_buffer(renderer->instance_buffer);
     sg_destroy_buffer(renderer->vertex_buffer);
     sg_destroy_buffer(renderer->index_buffer);
     sg_destroy_pipeline(renderer->pipeline);

@@ -52,6 +52,9 @@ UiBuffer generate_buffer(RenderGeo geo)
     result.vertex_buffer = sg_make_buffer(vertex_buffer_desc);
     result.indices = geo.ibuf_size;
 
+    free(geo.vbuf);
+    free(geo.ibuf);
+
     return result;
 }
 
@@ -107,6 +110,7 @@ void UiRenderingCore::deinit()
         sg_destroy_buffer(this->buffers[i].vertex_buffer);
         sg_destroy_buffer(this->buffers[i].index_buffer);
     }
+
     sg_destroy_pipeline(this->pipeline);
     sg_destroy_shader(this->shader);
 
@@ -114,6 +118,8 @@ void UiRenderingCore::deinit()
     {
         this->dealloc_image(id);
     }
+
+    this->images.deinit();
 }
 
 void UiRenderingCore::begin_pipeline()

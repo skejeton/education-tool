@@ -6,6 +6,7 @@
 #define BOXDRAW_CMD_MAX (1 << 14)
 
 #include "catedu/core/math/math.hpp"
+#include "catedu/rendering/3d/model.hpp"
 #include "catedu/rendering/texture.hpp"
 #include "sokol/sokol_app.h"
 #include "sokol/sokol_gfx.h"
@@ -30,6 +31,7 @@ struct BoxdrawRenderer
     size_t index_count;
     BoxdrawCommand *commands;
     size_t commands_count;
+    catedu::Model model;
 };
 
 BoxdrawRenderer boxdraw_create();

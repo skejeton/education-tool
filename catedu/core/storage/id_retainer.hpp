@@ -10,7 +10,7 @@
 template <typename T> struct IdRetainerNode
 {
     size_t death;
-    T *value;
+    T value;
 };
 
 template <typename T> struct IdRetainer
@@ -25,7 +25,7 @@ template <typename T> struct IdRetainer
     void begin_cycle();
     void end_cycle();
 
-    T *value();
+    T value();
 
     /// @brief Creates a branch with the specified ID and value.
     /// @param id The ID of the branch.
@@ -44,10 +44,7 @@ template <typename T> inline IdRetainer<T> IdRetainer<T>::init()
 
 template <typename T> inline void IdRetainer<T>::deinit()
 {
-    for (auto it = this->values.begin(); it != this->values.end();)
-    {
-        free(it->second.value);
-    }
+    this->values = {};
 }
 
 template <typename T> inline void IdRetainer<T>::begin_cycle()
@@ -62,25 +59,28 @@ template <typename T> inline void IdRetainer<T>::end_cycle()
     assert(this->current_path.empty() &&
            "IdRetainer: Invalid end of cycle, not all values were popped");
 
+    std::vector<std::string> to_erase;
+
     // 2. Remove all dead nodes.
-    for (auto it = this->values.begin(); it != this->values.end();)
+    for (auto it = this->values.begin(); it != this->values.end(); ++it)
     {
         if (it->second.death <= this->cycle_number)
         {
-            free(it->second.value);
-            it = this->values.erase(it);
-        }
-        else
-        {
-            ++it;
+            to_erase.push_back(it->first);
         }
     }
 
-    // 3. Proceed to the next cycle.
+    // 3. Remove dead nodes from the map.
+    for (auto &id : to_erase)
+    {
+        this->values.erase(id);
+    }
+
+    // 4. Proceed to the next cycle.
     this->cycle_number++;
 }
 
-template <typename T> inline T *IdRetainer<T>::value()
+template <typename T> inline T IdRetainer<T>::value()
 {
     std::string path = join_vector_into_string(this->current_path, "/");
     auto it = this->values.find(path);
@@ -94,9 +94,7 @@ template <typename T> inline void IdRetainer<T>::push(const char *s, T value)
     std::string path = join_vector_into_string(this->current_path, "/");
     if (this->values.count(path) == 0)
     {
-        T *v_ptr = (T *)OOM_HANDLER(malloc(sizeof(T)));
-        *v_ptr = value;
-        this->values[path] = {this->cycle_number + 1, v_ptr};
+        this->values[path] = {this->cycle_number + 1, value};
     }
     else
     {

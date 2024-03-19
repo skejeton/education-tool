@@ -124,9 +124,6 @@ void load_umka(Entry &entry)
     {
         return;
     }
-
-    char *assm = umkaAsm(entry.umka);
-    fprintf(stderr, "UMKA ASM: %s\n", assm);
 }
 
 void reload_umka(Entry &entry)
@@ -137,8 +134,6 @@ void reload_umka(Entry &entry)
 
 void Entry::frame(void)
 {
-    void *x = malloc(3232);
-
     bool reload_module = false;
     this->boxdraw_renderer.pass_action.colors->clear_value = {0, 0, 0.5, 1};
     switch (ui_mode)
@@ -178,7 +173,14 @@ void Entry::frame(void)
 void Entry::cleanup(void)
 {
     main_menu.deinit();
+    ui_state.deinit();
+    game_gui.deinit();
     res.deinit();
+    if (ui_mode == MENU_EDITOR)
+    {
+        editor.deinit();
+        scene.deinit();
+    }
     boxdraw_destroy(&this->boxdraw_renderer);
     sg_tricks_deinit();
 

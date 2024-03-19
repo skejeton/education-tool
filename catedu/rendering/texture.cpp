@@ -50,11 +50,14 @@ Texture Texture::init(const char *png_path)
     init_sampler_tex(result.sysid_sampler, result.sysid_texture, data_dims,
                      data_buf);
 
+    stbi_image_free(data);
+
     return result;
 }
 
 void Texture::deinit()
 {
+
     sg_destroy_sampler(this->sysid_sampler);
     sg_destroy_image(this->sysid_texture);
 }
