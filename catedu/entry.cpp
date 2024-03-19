@@ -5,6 +5,7 @@
 #include "catedu/sys/console.hpp"
 #include "catedu/sys/fs/read_file_temp.hpp"
 #include "catedu/sys/sg_tricks.hpp"
+#include "catedu/ui/rendering/colors.hpp"
 #include "catedu/ui/widgets.hpp"
 #include "resources/resources.hpp"
 #include <cstdlib>
@@ -33,17 +34,11 @@ void umka_label(UmkaStackSlot *params, UmkaStackSlot *result)
     char *string = (char *)params[1].ptrVal;
 
     // Color is in the format 0xRRGGBBAA
-    Vector4 color_vec = {
-        (float)((color >> 24) & 0xFF) / 255.0f,
-        (float)((color >> 16) & 0xFF) / 255.0f,
-        (float)((color >> 8) & 0xFF) / 255.0f,
-        (float)((color >> 0) & 0xFF) / 255.0f,
-    };
 
     assert(entry_ptr->ui_user);
 
     label(*entry_ptr->ui_user, string, {1, 1},
-          UiMakeBrush::make_solid(color_vec));
+          UiMakeBrush::make_solid(to_color(color)));
 }
 
 void umka_nextrow(UmkaStackSlot *params, UmkaStackSlot *result)

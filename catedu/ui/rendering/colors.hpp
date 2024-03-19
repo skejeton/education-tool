@@ -19,3 +19,13 @@ static inline Vector4 color_bluish(float mul = 1.0f, float alpha = 1.0f)
 {
     return Vector4{0.93f * mul, 0.97f * mul, 1.0f * mul, alpha};
 }
+
+static inline Vector4 to_color(uint32_t color)
+{
+    return {
+        (float)((color >> 24) & 0xFF) / 255.0f,
+        (float)((color >> 16) & 0xFF) / 255.0f,
+        (float)((color >> 8) & 0xFF) / 255.0f,
+        (float)((color >> 0) & 0xFF) / 255.0f,
+    };
+}

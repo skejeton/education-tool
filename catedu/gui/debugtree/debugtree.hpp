@@ -1,11 +1,23 @@
 #pragma once
+#include "catedu/core/alloc/bump_allocator.hpp"
 #include "catedu/ui/user.hpp"
 #include <stdint.h>
 
+
+struct DebugEntry
+{
+    char *name;
+    uint32_t name_color;
+    char *value;
+    uint32_t value_color;
+
+    DebugEntry *next;
+};
+
 struct GuiDebugTree
 {
-    char *str;
-    size_t str_len;
+    DebugEntry *entry;
+    BumpAllocator allocator;
 
     static GuiDebugTree init();
     void deinit();
