@@ -2,4 +2,8 @@
 
 #include <assert.h>
 
-#define OOM_HANDLER(v) (assert((v) != NULL && "Out of memory"), (v))
+#define OOM_HANDLER(v)                                                         \
+    [](void *ptr) {                                                            \
+        assert(ptr != nullptr && "Out of memory.");                            \
+        return ptr;                                                            \
+    }(v)
