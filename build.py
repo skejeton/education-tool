@@ -75,6 +75,7 @@ def target_build(p: CompileProperties):
 
   command = ""
   mode_string = "Release" if p.release_mode else "Debug"
+  print(f"Building in {mode_string} mode")
 
   if os.name == "nt":
     # NOTE: The new line is important, because using && in the end of if
@@ -83,16 +84,16 @@ def target_build(p: CompileProperties):
     command += "lib\\sokol-tools-bin\\bin\\win32\\sokol-shdc.exe --input catedu/shaders/amalgamation.glsl --output catedu/shaders.hxx --slang hlsl5 "
     command += "&& cd bin "
     command += f"&& cmake -DCMAKE_BUILD_TYPE={mode_string} {test_string} .. "
-    command += f"&& msbuild catedu.sln /maxcpucount /property:Configuration={mode_string} "
+    command += f"&& msbuild educore.sln /maxcpucount /property:Configuration={mode_string} "
     command += "&& cd .. "
     if p.prof:
       sleepy = "C:\\PROGRA~1\\VERYSL~1\\sleepy.exe"
       if not os.path.isfile(sleepy):
         raise Exception("Very Sleepy is not installed, it is required for profiling on Windows")
-      command += f"&& {sleepy} /r .\\bin\\{mode_string}\\catedu.exe"
+      command += f"&& {sleepy} /r .\\bin\\{mode_string}\\educore.exe"
       print(command)
     elif p.run_mode:
-      command += f"&& .\\bin\\{mode_string}\\catedu.exe"
+      command += f"&& .\\bin\\{mode_string}\\educore.exe"
   elif sys.platform == "darwin":
     command += "mkdir -p bin "
     command += "&& lib/sokol-tools-bin/bin/osx/sokol-shdc --input catedu/shaders/amalgamation.glsl --output catedu/shaders.hxx --slang metal_macos "
@@ -103,7 +104,7 @@ def target_build(p: CompileProperties):
     if p.prof:
       raise Exception("Profiling is not yet supported on macOS")
     elif p.run_mode:
-      command += "&& ./bin/catedu"
+      command += "&& ./bin/educore"
   else:
     command += "mkdir -p bin "
     command += "&& lib/sokol-tools-bin/bin/linux/sokol-shdc --input catedu/shaders/amalgamation.glsl --output catedu/shaders.hxx --slang glsl330 "
@@ -114,7 +115,7 @@ def target_build(p: CompileProperties):
     if p.prof:
       raise Exception("Profiling is not yet supported on Linux/other")
     elif p.run_mode:
-      command += "&& ./bin/catedu"
+      command += "&& ./bin/educore"
   return command
 
 def init_system_features():

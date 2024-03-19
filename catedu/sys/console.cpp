@@ -28,6 +28,7 @@ static void last_error_fatal()
 // NOTE: Always creates a new console on windows.
 void console_create_or_bind_existing()
 {
+    /*
     if (!AllocConsole())
     {
         last_error_fatal();
@@ -36,6 +37,7 @@ void console_create_or_bind_existing()
     freopen("CONIN$", "r", stdin);
     freopen("CONOUT$", "w", stdout);
     freopen("CONOUT$", "w", stderr);
+    */
 }
 #else
 void console_create_or_bind_existing()

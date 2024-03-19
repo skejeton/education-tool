@@ -137,6 +137,8 @@ void reload_umka(Entry &entry)
 
 void Entry::frame(void)
 {
+    void *x = malloc(3232);
+
     bool reload_module = false;
     this->boxdraw_renderer.pass_action.colors->clear_value = {0, 0, 0.5, 1};
     switch (ui_mode)
@@ -185,8 +187,6 @@ void Entry::cleanup(void)
 
 void Entry::init()
 {
-    console_create_or_bind_existing();
-
     entry_ptr = this;
 
     load_umka(*this);

@@ -2,6 +2,7 @@
 #define SOKOL_IMPL
 
 #ifdef _WIN32
+#define SOKOL_WIN32_FORCE_MAIN
 #define SOKOL_D3D11
 #elif defined(__EMSCRIPTEN__)
 #define SOKOL_GLES3
