@@ -149,6 +149,7 @@ void Entry::frame(void)
         ui_mode = main_menu.show();
         if (ui_mode == MENU_EDITOR)
         {
+            this->editor = GuiEditor::init(&this->ui_state);
             READ_FILE_TEMP(world, "assets/world.dat",
                            { scene = Scene::load(world); });
         }
@@ -159,6 +160,7 @@ void Entry::frame(void)
         {
             ui_mode = MENU_MAIN_MENU;
             this->scene.deinit();
+            this->editor.deinit();
         }
         break;
     case MENU_GAME:

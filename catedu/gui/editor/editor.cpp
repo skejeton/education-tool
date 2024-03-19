@@ -1064,4 +1064,9 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
 void GuiEditor::deinit()
 {
     debug_tree.deinit();
+    if (this->playtest_scene)
+    {
+        this->playtest_scene->deinit();
+        free(this->playtest_scene);
+    }
 }
