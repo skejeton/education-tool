@@ -2,7 +2,6 @@
 
 #include "catedu/core/alloc/bump_allocator.hpp"
 #include "catedu/core/math/math.hpp"
-#include "catedu/rendering/3d/boxdraw.hpp"
 #include "catedu/rendering/resource_spec.hpp"
 #include "physics.hpp"
 

@@ -30,7 +30,6 @@ set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
 if (WIN32)
     target_link_libraries(${PROJECT_NAME} PUBLIC d3d11 ws2_32 winmm)
-    target_compile_options(${PROJECT_NAME} PUBLIC "/fsanitize=address")
 endif()
 
 if (APPLE)
@@ -42,10 +41,9 @@ if (APPLE)
 endif()
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    target_link_libraries(${PROJECT_NAME} PUBLIC GL X11 pthread dl Xcursor Xi)
+    #target_compile_options(${PROJECT_NAME} PUBLIC -fsanitize=address -fsanitize=leak)
+    target_link_libraries(${PROJECT_NAME} PUBLIC GL X11 pthread dl Xcursor Xi)# asan)
 endif()
-
-set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:CONSOLE")
 
 target_include_directories(${PROJECT_NAME} PUBLIC ./)
 target_include_directories(${PROJECT_NAME} PUBLIC lib/)

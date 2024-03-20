@@ -2,7 +2,6 @@
 
 #include "catedu/core/math/math.hpp"
 #include "catedu/core/storage/table.hpp"
-#include "catedu/rendering/3d/boxdraw.hpp"
 #include "catedu/rendering/resource_spec.hpp"
 
 struct PhysicsBody
