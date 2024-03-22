@@ -77,6 +77,8 @@ void Renderer::render_model(Model &model, pbr_vs_params_t vs_params)
 
     sg_apply_bindings(bindings);
 
+    vs_params.viewproj = this->camera.vp;
+
     sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_pbr_vs_params,
                       SG_RANGE(vs_params));
 

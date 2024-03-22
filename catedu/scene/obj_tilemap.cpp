@@ -51,7 +51,8 @@ void ObjTilemap::update(PhysicsWorld &world, ResourceSpec &resources)
     }
 }
 
-void ObjTilemap::render(BoxdrawRenderer &renderer, ResourceSpec &resources)
+void ObjTilemap::render(catedu::pbr::Renderer &renderer,
+                        ResourceSpec &resources)
 {
     BasicTilemapSerial serial = BasicTilemapSerial::init(this->tilemap);
     for (TilePositionToTile tile = serial.next(); tile.id != -1;
@@ -68,7 +69,8 @@ void ObjTilemap::render(BoxdrawRenderer &renderer, ResourceSpec &resources)
         // resource spec.
         SpecTile tile_spec = resources.tiles.get_assert({(size_t)tile.id});
         SpecModel model_spec = resources.models.get_assert(tile_spec.model_id);
-        render_model_at(pos, resources, tile_spec.model_id, renderer, true);
+        render_model_at(pos, resources, tile_spec.model_id, renderer, true,
+                        false, tile_spec.rotation);
     }
 }
 

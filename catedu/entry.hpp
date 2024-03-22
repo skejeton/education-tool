@@ -7,7 +7,6 @@
 #include "catedu/gui/editor/editor.hpp"
 #include "catedu/gui/game/game.hpp"
 #include "catedu/gui/main_menu/main_menu.hpp"
-#include "catedu/rendering/3d/boxdraw.hpp"
 #include "catedu/rendering/resource_spec.hpp"
 #include "catedu/scene/scene.hpp"
 #include "catedu/sys/input.hpp"
@@ -41,7 +40,7 @@ struct Entry : SokolSetup
 
     Scene scene;
 
-    BoxdrawRenderer boxdraw_renderer;
+    catedu::pbr::Renderer renderer;
 
     void init();
     void frame();

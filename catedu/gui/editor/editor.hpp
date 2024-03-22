@@ -1,7 +1,7 @@
 #pragma once
 #include "../debugtree/debugtree.hpp"
-#include "catedu/rendering/3d/boxdraw.hpp"
 #include "catedu/rendering/3d/camera.hpp"
+#include "catedu/rendering/3d/pbr.hpp"
 #include "catedu/rendering/resource_spec.hpp"
 #include "catedu/scene/scene.hpp"
 #include "catedu/sys/input.hpp"
@@ -9,6 +9,7 @@
 #include "catedu/ui/rendering/font.hpp"
 #include "catedu/ui/user.hpp"
 #include <sokol/sokol_app.h>
+
 
 struct EditAction
 {
@@ -73,7 +74,7 @@ struct GuiEditor
     Scene *playtest_scene;
 
     static GuiEditor init(UiState *ui_state);
-    bool show(BoxdrawRenderer &renderer, ResourceSpec &resources, Scene &scene,
-              UiUser **user, void *umka, bool *reload_module);
+    bool show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
+              Scene &scene, UiUser **user, void *umka, bool *reload_module);
     void deinit();
 };

@@ -27,10 +27,7 @@ void ObjEntity::update(PhysicsWorld &world, ResourceSpec &resources)
         }
         SpecModel model = resources.models.get_assert(model_id);
 
-        body.area = {(float)this->pos.x + model.model.min.x,
-                     (float)this->pos.y + model.model.min.z,
-                     model.model.max.x - model.model.min.x,
-                     model.model.max.z - model.model.min.z};
+        body.area = {(float)this->pos.x, (float)this->pos.y, 1, 1};
 
         body.solid = true;
         body.dynamic = true;
@@ -46,7 +43,7 @@ void ObjEntity::update(PhysicsWorld &world, ResourceSpec &resources)
     }
 }
 
-void ObjEntity::render(BoxdrawRenderer &renderer, ResourceSpec &resources)
+void ObjEntity::render(catedu::pbr::Renderer &renderer, ResourceSpec &resources)
 {
     Vector3 pos = {this->pos.x, 0, this->pos.y};
 

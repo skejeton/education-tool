@@ -172,7 +172,7 @@ void Scene::update(ResourceSpec &resources)
     }
 }
 
-void Scene::render(BoxdrawRenderer &renderer, ResourceSpec &resources,
+void Scene::render(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                    bool show_physics)
 {
     for (auto [id, object] : iter(objects))
@@ -198,6 +198,8 @@ void Scene::render(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
     if (show_physics)
     {
+        assert("Not implemented" && false);
+        /*
         for (auto [id, body] : iter(physics.bodies))
         {
             Vector4 color = {1, 0, 0, 1};
@@ -215,6 +217,7 @@ void Scene::render(BoxdrawRenderer &renderer, ResourceSpec &resources,
 
             boxdraw_push(&renderer, boxdraw_cmdtexture(box, tex, true));
         }
+        */
     }
 }
 

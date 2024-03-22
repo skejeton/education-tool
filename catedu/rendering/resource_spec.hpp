@@ -16,6 +16,7 @@ struct SpecTile
     const char *name;
     TableId model_id;
     bool if_obstacle;
+    int rotation;
 };
 
 struct ResourceSpec

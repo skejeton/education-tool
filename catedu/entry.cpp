@@ -135,14 +135,11 @@ void reload_umka(Entry &entry)
 void Entry::frame(void)
 {
     bool reload_module = false;
-    this->boxdraw_renderer.pass_action.colors->clear_value = {0, 0, 0.5, 1};
     switch (ui_mode)
     {
     case MENU_DEBUG:
         break;
     case MENU_MAIN_MENU:
-        this->boxdraw_renderer.pass_action.colors->clear_value = {0, 0, 0, 1};
-        boxdraw_flush(&this->boxdraw_renderer, this->editor.camera.vp);
         ui_mode = main_menu.show();
         if (ui_mode == MENU_EDITOR)
         {
@@ -152,8 +149,8 @@ void Entry::frame(void)
         }
         break;
     case MENU_EDITOR:
-        if (editor.show(this->boxdraw_renderer, this->res, this->scene,
-                        &this->ui_user, this->umka, &reload_module))
+        if (editor.show(this->renderer, this->res, this->scene, &this->ui_user,
+                        this->umka, &reload_module))
         {
             ui_mode = MENU_MAIN_MENU;
             this->scene.deinit();
@@ -181,7 +178,7 @@ void Entry::cleanup(void)
         editor.deinit();
         scene.deinit();
     }
-    boxdraw_destroy(&this->boxdraw_renderer);
+    this->renderer.deinit();
     sg_tricks_deinit();
 
     umkaFree(this->umka);
@@ -205,11 +202,16 @@ void Entry::init()
 
     if (ui_mode == MENU_EDITOR)
     {
-        READ_FILE_TEMP(world, "assets/world.dat",
-                       { scene = Scene::load(world); });
+        FILE *f = fopen("assets/world.dat", "rb");
+        if (f != NULL)
+        {
+            READ_FILE_TEMP(world, "assets/world.dat",
+                           { scene = Scene::load(world); });
+            fclose(f);
+        }
     }
 
-    this->boxdraw_renderer = boxdraw_create();
+    this->renderer = catedu::pbr::Renderer::init();
 }
 
 void Entry::input(const sapp_event *event)

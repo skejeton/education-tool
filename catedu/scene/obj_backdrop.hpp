@@ -2,7 +2,7 @@
 
 #include "catedu/core/alloc/bump_allocator.hpp"
 #include "catedu/core/math/math.hpp"
-#include "catedu/rendering/3d/boxdraw.hpp"
+#include "catedu/rendering/3d/pbr.hpp"
 #include "catedu/rendering/resource_spec.hpp"
 #include "physics.hpp"
 
@@ -13,7 +13,7 @@ struct ObjBackdrop
     static ObjBackdrop init(Rect texture_rect);
     void deinit();
     void update(PhysicsWorld &world, ResourceSpec &resources);
-    void render(BoxdrawRenderer &renderer, ResourceSpec &resources);
+    void render(catedu::pbr::Renderer &renderer, ResourceSpec &resources);
 
     ObjBackdrop copy();
 

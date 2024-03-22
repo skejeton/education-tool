@@ -1,6 +1,7 @@
 #pragma once
 
 #include "catedu/core/memory/buffer.hpp"
+#include "catedu/rendering/3d/pbr.hpp"
 #include "obj_backdrop.hpp"
 #include "obj_entity.hpp"
 #include "obj_tilemap.hpp"
@@ -58,7 +59,7 @@ struct Scene
     static Scene load(Buffer buffer);
 
     void update(ResourceSpec &resources);
-    void render(BoxdrawRenderer &renderer, ResourceSpec &resources,
+    void render(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                 bool show_physics = false);
     void deinit();
 };

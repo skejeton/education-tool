@@ -2,6 +2,7 @@
 
 #include "catedu/core/alloc/bump_allocator.hpp"
 #include "catedu/core/math/math.hpp"
+#include "catedu/rendering/3d/pbr.hpp"
 #include "catedu/rendering/resource_spec.hpp"
 #include "physics.hpp"
 
@@ -14,7 +15,7 @@ struct ObjEntity
     static ObjEntity init(const char *model_name, Vector2 pos);
     void deinit();
     void update(PhysicsWorld &world, ResourceSpec &resources);
-    void render(BoxdrawRenderer &renderer, ResourceSpec &resources);
+    void render(catedu::pbr::Renderer &renderer, ResourceSpec &resources);
 
     ObjEntity copy();
 

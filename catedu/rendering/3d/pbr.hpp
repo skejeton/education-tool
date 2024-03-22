@@ -12,7 +12,9 @@
 #include "catedu/shaders.hxx"
 // clang-format on
 
+#include "catedu/rendering/3d/camera.hpp"
 #include "model.hpp"
+
 
 namespace catedu::pbr
 {
@@ -21,6 +23,7 @@ struct Renderer
 {
     sg_pipeline pipeline;
     sg_pass_action pass_action;
+    Camera camera;
 
     static Renderer init();
     void deinit();

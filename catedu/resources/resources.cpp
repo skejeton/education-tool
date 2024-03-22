@@ -11,18 +11,22 @@ struct TileProto
     const char *name;
     const char *model_name;
     bool if_obstacle;
+    int rotation;
 };
 
-const ModelProto model_protos[] = {{"barrel", "./assets/models/barrel.gltf"},
+const ModelProto model_protos[] = {{"invalid", "./assets/models/barrel.gltf"},
+                                   {"selector", "./assets/models/counter.gltf"},
+                                   {"barrel", "./assets/models/barrel.gltf"},
                                    {"car", "./assets/models/car.gltf"},
                                    {"counter", "./assets/models/counter.gltf"},
                                    {"tile", "./assets/models/tile.gltf"},
-                                   {"wall", "./assets/wall_edge.gltf"}};
+                                   {"wall", "./assets/models/wall_edge.gltf"}};
 
-const TileProto tile_protos[] = {{"barrel", "barrel", true},
-                                 {"counter", "counter", true},
-                                 {"tile", "tile", false},
-                                 {"wall", "wall", true}};
+const TileProto tile_protos[] = {
+    {"barrel", "barrel", true},      {"counter", "counter", true},
+    {"tile", "tile", false},         {"wall_west", "wall", true, 0},
+    {"wall_north", "wall", true, 1}, {"wall_east", "wall", true, 2},
+    {"wall_south", "wall", true, 3}};
 
 ResourceSpec load_resource_spec(const char *path)
 {
@@ -43,7 +47,8 @@ ResourceSpec load_resource_spec(const char *path)
     for (auto &proto : tile_protos)
     {
         TableId model_id = result.find_model_by_name(proto.model_name);
-        result.tiles.allocate({proto.name, model_id, proto.if_obstacle});
+        result.tiles.allocate(
+            {proto.name, model_id, proto.if_obstacle, proto.rotation});
     }
 
     return result;

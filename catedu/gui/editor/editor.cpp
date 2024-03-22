@@ -513,7 +513,8 @@ struct SelectionState
     Vector2 position;
 };
 
-SelectionState show_selection(GuiEditor &editor, BoxdrawRenderer &renderer,
+SelectionState show_selection(GuiEditor &editor,
+                              catedu::pbr::Renderer &renderer,
                               ResourceSpec &resources, Scene &scene,
                               Input &input)
 {
@@ -530,6 +531,7 @@ SelectionState show_selection(GuiEditor &editor, BoxdrawRenderer &renderer,
     bool is_selected = editor.placing_object;
     TableId selector_model_id = resources.find_model_by_name("selector");
     TableId model_id = NULL_ID;
+    int rotation = 0;
 
     if (is_selected)
     {
@@ -556,6 +558,7 @@ SelectionState show_selection(GuiEditor &editor, BoxdrawRenderer &renderer,
                 {
                     SpecTile &tile =
                         resources.tiles.get_assert(editor.tile_selection);
+                    rotation = tile.rotation;
                     model_id = tile.model_id;
                 }
             }
@@ -571,7 +574,8 @@ SelectionState show_selection(GuiEditor &editor, BoxdrawRenderer &renderer,
     {
         if (model_id != NULL_ID)
         {
-            render_model_at(pos3d, resources, model_id, renderer, true, true);
+            render_model_at(pos3d, resources, model_id, renderer, true, true,
+                            rotation);
         }
         else
         {
@@ -617,13 +621,16 @@ ObjectId find_object_within_distance_not_player(Scene &scene, Vector2 pos,
     return NULL_ID;
 }
 
-bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
+bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                      Scene &scene, UiUser **user_out, void *umka,
                      bool *reload_module)
 {
     UiUser user = UiUser::init(*this->ui_state);
     *user_out = &user;
     user.begin_pass();
+    renderer.begin_pass();
+
+    renderer.camera = camera;
 
     Input &input = this->ui_state->input;
 
@@ -778,7 +785,7 @@ bool GuiEditor::show(BoxdrawRenderer &renderer, ResourceSpec &resources,
         }
     }
 
-    boxdraw_flush(&renderer, this->camera.vp);
+    renderer.end_pass();
 
     user.end_generic();
     this->ui_state->element_storage.pop();
