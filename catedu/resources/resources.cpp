@@ -20,7 +20,8 @@ const ModelProto model_protos[] = {{"invalid", "./assets/models/barrel.gltf"},
                                    {"car", "./assets/models/car.gltf"},
                                    {"counter", "./assets/models/counter.gltf"},
                                    {"tile", "./assets/models/tile.gltf"},
-                                   {"wall", "./assets/models/wall_edge.gltf"}};
+                                   {"wall", "./assets/models/wall_edge.gltf"},
+                                   {"skybox", "./assets/models/skybox.gltf"}};
 
 const TileProto tile_protos[] = {
     {"barrel", "barrel", true},      {"counter", "counter", true},

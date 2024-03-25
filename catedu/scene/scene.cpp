@@ -198,8 +198,8 @@ void Scene::render(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
 
     if (show_physics)
     {
-        assert("Not implemented" && false);
         /*
+        assert("Not implemented" && false);
         for (auto [id, body] : iter(physics.bodies))
         {
             Vector4 color = {1, 0, 0, 1};
