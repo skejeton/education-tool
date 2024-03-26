@@ -17,8 +17,13 @@ void show_generic_icon(UiUser &user, const char *s, Vector4 color,
     element.padding = {2, 2, 2, 2};
     element.margin = {2, 2, 2, 2};
 
-    user.begin_generic(element, UiMakeBrush::make_solid(color),
-                       UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
+    Vector4 bottom = {color.x * 1.25f, color.y * 1.25f, color.z * 1.25f,
+                      color.w};
+    color.w *= 0.4f;
+
+    user.begin_generic(element, UiMakeBrush::make_gradient(bottom, color),
+                       UiMakeBrush::make_gradient({0.0f, 0.0f, 0.0f, 0.5f},
+                                                  {0.0f, 0.0f, 0.0f, 0.0f}));
 
     label(user, s, {1, 1}, UiMakeBrush::make_solid({1.0f, 1.0f, 1.0f, 1.0f}));
 
@@ -92,7 +97,7 @@ ObjectInteractionEvent show_object_row(UiUser &user, Object &obj,
 
     user.state->element_storage.push(obj.id, {});
 
-    Vector4 bgc = {0.9f, 0.9f, 0.9f, 1.0f};
+    Vector4 bgc = {1.0f, 1.0f, 1.0f, 1.0f};
     if (is_selected)
     {
         bgc = {0.8f, 0.8f, 0.0f, 1.0f};
@@ -111,8 +116,12 @@ ObjectInteractionEvent show_object_row(UiUser &user, Object &obj,
         bgc.w = 1.0f;
     }
 
-    user.begin_generic(element, UiMakeBrush::make_solid(bgc),
-                       UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}),
+    Vector4 color_bottom = {bgc.x * 1.25f, bgc.y * 1.25f, bgc.z * 1.25f, bgc.w};
+    bgc.w *= 0.4f;
+
+    user.begin_generic(element, UiMakeBrush::make_gradient(color_bottom, bgc),
+                       UiMakeBrush::make_gradient({0.0f, 0.0f, 0.0f, 0.5f},
+                                                  {0.0f, 0.0f, 0.0f, 0.0f}),
                        user.state->element_storage.id());
 
     if (button(user, "H"))
@@ -151,7 +160,7 @@ size_t show_pagination(UiUser &user, size_t page, size_t page_count)
     element.border = {0, 0, 1, 0};
 
     user.begin_generic(element,
-                       UiMakeBrush::make_solid({0.9f, 0.9f, 0.9f, 1.0f}),
+                       UiMakeBrush::make_solid({1.0f, 1.0f, 1.0f, 1.0f}),
                        UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
 
     if (button(user, " First "))
