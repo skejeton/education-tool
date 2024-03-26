@@ -25,8 +25,8 @@ const ModelProto model_protos[] = {{"invalid", "./assets/models/barrel.gltf"},
 
 const TileProto tile_protos[] = {
     {"barrel", "barrel", true},      {"counter", "counter", true},
-    {"tile", "tile", false},         {"wall_west", "wall", true, 0},
-    {"wall_north", "wall", true, 1}, {"wall_east", "wall", true, 2},
+    {"tile", "tile", false},         {"wall_west", "wall", true, 2},
+    {"wall_north", "wall", true, 1}, {"wall_east", "wall", true, 0},
     {"wall_south", "wall", true, 3}};
 
 ResourceSpec load_resource_spec(const char *path)
