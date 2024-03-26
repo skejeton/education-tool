@@ -134,6 +134,15 @@ void reload_umka(Entry &entry)
 
 void Entry::frame(void)
 {
+    // Clear the screen
+    sg_pass pass = {0};
+    pass.action.colors[0].load_action = SG_LOADACTION_CLEAR;
+    pass.action.colors[0].store_action = SG_STOREACTION_STORE;
+    pass.action.colors[0].clear_value = {0.0f, 0.0f, 0.0f, 1.0f};
+    pass.swapchain = sglue_swapchain();
+    sg_begin_pass(&pass);
+    sg_end_pass();
+
     bool reload_module = false;
     switch (ui_mode)
     {

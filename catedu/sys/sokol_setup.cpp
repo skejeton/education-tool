@@ -59,7 +59,6 @@ sapp_desc sokol_setup_default(const char *title, SokolSetup *setup)
     r.high_dpi = true;
     r.width = 1024 * sapp_dpi_scale();
     r.height = 768 * sapp_dpi_scale();
-    r.sample_count = 1;
     r.icon.sokol_default = false;
 
     // System settings
