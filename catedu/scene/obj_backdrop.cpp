@@ -19,7 +19,8 @@ void ObjBackdrop::render(catedu::pbr::Renderer &renderer,
                          ResourceSpec &resources)
 {
     pbr_vs_params_t vs_params;
-    vs_params.model = Matrix4::translate(renderer.camera.position);
+    vs_params.model =
+        Matrix4::translate(renderer.camera.position) * Matrix4::scale(8);
     vs_params.lightness = 1.0f;
     vs_params.color_mul = {1.0f, 1.0f, 1.0f, 1.0f};
     renderer.render_model(
