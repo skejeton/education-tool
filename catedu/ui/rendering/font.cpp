@@ -5,7 +5,7 @@
 #include "pass.hpp"
 #include "transform.hpp"
 
-#define PAGE_IMAGE_SIZE 2048
+#define PAGE_IMAGE_SIZE 1024
 
 bool valid_glyph(int glyph)
 {
