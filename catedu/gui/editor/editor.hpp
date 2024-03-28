@@ -1,5 +1,6 @@
 #pragma once
 #include "../debugtree/debugtree.hpp"
+#include "catedu/gui/dialogeditor/dialogeditor.hpp"
 #include "catedu/rendering/3d/camera.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
 #include "catedu/rendering/resource_spec.hpp"
@@ -9,7 +10,6 @@
 #include "catedu/ui/rendering/font.hpp"
 #include "catedu/ui/user.hpp"
 #include <sokol/sokol_app.h>
-
 
 struct EditAction
 {
@@ -72,6 +72,7 @@ struct GuiEditor
     size_t action_buoy;
     size_t action_count;
     Scene *playtest_scene;
+    DialogList dialogs;
 
     static GuiEditor init(UiState *ui_state);
     bool show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,

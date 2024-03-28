@@ -180,7 +180,6 @@ void Entry::cleanup(void)
 {
     main_menu.deinit();
     ui_state.deinit();
-    game_gui.deinit();
     res.deinit();
     if (ui_mode == MENU_EDITOR)
     {
@@ -207,7 +206,6 @@ void Entry::init()
                              "./assets/Roboto-Bold.ttf", sapp_dpi_scale());
     main_menu = GuiMainMenu::init(&ui_state);
     editor = GuiEditor::init(&ui_state);
-    game_gui = GuiGame::init(&ui_state);
 
     if (ui_mode == MENU_EDITOR)
     {

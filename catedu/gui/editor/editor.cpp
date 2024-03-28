@@ -1073,6 +1073,8 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
         this->suppress_errors = false;
     }
 
+    DialogEditor::init().show(user, this->dialogs);
+
     *user_out = 0;
     user.end_pass();
 

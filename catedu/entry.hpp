@@ -5,7 +5,6 @@
 #pragma once
 #include "catedu/core/math/math.hpp"
 #include "catedu/gui/editor/editor.hpp"
-#include "catedu/gui/game/game.hpp"
 #include "catedu/gui/main_menu/main_menu.hpp"
 #include "catedu/rendering/resource_spec.hpp"
 #include "catedu/scene/scene.hpp"
@@ -33,7 +32,6 @@ struct Entry : SokolSetup
     int ui_mode = MENU_EDITOR;
     GuiMainMenu main_menu;
     GuiEditor editor;
-    GuiGame game_gui;
     ResourceSpec res;
 
     void *umka;
