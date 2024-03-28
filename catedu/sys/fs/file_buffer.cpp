@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 FileBuffer FileBuffer::read_whole_file(FILE *f)
 {
     fseek(f, 0, SEEK_END);
