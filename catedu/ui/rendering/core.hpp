@@ -67,6 +67,8 @@ struct UiRenderingCore
     UiImage *get_image(UiImageId id);
 
     void render_object(UiBrush brush);
+    void begin_scissor(Rect rect);
+    void end_scissor();
 };
 
 UiImage ui_image_make_from_data(Buffer data, Vector2i size);

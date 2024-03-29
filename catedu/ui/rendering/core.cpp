@@ -193,6 +193,16 @@ void UiRenderingCore::render_object(UiBrush brush)
     sg_draw(0, buf->indices, 1);
 }
 
+void UiRenderingCore::begin_scissor(Rect r)
+{
+    sg_apply_scissor_rectf(r.pos.x, r.pos.y, r.siz.x, r.siz.y, true);
+}
+
+void UiRenderingCore::end_scissor()
+{
+    sg_apply_scissor_rectf(0, 0, pip_size.x, pip_size.y, true);
+}
+
 UiImage ui_image_make_from_data(Buffer data, Vector2i size)
 {
     sg_image_desc image_desc = {};

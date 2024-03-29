@@ -64,6 +64,7 @@ bool begin_show_window(UiUser &user, WindowInfo info)
         el.width.value = info.rect.siz.x - 6;
         el.height.type = AutoLayoutDimension::Auto;
         el.padding = {3, 3, 3, 3};
+        el.clip = true;
 
         UiBrush border = UiMakeBrush::make_gradient(
             theme[0] * Vector4{1, 1, 1, 0.9}, theme[1] * Vector4{1, 1, 1, 0.7});
@@ -82,6 +83,7 @@ bool begin_show_window(UiUser &user, WindowInfo info)
         el.height.type = AutoLayoutDimension::Pixel;
         el.height.value = info.rect.siz.y;
         el.hidden = pe->hidden;
+        el.clip = true;
 
         UiBrush border = UiMakeBrush::make_solid(theme[0]);
         UiBrush background = UiMakeBrush::make_solid(theme[6]);
@@ -233,8 +235,9 @@ void input(UiUser &user, const char *id, char *out, int max)
 
     AutoLayoutElement el = {};
     el.layout = {AutoLayout::Row};
-    el.width = {AutoLayoutDimension::Auto};
+    el.width = {AutoLayoutDimension::Pixel, 150};
     el.height = {AutoLayoutDimension::Auto};
+    el.clip = true;
     el.padding = {2, 2, 2, 2};
     el.margin = {0, 0, 0, 0};
     el.border = {1, 1, 1, 1};
@@ -248,16 +251,19 @@ void input(UiUser &user, const char *id, char *out, int max)
     {
         bg = UiMakeBrush::make_gradient(theme[5], theme[4]);
         bg.color_top.w = 0.4;
+        el.width = {AutoLayoutDimension::Auto};
+        el.pop = true;
     }
 
     user.begin_generic(el, bg, border, user.state->element_storage.id());
 
     char *t = (char *)OOM_HANDLER(malloc(max + 3));
     memcpy(t, out, strlen(out));
-    t[strlen(out)] = '|';
+    t[strlen(out)] = user.focused() ? '|' : 0;
     t[strlen(out) + 1] = 0;
 
     label(user, t, {1.2, 1.2}, UiMakeBrush::make_solid(theme[2]));
+
     free(t);
     user.end_generic();
 

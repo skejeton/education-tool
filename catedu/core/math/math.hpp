@@ -523,6 +523,16 @@ inline Vector2 rect_vs_rect_snap(Rect r, Rect along)
     return {0, min_y};
 }
 
+inline Rect rect_and(Rect a, Rect b)
+{
+    float x1 = fmaxf(a.pos.x, b.pos.x);
+    float y1 = fmaxf(a.pos.y, b.pos.y);
+    float x2 = fminf(a.pos.x + a.siz.x, b.pos.x + b.siz.x);
+    float y2 = fminf(a.pos.y + a.siz.y, b.pos.y + b.siz.y);
+
+    return {x1, y1, fmaxf(0, x2 - x1), fmaxf(0, y2 - y1)};
+}
+
 inline bool ray3_vs_box3(Ray3 r, Box3 b, float max_distance, float *distance)
 {
     r.direction = vector3_normalize(r.direction);

@@ -9,6 +9,7 @@ struct UiRenderingPass
 {
     UiTransformer transformer;
     UiRenderingCore *core;
+    Rect scissor;
 
     static UiRenderingPass begin(UiRenderingCore *core);
     void end();
@@ -19,4 +20,7 @@ struct UiRenderingPass
     Vector2 transform_point(Vector2 point);
 
     void render_brush(UiBrush brush);
+
+    void begin_scissor(Rect rect);
+    void end_scissor();
 };

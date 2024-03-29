@@ -42,3 +42,19 @@ void UiRenderingPass::render_brush(UiBrush brush)
 {
     this->core->render_object(brush);
 }
+
+void UiRenderingPass::begin_scissor(Rect rect)
+{
+    // In the case that the scissor is the same, we don't need to do anything.
+    // FIXME: This might be a hack in the long run.
+    if (memcmp(&this->scissor, &rect, sizeof(Rect)) == 0)
+    {
+        return;
+    }
+    this->core->begin_scissor(rect);
+}
+
+void UiRenderingPass::end_scissor()
+{
+    this->core->end_scissor();
+}

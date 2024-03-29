@@ -76,6 +76,8 @@ struct AutoLayoutElement
     AutoLayoutPosition position;
     char *note; // Note for debugging.
     bool hidden;
+    bool clip;
+    bool pop;
     //----------------------------------------------- Calculated data.
     Rect padding_box; // Box inside padding.
     Rect base_box;    // Box inside border.
@@ -90,6 +92,7 @@ struct AutoLayoutResult
     Rect base_box;    // Box inside border.
     Rect border_box;  // Box inside margin.
     Rect margin_box;  //
+    Rect clip_box;    // Box inside clip.
     bool hidden;
     char *note;
     AutoLayoutResult *next;

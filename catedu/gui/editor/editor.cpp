@@ -771,7 +771,6 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                 {
                     if (this->selection != NULL_ID)
                     {
-                        // Path: catedu/gui/editor/editor.cpp
                         Object *selected = scene.get_object(this->selection);
                         if (selected && selected->type == Object::Type::Entity)
                         {
@@ -1010,13 +1009,7 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
         this->playtest_scene->update(resources);
     }
 
-    if (this->show_debug)
-    {
-        WindowInfo info = {"Debug", {0, 0, 300, 400}};
-        begin_show_window(user, info);
-        debug_tree.show(user);
-        end_show_window(user);
-    }
+    this->dialog_editor.show(user, this->dialog);
 
     if (this->playtest_no_player)
     {
@@ -1069,12 +1062,18 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
         }
     }
 
+    if (this->show_debug)
+    {
+        WindowInfo info = {"Debug", {0, 0, 300, 400}};
+        begin_show_window(user, info);
+        debug_tree.show(user);
+        end_show_window(user);
+    }
+
     if (*reload_module)
     {
         this->suppress_errors = false;
     }
-
-    this->dialog_editor.show(user, this->dialog);
 
     *user_out = 0;
     user.end_pass();

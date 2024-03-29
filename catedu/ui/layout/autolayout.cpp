@@ -8,11 +8,6 @@ struct ResultBuilder
     AutoLayoutProcess *process;
     AutoLayoutResult *last;
     BumpAllocator *alloc;
-
-    AutoLayoutNodeId begin()
-    {
-        return this->process->root;
-    }
 };
 
 AutoLayoutResult *alloc_result(ResultBuilder &builder)
@@ -143,7 +138,9 @@ void align_to_parents(AutoLayoutProcess *process, AutoLayoutNodeId n)
     }
 }
 
-void build_results(ResultBuilder &builder, AutoLayoutNodeId n, bool hidden)
+// FIXME: Using a giant clip rect for now.
+void build_results(ResultBuilder &builder, AutoLayoutNodeId n, bool hidden,
+                   Rect clip = {0, 0, 100000, 100000})
 {
     AutoLayoutNode *node = builder.process->nodes.get(n.id);
     assert(node);
@@ -153,20 +150,35 @@ void build_results(ResultBuilder &builder, AutoLayoutNodeId n, bool hidden)
         hidden = true;
     }
 
+    if (node->element.pop)
+    {
+        clip = {0, 0, 100000, 100000};
+    }
+
     AutoLayoutResult *result = alloc_result(builder);
-    result->padding_box = node->element.padding_box;
-    result->base_box = node->element.base_box;
-    result->border_box = node->element.border_box;
-    result->margin_box = node->element.margin_box;
+    if (!hidden)
+    {
+        result->padding_box = node->element.padding_box;
+        result->base_box = node->element.base_box;
+        result->border_box = node->element.border_box;
+        result->margin_box = node->element.margin_box;
+        result->clip_box = clip;
+    }
+
     result->userdata = node->element.userdata;
     result->hidden = hidden;
+
+    if (node->element.clip)
+    {
+        clip = rect_and(clip, result->padding_box);
+    }
 
     AutoLayoutNodeId child = node->child;
     while (child.id.valid())
     {
         AutoLayoutNode *child_node = builder.process->nodes.get(child.id);
         assert(child_node);
-        build_results(builder, child, hidden);
+        build_results(builder, child, hidden, clip);
         child = child_node->sibling;
     }
 }
@@ -227,7 +239,7 @@ void AutoLayoutProcess::process(BumpAllocator alloc, AutoLayoutResult *&result)
     builder.last = result = zeroinit(alloc.alloc<AutoLayoutResult>());
     builder.alloc = &alloc;
 
-    recurse(this, builder.begin());
-    align_to_parents(this, builder.begin());
-    build_results(builder, builder.begin(), false);
+    recurse(this, builder.process->root);
+    align_to_parents(this, builder.process->root);
+    build_results(builder, builder.process->root, false);
 }

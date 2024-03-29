@@ -45,6 +45,45 @@ void UiUser::begin_pass()
     }
 }
 
+void render_object(UiUser &user, AutoLayoutResult &result)
+{
+    UiGenericStyles *styles = user.styles.get(result.userdata);
+
+    // TODO: Why would style be null?
+    if (styles == nullptr)
+    {
+        return;
+    }
+
+    // FIXME: Way too into the guts of the system.
+    auto *pe = user.state->element_storage.elements.get(styles->persistent);
+    if (pe)
+    {
+        pe->border_box = result.border_box;
+    }
+
+    if (result.hidden)
+    {
+        return;
+    }
+
+    if (styles->text)
+    {
+        UiFontRenderer &font =
+            styles->bold ? user.state->font_bold : user.state->font;
+
+        // FIXME: Does it really make sense to store the text in the styles?
+        font.render_text_utf8(&user.pass, result.base_box.pos, styles->text,
+                              styles->brush,
+                              styles->text_scale * user.state->dpi_scale);
+    }
+    else
+    {
+        draw_brush(user.pass, result.border_box, styles->border);
+        draw_brush(user.pass, result.base_box, styles->brush);
+    }
+}
+
 void render_out(UiUser &user)
 {
     auto alloc = BumpAllocator::init();
@@ -54,66 +93,11 @@ void render_out(UiUser &user)
 
     while (result)
     {
-        UiGenericStyles *styles = user.styles.get(result->userdata);
-        if (styles)
-        {
-            bool hovered = false;
-            int order = -1;
-
-            if (styles->persistent != NULL_ID)
-            {
-                UiPersistentElement *pe =
-                    user.state->element_storage.elements.get(
-                        styles->persistent);
-                order = pe->order;
-                if (result->hidden)
-                {
-                    pe->border_box = {};
-                }
-                pe->border_box = result->border_box;
-                if (user.state->interaction_table.hovered == styles->persistent)
-                {
-                    hovered = true;
-                }
-            }
-            if (result->hidden)
-            {
-                result = result->next;
-                continue;
-            }
-            if (styles->text)
-            {
-                if (styles->bold)
-                {
-                    user.state->font_bold.render_text_utf8(
-                        &user.pass, result->base_box.pos, styles->text,
-                        styles->brush,
-                        styles->text_scale * user.state->dpi_scale);
-                }
-                else
-                {
-                    user.state->font.render_text_utf8(
-                        &user.pass, result->base_box.pos, styles->text,
-                        styles->brush,
-                        styles->text_scale * user.state->dpi_scale);
-                }
-            }
-            else
-            {
-                draw_brush(user.pass, result->border_box, styles->border);
-                draw_brush(user.pass, result->base_box, styles->brush);
-            }
-            if (order >= 0)
-            {
-                user.state->font.render_text_utf8(
-                    &user.pass, result->margin_box.pos - Vector2{10, 10},
-                    stdstrfmt("%d", order).c_str(),
-                    UiMakeBrush::make_solid({1.0, 0, 0, 1.0}),
-                    Vector2{1.0f, 1.0f} * user.state->dpi_scale);
-            }
-        }
+        user.pass.begin_scissor(result->clip_box);
+        render_object(user, *result);
         result = result->next;
     }
+    user.pass.end_scissor();
 
     assert(user.current_node.id == user.layout.root.id &&
            "Unfinished begin_generic calls");
