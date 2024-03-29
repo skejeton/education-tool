@@ -72,7 +72,8 @@ struct GuiEditor
     size_t action_buoy;
     size_t action_count;
     Scene *playtest_scene;
-    DialogList dialogs;
+    DialogList dialog;
+    DialogEditor dialog_editor;
 
     static GuiEditor init(UiState *ui_state);
     bool show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,

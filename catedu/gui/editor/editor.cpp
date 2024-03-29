@@ -512,6 +512,7 @@ GuiEditor GuiEditor::init(UiState *ui_state)
     result.ui_state = ui_state;
     result.camera = camera;
     result.debug_tree = GuiDebugTree::init();
+    result.dialog_editor = DialogEditor::init();
 
     return result;
 }
@@ -1073,7 +1074,7 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
         this->suppress_errors = false;
     }
 
-    DialogEditor::init().show(user, this->dialogs);
+    this->dialog_editor.show(user, this->dialog);
 
     *user_out = 0;
     user.end_pass();

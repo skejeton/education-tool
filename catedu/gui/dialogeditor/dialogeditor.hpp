@@ -15,6 +15,8 @@ struct DialogList
 
 struct DialogEditor
 {
+    TableId selected;
+
     static DialogEditor init();
     void deinit();
 

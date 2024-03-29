@@ -148,6 +148,7 @@ void UiUser::end_pass()
 
 void UiUser::push_id(int64_t id)
 {
+    this->state->element_storage.push(std::to_string(id).c_str(), {});
 }
 
 void UiUser::push_id(const char *id)
