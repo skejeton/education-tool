@@ -39,6 +39,9 @@ bool begin_show_window(UiUser &user, WindowInfo info)
         pe->pinned = false;
     }
 
+    pe->persistent_box.siz.x = std::max(pe->persistent_box.siz.x, 100.0f);
+    pe->persistent_box.siz.y = std::max(pe->persistent_box.siz.y, 100.0f);
+
     if (!info.if_static)
     {
         info.rect = pe->persistent_box;
@@ -88,6 +91,81 @@ bool begin_show_window(UiUser &user, WindowInfo info)
         UiBrush border = UiMakeBrush::make_solid(theme[0]);
         UiBrush background = UiMakeBrush::make_solid(theme[6]);
         user.begin_generic(el, background, border);
+    }
+
+    // Resize handle
+    {
+        AutoLayoutElement el = {};
+        el.width.type = AutoLayoutDimension::Pixel;
+        el.width.value = 6;
+        el.height.type = AutoLayoutDimension::Pixel;
+        el.height.value = 6;
+        el.clip = true;
+        el.position = AutoLayoutPosition::Detached;
+        el.offset = info.rect.siz;
+        el.pop = true;
+
+        user.state->element_storage.push(".resize", {true, {}, {}, {}});
+        user.begin_generic(el, {}, {}, user.state->element_storage.id());
+
+        if (user.active() && user.state->input.k[INPUT_MB_LEFT].held)
+        {
+            pe->persistent_box.siz +=
+                user.state->input.mouse_delta / user.state->dpi_scale;
+        }
+
+        user.end_generic();
+        user.state->element_storage.pop();
+    }
+
+    // Resize handle bottom
+    {
+        AutoLayoutElement el = {};
+        el.width.type = AutoLayoutDimension::Pixel;
+        el.width.value = info.rect.siz.x;
+        el.height.type = AutoLayoutDimension::Pixel;
+        el.height.value = 6;
+        el.clip = true;
+        el.position = AutoLayoutPosition::Detached;
+        el.offset = {0, info.rect.siz.y};
+        el.pop = true;
+
+        user.state->element_storage.push(".resizev", {true, {}, {}, {}});
+        user.begin_generic(el, {}, {}, user.state->element_storage.id());
+
+        if (user.active() && user.state->input.k[INPUT_MB_LEFT].held)
+        {
+            pe->persistent_box.siz.y +=
+                user.state->input.mouse_delta.y / user.state->dpi_scale;
+        }
+
+        user.end_generic();
+        user.state->element_storage.pop();
+    }
+
+    // Resize handle right
+    {
+        AutoLayoutElement el = {};
+        el.width.type = AutoLayoutDimension::Pixel;
+        el.width.value = 6;
+        el.height.type = AutoLayoutDimension::Pixel;
+        el.height.value = info.rect.siz.y;
+        el.clip = true;
+        el.position = AutoLayoutPosition::Detached;
+        el.offset = {info.rect.siz.x, 0};
+        el.pop = true;
+
+        user.state->element_storage.push(".resizeh", {true, {}, {}, {}});
+        user.begin_generic(el, {}, {}, user.state->element_storage.id());
+
+        if (user.active() && user.state->input.k[INPUT_MB_LEFT].held)
+        {
+            pe->persistent_box.siz.x +=
+                user.state->input.mouse_delta.x / user.state->dpi_scale;
+        }
+
+        user.end_generic();
+        user.state->element_storage.pop();
     }
 
     return !pe->hidden;

@@ -108,6 +108,10 @@ void render_out(UiUser &user)
 
 void UiUser::end_pass()
 {
+    this->pass = UiRenderingPass::begin(state->core);
+    render_out(*this);
+    this->pass.end();
+
     UiInteractionStatePass interaction = {};
     interaction.interaction_table = &this->state->interaction_table;
     interaction.element_storage = &this->state->element_storage;
@@ -119,10 +123,6 @@ void UiUser::end_pass()
     interaction.switch_interaction =
         this->state->input.k[SAPP_KEYCODE_TAB].pressed;
     interaction.process();
-
-    this->pass = UiRenderingPass::begin(state->core);
-    render_out(*this);
-    this->pass.end();
 
     this->state->input.update();
     this->state->element_storage.end_cycle();

@@ -55,7 +55,9 @@ struct AutoLayoutDimension
 enum AutoLayoutPosition
 {
     Embedded, // Affects the parent's layout.
-    Relative, // Doesn't affect the parent's layout, positioned relative to the
+    Relative, // Affects the parent's layout, positioned relative to the
+              // parent.
+    Detached, // Doesn't affect the parent's layout, positioned relative to the
               // parent.
     Absolute  // Doesn't affect the parent's layout, positioned relative to the
               // screen.

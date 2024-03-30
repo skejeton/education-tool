@@ -48,7 +48,8 @@ void recurse(AutoLayoutProcess *process, AutoLayoutNodeId n)
         Vector2 size = cel.margin_box.siz;
         Vector2 delta = {0, 0};
 
-        if (cel.position != AutoLayoutPosition::Absolute)
+        if (cel.position != AutoLayoutPosition::Absolute &&
+            cel.position != AutoLayoutPosition::Detached)
         {
             switch (el.layout.type)
             {
