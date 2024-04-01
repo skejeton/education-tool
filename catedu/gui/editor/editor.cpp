@@ -875,6 +875,7 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                     this->playtest_scene = scene;
                     this->playtesting = true;
                     *reload_module = true;
+                    this->conversation_stage = 0;
                 }
             }
         }
@@ -919,6 +920,8 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
         {
             show_place_object(user, scene, *this);
         }
+
+        this->dialog_editor.show(user, this->dialog);
     }
     else
     {
@@ -1009,8 +1012,6 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
         this->playtest_scene->update(resources);
     }
 
-    this->dialog_editor.show(user, this->dialog);
-
     if (this->playtest_no_player)
     {
         const char *options[] = {"Ok", NULL};
@@ -1068,6 +1069,26 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
         begin_show_window(user, info);
         debug_tree.show(user);
         end_show_window(user);
+    }
+
+    if (this->playtesting)
+    {
+        int i = 0;
+        for (auto [id, dialog] : iter(this->dialog.dialogs))
+        {
+            if (conversation_stage == i)
+            {
+                const char *options[] = {"Next", NULL};
+                switch (msgbox(user, dialog.name, dialog.text, MsgBoxType::Info,
+                               options))
+                {
+                case 0:
+                    this->conversation_stage++;
+                    break;
+                }
+            }
+            i++;
+        }
     }
 
     if (*reload_module)
