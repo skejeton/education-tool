@@ -1,13 +1,10 @@
 import ("lib.um")
 
-interacted := ""
 lv := 0
 stop := false
 
 // When you interact with an entity (using Space key), this function is called
-fn onInteract*(id: str) {
-    interacted = id
-}
+fn onInteract*(id: str) {}
 
 // This function is called every time you need to present some UI to the user.
 // Don't use UI functions outside of this function.
@@ -23,21 +20,6 @@ fn onUI*() {
             case 1: lv -= 1
             case 2: stop = true
         }
-    }
-
-    if interacted != "" {
-        lib.window("Dialog", 200, 100, {
-            if interacted == "test_entity" {
-                lib.label("Would you like to take a taxi?", 0x000000FF)
-                lib.nextrow()
-                if lib.button("Yes") {
-                    interacted = ""
-                }
-                if lib.button("No") {
-                    interacted = ""
-                }
-            }
-        })
     }
 }
 
