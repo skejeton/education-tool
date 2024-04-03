@@ -74,6 +74,18 @@ ObjEntity ObjEntity::load(void **data_)
 
     *data_ = data + sizeof(Vector2);
 
+    uint32_t count;
+    memcpy(&count, data, sizeof(uint32_t));
+    data += sizeof(uint32_t);
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        Dialog dialog;
+        memcpy(&dialog, data, sizeof(Dialog));
+        data += sizeof(Dialog);
+        result.dialog.dialogs.allocate(dialog);
+    }
+
     return result;
 }
 
@@ -81,4 +93,10 @@ void ObjEntity::save(BumpAllocator &alloc)
 {
     memcpy(alloc.alloc(32), this->model_name, 32);
     memcpy(alloc.alloc(sizeof(Vector2)), &this->pos, sizeof(Vector2));
+    memcpy(alloc.alloc(sizeof(uint32_t)), &this->dialog.dialogs.count,
+           sizeof(uint32_t));
+    for (auto [id, dialog] : iter(this->dialog.dialogs))
+    {
+        memcpy(alloc.alloc(sizeof(Dialog)), &dialog, sizeof(Dialog));
+    }
 }

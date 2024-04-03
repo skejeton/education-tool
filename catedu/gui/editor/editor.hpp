@@ -72,7 +72,6 @@ struct GuiEditor
     size_t action_buoy;
     size_t action_count;
     Scene *playtest_scene;
-    DialogList dialog;
     DialogEditor dialog_editor;
     bool show_dialog;
     int conversation_stage;
