@@ -74,6 +74,7 @@ struct GuiEditor
     Scene *playtest_scene;
     DialogList dialog;
     DialogEditor dialog_editor;
+    bool show_dialog;
     int conversation_stage;
 
     static GuiEditor init(UiState *ui_state);

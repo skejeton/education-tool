@@ -22,6 +22,7 @@ void DialogEditor::show(UiUser &user, DialogList &list)
 {
     if (begin_show_window(user, {"Conversation", {300, 0, 400, 400}}))
     {
+        input(user, "entityid", list.entityid, sizeof list.entityid);
         if (button(user, "Add Dialog"))
         {
             list.dialogs.allocate(create_dialog("New Dialog", "New Text"));

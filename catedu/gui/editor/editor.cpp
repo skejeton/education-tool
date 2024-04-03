@@ -844,6 +844,7 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
 
     if (button(user, this->playtesting ? "Exit playtest" : "Playtest"))
     {
+        this->show_dialog = false;
         if (this->playtesting)
         {
             if (this->playtest_scene)
@@ -955,7 +956,6 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
         }
         if (input.k[SAPP_KEYCODE_SPACE].pressed)
         {
-            int func = umkaGetFunc(umka, NULL, "onInteract");
 
             const char *source = "";
 
@@ -998,6 +998,7 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
 
             manifolds.manifolds.deinit();
 
+            int func = umkaGetFunc(umka, NULL, "onInteract");
             assert(func);
             UmkaStackSlot id;
 
@@ -1006,6 +1007,10 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
             if (umkaGetError(umka, &error), error.fnName[0] == 0)
             {
                 umkaCall(umka, func, 1, &id, NULL);
+            }
+            if (strcmp(source, this->dialog.entityid) == 0)
+            {
+                this->show_dialog = true;
             }
         }
 
@@ -1071,7 +1076,7 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
         end_show_window(user);
     }
 
-    if (this->playtesting)
+    if (this->playtesting && this->show_dialog)
     {
         int i = 0;
         for (auto [id, dialog] : iter(this->dialog.dialogs))
@@ -1083,12 +1088,14 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                                options))
                 {
                 case 0:
+                    printf("next\n");
                     this->conversation_stage++;
-                    break;
+                    goto end;
                 }
             }
             i++;
         }
+    end:;
     }
 
     if (*reload_module)
