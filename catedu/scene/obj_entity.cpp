@@ -71,8 +71,7 @@ ObjEntity ObjEntity::load(void **data_)
     memcpy(result.model_name, data, 32);
     data += 32;
     memcpy(&result.pos, data, sizeof(Vector2));
-
-    *data_ = data + sizeof(Vector2);
+    data += sizeof(Vector2);
 
     uint32_t count;
     memcpy(&count, data, sizeof(uint32_t));
@@ -85,6 +84,8 @@ ObjEntity ObjEntity::load(void **data_)
         data += sizeof(Dialog);
         result.dialog.dialogs.allocate(dialog);
     }
+
+    *data_ = data;
 
     return result;
 }

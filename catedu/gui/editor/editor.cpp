@@ -844,7 +844,6 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
 
     if (button(user, this->playtesting ? "Exit playtest" : "Playtest"))
     {
-        this->show_dialog = false;
         if (this->playtesting)
         {
             if (this->playtest_scene)
@@ -852,6 +851,7 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                 this->playtest_scene->deinit();
                 free(this->playtest_scene);
             }
+            this->dialog = nullptr;
             this->playtesting = false;
         }
         else
@@ -915,14 +915,17 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
             {
                 show_tile_picker(user, resources, *this);
             }
+
+            if (selected->type == Object::Type::Entity)
+            {
+                this->dialog_editor.show(user, selected->entity.dialog);
+            }
         }
 
         if (this->placing_object)
         {
             show_place_object(user, scene, *this);
         }
-
-        this->dialog_editor.show(user, this->dialog);
     }
     else
     {
@@ -963,6 +966,7 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                 this->playtest_scene->physics.detect_collisions();
 
             ObjectId coll_id = NULL_ID;
+            DialogList *dialog = nullptr;
 
             for (auto [id, manifold] : iter(manifolds.manifolds))
             {
@@ -976,6 +980,7 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                             if (obj.entity.body_id == coll_id)
                             {
                                 source = obj.id;
+                                dialog = &obj.entity.dialog;
                             }
                         }
                     }
@@ -990,6 +995,7 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                             if (obj.entity.body_id == coll_id)
                             {
                                 source = obj.id;
+                                dialog = &obj.entity.dialog;
                             }
                         }
                     }
@@ -1008,9 +1014,11 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
             {
                 umkaCall(umka, func, 1, &id, NULL);
             }
-            if (strcmp(source, this->dialog.entityid) == 0)
+
+            if (dialog)
             {
-                this->show_dialog = true;
+                this->dialog = dialog;
+                this->conversation_stage = 0;
             }
         }
 
@@ -1076,10 +1084,10 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
         end_show_window(user);
     }
 
-    if (this->playtesting && this->show_dialog)
+    if (this->playtesting && this->dialog)
     {
         int i = 0;
-        for (auto [id, dialog] : iter(this->dialog.dialogs))
+        for (auto [id, dialog] : iter(this->dialog->dialogs))
         {
             if (conversation_stage == i)
             {

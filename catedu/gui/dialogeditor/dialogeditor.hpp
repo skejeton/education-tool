@@ -10,7 +10,6 @@ struct Dialog
 
 struct DialogList
 {
-    char entityid[64];
     Table<Dialog> dialogs;
 };
 
