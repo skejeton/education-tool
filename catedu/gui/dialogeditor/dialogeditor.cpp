@@ -20,7 +20,7 @@ void DialogEditor::deinit()
 
 void DialogEditor::show(UiUser &user, DialogList &list)
 {
-    if (begin_show_window(user, {"Conversation", {300, 0, 400, 400}}))
+    if (begin_show_window(user, {"Conversation", {300, 0, 250, 400}}))
     {
         if (button(user, "Add Dialog"))
         {
@@ -63,7 +63,7 @@ void DialogEditor::show(UiUser &user, DialogList &list)
     Dialog *dialog = list.dialogs.get(selected);
     if (dialog)
     {
-        if (begin_show_window(user, {"Edit Dialog", {700, 0, 400, 400}}))
+        if (begin_show_window(user, {"Edit Dialog", {700, 0, 250, 400}}))
         {
             label(user, "Name");
             input(user, "Name", dialog->name, sizeof(dialog->name));
