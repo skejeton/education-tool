@@ -66,7 +66,7 @@ To create a pull request:
 
 `Message`* `Keyword: Message` or `Keyword #issue: Message`.
 
-*If the commit is WIP or inconsequential, you can omit the message.
+*If the commit is WIP or inconsequential, you can omit the keyword.
 
 | Keyword  | Description |
 |----------|-------------|
