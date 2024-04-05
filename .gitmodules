@@ -24,3 +24,4 @@
 [submodule "lib/sokol-tools-bin"]
 	path = lib/sokol-tools-bin
 	url = https://github.com/floooh/sokol-tools-bin
+    shallow = true
