@@ -19,7 +19,7 @@
 	url = https://github.com/jkuhlmann/cgltf
 	shallow = true
 [submodule "lib/umka-lang"]
-	path = lib/umka-lang
+	path = lib/umka
 	url = https://github.com/vtereshkov/umka-lang
 [submodule "lib/sokol-tools-bin"]
 	path = lib/sokol-tools-bin
