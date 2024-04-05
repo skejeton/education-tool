@@ -1,18 +1,14 @@
-[submodule "lib/sokol-tools-bin"]
-	path = lib/sokol-tools-bin
-	url = https://github.com/floooh/sokol-tools-bin
-	shallow = true
 [submodule "lib/sokol"]
 	path = lib/sokol
 	url = https://github.com/floooh/sokol
 	shallow = true
 [submodule "lib/tau"]
 	path = lib/tau
-	url = https://github.com/jasmcaus/tau/
+	url = https://github.com/jasmcaus/tau
 	shallow = true
 [submodule "lib/lib-enet"]
 	path = lib/lib-enet
-	url = https://github.com/skejeton/enet
+	url = https://github.com/lsalzman/enet
 	shallow = true
 [submodule "lib/stb"]
 	path = lib/stb
@@ -23,5 +19,8 @@
 	url = https://github.com/jkuhlmann/cgltf
 	shallow = true
 [submodule "lib/umka-lang"]
-	path = lib/umka
+	path = lib/umka-lang
 	url = https://github.com/vtereshkov/umka-lang
+[submodule "lib/sokol-tools-bin"]
+	path = lib/sokol-tools-bin
+	url = https://github.com/floooh/sokol-tools-bin
