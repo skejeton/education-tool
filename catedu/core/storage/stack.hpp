@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+// MARK: Stack
+
 template <class T> struct Stack
 {
     T *values;
@@ -82,27 +84,92 @@ template <class T> struct Stack
     }
 };
 
+// MARK: Iterator
+
 template <class T> struct StackIterator
 {
-    T *ptr;
+    Stack<T> *stack;
+    size_t i;
 
-    StackIterator(T *ptr) : ptr(ptr)
+    bool going()
     {
+        return i < stack->count;
+    }
+
+    void next()
+    {
+        i++;
+    }
+
+    static StackIterator init(Stack<T> *stack)
+    {
+        StackIterator = {stack, 0};
+        return iterator;
+    }
+};
+
+template <class T> struct CxxStackIterator
+{
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = T;
+    using difference_type = std::ptrdiff_t;
+    using pointer = T *;
+    using reference = T;
+
+    StackIterator<T> iterator;
+
+    CxxStackIterator(StackIterator<T> iterator) : iterator(iterator)
+    {
+    }
+
+    CxxStackIterator begin()
+    {
+        return *this;
+    }
+
+    CxxStackIterator end()
+    {
+        // NOTE: This is a hack to make the iterator work with range-based for
+        return CxxStackIterator(
+            StackIterator<T>{iterator.stack, iterator.stack.size()});
+    }
+
+    bool operator==(const CxxStackIterator<T> &other) const
+    {
+        return iterator.i == other.iterator.i &&
+               iterator.stack == other.iterator.stack;
+    }
+
+    bool operator!=(const CxxStackIterator<T> &other) const
+    {
+        return !(*this == other);
     }
 
     T &operator*()
     {
-        return *ptr;
+        return iterator.stack->values[iterator.i];
     }
 
-    StackIterator &operator++()
+    T *operator->()
     {
-        ptr++;
+        return iterator.stack->values + iterator.i;
+    }
+
+    CxxStackIterator &operator++()
+    {
+        iterator.next();
         return *this;
     }
 
-    bool operator!=(const StackIterator &other)
+    CxxStackIterator operator++(int)
     {
-        return ptr != other.ptr;
+        auto tmp = *this;
+        ++(*this);
+        return tmp;
     }
 };
+
+template <class T> CxxStackIterator<T> iter(Stack<T> &stack)
+{
+    return CxxStackIterator<T>(StackIterator<T>::init(&stack));
+}
