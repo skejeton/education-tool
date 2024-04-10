@@ -6,7 +6,6 @@
 #include <string.h>
 
 // MARK: Stack
-
 template <class T> struct Stack
 {
     T *values;
@@ -59,6 +58,39 @@ template <class T> struct Stack
         return values[--count];
     }
 
+    void del(size_t index)
+    {
+        assert(index < count);
+
+        for (size_t i = index; i < count - 1; i++)
+        {
+            values[i] = values[i + 1];
+        }
+
+        count--;
+    }
+
+    void ins(size_t index, T value)
+    {
+        assert(index <= count);
+
+        if (count == capacity)
+        {
+            if (!scale())
+            {
+                return;
+            }
+        }
+
+        for (size_t i = count; i > index; i--)
+        {
+            values[i] = values[i - 1];
+        }
+
+        values[index] = value;
+        count++;
+    }
+
     T &top()
     {
         assert(count > 0);
@@ -71,11 +103,6 @@ template <class T> struct Stack
         assert(index < count);
 
         return values[index];
-    }
-
-    size_t size()
-    {
-        return count;
     }
 
     bool empty()
@@ -103,7 +130,7 @@ template <class T> struct StackIterator
 
     static StackIterator init(Stack<T> *stack)
     {
-        StackIterator = {stack, 0};
+        StackIterator iterator = {stack, 0};
         return iterator;
     }
 };
@@ -131,7 +158,7 @@ template <class T> struct CxxStackIterator
     {
         // NOTE: This is a hack to make the iterator work with range-based for
         return CxxStackIterator(
-            StackIterator<T>{iterator.stack, iterator.stack.size()});
+            StackIterator<T>{iterator.stack, iterator.stack->count});
     }
 
     bool operator==(const CxxStackIterator<T> &other) const

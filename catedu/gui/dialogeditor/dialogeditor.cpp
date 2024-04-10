@@ -11,7 +11,7 @@ Dialog create_dialog(const char *name, const char *text)
 
 DialogEditor DialogEditor::init()
 {
-    return {};
+    return {-1};
 }
 
 void DialogEditor::deinit()
@@ -24,14 +24,15 @@ void DialogEditor::show(UiUser &user, DialogList &list)
     {
         if (button(user, "Add Dialog"))
         {
-            list.dialogs.allocate(create_dialog("New Dialog", "New Text"));
+            list.dialogs.push(create_dialog("New Dialog", "New Text"));
         }
 
-        TableId del = NULL_ID;
+        int del = -1;
+        int i = 0;
 
-        for (auto [i, dialog] : iter(list.dialogs))
+        for (auto dialog : iter(list.dialogs))
         {
-            user.push_id(i.id);
+            user.push_id(i);
 
             AutoLayoutElement element = {};
             element.layout.type = AutoLayout::Row;
@@ -51,18 +52,19 @@ void DialogEditor::show(UiUser &user, DialogList &list)
 
             user.end_generic();
             user.pop_id();
+            i++;
         }
 
-        if (del != NULL_ID)
+        if (del != -1)
         {
-            list.dialogs.remove(del);
+            list.dialogs.del(del);
         }
     }
     end_show_window(user);
 
-    Dialog *dialog = list.dialogs.get(selected);
-    if (dialog)
+    if (selected != -1)
     {
+        Dialog *dialog = &list.dialogs[selected];
         if (begin_show_window(user, {"Edit Dialog", {700, 0, 250, 400}}))
         {
             label(user, "Name");

@@ -1,5 +1,5 @@
 #pragma once
-#include "catedu/core/storage/table.hpp"
+#include "catedu/core/storage/stack.hpp"
 #include "catedu/ui/user.hpp"
 
 struct Dialog
@@ -10,12 +10,12 @@ struct Dialog
 
 struct DialogList
 {
-    Table<Dialog> dialogs;
+    Stack<Dialog> dialogs;
 };
 
 struct DialogEditor
 {
-    TableId selected;
+    int selected;
 
     static DialogEditor init();
     void deinit();

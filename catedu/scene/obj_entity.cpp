@@ -82,7 +82,7 @@ ObjEntity ObjEntity::load(void **data_)
         Dialog dialog;
         memcpy(&dialog, data, sizeof(Dialog));
         data += sizeof(Dialog);
-        result.dialog.dialogs.allocate(dialog);
+        result.dialog.dialogs.push(dialog);
     }
 
     *data_ = data;

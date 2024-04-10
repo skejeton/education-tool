@@ -1087,7 +1087,7 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
     if (this->playtesting && this->dialog)
     {
         int i = 0;
-        for (auto [id, dialog] : iter(this->dialog->dialogs))
+        for (auto dialog : iter(this->dialog->dialogs))
         {
             if (conversation_stage == i)
             {
