@@ -57,7 +57,12 @@ void DialogEditor::show(UiUser &user, DialogList &list)
 
         if (del != -1)
         {
+            printf("deleting %d\n", del);
             list.dialogs.del(del);
+            if (del < selected)
+            {
+                selected--;
+            }
         }
     }
     end_show_window(user);
