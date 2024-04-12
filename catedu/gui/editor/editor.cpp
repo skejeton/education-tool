@@ -814,16 +814,15 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
     {
         UmkaStackSlot empty;
         int func = umkaGetFunc(umka, NULL, "onUI");
-        UmkaError error;
-        if (umkaGetError(umka, &error), error.fnName[0] != 0)
+        if (UmkaError *error = umkaGetError(umka); error->code != 0)
         {
             if (!this->suppress_errors)
             {
                 const char *buttons[] = {"Retry", "Ignore", NULL};
 
                 switch (msgbox(user, "Umka Error",
-                               stdstrfmt("%s\n    at %s:%d", error.msg,
-                                         error.fileName, error.line)
+                               stdstrfmt("%s\n    at %s:%d", error->msg,
+                                         error->fileName, error->line)
                                    .c_str(),
                                MsgBoxType::Error, buttons))
                 {
@@ -1009,8 +1008,8 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
             UmkaStackSlot id;
 
             id.ptrVal = umkaMakeStr(umka, (char *)source);
-            UmkaError error;
-            if (umkaGetError(umka, &error), error.fnName[0] == 0)
+
+            if (umkaGetError(umka)->code == 0)
             {
                 umkaCall(umka, func, 1, &id, NULL);
             }

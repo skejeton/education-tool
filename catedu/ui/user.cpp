@@ -233,7 +233,6 @@ void UiElementStorage::push(const char *id, UiPersistentElement value)
 {
     if (this->element_retainer.has(id) == false)
     {
-        printf("Allocating %s\n", id);
         this->element_retainer.push(id, this->elements.allocate(value));
     }
     else

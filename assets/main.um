@@ -10,7 +10,7 @@ fn onInteract*(id: str) {}
 // Don't use UI functions outside of this function.
 fn onUI*() {
     if !stop {
-        switch lib.msgbox(
+        switch lib::msgbox(
             .warning,
             {"Elevator up", "Elevator down", "Exit"},
             "Elevator",
