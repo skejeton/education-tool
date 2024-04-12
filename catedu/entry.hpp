@@ -29,7 +29,7 @@ struct Entry : SokolSetup
     UiState ui_state;
     UiUser *ui_user;
 
-    int ui_mode = MENU_EDITOR;
+    int ui_mode = MENU_MAIN_MENU;
     GuiMainMenu main_menu;
     GuiEditor editor;
     ResourceSpec res;

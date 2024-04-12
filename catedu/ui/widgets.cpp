@@ -179,30 +179,21 @@ void end_show_window(UiUser &user)
     user.state->element_storage.pop();
 }
 
-bool button(UiUser &user, const char *text, Vector4 background)
+void begin_button_frame(UiUser &user, const char *id, AutoLayoutElement el,
+                        Vector4 background)
 {
-    user.state->element_storage.push(text, {});
+    user.state->element_storage.push(id, {});
     UiPersistentElement *pe = user.state->element_storage.value();
 
-    AutoLayoutElement el = {};
-    el.layout = {AutoLayout::Row};
-    el.width = {AutoLayoutDimension::Auto};
-    el.height = {AutoLayoutDimension::Auto};
-    el.padding = {3, 3, 3, 3};
-    el.margin = {1, 1, 1, 1};
-    el.border = {1, 1, 1, 1};
     el.position = AutoLayoutPosition::Relative;
 
     Vector4 color_top = theme[1] * background;
     Vector4 color_bottom = theme[0] * background;
 
-    bool pressed = false;
-
     if (user.hovered())
     {
         color_top = theme[5] * background;
         color_bottom = theme[4] * background;
-        pressed = user.state->input.k[INPUT_MB_LEFT].released;
     }
 
     if (user.state->input.k[INPUT_MB_LEFT].held && user.active())
@@ -216,13 +207,27 @@ bool button(UiUser &user, const char *text, Vector4 background)
                        UiMakeBrush::make_gradient({0.0f, 0.0f, 0.0f, 0.5f},
                                                   {0.0f, 0.0f, 0.0f, 0.0f}),
                        user.state->element_storage.id());
+}
 
-    label(user, text, {1, 1}, UiMakeBrush::make_solid(theme[3]));
-
+bool end_button_frame(UiUser &user)
+{
+    bool pressed =
+        user.hovered() && user.state->input.k[INPUT_MB_LEFT].released;
     user.end_generic();
     user.state->element_storage.pop();
-
     return pressed;
+}
+
+bool button(UiUser &user, const char *text, Vector4 background)
+{
+    AutoLayoutElement el = {};
+    el.padding = {3, 3, 3, 3};
+    el.margin = {1, 1, 1, 1};
+    el.border = {1, 1, 1, 1};
+
+    begin_button_frame(user, text, el, background);
+    label(user, text, {1, 1}, UiMakeBrush::make_solid(theme[3]));
+    return end_button_frame(user);
 }
 
 void img(UiUser &user, const char *path, Vector2 scale)
@@ -349,7 +354,8 @@ void input(UiUser &user, const char *id, char *out, int max)
 }
 
 AutoLayoutElement make_element(AutoLayout layout, Vector2 size, bool autox,
-                               bool autoy, Vector2 align = {0, 0}, float p = 3);
+                               bool autoy, Vector2 align = {0, 0}, float p = 3,
+                               float m = 0);
 
 AutoLayoutElement make_auto(AutoLayout layout, Vector2 align = {0, 0});
 
@@ -373,7 +379,7 @@ int msgbox(UiUser &user, const char *title, const char *text, MsgBoxType type,
     default:
     case MsgBoxType::Info:
         user.begin_generic(make_element({AutoLayout::Column}, {40, 40}, false,
-                                        false, {0.5, 0.5}, 1),
+                                        false, {0.5, 0.5}, 1, 1),
                            UiMakeBrush::make_gradient({0.3, 0.3, 1.0, 1.0},
                                                       {0, 0.2, 1.0, 0.4}),
                            border);
@@ -381,7 +387,7 @@ int msgbox(UiUser &user, const char *title, const char *text, MsgBoxType type,
         break;
     case MsgBoxType::Warning:
         user.begin_generic(make_element({AutoLayout::Column}, {40, 40}, false,
-                                        false, {0.5, 0.5}, 1),
+                                        false, {0.5, 0.5}, 1, 1),
                            UiMakeBrush::make_gradient({1.0, 0.8, 0.3, 1.0},
                                                       {1.0, 0.7, 0.0, 0.4}),
                            border);
@@ -389,7 +395,7 @@ int msgbox(UiUser &user, const char *title, const char *text, MsgBoxType type,
         break;
     case MsgBoxType::Error:
         user.begin_generic(make_element({AutoLayout::Column}, {40, 40}, false,
-                                        false, {0.5, 0.5}, 1),
+                                        false, {0.5, 0.5}, 1, 1),
                            UiMakeBrush::make_gradient({1.0, 0.3, 0.3, 1.0},
                                                       {1.0, 0.0, 0.0, 0.4}),
                            border);

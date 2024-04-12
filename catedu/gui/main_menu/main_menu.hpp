@@ -4,6 +4,12 @@
 
 struct GuiMainMenu
 {
+    enum
+    {
+        Normal,
+        Settings,
+        Exit,
+    } state;
     UiState *ui_state;
 
     static GuiMainMenu init(UiState *ui_state);
