@@ -96,7 +96,7 @@ void ObjEntity::save(BumpAllocator &alloc)
     memcpy(alloc.alloc(sizeof(Vector2)), &this->pos, sizeof(Vector2));
     memcpy(alloc.alloc(sizeof(uint32_t)), &this->dialog.dialogs.count,
            sizeof(uint32_t));
-    for (auto [id, dialog] : iter(this->dialog.dialogs))
+    for (auto dialog : iter(this->dialog.dialogs))
     {
         memcpy(alloc.alloc(sizeof(Dialog)), &dialog, sizeof(Dialog));
     }
