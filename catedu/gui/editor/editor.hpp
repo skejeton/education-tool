@@ -77,6 +77,8 @@ struct GuiEditor
     int conversation_stage;
 
     static GuiEditor init(UiState *ui_state);
+    void start_playtest(Scene &scene, ResourceSpec &resources,
+                        bool *reload_module);
     bool show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
               Scene &scene, UiUser **user, void *umka, bool *reload_module);
     void deinit();

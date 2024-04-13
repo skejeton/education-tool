@@ -631,10 +631,45 @@ ObjectId find_object_within_distance_not_player(Scene &scene, Vector2 pos,
     return NULL_ID;
 }
 
+void GuiEditor::start_playtest(Scene &scene, ResourceSpec &resources,
+                               bool *reload_module)
+{
+    if (scene.find_object("player") == NULL_ID)
+    {
+        this->playtest_no_player = true;
+    }
+    else
+    {
+        if (scene.get_object(scene.find_object("player"))->type !=
+            Object::Type::Entity)
+        {
+            this->playtest_no_player = true;
+        }
+        else
+        {
+            Scene original = scene.copy();
+            Scene *scene = (Scene *)malloc(sizeof(Scene));
+            memcpy(scene, &original, sizeof(Scene));
+            scene->update(resources);
+            this->playtest_scene = scene;
+            this->playtesting = true;
+            *reload_module = true;
+            this->conversation_stage = 0;
+        }
+    }
+}
+
 bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                      Scene &scene, UiUser **user_out, void *umka,
                      bool *reload_module)
 {
+#ifdef RUNTIME_MODE
+    if (!this->playtesting)
+    {
+        start_playtest(scene, resources, reload_module);
+    }
+#endif
+
     UiUser user = UiUser::init(*this->ui_state);
     *user_out = &user;
     user.begin_pass();
@@ -805,10 +840,12 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
         return return_back;
     }
 
+#ifndef RUNTIME_MODE
     if (button(user, "Back"))
     {
         return_back = true;
     }
+#endif
 
     if (this->playtesting)
     {
@@ -841,6 +878,7 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
         }
     }
 
+#ifndef RUNTIME_MODE
     if (button(user, this->playtesting ? "Exit playtest" : "Playtest"))
     {
         if (this->playtesting)
@@ -855,31 +893,10 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
         }
         else
         {
-            if (scene.find_object("player") == NULL_ID)
-            {
-                this->playtest_no_player = true;
-            }
-            else
-            {
-                if (scene.get_object(scene.find_object("player"))->type !=
-                    Object::Type::Entity)
-                {
-                    this->playtest_no_player = true;
-                }
-                else
-                {
-                    Scene original = scene.copy();
-                    Scene *scene = (Scene *)malloc(sizeof(Scene));
-                    memcpy(scene, &original, sizeof(Scene));
-                    scene->update(resources);
-                    this->playtest_scene = scene;
-                    this->playtesting = true;
-                    *reload_module = true;
-                    this->conversation_stage = 0;
-                }
-            }
+            start_playtest(scene, resources, reload_module);
         }
     }
+#endif
 
     if (!this->playtesting)
     {

@@ -24,6 +24,11 @@ if (${ENV_TYPE} MATCHES "TESTBED")
 endif()
 
 add_executable(${PROJECT_NAME} ${CATEDU_SRC_FILES})
+
+if (${ENV_TYPE} MATCHES "RUNTIME")
+    target_compile_definitions(${PROJECT_NAME} PUBLIC RUNTIME_MODE)
+endif()
+
 target_compile_definitions(${PROJECT_NAME} PUBLIC UMKA_STATIC UMKA_EXT_LIBS)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)

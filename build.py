@@ -12,6 +12,7 @@ class CompileProperties:
     self.test_mode = False
     self.testbed = False
     self.release_mode = False
+    self.runtime_mode = False
     self.testbed_name = ""
     self.run_mode = False
     self.prof = False
@@ -22,6 +23,9 @@ class CompileProperties:
   def set_testbed(self, name):
     self.testbed = True
     self.testbed_name = name
+
+  def set_runtime(self):
+    self.runtime_mode = True
 
   def set_release(self):
     self.release_mode = True
@@ -70,6 +74,8 @@ def target_build(p: CompileProperties):
     test_string += f"-DENV_TYPE=TESTBED -DTESTBED_NAME={p.testbed_name}"
   elif p.test_mode:
     test_string += "-DENV_TYPE=UNITTEST"
+  elif p.runtime_mode:
+    test_string += "-DENV_TYPE=RUNTIME"
   else:
     test_string += "-DENV_TYPE=NORMAL"
 
@@ -134,6 +140,8 @@ def main():
     p.set_release()
   if "prof" in arguments.switches:
     p.set_prof()
+  if "runtime" in arguments.switches:
+    p.set_runtime()
 
   if arguments.target == "build-wasm":
     script = target_build_wasm()
