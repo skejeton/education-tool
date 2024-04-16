@@ -198,8 +198,6 @@ void Scene::render(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
 
     if (show_physics)
     {
-        /*
-        assert("Not implemented" && false);
         for (auto [id, body] : iter(physics.bodies))
         {
             Vector4 color = {1, 0, 0, 1};
@@ -215,9 +213,19 @@ void Scene::render(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
             box.max = {body.area.pos.x + body.area.siz.x, 1 - 0.5f,
                        body.area.pos.y + body.area.siz.y};
 
-            boxdraw_push(&renderer, boxdraw_cmdtexture(box, tex, true));
+            SpecModel &model = resources.models.get_assert(
+                resources.find_model_by_name("hitbox"));
+
+            pbr_vs_params_t vs_params;
+            vs_params.model =
+                Matrix4::translate(
+                    {box.min.x + 0.5f, box.min.y + 0.5f, box.min.z + 0.5f}) *
+                Matrix4::scale_v({box.max.x - box.min.x, box.max.y - box.min.y,
+                                  box.max.z - box.min.z});
+            vs_params.lightness = 1;
+            vs_params.color_mul = {1, 1, 1, 1};
+            renderer.render_model(model.model, vs_params);
         }
-        */
     }
 }
 
