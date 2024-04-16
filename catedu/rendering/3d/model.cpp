@@ -116,7 +116,7 @@ void catedu::print_info(RawModel &model)
     }
 }
 
-bool catedu::Model::load_from_raw(RawModel &raw, Model &dest)
+bool catedu::Model::load_from_raw(RawModel &raw, Model &dest, int submodel)
 {
     cgltf_data *data = raw.data;
 
@@ -210,7 +210,21 @@ bool catedu::Model::load_from_raw(RawModel &raw, Model &dest)
 
     if (raw.texture_path)
     {
-        dest.texture = Texture::init(raw.texture_path);
+        if (submodel != 0)
+        {
+            // TODO: Dynamic strings here.
+            char path[1024] = {};
+            int pos = strrchr(raw.texture_path, '.') - raw.texture_path;
+            assert(pos > 0 && "Invalid texture path");
+            snprintf(path, 1024, "%.*s_%i%s", pos, raw.texture_path, submodel,
+                     raw.texture_path + pos);
+            printf("loading texture: %s\n", path);
+            dest.texture = Texture::init(path);
+        }
+        else
+        {
+            dest.texture = Texture::init(raw.texture_path);
+        }
     }
 
     return true;

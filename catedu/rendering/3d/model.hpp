@@ -25,7 +25,7 @@ struct Model
     Texture texture;
     size_t index_count;
 
-    static bool load_from_raw(RawModel &raw, Model &dest);
+    static bool load_from_raw(RawModel &raw, Model &dest, int submodel = 0);
     void deinit();
 };
 
