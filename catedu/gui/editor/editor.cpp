@@ -192,6 +192,7 @@ size_t show_pagination(UiUser &user, size_t page, size_t page_count)
 
 void select_object(GuiEditor &editor, TableId id)
 {
+    editor.dialog_editor.selected = -1;
     if (editor.selection != id)
     {
         editor.selection = id;
@@ -475,7 +476,7 @@ void show_properties(UiUser &user, Object &obj, GuiEditor &editor)
     }
     if (button(user, "OK"))
     {
-        editor.selection = NULL_ID;
+        select_object(editor, NULL_ID);
     }
 
     end_show_window(user);
@@ -978,47 +979,19 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
 
             const char *source = "";
 
-            PhysicsManifolds manifolds =
-                this->playtest_scene->physics.detect_collisions();
+            ObjectId coll_id = find_object_within_distance_not_player(
+                *this->playtest_scene, obj->entity.pos, 3);
 
-            ObjectId coll_id = NULL_ID;
             DialogList *dialog = nullptr;
-
-            for (auto [id, manifold] : iter(manifolds.manifolds))
+            if (coll_id != NULL_ID)
             {
-                if (manifold.first == obj->entity.body_id)
+                Object *coll_obj = this->playtest_scene->get_object(coll_id);
+                if (coll_obj->type == Object::Type::Entity)
                 {
-                    coll_id = manifold.second;
-                    for (auto [id, obj] : iter(this->playtest_scene->objects))
-                    {
-                        if (obj.type == Object::Type::Entity)
-                        {
-                            if (obj.entity.body_id == coll_id)
-                            {
-                                source = obj.id;
-                                dialog = &obj.entity.dialog;
-                            }
-                        }
-                    }
-                }
-                else if (manifold.second == obj->entity.body_id)
-                {
-                    coll_id = manifold.first;
-                    for (auto [id, obj] : iter(this->playtest_scene->objects))
-                    {
-                        if (obj.type == Object::Type::Entity)
-                        {
-                            if (obj.entity.body_id == coll_id)
-                            {
-                                source = obj.id;
-                                dialog = &obj.entity.dialog;
-                            }
-                        }
-                    }
+                    dialog = &coll_obj->entity.dialog;
+                    source = coll_obj->id;
                 }
             }
-
-            manifolds.manifolds.deinit();
 
             int func = umkaGetFunc(umka, NULL, "onInteract");
             assert(func);

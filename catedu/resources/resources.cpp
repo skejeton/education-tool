@@ -32,6 +32,7 @@ const ModelProto model_protos[] = {
     {"grass_floor", "./assets/models/floor.gltf"},
     {"player", "./assets/models/actor.gltf"},
     {"npc", "./assets/models/actor.gltf", 1},
+    {"tree", "./assets/models/tree.gltf"},
 };
 
 const TileProto tile_protos[] = {{"barrel", "barrel", true},
@@ -47,7 +48,8 @@ const TileProto tile_protos[] = {{"barrel", "barrel", true},
                                  {"wall_wood_north", "wall_wood", true, 1},
                                  {"wall_wood_east", "wall_wood", true, 0},
                                  {"wall_wood_south", "wall_wood", true, 3},
-                                 {"woodtile", "woodtile", false}};
+                                 {"woodtile", "woodtile", false},
+                                 {"tree", "tree", true}};
 
 ResourceSpec load_resource_spec(const char *path)
 {

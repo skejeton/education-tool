@@ -58,7 +58,7 @@ void DialogEditor::show(UiUser &user, DialogList &list)
         if (del != -1)
         {
             list.dialogs.del(del);
-            if (del < selected)
+            if (del <= selected)
             {
                 selected--;
             }
