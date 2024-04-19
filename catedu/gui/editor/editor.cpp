@@ -728,7 +728,7 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
 
     if (this->playtesting)
     {
-        this->playtest_scene->render(renderer, resources, true);
+        this->playtest_scene->render(renderer, resources, this->show_debug);
     }
     else
     {
