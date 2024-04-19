@@ -1085,7 +1085,6 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                                options))
                 {
                 case 0:
-                    printf("next\n");
                     this->conversation_stage++;
                     goto end;
                 }
