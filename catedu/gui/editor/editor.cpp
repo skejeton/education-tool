@@ -1108,7 +1108,7 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
 void GuiEditor::deinit()
 {
     debug_tree.deinit();
-    if (this->playtest_scene)
+    if (this->playtesting)
     {
         this->playtest_scene->deinit();
         free(this->playtest_scene);
