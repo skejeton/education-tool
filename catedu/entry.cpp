@@ -149,11 +149,16 @@ void Entry::frame(void)
         break;
     case MENU_MAIN_MENU:
         ui_mode = main_menu.show();
+        this->editor = GuiEditor::init(&this->ui_state);
         if (ui_mode == MENU_EDITOR)
         {
-            this->editor = GuiEditor::init(&this->ui_state);
-            READ_FILE_TEMP(world, "assets/world.dat",
-                           { scene = Scene::load(world); });
+            FILE *f = fopen("assets/world.dat", "rb");
+            if (f != NULL)
+            {
+                READ_FILE_TEMP(world, "assets/world.dat",
+                               { scene = Scene::load(world); });
+                fclose(f);
+            }
         }
         break;
     case MENU_EDITOR:
