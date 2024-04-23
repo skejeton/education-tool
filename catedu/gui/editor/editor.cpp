@@ -627,12 +627,8 @@ void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
     if (input.k[INPUT_MB_LEFT].held)
     {
         edit.end = vector2_to_vector2i(editor.object_cursor_at);
-    }
 
-    SpecTile *tile = resources.tiles.get(tile_id);
-
-    if (input.k[INPUT_MB_LEFT].held)
-    {
+        SpecTile *tile = resources.tiles.get(tile_id);
         if (tile == nullptr)
         {
             show_stencil(edit, resources.find_model_by_name("selector"),
@@ -819,9 +815,9 @@ void GuiEditor::start_playtest(Scene &scene, ResourceSpec &resources,
     }
 }
 
-bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
-                     Scene &scene, UiUser **user_out, void *umka,
-                     bool *reload_module)
+bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
+                              ResourceSpec &resources, Scene &scene, void *umka,
+                              bool *reload_module)
 {
 #ifdef RUNTIME_MODE
     if (!this->playtesting)
@@ -829,10 +825,6 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
         start_playtest(scene, resources, reload_module);
     }
 #endif
-
-    UiUser user = UiUser::init(*this->ui_state);
-    *user_out = &user;
-    user.begin_pass();
     renderer.begin_pass();
 
     renderer.camera = camera;
@@ -981,7 +973,6 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
 
     if (no_ui)
     {
-        user.end_pass();
         return return_back;
     }
 
@@ -1170,53 +1161,6 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
         }
     }
 
-    if (this->exit_requested)
-    {
-        const char *options[] = {"Yes", "No", NULL};
-        switch (msgbox(user, "Exit requested",
-                       "Are you sure you want to exit?\nAll unsaved changes "
-                       "will be lost.",
-                       MsgBoxType::Warning, options))
-        {
-        case 0:
-            this->exit_requested = false;
-            this->dirty = false;
-            sapp_request_quit();
-        case 1:
-            this->exit_requested = false;
-            break;
-        }
-    }
-
-    if (return_back && this->dirty || this->tried_to_return_back)
-    {
-        this->tried_to_return_back = true;
-        return_back = false;
-        const char *options[] = {"Yes", "No", NULL};
-        switch (msgbox(user, "Unsaved changes",
-                       "Are you sure you want to go back?\nAll unsaved changes "
-                       "will be lost.",
-                       MsgBoxType::Warning, options))
-        {
-        case 0:
-            this->dirty = false;
-            return_back = true;
-            this->tried_to_return_back = false;
-            break;
-        case 1:
-            this->tried_to_return_back = false;
-            break;
-        }
-    }
-
-    if (this->show_debug)
-    {
-        WindowInfo info = {"Debug", {0, 0, 300, 400}};
-        begin_show_window(user, info);
-        debug_tree.show(user);
-        end_show_window(user);
-    }
-
     if (this->playtesting && this->dialog)
     {
         int i = 0;
@@ -1243,8 +1187,79 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
         this->suppress_errors = false;
     }
 
-    *user_out = 0;
-    user.end_pass();
+    if (return_back && this->dirty || this->tried_to_return_back)
+    {
+        this->tried_to_return_back = true;
+        return_back = false;
+        const char *options[] = {"Yes", "No", NULL};
+        switch (msgbox(user, "Unsaved changes",
+                       "Are you sure you want to go back?\nAll unsaved changes "
+                       "will be lost.",
+                       MsgBoxType::Warning, options))
+        {
+        case 0:
+            this->dirty = false;
+            return_back = true;
+            this->tried_to_return_back = false;
+            break;
+        case 1:
+            this->tried_to_return_back = false;
+            break;
+        }
+    }
+}
+
+void show_popups(UiUser &user, GuiEditor &editor)
+{
+    if (editor.exit_requested)
+    {
+        const char *options[] = {"Yes", "No", NULL};
+        switch (msgbox(user, "Exit requested",
+                       "Are you sure you want to exit?\nAll unsaved changes "
+                       "will be lost.",
+                       MsgBoxType::Warning, options))
+        {
+        case 0:
+            editor.exit_requested = false;
+            editor.dirty = false;
+            sapp_request_quit();
+        case 1:
+            editor.exit_requested = false;
+            break;
+        }
+    }
+
+    if (editor.show_debug)
+    {
+        WindowInfo info = {"Debug", {0, 0, 300, 400}};
+        begin_show_window(user, info);
+        editor.debug_tree.show(user);
+        end_show_window(user);
+    }
+}
+
+bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
+                     Scene &scene, UiUser &user, void *umka,
+                     bool *reload_module)
+{
+    if (user.state->input.k[SAPP_KEYCODE_F5].pressed)
+    {
+        this->new_mode = !this->new_mode;
+    }
+
+    bool return_back = false;
+
+    if (new_mode)
+    {
+        // TODO
+    }
+    else
+    {
+        return_back = show_old_mode(user, renderer, resources, scene, umka,
+                                    reload_module);
+    }
+
+    show_popups(user, *this);
 
     return return_back;
 }

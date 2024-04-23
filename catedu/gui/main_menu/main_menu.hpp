@@ -15,5 +15,5 @@ struct GuiMainMenu
     static GuiMainMenu init(UiState *ui_state);
     void deinit();
 
-    int show();
+    int show(UiUser &user);
 };

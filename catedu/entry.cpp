@@ -143,12 +143,17 @@ void Entry::frame(void)
     sg_end_pass();
 
     bool reload_module = false;
+
+    UiUser user = UiUser::init(ui_state);
+    user.begin_pass();
+    this->ui_user = &user;
+
     switch (ui_mode)
     {
     case MENU_DEBUG:
         break;
     case MENU_MAIN_MENU:
-        ui_mode = main_menu.show();
+        ui_mode = main_menu.show(user);
         this->editor = GuiEditor::init(&this->ui_state);
         if (ui_mode == MENU_EDITOR)
         {
@@ -162,7 +167,7 @@ void Entry::frame(void)
         }
         break;
     case MENU_EDITOR:
-        if (editor.show(this->renderer, this->res, this->scene, &this->ui_user,
+        if (editor.show(this->renderer, this->res, this->scene, user,
                         this->umka, &reload_module))
         {
             ui_mode = MENU_MAIN_MENU;
@@ -173,6 +178,9 @@ void Entry::frame(void)
     case MENU_GAME:
         break;
     }
+
+    this->ui_user = NULL;
+    user.end_pass();
 
     if (reload_module)
     {

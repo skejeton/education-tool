@@ -87,11 +87,9 @@ static void menu_exit(UiUser &user, GuiMainMenu &state)
     }
 }
 
-int GuiMainMenu::show()
+int GuiMainMenu::show(UiUser &user)
 {
     int exitcode = 1;
-    auto user = UiUser::init(*this->ui_state);
-    user.begin_pass();
 
     user.begin_generic(
         make_element({AutoLayout::Row},
@@ -145,8 +143,8 @@ int GuiMainMenu::show()
         break;
     }
 
-    user.end_pass();
-
+    // FIXME: This will scale while the UI User is in the pass, but it will not
+    // be applied until the next frame. This is a bug.
     user.state->dpi_scale += scale_delta;
 
     return exitcode;

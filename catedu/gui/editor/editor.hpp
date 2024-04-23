@@ -72,6 +72,7 @@ struct TilemapEdit
 
 struct GuiEditor
 {
+    bool new_mode;
     bool playtesting;
     bool create_entity;
     bool placing_object;
@@ -99,7 +100,10 @@ struct GuiEditor
     static GuiEditor init(UiState *ui_state);
     void start_playtest(Scene &scene, ResourceSpec &resources,
                         bool *reload_module);
+    bool show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
+                       ResourceSpec &resources, Scene &scene, void *umka,
+                       bool *reload_module);
     bool show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
-              Scene &scene, UiUser **user, void *umka, bool *reload_module);
+              Scene &scene, UiUser &user, void *umka, bool *reload_module);
     void deinit();
 };
