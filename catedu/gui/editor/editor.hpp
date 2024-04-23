@@ -50,6 +50,26 @@ struct EditAction
     } cmd;
 };
 
+enum class StencilType
+{
+    Freeform,
+    Rectangle,
+    Line
+};
+
+struct StencilEdit
+{
+    StencilType type;
+    Vector2i start;
+    Vector2i end;
+};
+
+struct TilemapEdit
+{
+    StencilEdit stencil;
+    TableId tile;
+};
+
 struct GuiEditor
 {
     bool playtesting;
@@ -62,8 +82,8 @@ struct GuiEditor
     bool suppress_errors;
     bool show_debug;
     UiState *ui_state;
+    TilemapEdit tilemap_edit;
     TableId selection;
-    TableId tile_selection;
     size_t entity_list_page;
     Camera camera;
     GuiDebugTree debug_tree;

@@ -482,25 +482,184 @@ void show_properties(UiUser &user, Object &obj, GuiEditor &editor)
     end_show_window(user);
 }
 
-void show_tile_picker(UiUser &user, ResourceSpec &resources, GuiEditor &editor)
+void show_stencil_picker(UiUser &user, StencilEdit &stencil)
 {
-    begin_show_window(
-        user,
-        {"Tiles", {sapp_widthf() / user.state->dpi_scale - 100, 20, 100, 800}});
+    float window_y =
+        sapp_screen_rect_scaled(user.state->dpi_scale).siz.y / 2 - 100;
+
+    begin_show_window(user, {"Stencil", {0, window_y, 100, 200}, true});
+
+    auto stencil_button = [&](const char *name, StencilType type) {
+        Vector4 color = stencil.type == type ? Vector4{0.8, 1.0, 0.8, 1.0}
+                                             : Vector4{1.0, 1.0, 1.0, 1.0};
+        if (button(user, name, color))
+        {
+            stencil.type = type;
+        }
+    };
+
+    stencil_button("Freeform", StencilType::Freeform);
+    stencil_button("Rectangle", StencilType::Rectangle);
+
+    end_show_window(user);
+}
+
+void show_tile_picker(UiUser &user, ResourceSpec &resources, TilemapEdit &edit)
+{
+    float window_x = sapp_screen_rect_scaled(user.state->dpi_scale).siz.x - 100;
+    float window_y =
+        sapp_screen_rect_scaled(user.state->dpi_scale).siz.y / 2 - 200;
+
+    begin_show_window(user, {"Tiles", {window_x, window_y, 100, 400}, true});
 
     for (auto [id, tile] : iter(resources.tiles))
     {
-        bool selected = editor.tile_selection == id;
+        bool selected = edit.tile == id;
         Vector4 background = selected ? Vector4{0.8, 1.0, 0.8, 1.0}
                                       : Vector4{1.0, 1.0, 1.0, 1.0};
 
         if (button(user, tile.name, background))
         {
-            editor.tile_selection = selected ? NULL_ID : id;
+            edit.tile = selected ? NULL_ID : id;
         }
     }
 
     end_show_window(user);
+}
+
+void apply_stencil(GuiEditor &editor, StencilEdit &edit, TableId tile_id,
+                   TableId tilemap_entity, Scene &scene)
+{
+    if (edit.type == StencilType::Rectangle)
+    {
+        int x0 = edit.start.x;
+        int y0 = edit.start.y;
+        int x1 = edit.end.x;
+        int y1 = edit.end.y;
+
+        if (x0 > x1)
+        {
+            int tmp = x0;
+            x0 = x1;
+            x1 = tmp;
+        }
+        if (y0 > y1)
+        {
+            int tmp = y0;
+            y0 = y1;
+            y1 = tmp;
+        }
+
+        for (int x = x0; x <= x1; x++)
+        {
+            for (int y = y0; y <= y1; y++)
+            {
+                EditAction action = {};
+                action.type = EditAction::PlaceTile;
+                action.cmd.place_tile.tilemap_entity = tilemap_entity;
+                action.cmd.place_tile.pos = {x, y};
+                action.cmd.place_tile.tile_id = tile_id.id;
+
+                do_action(editor, scene, action);
+            }
+        }
+    }
+    else
+    {
+        EditAction action = {};
+        action.type = EditAction::PlaceTile;
+        action.cmd.place_tile.tilemap_entity = tilemap_entity;
+        action.cmd.place_tile.pos = edit.end;
+        action.cmd.place_tile.tile_id = tile_id.id;
+
+        do_action(editor, scene, action);
+    }
+}
+
+void show_stencil(StencilEdit &edit, TableId model, ResourceSpec &resources,
+                  catedu::pbr::Renderer &renderer)
+{
+    if (model == NULL_ID)
+    {
+        return;
+    }
+
+    if (edit.type == StencilType::Rectangle)
+    {
+        int x0 = edit.start.x;
+        int y0 = edit.start.y;
+        int x1 = edit.end.x;
+        int y1 = edit.end.y;
+
+        if (x0 > x1)
+        {
+            int tmp = x0;
+            x0 = x1;
+            x1 = tmp;
+        }
+        if (y0 > y1)
+        {
+            int tmp = y0;
+            y0 = y1;
+            y1 = tmp;
+        }
+
+        for (int x = x0; x <= x1; x++)
+        {
+            for (int y = y0; y <= y1; y++)
+            {
+                Vector3 pos = {x, 0, y};
+                render_model_at(pos, resources, model, renderer, true, true);
+            }
+        }
+    }
+}
+
+void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
+                         TableId tile_id, ResourceSpec &resources,
+                         catedu::pbr::Renderer &renderer, Scene &scene)
+{
+    if (input.k[INPUT_MB_LEFT].pressed)
+    {
+        edit.start = vector2_to_vector2i(editor.object_cursor_at);
+    }
+
+    if (input.k[INPUT_MB_LEFT].held)
+    {
+        edit.end = vector2_to_vector2i(editor.object_cursor_at);
+    }
+
+    SpecTile *tile = resources.tiles.get(tile_id);
+
+    if (input.k[INPUT_MB_LEFT].held)
+    {
+        if (tile == nullptr)
+        {
+            show_stencil(edit, resources.find_model_by_name("selector"),
+                         resources, renderer);
+        }
+        else
+        {
+            show_stencil(edit, tile->model_id, resources, renderer);
+        }
+    }
+
+    if (input.k[INPUT_MB_LEFT].released)
+    {
+        apply_stencil(editor, edit, tile_id, editor.selection, scene);
+        edit.end = edit.start = {};
+    }
+
+    if (edit.type == StencilType::Freeform)
+    {
+        apply_stencil(editor, edit, tile_id, editor.selection, scene);
+    }
+}
+
+void show_tile_editor(UiUser &user, ResourceSpec &resources, GuiEditor &editor)
+{
+    show_stencil_picker(user, editor.tilemap_edit.stencil);
+    show_tile_picker(user, resources, editor.tilemap_edit);
 }
 
 GuiEditor GuiEditor::init(UiState *ui_state)
@@ -565,10 +724,10 @@ SelectionState show_selection(GuiEditor &editor,
 
                 tilemap_selected = &selected->tilemap;
 
-                if (editor.tile_selection != NULL_ID)
+                if (editor.tilemap_edit.tile != NULL_ID)
                 {
                     SpecTile &tile =
-                        resources.tiles.get_assert(editor.tile_selection);
+                        resources.tiles.get_assert(editor.tilemap_edit.tile);
                     rotation = tile.rotation;
                     model_id = tile.model_id;
                 }
@@ -769,32 +928,17 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
         {
             SelectionState sel =
                 show_selection(*this, renderer, resources, scene, input);
+            if (sel.tilemap_selected)
+            {
+                show_stencil_editor(input, *this, this->tilemap_edit.stencil,
+                                    this->tilemap_edit.tile, resources,
+                                    renderer, scene);
+            }
 
             this->object_cursor_at = sel.position;
 
-            if (sel.tilemap_selected && user.hovered() &&
-                input.k[INPUT_MB_RIGHT].held)
-            {
-                EditAction action = {};
-                action.type = EditAction::PlaceTile;
-                action.cmd.place_tile.tilemap_entity = this->selection;
-                action.cmd.place_tile.pos = vector2_to_vector2i(sel.position);
-                action.cmd.place_tile.tile_id = 0;
-                do_action(*this, scene, action);
-            }
-
-            if (sel.tilemap_selected && user.hovered() &&
-                input.k[INPUT_MB_LEFT].held)
-            {
-                EditAction action = {};
-                action.type = EditAction::PlaceTile;
-                action.cmd.place_tile.tilemap_entity = this->selection;
-                action.cmd.place_tile.pos = vector2_to_vector2i(sel.position);
-                action.cmd.place_tile.tile_id = this->tile_selection.id;
-                do_action(*this, scene, action);
-            }
-
-            if (input.k[INPUT_MB_LEFT].pressed && user.hovered())
+            if (input.k[INPUT_MB_LEFT].pressed && user.hovered() &&
+                !sel.tilemap_selected)
             {
                 ObjectId closest_object =
                     find_object_within_distance(scene, object_cursor_at, 1);
@@ -803,7 +947,7 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                 {
                     this->selection = closest_object;
                 }
-                else if (!sel.tilemap_selected)
+                else
                 {
                     if (this->selection != NULL_ID)
                     {
@@ -930,7 +1074,7 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
             show_properties(user, *selected, *this);
             if (selected->type == Object::Type::Tilemap)
             {
-                show_tile_picker(user, resources, *this);
+                show_tile_editor(user, resources, *this);
             }
 
             if (selected->type == Object::Type::Entity)
