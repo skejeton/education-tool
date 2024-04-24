@@ -1237,12 +1237,24 @@ void show_popups(UiUser &user, GuiEditor &editor)
 bool show_new_mode(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
                    catedu::pbr::Renderer &renderer, Scene &scene, Input &input)
 {
+    // TODO: Make this simpler
+    AutoLayoutElement element = {};
+    element.position = AutoLayoutPosition::Absolute;
+    element.width.type = AutoLayoutDimension::Pixel;
+    element.width.value = sapp_widthf() / user.state->dpi_scale;
+    element.height.type = AutoLayoutDimension::Pixel;
+    element.height.value = sapp_heightf() / user.state->dpi_scale;
+    user.state->element_storage.push("Main", {});
+    user.begin_generic(element, {}, {}, user.state->element_storage.id());
+
     renderer.begin_pass();
 
     scene.render(renderer, resources);
 
     SelectionState sel =
         show_selection(editor, renderer, resources, scene, input);
+
+    editor.object_cursor_at = sel.position;
 
     if (sel.tilemap_selected)
     {
@@ -1254,6 +1266,9 @@ bool show_new_mode(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
     }
 
     renderer.end_pass();
+
+    user.end_generic();
+    user.state->element_storage.pop();
 
     return false;
 }
