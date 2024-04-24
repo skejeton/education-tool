@@ -1063,10 +1063,6 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
         if (selected)
         {
             show_properties(user, *selected, *this);
-            if (selected->type == Object::Type::Tilemap)
-            {
-                show_tile_editor(user, resources, *this);
-            }
 
             if (selected->type == Object::Type::Entity)
             {
@@ -1238,6 +1234,30 @@ void show_popups(UiUser &user, GuiEditor &editor)
     }
 }
 
+bool show_new_mode(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
+                   catedu::pbr::Renderer &renderer, Scene &scene, Input &input)
+{
+    renderer.begin_pass();
+
+    scene.render(renderer, resources);
+
+    SelectionState sel =
+        show_selection(editor, renderer, resources, scene, input);
+
+    if (sel.tilemap_selected)
+    {
+        show_stencil_editor(input, editor, editor.tilemap_edit.stencil,
+                            editor.tilemap_edit.tile, resources, renderer,
+                            scene);
+
+        show_tile_editor(user, resources, editor);
+    }
+
+    renderer.end_pass();
+
+    return false;
+}
+
 bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                      Scene &scene, UiUser &user, void *umka,
                      bool *reload_module)
@@ -1251,7 +1271,8 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
 
     if (new_mode)
     {
-        // TODO
+        return_back = show_new_mode(*this, user, resources, renderer, scene,
+                                    user.state->input);
     }
     else
     {
