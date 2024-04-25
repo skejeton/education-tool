@@ -9,6 +9,7 @@
 #include "catedu/ui/rendering/core.hpp"
 #include "catedu/ui/rendering/font.hpp"
 #include "catedu/ui/user.hpp"
+#include "stencil.hpp"
 #include <sokol/sokol_app.h>
 
 struct EditAction
@@ -50,24 +51,11 @@ struct EditAction
     } cmd;
 };
 
-enum class StencilType
-{
-    Freeform,
-    Rectangle,
-    Line
-};
-
-struct StencilEdit
-{
-    StencilType type;
-    Vector2i start;
-    Vector2i end;
-};
-
 struct TilemapEdit
 {
     StencilEdit stencil;
     TableId tile;
+    int scroll;
 };
 
 struct GuiEditor

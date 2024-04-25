@@ -482,98 +482,163 @@ void show_properties(UiUser &user, Object &obj, GuiEditor &editor)
     end_show_window(user);
 }
 
+AutoLayoutElement create_main_element(UiUser &user)
+{
+    AutoLayoutElement element = {};
+    element.position = AutoLayoutPosition::Absolute;
+    element.width.type = AutoLayoutDimension::Pixel;
+    element.width.value = sapp_widthf() / user.state->dpi_scale;
+    element.height.type = AutoLayoutDimension::Pixel;
+    element.height.value = sapp_heightf() / user.state->dpi_scale;
+    return element;
+}
+
+void begin_toolbar(UiUser &user, const char *name, bool left)
+{
+    float align_x = left ? 0 : 1;
+    float align_y = 0.5;
+
+    AutoLayoutElement element = create_main_element(user);
+    element.align_height = align_y;
+    element.align_width = align_x;
+    user.begin_generic(element, {}, {});
+    user.push_id(name);
+
+    AutoLayoutElement toolbar = {};
+    toolbar.layout.type = AutoLayout::Column;
+    toolbar.width.type = AutoLayoutDimension::Auto;
+    toolbar.height.type = AutoLayoutDimension::Auto;
+    toolbar.padding = {2, 2, 2, 2};
+    toolbar.margin = {2, 2, 2, 2};
+    toolbar.border = {1, 1, 1, 1};
+    user.begin_generic(toolbar, UiMakeBrush::make_solid({0.8, 0.8, 0.8, 1.0}),
+                       UiMakeBrush::make_solid({0.0, 0.0, 0.0, 1.0}),
+                       user.state->element_storage.id());
+}
+
+void end_toolbar(UiUser &user)
+{
+    user.end_generic();
+    user.pop_id();
+    user.end_generic();
+}
+
+bool icon_button(UiUser &user, const char *name, const char *icon,
+                 Vector4 color)
+{
+    AutoLayoutElement el = {};
+    el.padding = {2, 2, 2, 2};
+    el.margin = {2, 2, 2, 2};
+    el.border = {1, 1, 1, 1};
+
+    begin_button_frame(user, name, el, color);
+    img(user, icon, {1, 1});
+    return end_button_frame(user);
+}
+
+bool icon_replacement_button(UiUser &user, const char *name, Vector4 color)
+{
+    AutoLayoutElement el = {};
+    el.width = {AutoLayoutDimension::Pixel, 64};
+    el.height = {AutoLayoutDimension::Pixel, 64};
+    el.align_width = 0.5;
+    el.align_height = 0.5;
+    el.padding = {2, 2, 2, 2};
+    el.margin = {2, 2, 2, 2};
+    el.border = {1, 1, 1, 1};
+
+    begin_button_frame(user, name, el, color);
+    label(user, name, {1, 1});
+    return end_button_frame(user);
+}
+
 void show_stencil_picker(UiUser &user, StencilEdit &stencil)
 {
-    float window_y =
-        sapp_screen_rect_scaled(user.state->dpi_scale).siz.y / 2 - 100;
+    begin_toolbar(user, "Stencil", true);
 
-    begin_show_window(user, {"Stencil", {0, window_y, 100, 200}, true});
-
-    auto stencil_button = [&](const char *name, StencilType type) {
+    auto stencil_button = [&](const char *name, const char *img,
+                              StencilType type) {
         Vector4 color = stencil.type == type ? Vector4{0.8, 1.0, 0.8, 1.0}
                                              : Vector4{1.0, 1.0, 1.0, 1.0};
-        if (button(user, name, color))
+        if (icon_button(user, name, img, color))
         {
             stencil.type = type;
         }
     };
 
-    stencil_button("Freeform", StencilType::Freeform);
-    stencil_button("Rectangle", StencilType::Rectangle);
+    stencil_button("Freeform", "assets/gui/freeform.png",
+                   StencilType::Freeform);
+    stencil_button("Rectangle", "assets/gui/rectangle.png",
+                   StencilType::Rectangle);
+    stencil_button("Line", "assets/gui/line.png", StencilType::Line);
+    stencil_button("LineRectangle", "assets/gui/line_rectangle.png",
+                   StencilType::LineRectangle);
+    stencil_button("Ellipse", "assets/gui/ellipse.png", StencilType::Ellipse);
 
-    end_show_window(user);
+    end_toolbar(user);
 }
 
 void show_tile_picker(UiUser &user, ResourceSpec &resources, TilemapEdit &edit)
 {
-    float window_x = sapp_screen_rect_scaled(user.state->dpi_scale).siz.x - 100;
-    float window_y =
-        sapp_screen_rect_scaled(user.state->dpi_scale).siz.y / 2 - 200;
+    begin_toolbar(user, "Tiles", false);
 
-    begin_show_window(user, {"Tiles", {window_x, window_y, 100, 400}, true});
+    int limit = 5;
 
+    if (icon_replacement_button(user, "^", {1.0, 1.0, 1.0, 1.0}))
+    {
+        edit.scroll -= 1;
+    }
+
+    edit.scroll = clamp(edit.scroll, 0, (int)resources.tiles.count - limit);
+
+    int i = 0;
     for (auto [id, tile] : iter(resources.tiles))
     {
+        if (i < edit.scroll || i >= edit.scroll + limit)
+        {
+            i++;
+            continue;
+        }
+
         bool selected = edit.tile == id;
         Vector4 background = selected ? Vector4{0.8, 1.0, 0.8, 1.0}
                                       : Vector4{1.0, 1.0, 1.0, 1.0};
 
-        if (button(user, tile.name, background))
+        if (icon_replacement_button(user, tile.name, background))
         {
             edit.tile = selected ? NULL_ID : id;
         }
+
+        i++;
     }
 
-    end_show_window(user);
+    if (icon_replacement_button(user, "v", {1.0, 1.0, 1.0, 1.0}))
+    {
+        edit.scroll += 1;
+    }
+
+    Vector4 background = edit.tile == NULL_ID ? Vector4{0.8, 1.0, 0.8, 1.0}
+                                              : Vector4{1.0, 1.0, 1.0, 1.0};
+    if (icon_replacement_button(user, "x", background))
+    {
+        edit.tile = NULL_ID;
+    }
+
+    end_toolbar(user);
 }
 
 void apply_stencil(GuiEditor &editor, StencilEdit &edit, TableId tile_id,
                    TableId tilemap_entity, Scene &scene)
 {
-    if (edit.type == StencilType::Rectangle)
-    {
-        int x0 = edit.start.x;
-        int y0 = edit.start.y;
-        int x1 = edit.end.x;
-        int y1 = edit.end.y;
-
-        if (x0 > x1)
-        {
-            int tmp = x0;
-            x0 = x1;
-            x1 = tmp;
-        }
-        if (y0 > y1)
-        {
-            int tmp = y0;
-            y0 = y1;
-            y1 = tmp;
-        }
-
-        for (int x = x0; x <= x1; x++)
-        {
-            for (int y = y0; y <= y1; y++)
-            {
-                EditAction action = {};
-                action.type = EditAction::PlaceTile;
-                action.cmd.place_tile.tilemap_entity = tilemap_entity;
-                action.cmd.place_tile.pos = {x, y};
-                action.cmd.place_tile.tile_id = tile_id.id;
-
-                do_action(editor, scene, action);
-            }
-        }
-    }
-    else
-    {
+    edit.map([&](int x, int y) {
         EditAction action = {};
         action.type = EditAction::PlaceTile;
         action.cmd.place_tile.tilemap_entity = tilemap_entity;
-        action.cmd.place_tile.pos = edit.end;
+        action.cmd.place_tile.pos = {x, y};
         action.cmd.place_tile.tile_id = tile_id.id;
 
         do_action(editor, scene, action);
-    }
+    });
 }
 
 void show_stencil(StencilEdit &edit, TableId model, ResourceSpec &resources,
@@ -584,35 +649,10 @@ void show_stencil(StencilEdit &edit, TableId model, ResourceSpec &resources,
         return;
     }
 
-    if (edit.type == StencilType::Rectangle)
-    {
-        int x0 = edit.start.x;
-        int y0 = edit.start.y;
-        int x1 = edit.end.x;
-        int y1 = edit.end.y;
-
-        if (x0 > x1)
-        {
-            int tmp = x0;
-            x0 = x1;
-            x1 = tmp;
-        }
-        if (y0 > y1)
-        {
-            int tmp = y0;
-            y0 = y1;
-            y1 = tmp;
-        }
-
-        for (int x = x0; x <= x1; x++)
-        {
-            for (int y = y0; y <= y1; y++)
-            {
-                Vector3 pos = {x, 0, y};
-                render_model_at(pos, resources, model, renderer, true, true);
-            }
-        }
-    }
+    edit.map([&](int x, int y) {
+        Vector3 pos = {x, 0, y};
+        render_model_at(pos, resources, model, renderer, true, true);
+    });
 }
 
 void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
@@ -623,8 +663,7 @@ void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
     {
         edit.start = vector2_to_vector2i(editor.object_cursor_at);
     }
-
-    if (input.k[INPUT_MB_LEFT].held)
+    else if (input.k[INPUT_MB_LEFT].held)
     {
         edit.end = vector2_to_vector2i(editor.object_cursor_at);
 
@@ -638,17 +677,18 @@ void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
         {
             show_stencil(edit, tile->model_id, resources, renderer);
         }
+
+        if (edit.type == StencilType::Freeform)
+        {
+            apply_stencil(editor, edit, tile_id, editor.selection, scene);
+            edit.start = edit.end;
+        }
     }
 
     if (input.k[INPUT_MB_LEFT].released)
     {
         apply_stencil(editor, edit, tile_id, editor.selection, scene);
         edit.end = edit.start = {};
-    }
-
-    if (edit.type == StencilType::Freeform)
-    {
-        apply_stencil(editor, edit, tile_id, editor.selection, scene);
     }
 }
 
@@ -815,6 +855,30 @@ void GuiEditor::start_playtest(Scene &scene, ResourceSpec &resources,
     }
 }
 
+bool handle_camera_movement(Camera &camera, Input &input, UiUser &user)
+{
+    if (camera.position.y > 5 && input.mouse_wheel > 0)
+    {
+        camera.move(0, -input.mouse_wheel * 2, input.mouse_wheel * 2);
+    }
+    if (camera.position.y < 40 && input.mouse_wheel < 0)
+    {
+        camera.move(0, -input.mouse_wheel * 2, input.mouse_wheel * 2);
+    }
+    if (input.k[INPUT_MB_MIDDLE].held)
+    {
+        camera.move(-input.mouse_delta.x / (20 * user.state->dpi_scale), 0,
+                    input.mouse_delta.y / (20 * user.state->dpi_scale));
+        sapp_lock_mouse(true);
+        return true;
+    }
+    else
+    {
+        sapp_lock_mouse(false);
+        return false;
+    }
+}
+
 bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
                               ResourceSpec &resources, Scene &scene, void *umka,
                               bool *reload_module)
@@ -836,12 +900,7 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
         this->show_debug = !this->show_debug;
     }
 
-    AutoLayoutElement element = {};
-    element.position = AutoLayoutPosition::Absolute;
-    element.width.type = AutoLayoutDimension::Pixel;
-    element.width.value = sapp_widthf() / this->ui_state->dpi_scale;
-    element.height.type = AutoLayoutDimension::Pixel;
-    element.height.value = sapp_heightf() / this->ui_state->dpi_scale;
+    AutoLayoutElement element = create_main_element(user);
     user.state->element_storage.push("Main", {});
     user.begin_generic(element, {}, {}, user.state->element_storage.id());
 
@@ -854,35 +913,14 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
     debug_tree.value("Mouse Pos Y", input.mouse_pos.y);
     debug_tree.value("Dirty", dirty);
 
-    if (!this->playtesting)
-    {
-        if (camera.position.y > 5 && input.mouse_wheel > 0)
-        {
-            camera.move(0, -input.mouse_wheel * 2, input.mouse_wheel * 2);
-        }
-        if (camera.position.y < 40 && input.mouse_wheel < 0)
-        {
-            camera.move(0, -input.mouse_wheel * 2, input.mouse_wheel * 2);
-        }
-        if (input.k[INPUT_MB_MIDDLE].held && user.hovered())
-        {
-            camera.move(-input.mouse_delta.x / (20 * ui_state->dpi_scale), 0,
-                        input.mouse_delta.y / (20 * ui_state->dpi_scale));
-            sapp_lock_mouse(true);
-            no_ui = true;
-        }
-        else
-        {
-            sapp_lock_mouse(false);
-        }
-    }
-
     if (this->playtesting)
     {
         this->playtest_scene->render(renderer, resources, this->show_debug);
     }
     else
     {
+        handle_camera_movement(camera, input, user);
+
         scene.render(renderer, resources);
     }
 
@@ -1237,31 +1275,39 @@ void show_popups(UiUser &user, GuiEditor &editor)
 bool show_new_mode(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
                    catedu::pbr::Renderer &renderer, Scene &scene, Input &input)
 {
-    // TODO: Make this simpler
-    AutoLayoutElement element = {};
-    element.position = AutoLayoutPosition::Absolute;
-    element.width.type = AutoLayoutDimension::Pixel;
-    element.width.value = sapp_widthf() / user.state->dpi_scale;
-    element.height.type = AutoLayoutDimension::Pixel;
-    element.height.value = sapp_heightf() / user.state->dpi_scale;
+    AutoLayoutElement element = create_main_element(user);
     user.state->element_storage.push("Main", {});
     user.begin_generic(element, {}, {}, user.state->element_storage.id());
 
+    renderer.camera = editor.camera;
     renderer.begin_pass();
 
     scene.render(renderer, resources);
 
-    SelectionState sel =
-        show_selection(editor, renderer, resources, scene, input);
-
-    editor.object_cursor_at = sel.position;
-
-    if (sel.tilemap_selected)
+    if (user.hovered())
     {
-        show_stencil_editor(input, editor, editor.tilemap_edit.stencil,
-                            editor.tilemap_edit.tile, resources, renderer,
-                            scene);
+        if (!handle_camera_movement(editor.camera, input, user))
+        {
+            SelectionState sel =
+                show_selection(editor, renderer, resources, scene, input);
 
+            editor.object_cursor_at = sel.position;
+
+            if (sel.tilemap_selected)
+            {
+                show_stencil_editor(input, editor, editor.tilemap_edit.stencil,
+                                    editor.tilemap_edit.tile, resources,
+                                    renderer, scene);
+            }
+        }
+    }
+
+    bool tilemap_selected =
+        editor.selection != NULL_ID &&
+        scene.get_object(editor.selection)->type == Object::Type::Tilemap;
+
+    if (tilemap_selected)
+    {
         show_tile_editor(user, resources, editor);
     }
 
