@@ -2,6 +2,7 @@
 #include "catedu/misc/camera_input.hpp"
 #include "catedu/rendering/render_model.hpp"
 #include "catedu/ui/widgets.hpp"
+#include "offscreen.hpp"
 #include <umka_api.h>
 
 void show_generic_icon(UiUser &user, const char *s, Vector4 color,
@@ -548,7 +549,7 @@ bool icon_replacement_button(UiUser &user, const char *name, Vector4 color)
     el.border = {1, 1, 1, 1};
 
     begin_button_frame(user, name, el, color);
-    label(user, name, {1, 1});
+    label(user, name, {6, 6});
     return end_button_frame(user);
 }
 
@@ -578,7 +579,60 @@ void show_stencil_picker(UiUser &user, StencilEdit &stencil)
     end_toolbar(user);
 }
 
-void show_tile_picker(UiUser &user, ResourceSpec &resources, TilemapEdit &edit)
+bool tile_icon_button(UiUser &user, const char *name, TableId tile_id,
+                      Vector4 color, catedu::pbr::Renderer &renderer,
+                      ResourceSpec &resources)
+{
+    AutoLayoutElement el = {};
+    el.width = {AutoLayoutDimension::Pixel, 64};
+    el.height = {AutoLayoutDimension::Pixel, 64};
+    el.align_width = 0.5;
+    el.align_height = 0.5;
+    el.padding = {2, 2, 2, 2};
+    el.margin = {2, 2, 2, 2};
+    el.border = {1, 1, 1, 1};
+
+    UiImageId id;
+
+    begin_button_frame(user, name, el, color);
+    {
+        SpecTile tile = resources.tiles.get_assert(tile_id);
+
+        Camera camera = Camera::init(5);
+        camera.set_aspect(1);
+
+        if (tile.model_id == resources.find_model_by_name("wall") ||
+            tile.model_id == resources.find_model_by_name("wall_wood"))
+        {
+            camera.move(0, 0.5, -30);
+        }
+        else if (tile.model_id == resources.find_model_by_name("tree"))
+        {
+            camera.move(0, 1, -50);
+        }
+        else
+        {
+            camera.move(0, 0, -22);
+        }
+
+        camera.rotate_around({0, 0, 0}, 45, -45);
+
+        renderer.camera = camera;
+        renderer.begin_pass_offscreen(offscreen_pass_action(),
+                                      offscreen_alloc(id));
+
+        render_model_at({0, 0, 0}, resources, tile.model_id, renderer, true,
+                        false, tile.rotation);
+
+        renderer.end_pass();
+    }
+
+    img(user, id, {0.5, 0.5});
+    return end_button_frame(user);
+}
+
+void show_tile_picker(UiUser &user, catedu::pbr::Renderer &renderer,
+                      ResourceSpec &resources, TilemapEdit &edit)
 {
     begin_toolbar(user, "Tiles", false);
 
@@ -604,7 +658,8 @@ void show_tile_picker(UiUser &user, ResourceSpec &resources, TilemapEdit &edit)
         Vector4 background = selected ? Vector4{0.8, 1.0, 0.8, 1.0}
                                       : Vector4{1.0, 1.0, 1.0, 1.0};
 
-        if (icon_replacement_button(user, tile.name, background))
+        if (tile_icon_button(user, tile.name, id, background, renderer,
+                             resources))
         {
             edit.tile = selected ? NULL_ID : id;
         }
@@ -692,10 +747,11 @@ void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
     }
 }
 
-void show_tile_editor(UiUser &user, ResourceSpec &resources, GuiEditor &editor)
+void show_tile_editor(UiUser &user, catedu::pbr::Renderer &renderer,
+                      ResourceSpec &resources, GuiEditor &editor)
 {
     show_stencil_picker(user, editor.tilemap_edit.stencil);
-    show_tile_picker(user, resources, editor.tilemap_edit);
+    show_tile_picker(user, renderer, resources, editor.tilemap_edit);
 }
 
 GuiEditor GuiEditor::init(UiState *ui_state)
@@ -709,6 +765,10 @@ GuiEditor GuiEditor::init(UiState *ui_state)
     result.camera = camera;
     result.debug_tree = GuiDebugTree::init();
     result.dialog_editor = DialogEditor::init();
+
+    printf("Init editor\n");
+
+    offscreen_init_targets(ui_state->core);
 
     return result;
 }
@@ -889,13 +949,13 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
         start_playtest(scene, resources, reload_module);
     }
 #endif
-    renderer.begin_pass();
-
     renderer.camera = camera;
+    renderer.begin_pass();
 
     Input &input = this->ui_state->input;
 
-    if (input.k[SAPP_KEYCODE_F3].pressed)
+    if (input.k[SAPP_KEYCODE_F3].pressed ||
+        input.k[SAPP_KEYCODE_SCROLL_LOCK].pressed)
     {
         this->show_debug = !this->show_debug;
     }
@@ -909,6 +969,9 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
 
     debug_tree.reset();
 
+    debug_tree.value("Camera Pos X", camera.position.x);
+    debug_tree.value("Camera Pos Y", camera.position.y);
+    debug_tree.value("Camera Pos Z", camera.position.z);
     debug_tree.value("Mouse Pos X", input.mouse_pos.x);
     debug_tree.value("Mouse Pos Y", input.mouse_pos.y);
     debug_tree.value("Dirty", dirty);
@@ -1301,6 +1364,7 @@ bool show_new_mode(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
             }
         }
     }
+    renderer.end_pass();
 
     bool tilemap_selected =
         editor.selection != NULL_ID &&
@@ -1308,10 +1372,8 @@ bool show_new_mode(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
 
     if (tilemap_selected)
     {
-        show_tile_editor(user, resources, editor);
+        show_tile_editor(user, renderer, resources, editor);
     }
-
-    renderer.end_pass();
 
     user.end_generic();
     user.state->element_storage.pop();
@@ -1323,6 +1385,8 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                      Scene &scene, UiUser &user, void *umka,
                      bool *reload_module)
 {
+    offscreen_clear();
+
     if (user.state->input.k[SAPP_KEYCODE_F5].pressed)
     {
         this->new_mode = !this->new_mode;
@@ -1348,6 +1412,8 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
 
 void GuiEditor::deinit()
 {
+    offscreen_deinit_targets(this->ui_state->core);
+
     debug_tree.deinit();
     if (this->playtesting)
     {

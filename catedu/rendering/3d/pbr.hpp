@@ -15,13 +15,13 @@
 #include "catedu/rendering/3d/camera.hpp"
 #include "model.hpp"
 
-
 namespace catedu::pbr
 {
 
 struct Renderer
 {
     sg_pipeline pipeline;
+    sg_pipeline offscreen_pipeline;
     sg_pass_action pass_action;
     Camera camera;
 
@@ -29,6 +29,7 @@ struct Renderer
     void deinit();
 
     void begin_pass();
+    void begin_pass_offscreen(sg_pass_action pa, sg_attachments att);
     void render_model(Model &model, pbr_vs_params_t vs_params);
     void end_pass();
 };

@@ -268,6 +268,24 @@ void img(UiUser &user, const char *path, Vector2 scale)
     user.end_generic();
 }
 
+void img(UiUser &user, UiImageId id, Vector2 scale)
+{
+    AutoLayoutElement el = {};
+    el.layout = {AutoLayout::Row};
+    Vector2 size = vector2i_to_vector2(user.state->core->get_image(id)->size);
+
+    el.width = {AutoLayoutDimension::Pixel, size.x * scale.x};
+    el.height = {AutoLayoutDimension::Pixel, size.y * scale.y};
+
+    user.begin_generic(el,
+                       UiMakeBrush::make_image_brush(UiBuffers::Rectangle,
+                                                     user.state->core, id)
+                           .build(),
+                       UiMakeBrush::make_solid({1.0, 1.0, 1.0, 0.0}));
+
+    user.end_generic();
+}
+
 void label(UiUser &user, const char *text, Vector2 scale, UiBrush style)
 {
     Vector2 size = user.state->font.bounds_text_utf8({0, 0}, text, scale).siz;

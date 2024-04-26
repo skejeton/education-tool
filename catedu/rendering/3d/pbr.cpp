@@ -6,7 +6,8 @@
 
 using namespace catedu::pbr;
 
-static sg_pipeline init_pipeline(sg_shader shader)
+static void init_pipelines(sg_shader shader, sg_pipeline &pipeline,
+                           sg_pipeline &offscreen_pipeline)
 {
     sg_pipeline_desc desc = {};
 
@@ -24,10 +25,19 @@ static sg_pipeline init_pipeline(sg_shader shader)
     desc.shader = shader;
     desc.index_type = SG_INDEXTYPE_UINT16;
     desc.cull_mode = SG_CULLMODE_BACK;
+
     desc.depth.write_enabled = true;
     desc.depth.compare = SG_COMPAREFUNC_LESS_EQUAL;
 
-    return sg_make_pipeline(desc);
+    desc.label = "pbr-pipeline";
+
+    sg_pipeline_desc offscreen_desc = desc;
+    offscreen_desc.label = "pbr-offscreen-pipeline";
+    offscreen_desc.colors[0].pixel_format = SG_PIXELFORMAT_RGBA8;
+    offscreen_desc.depth.pixel_format = SG_PIXELFORMAT_DEPTH;
+
+    pipeline = sg_make_pipeline(desc);
+    offscreen_pipeline = sg_make_pipeline(offscreen_desc);
 }
 
 static sg_pass_action init_pass_action()
@@ -47,7 +57,7 @@ Renderer Renderer::init()
 
     result.pass_action = init_pass_action();
     sg_shader shader = sg_make_shader(pbr_prog_shader_desc(sg_query_backend()));
-    result.pipeline = init_pipeline(shader);
+    init_pipelines(shader, result.pipeline, result.offscreen_pipeline);
 
     return result;
 }
@@ -59,12 +69,32 @@ void Renderer::deinit()
 
 void catedu::pbr::Renderer::begin_pass()
 {
+    if (camera.aspect < 0.01f)
+    {
+        fprintf(stderr, "WARNING: Camera aspect ratio is too small\n");
+    }
+
     sg_pass pass = {0};
     pass.action = this->pass_action;
     pass.swapchain = sglue_swapchain();
     sg_begin_pass(&pass);
 
     sg_apply_pipeline(pipeline);
+}
+
+void Renderer::begin_pass_offscreen(sg_pass_action pa, sg_attachments att)
+{
+    if (camera.aspect < 0.01f)
+    {
+        fprintf(stderr, "WARNING: Camera aspect ratio is too small\n");
+    }
+
+    sg_pass pass = {0};
+    pass.action = pa;
+    pass.attachments = att;
+    sg_begin_pass(&pass);
+
+    sg_apply_pipeline(offscreen_pipeline);
 }
 
 void Renderer::render_model(Model &model, pbr_vs_params_t vs_params)

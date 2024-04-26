@@ -154,9 +154,10 @@ void Entry::frame(void)
         break;
     case MENU_MAIN_MENU:
         ui_mode = main_menu.show(user);
-        this->editor = GuiEditor::init(&this->ui_state);
         if (ui_mode == MENU_EDITOR)
         {
+            this->editor = GuiEditor::init(&this->ui_state);
+
             FILE *f = fopen("assets/world.dat", "rb");
             if (f != NULL)
             {
@@ -191,13 +192,13 @@ void Entry::frame(void)
 void Entry::cleanup(void)
 {
     main_menu.deinit();
-    ui_state.deinit();
-    res.deinit();
     if (ui_mode == MENU_EDITOR)
     {
         editor.deinit();
         scene.deinit();
     }
+    res.deinit();
+    ui_state.deinit();
     this->renderer.deinit();
     sg_tricks_deinit();
 
@@ -217,10 +218,11 @@ void Entry::init()
     ui_state = UiState::init("./assets/Roboto-Regular.ttf",
                              "./assets/Roboto-Bold.ttf", sapp_dpi_scale());
     main_menu = GuiMainMenu::init(&ui_state);
-    editor = GuiEditor::init(&ui_state);
 
     if (ui_mode == MENU_EDITOR)
     {
+        editor = GuiEditor::init(&ui_state);
+
         FILE *f = fopen("assets/world.dat", "rb");
         if (f != NULL)
         {
