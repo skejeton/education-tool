@@ -716,17 +716,20 @@ void apply_stencil(GuiEditor &editor, StencilEdit &edit, TableId tile_id,
     });
 }
 
-void show_stencil(StencilEdit &edit, TableId model, ResourceSpec &resources,
+void show_stencil(StencilEdit &edit, TableId tile, ResourceSpec &resources,
                   catedu::pbr::Renderer &renderer)
 {
-    if (model == NULL_ID)
+    if (tile == NULL_ID)
     {
-        return;
+        tile = resources.find_model_by_name("selector");
     }
+
+    SpecTile *tile_spec = resources.tiles.get(tile);
 
     edit.map([&](int x, int y) {
         Vector3 pos = {x, 0, y};
-        render_model_at(pos, resources, model, renderer, true, true);
+        render_model_at(pos, resources, tile_spec->model_id, renderer, true,
+                        true, tile_spec->rotation);
     });
 }
 
@@ -742,16 +745,7 @@ void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
     {
         edit.end = vector2_to_vector2i(editor.object_cursor_at);
 
-        SpecTile *tile = resources.tiles.get(tile_id);
-        if (tile == nullptr)
-        {
-            show_stencil(edit, resources.find_model_by_name("selector"),
-                         resources, renderer);
-        }
-        else
-        {
-            show_stencil(edit, tile->model_id, resources, renderer);
-        }
+        show_stencil(edit, tile_id, resources, renderer);
 
         if (edit.type == StencilType::Freeform)
         {
