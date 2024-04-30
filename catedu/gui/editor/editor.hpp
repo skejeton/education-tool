@@ -14,6 +14,8 @@
 
 struct EditAction
 {
+    bool final; // if true, this action is the last in a sequence
+
     enum Type
     {
         None,
@@ -77,7 +79,7 @@ struct GuiEditor
     Camera camera;
     GuiDebugTree debug_tree;
     Vector2 object_cursor_at;
-    EditAction actions[512];
+    EditAction actions[1 << 10];
     size_t action_buoy;
     size_t action_count;
     Scene *playtest_scene;

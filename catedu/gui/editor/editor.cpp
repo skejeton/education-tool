@@ -205,6 +205,14 @@ void select_object(GuiEditor &editor, TableId id)
     }
 }
 
+void finalize_last_action(GuiEditor &editor, Scene &scene)
+{
+    if (editor.action_buoy > 0)
+    {
+        EditAction action = editor.actions[editor.action_buoy - 1];
+    }
+}
+
 void do_action(GuiEditor &editor, Scene &scene, EditAction action,
                bool discard = true)
 {
@@ -250,7 +258,7 @@ void do_action(GuiEditor &editor, Scene &scene, EditAction action,
 
     editor.dirty = true;
 
-    if (editor.action_buoy < 512)
+    if (editor.action_buoy < (sizeof editor.actions / sizeof editor.actions[0]))
     {
         editor.actions[editor.action_buoy++] = action;
         if (discard)
@@ -309,6 +317,11 @@ void undo_action(GuiEditor &editor, Scene &scene)
     default:
         assert(false);
         break;
+    }
+
+    if (!action.final)
+    {
+        undo_action(editor, scene);
     }
 
     editor.dirty = true;
@@ -407,6 +420,7 @@ void show_place_object(UiUser &user, Scene &scene, GuiEditor &editor)
         EditAction action = {};
         action.type = EditAction::CreateEntity;
         action.cmd.create_entity.entity = new_obj;
+        action.final = true;
 
         do_action(editor, scene, action);
         editor.placing_object = false;
@@ -448,6 +462,7 @@ void show_object_list(UiUser &user, GuiEditor &editor, Scene &scene)
             EditAction action = {};
             action.type = EditAction::DeleteEntity;
             action.cmd.delete_entity.entity_id = id;
+            action.final = true;
             do_action(editor, scene, action);
         }
         break;
@@ -685,12 +700,17 @@ void show_tile_picker(UiUser &user, catedu::pbr::Renderer &renderer,
 void apply_stencil(GuiEditor &editor, StencilEdit &edit, TableId tile_id,
                    TableId tilemap_entity, Scene &scene)
 {
+    bool finalized = true;
+
     edit.map([&](int x, int y) {
         EditAction action = {};
         action.type = EditAction::PlaceTile;
         action.cmd.place_tile.tilemap_entity = tilemap_entity;
         action.cmd.place_tile.pos = {x, y};
         action.cmd.place_tile.tile_id = tile_id.id;
+        action.final = finalized;
+
+        finalized = false;
 
         do_action(editor, scene, action);
     });
@@ -939,6 +959,28 @@ bool handle_camera_movement(Camera &camera, Input &input, UiUser &user)
     }
 }
 
+void handle_shortcuts(GuiEditor &editor, Scene &scene, Input &input)
+{
+    if (input.shortcut(INPUT_CTRL, SAPP_KEYCODE_Z))
+    {
+        undo_action(editor, scene);
+    }
+    if (input.shortcut(INPUT_CTRL, SAPP_KEYCODE_Y))
+    {
+        redo_action(editor, scene);
+    }
+    if (input.shortcut(INPUT_CTRL, SAPP_KEYCODE_S))
+    {
+        editor.dirty = false;
+
+        Buffer data = scene.save();
+        FILE *file = fopen("assets/world.dat", "wb");
+        fwrite(data.data, 1, data.size, file);
+        fclose(file);
+        free(data.data);
+    }
+}
+
 bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
                               ResourceSpec &resources, Scene &scene, void *umka,
                               bool *reload_module)
@@ -990,27 +1032,7 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
     camera.set_aspect(sapp_widthf() / sapp_heightf());
     if (!this->playtesting)
     {
-
-        if (input.shortcut(INPUT_CTRL, SAPP_KEYCODE_Z))
-        {
-            undo_action(*this, scene);
-        }
-        if (input.shortcut(INPUT_CTRL, SAPP_KEYCODE_Y))
-        {
-            redo_action(*this, scene);
-        }
-
-        if (input.shortcut(INPUT_CTRL, SAPP_KEYCODE_S))
-        {
-            dirty = false;
-
-            Buffer data = scene.save();
-            FILE *file = fopen("assets/world.dat", "wb");
-            fwrite(data.data, 1, data.size, file);
-            fclose(file);
-            free(data.data);
-            // TODO: Save the scene
-        }
+        handle_shortcuts(*this, scene, input);
 
         if (user.hovered())
         {
@@ -1051,6 +1073,7 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
                             action.type = EditAction::MoveEntity;
                             action.cmd.move_entity.entity = this->selection;
                             action.cmd.move_entity.pos = this->object_cursor_at;
+                            action.final = true;
                             do_action(*this, scene, action);
                         }
                         else
@@ -1341,6 +1364,8 @@ bool show_new_mode(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
     AutoLayoutElement element = create_main_element(user);
     user.state->element_storage.push("Main", {});
     user.begin_generic(element, {}, {}, user.state->element_storage.id());
+
+    handle_shortcuts(editor, scene, input);
 
     renderer.camera = editor.camera;
     renderer.begin_pass();
