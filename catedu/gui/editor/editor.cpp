@@ -716,21 +716,32 @@ void apply_stencil(GuiEditor &editor, StencilEdit &edit, TableId tile_id,
     });
 }
 
+void show_stencil_model(StencilEdit &edit, TableId model_id, int rotation,
+                        ResourceSpec &resources,
+                        catedu::pbr::Renderer &renderer)
+{
+    edit.map([&](int x, int y) {
+        Vector3 pos = {x, 0, y};
+        render_model_at(pos, resources, model_id, renderer, true, true,
+                        rotation);
+    });
+}
+
 void show_stencil(StencilEdit &edit, TableId tile, ResourceSpec &resources,
                   catedu::pbr::Renderer &renderer)
 {
-    if (tile == NULL_ID)
-    {
-        tile = resources.find_model_by_name("selector");
-    }
-
     SpecTile *tile_spec = resources.tiles.get(tile);
 
-    edit.map([&](int x, int y) {
-        Vector3 pos = {x, 0, y};
-        render_model_at(pos, resources, tile_spec->model_id, renderer, true,
-                        true, tile_spec->rotation);
-    });
+    if (tile_spec)
+    {
+        show_stencil_model(edit, tile_spec->model_id, tile_spec->rotation,
+                           resources, renderer);
+    }
+    else
+    {
+        show_stencil_model(edit, resources.find_model_by_name("selector"), 0,
+                           resources, renderer);
+    }
 }
 
 void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
