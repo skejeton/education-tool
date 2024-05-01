@@ -810,19 +810,85 @@ inline Matrix4 operator*(Matrix4 a, Matrix4 b)
 {
     Matrix4 result = {};
 
-    for (int i = 0; i < 4; ++i)
-    {
-        for (int j = 0; j < 4; ++j)
-        {
-            float sum = 0;
-            for (int k = 0; k < 4; ++k)
-            {
-                sum += a.values[k * 4 + j] * b.values[i * 4 + k];
-            }
+    result.values[0] += a.values[0] * b.values[0];
+    result.values[0] += a.values[4] * b.values[1];
+    result.values[0] += a.values[8] * b.values[2];
+    result.values[0] += a.values[12] * b.values[3];
 
-            result.values[i * 4 + j] = sum;
-        }
-    }
+    result.values[1] += a.values[1] * b.values[0];
+    result.values[1] += a.values[5] * b.values[1];
+    result.values[1] += a.values[9] * b.values[2];
+    result.values[1] += a.values[13] * b.values[3];
+
+    result.values[2] += a.values[2] * b.values[0];
+    result.values[2] += a.values[6] * b.values[1];
+    result.values[2] += a.values[10] * b.values[2];
+    result.values[2] += a.values[14] * b.values[3];
+
+    result.values[3] += a.values[3] * b.values[0];
+    result.values[3] += a.values[7] * b.values[1];
+    result.values[3] += a.values[11] * b.values[2];
+    result.values[3] += a.values[15] * b.values[3];
+
+    result.values[4] += a.values[0] * b.values[4];
+    result.values[4] += a.values[4] * b.values[5];
+    result.values[4] += a.values[8] * b.values[6];
+    result.values[4] += a.values[12] * b.values[7];
+
+    result.values[5] += a.values[1] * b.values[4];
+    result.values[5] += a.values[5] * b.values[5];
+    result.values[5] += a.values[9] * b.values[6];
+    result.values[5] += a.values[13] * b.values[7];
+
+    result.values[6] += a.values[2] * b.values[4];
+    result.values[6] += a.values[6] * b.values[5];
+    result.values[6] += a.values[10] * b.values[6];
+    result.values[6] += a.values[14] * b.values[7];
+
+    result.values[7] += a.values[3] * b.values[4];
+    result.values[7] += a.values[7] * b.values[5];
+    result.values[7] += a.values[11] * b.values[6];
+    result.values[7] += a.values[15] * b.values[7];
+
+    result.values[8] += a.values[0] * b.values[8];
+    result.values[8] += a.values[4] * b.values[9];
+    result.values[8] += a.values[8] * b.values[10];
+    result.values[8] += a.values[12] * b.values[11];
+
+    result.values[9] += a.values[1] * b.values[8];
+    result.values[9] += a.values[5] * b.values[9];
+    result.values[9] += a.values[9] * b.values[10];
+    result.values[9] += a.values[13] * b.values[11];
+
+    result.values[10] += a.values[2] * b.values[8];
+    result.values[10] += a.values[6] * b.values[9];
+    result.values[10] += a.values[10] * b.values[10];
+    result.values[10] += a.values[14] * b.values[11];
+
+    result.values[11] += a.values[3] * b.values[8];
+    result.values[11] += a.values[7] * b.values[9];
+    result.values[11] += a.values[11] * b.values[10];
+    result.values[11] += a.values[15] * b.values[11];
+
+    result.values[12] += a.values[0] * b.values[12];
+    result.values[12] += a.values[4] * b.values[13];
+    result.values[12] += a.values[8] * b.values[14];
+    result.values[12] += a.values[12] * b.values[15];
+
+    result.values[13] += a.values[1] * b.values[12];
+    result.values[13] += a.values[5] * b.values[13];
+    result.values[13] += a.values[9] * b.values[14];
+    result.values[13] += a.values[13] * b.values[15];
+
+    result.values[14] += a.values[2] * b.values[12];
+    result.values[14] += a.values[6] * b.values[13];
+    result.values[14] += a.values[10] * b.values[14];
+    result.values[14] += a.values[14] * b.values[15];
+
+    result.values[15] += a.values[3] * b.values[12];
+    result.values[15] += a.values[7] * b.values[13];
+    result.values[15] += a.values[11] * b.values[14];
+    result.values[15] += a.values[15] * b.values[15];
 
     return result;
 }
