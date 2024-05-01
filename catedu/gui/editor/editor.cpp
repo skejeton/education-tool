@@ -1005,9 +1005,9 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
 
     debug_tree.reset();
 
-    debug_tree.value("Camera Pos X", camera.position.x);
-    debug_tree.value("Camera Pos Y", camera.position.y);
-    debug_tree.value("Camera Pos Z", camera.position.z);
+    debug_tree.value("Camera Pos X", renderer.camera.position.x);
+    debug_tree.value("Camera Pos Y", renderer.camera.position.y);
+    debug_tree.value("Camera Pos Z", renderer.camera.position.z);
     debug_tree.value("Mouse Pos X", input.mouse_pos.x);
     debug_tree.value("Mouse Pos Y", input.mouse_pos.y);
     debug_tree.value("Dirty", dirty);
