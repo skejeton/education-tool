@@ -9,6 +9,7 @@
 #include "catedu/ui/rendering/core.hpp"
 #include "catedu/ui/rendering/font.hpp"
 #include "catedu/ui/user.hpp"
+#include "playtest.hpp"
 #include "stencil.hpp"
 #include <sokol/sokol_app.h>
 
@@ -64,13 +65,13 @@ struct GuiEditor
 {
     bool new_mode;
     bool playtesting;
+    bool playtest_no_player;
+    Playtest playtest;
     bool create_entity;
     bool placing_object;
     bool dirty;
     bool exit_requested;
-    bool playtest_no_player;
     bool tried_to_return_back;
-    bool suppress_errors;
     bool show_debug;
     UiState *ui_state;
     TilemapEdit tilemap_edit;
@@ -82,14 +83,13 @@ struct GuiEditor
     EditAction actions[1 << 10];
     size_t action_buoy;
     size_t action_count;
-    Scene *playtest_scene;
-    DialogList *dialog;
     DialogEditor dialog_editor;
-    int conversation_stage;
 
     static GuiEditor init(UiState *ui_state);
     void start_playtest(Scene &scene, ResourceSpec &resources,
-                        bool *reload_module);
+                        bool *reload_module, void *umka);
+    void stop_playtest(Playtest &playtest);
+
     bool show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
                        ResourceSpec &resources, Scene &scene, void *umka,
                        bool *reload_module);

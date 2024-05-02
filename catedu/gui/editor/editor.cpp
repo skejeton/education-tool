@@ -894,50 +894,28 @@ ObjectId find_object_within_distance(Scene &scene, Vector2 pos, float distance)
     return NULL_ID;
 }
 
-ObjectId find_object_within_distance_not_player(Scene &scene, Vector2 pos,
-                                                float distance)
+void GuiEditor::start_playtest(Scene &scene, ResourceSpec &resources,
+                               bool *reload_module, void *umka)
 {
-    for (auto [id, obj] : iter(scene.objects))
+    switch (Playtest::from_scene_copy(this->playtest, scene, camera))
     {
-        if (obj.type == Object::Type::Entity)
-        {
-            Vector2 obj_pos = obj.entity.pos;
-            if (vector2_cmp_distance(pos, obj_pos) < distance &&
-                strcmp(obj.id, "player") != 0)
-            {
-                return id;
-            }
-        }
+    case PlaytestCreateError::None:
+        this->playtesting = true;
+        *reload_module = true;
+        break;
+    case PlaytestCreateError::NoPlayer:
+        this->playtest_no_player = true;
+        break;
+    default:
+        assert(false);
+        break;
     }
-    return NULL_ID;
 }
 
-void GuiEditor::start_playtest(Scene &scene, ResourceSpec &resources,
-                               bool *reload_module)
+void GuiEditor::stop_playtest(Playtest &playtest)
 {
-    if (scene.find_object("player") == NULL_ID)
-    {
-        this->playtest_no_player = true;
-    }
-    else
-    {
-        if (scene.get_object(scene.find_object("player"))->type !=
-            Object::Type::Entity)
-        {
-            this->playtest_no_player = true;
-        }
-        else
-        {
-            Scene original = scene.copy();
-            Scene *scene = (Scene *)malloc(sizeof(Scene));
-            memcpy(scene, &original, sizeof(Scene));
-            scene->update(resources);
-            this->playtest_scene = scene;
-            this->playtesting = true;
-            *reload_module = true;
-            this->conversation_stage = 0;
-        }
-    }
+    playtest.deinit();
+    this->playtesting = false;
 }
 
 bool handle_camera_movement(Camera &camera, Input &input, UiUser &user)
@@ -993,7 +971,7 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
 #ifdef RUNTIME_MODE
     if (!this->playtesting)
     {
-        start_playtest(scene, resources, reload_module);
+        start_playtest(scene, resources, reload_module, umka);
     }
 #endif
     renderer.camera = camera;
@@ -1023,20 +1001,38 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
     debug_tree.value("Mouse Pos Y", input.mouse_pos.y);
     debug_tree.value("Dirty", dirty);
 
+    camera.set_aspect(sapp_widthf() / sapp_heightf());
+
+#ifndef RUNTIME_MODE
+    if (button(user, "Back"))
+    {
+        return_back = true;
+    }
+
+    if (button(user, this->playtesting ? "Exit playtest" : "Playtest"))
+    {
+        if (this->playtesting)
+        {
+            stop_playtest(this->playtest);
+        }
+        else
+        {
+            start_playtest(scene, resources, reload_module, umka);
+        }
+    }
+#endif
+
     if (this->playtesting)
     {
-        this->playtest_scene->render(renderer, resources, this->show_debug);
+        this->playtest.handle_update(input, resources, umka);
+        renderer.camera = this->playtest.camera;
+        this->playtest.handle_render(renderer, resources, this->show_debug);
+        this->playtest.handle_gui(user, resources, reload_module, umka);
+        renderer.end_pass();
     }
     else
     {
         handle_camera_movement(camera, input, user);
-
-        scene.render(renderer, resources);
-    }
-
-    camera.set_aspect(sapp_widthf() / sapp_heightf());
-    if (!this->playtesting)
-    {
         handle_shortcuts(*this, scene, input);
 
         if (user.hovered())
@@ -1093,78 +1089,7 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
                 }
             }
         }
-    }
 
-    renderer.end_pass();
-
-    user.end_generic();
-    this->ui_state->element_storage.pop();
-
-    if (no_ui)
-    {
-        return return_back;
-    }
-
-#ifndef RUNTIME_MODE
-    if (button(user, "Back"))
-    {
-        return_back = true;
-    }
-#endif
-
-    if (this->playtesting)
-    {
-        UmkaStackSlot empty;
-        int func = umkaGetFunc(umka, NULL, "onUI");
-        if (UmkaError *error = umkaGetError(umka); error->code != 0)
-        {
-            if (!this->suppress_errors)
-            {
-                const char *buttons[] = {"Retry", "Ignore", NULL};
-
-                switch (msgbox(user, "Umka Error",
-                               stdstrfmt("%s\n    at %s:%d", error->msg,
-                                         error->fileName, error->line)
-                                   .c_str(),
-                               MsgBoxType::Error, buttons))
-                {
-                case 0:
-                    *reload_module = true;
-                    break;
-                case 1:
-                    this->suppress_errors = true;
-                    break;
-                }
-            }
-        }
-        else
-        {
-            umkaCall(umka, func, 0, NULL, &empty);
-        }
-    }
-
-#ifndef RUNTIME_MODE
-    if (button(user, this->playtesting ? "Exit playtest" : "Playtest"))
-    {
-        if (this->playtesting)
-        {
-            if (this->playtest_scene)
-            {
-                this->playtest_scene->deinit();
-                free(this->playtest_scene);
-            }
-            this->dialog = nullptr;
-            this->playtesting = false;
-        }
-        else
-        {
-            start_playtest(scene, resources, reload_module);
-        }
-    }
-#endif
-
-    if (!this->playtesting)
-    {
         if (button(user, "Undo"))
         {
             undo_action(*this, scene);
@@ -1203,76 +1128,13 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
         {
             show_place_object(user, scene, *this);
         }
+
+        scene.render(renderer, resources);
+        renderer.end_pass();
     }
-    else
-    {
-        Object *obj = this->playtest_scene->get_object(
-            this->playtest_scene->find_object("player"));
 
-        assert(obj);
-        assert(obj->type == Object::Type::Entity);
-
-        camera.position =
-            Vector3{obj->entity.pos.x, 10, obj->entity.pos.y - 10};
-
-        PhysicsBody *body =
-            this->playtest_scene->physics.bodies.get(obj->entity.body_id);
-
-        if (input.k[SAPP_KEYCODE_A].held)
-        {
-            body->area.pos.x -= 0.1;
-        }
-        if (input.k[SAPP_KEYCODE_D].held)
-        {
-            body->area.pos.x += 0.1;
-        }
-        if (input.k[SAPP_KEYCODE_W].held)
-        {
-            body->area.pos.y += 0.1;
-        }
-        if (input.k[SAPP_KEYCODE_S].held)
-        {
-            body->area.pos.y -= 0.1;
-        }
-        if (input.k[SAPP_KEYCODE_SPACE].pressed)
-        {
-
-            const char *source = "";
-
-            ObjectId coll_id = find_object_within_distance_not_player(
-                *this->playtest_scene, obj->entity.pos, 3);
-
-            DialogList *dialog = nullptr;
-            if (coll_id != NULL_ID)
-            {
-                Object *coll_obj = this->playtest_scene->get_object(coll_id);
-                if (coll_obj->type == Object::Type::Entity)
-                {
-                    dialog = &coll_obj->entity.dialog;
-                    source = coll_obj->id;
-                }
-            }
-
-            int func = umkaGetFunc(umka, NULL, "onInteract");
-            assert(func);
-            UmkaStackSlot id;
-
-            id.ptrVal = umkaMakeStr(umka, (char *)source);
-
-            if (umkaGetError(umka)->code == 0)
-            {
-                umkaCall(umka, func, 1, &id, NULL);
-            }
-
-            if (dialog)
-            {
-                this->dialog = dialog;
-                this->conversation_stage = 0;
-            }
-        }
-
-        this->playtest_scene->update(resources);
-    }
+    user.end_generic();
+    this->ui_state->element_storage.pop();
 
     if (this->playtest_no_player)
     {
@@ -1284,32 +1146,6 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
         case 0:
             this->playtest_no_player = false;
         }
-    }
-
-    if (this->playtesting && this->dialog)
-    {
-        int i = 0;
-        for (auto dialog : iter(this->dialog->dialogs))
-        {
-            if (conversation_stage == i)
-            {
-                const char *options[] = {"Next", NULL};
-                switch (msgbox(user, dialog.name, dialog.text, MsgBoxType::Info,
-                               options))
-                {
-                case 0:
-                    this->conversation_stage++;
-                    goto end;
-                }
-            }
-            i++;
-        }
-    end:;
-    }
-
-    if (*reload_module)
-    {
-        this->suppress_errors = false;
     }
 
     if (return_back && this->dirty || this->tried_to_return_back)
@@ -1332,6 +1168,8 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
             break;
         }
     }
+
+    return return_back;
 }
 
 void show_popups(UiUser &user, GuiEditor &editor)
@@ -1447,7 +1285,6 @@ void GuiEditor::deinit()
     debug_tree.deinit();
     if (this->playtesting)
     {
-        this->playtest_scene->deinit();
-        free(this->playtest_scene);
+        this->playtest.deinit();
     }
 }
