@@ -36,7 +36,6 @@ void populate_chunk(UiFontRenderer *renderer, int i)
     stbtt_PackBegin(&pack_context, pixels.data(), PAGE_IMAGE_SIZE,
                     PAGE_IMAGE_SIZE, PAGE_IMAGE_SIZE, 2, nullptr);
 
-    stbtt_PackSetOversampling(&pack_context, 1, 1);
     stbtt_PackFontRange(&pack_context, renderer->buf.data, 0,
                         renderer->def.font_size * renderer->scale_factor,
                         i * 256, 256, chunk->packed_chars);

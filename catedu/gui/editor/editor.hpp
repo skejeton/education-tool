@@ -86,8 +86,7 @@ struct GuiEditor
     DialogEditor dialog_editor;
 
     static GuiEditor init(UiState *ui_state);
-    void start_playtest(Scene &scene, ResourceSpec &resources,
-                        bool *reload_module, void *umka);
+    void start_playtest(Scene &scene, bool *reload_module, void *umka);
     void stop_playtest(Playtest &playtest);
 
     bool show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,

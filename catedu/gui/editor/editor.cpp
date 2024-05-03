@@ -509,10 +509,33 @@ AutoLayoutElement create_main_element(UiUser &user)
     return element;
 }
 
-void begin_toolbar(UiUser &user, const char *name, bool left)
+enum class RectSide
 {
-    float align_x = left ? 0 : 1;
-    float align_y = 0.5;
+    Left,
+    Right,
+    Top,
+    Bottom
+};
+
+bool rect_side_is_horizontal(RectSide &side)
+{
+    return side == RectSide::Bottom || side == RectSide::Top;
+}
+
+void begin_toolbar(UiUser &user, const char *name, RectSide side)
+{
+    float align_y = 0, align_x = 0;
+
+    if (rect_side_is_horizontal(side))
+    {
+        align_y = side == RectSide::Bottom;
+        align_x = 0.5;
+    }
+    else
+    {
+        align_x = side == RectSide::Right;
+        align_y = 0.5;
+    }
 
     AutoLayoutElement element = create_main_element(user);
     element.align_height = align_y;
@@ -521,7 +544,8 @@ void begin_toolbar(UiUser &user, const char *name, bool left)
     user.push_id(name);
 
     AutoLayoutElement toolbar = {};
-    toolbar.layout.type = AutoLayout::Column;
+    toolbar.layout.type =
+        rect_side_is_horizontal(side) ? AutoLayout::Row : AutoLayout::Column;
     toolbar.width.type = AutoLayoutDimension::Auto;
     toolbar.height.type = AutoLayoutDimension::Auto;
     toolbar.padding = {2, 2, 2, 2};
@@ -570,7 +594,7 @@ bool icon_replacement_button(UiUser &user, const char *name, Vector4 color)
 
 void show_stencil_picker(UiUser &user, StencilEdit &stencil)
 {
-    begin_toolbar(user, "Stencil", true);
+    begin_toolbar(user, "Stencil", RectSide::Left);
 
     auto stencil_button = [&](const char *name, const char *img,
                               StencilType type) {
@@ -649,7 +673,7 @@ bool tile_icon_button(UiUser &user, const char *name, TableId tile_id,
 void show_tile_picker(UiUser &user, catedu::pbr::Renderer &renderer,
                       ResourceSpec &resources, TilemapEdit &edit)
 {
-    begin_toolbar(user, "Tiles", false);
+    begin_toolbar(user, "Tiles", RectSide::Right);
 
     int limit = 5;
 
@@ -894,8 +918,7 @@ ObjectId find_object_within_distance(Scene &scene, Vector2 pos, float distance)
     return NULL_ID;
 }
 
-void GuiEditor::start_playtest(Scene &scene, ResourceSpec &resources,
-                               bool *reload_module, void *umka)
+void GuiEditor::start_playtest(Scene &scene, bool *reload_module, void *umka)
 {
     switch (Playtest::from_scene_copy(this->playtest, scene, camera))
     {
@@ -971,7 +994,7 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
 #ifdef RUNTIME_MODE
     if (!this->playtesting)
     {
-        start_playtest(scene, resources, reload_module, umka);
+        start_playtest(scene, reload_module, umka);
     }
 #endif
     renderer.camera = camera;
@@ -1017,7 +1040,7 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
         }
         else
         {
-            start_playtest(scene, resources, reload_module, umka);
+            start_playtest(scene, reload_module, umka);
         }
     }
 #endif
@@ -1201,47 +1224,87 @@ void show_popups(UiUser &user, GuiEditor &editor)
     }
 }
 
+void show_controls(UiUser &user, GuiEditor &editor, Scene &scene,
+                   bool *reload_module, void *umka)
+{
+    begin_toolbar(user, "Controls", RectSide::Bottom);
+
+    if (editor.playtesting)
+    {
+        if (icon_button(user, "Stop playtest", "assets/gui/stop.png",
+                        {1.0, 1.0, 1.0, 1.0}))
+        {
+            editor.stop_playtest(editor.playtest);
+        }
+    }
+    else
+    {
+        if (icon_button(user, "Start playtest", "assets/gui/play.png",
+                        {1.0, 1.0, 1.0, 1.0}))
+        {
+            editor.start_playtest(scene, reload_module, umka);
+        }
+    }
+
+    end_toolbar(user);
+}
+
 bool show_new_mode(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
-                   catedu::pbr::Renderer &renderer, Scene &scene, Input &input)
+                   catedu::pbr::Renderer &renderer, Scene &scene, Input &input,
+                   bool *reload_module, void *umka)
 {
     AutoLayoutElement element = create_main_element(user);
     user.state->element_storage.push("Main", {});
     user.begin_generic(element, {}, {}, user.state->element_storage.id());
 
-    handle_shortcuts(editor, scene, input);
-
-    renderer.camera = editor.camera;
-    renderer.begin_pass();
-
-    scene.render(renderer, resources);
-
-    if (user.hovered())
+    if (editor.playtesting)
     {
-        if (!handle_camera_movement(editor.camera, input, user))
+        renderer.camera = editor.playtest.camera;
+        renderer.begin_pass();
+        editor.playtest.handle_update(input, resources, umka);
+        editor.playtest.handle_render(renderer, resources, editor.show_debug);
+        editor.playtest.handle_gui(user, resources, reload_module, umka);
+        renderer.end_pass();
+    }
+    else
+    {
+        handle_shortcuts(editor, scene, input);
+
+        renderer.camera = editor.camera;
+        renderer.begin_pass();
+
+        scene.render(renderer, resources);
+
+        if (user.hovered())
         {
-            SelectionState sel =
-                show_selection(editor, renderer, resources, scene, input);
-
-            editor.object_cursor_at = sel.position;
-
-            if (sel.tilemap_selected)
+            if (!handle_camera_movement(editor.camera, input, user))
             {
-                show_stencil_editor(input, editor, editor.tilemap_edit.stencil,
-                                    editor.tilemap_edit.tile, resources,
-                                    renderer, scene);
+                SelectionState sel =
+                    show_selection(editor, renderer, resources, scene, input);
+
+                editor.object_cursor_at = sel.position;
+
+                if (sel.tilemap_selected)
+                {
+                    show_stencil_editor(
+                        input, editor, editor.tilemap_edit.stencil,
+                        editor.tilemap_edit.tile, resources, renderer, scene);
+                }
             }
         }
-    }
-    renderer.end_pass();
+        renderer.end_pass();
 
-    bool tilemap_selected =
-        editor.selection != NULL_ID &&
-        scene.get_object(editor.selection)->type == Object::Type::Tilemap;
+        bool tilemap_selected =
+            editor.selection != NULL_ID &&
+            scene.get_object(editor.selection)->type == Object::Type::Tilemap;
 
-    if (tilemap_selected)
-    {
-        show_tile_editor(user, renderer, resources, editor);
+        if (tilemap_selected)
+        {
+            show_tile_editor(user, renderer, resources, editor);
+        }
     }
+
+    show_controls(user, editor, scene, reload_module, umka);
 
     user.end_generic();
     user.state->element_storage.pop();
@@ -1265,7 +1328,7 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
     if (new_mode)
     {
         return_back = show_new_mode(*this, user, resources, renderer, scene,
-                                    user.state->input);
+                                    user.state->input, reload_module, umka);
     }
     else
     {
