@@ -449,7 +449,7 @@ void show_object_list(UiUser &user, GuiEditor &editor, Scene &scene)
             break;
         }
         char idstr[256];
-        sprintf(idstr, "%zu", id.id);
+        snprintf(idstr, 256, "%zu", id.id);
 
         user.state->element_storage.push(idstr, {});
         switch (show_object_row(user, obj, editor.selection == id))
@@ -745,7 +745,7 @@ void show_stencil_model(StencilEdit &edit, TableId model_id, int rotation,
                         catedu::pbr::Renderer &renderer)
 {
     edit.map([&](int x, int y) {
-        Vector3 pos = {x, 0, y};
+        Vector3 pos = {float(x), 0, float(y)};
         render_model_at(pos, resources, model_id, renderer, true, true,
                         rotation);
     });
@@ -1123,7 +1123,7 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
         }
 
         char title[256];
-        sprintf(title, "Objects | Page %zu", this->entity_list_page);
+        snprintf(title, 256, "Objects | Page %zu", this->entity_list_page);
 
         begin_show_window(user, {title, {20, 20, 200, 410}});
         show_object_list(user, *this, scene);

@@ -50,38 +50,38 @@ void GuiDebugTree::reset()
     this->entry = nullptr;
 }
 
-void GuiDebugTree::value(char *name, int64_t value)
+void GuiDebugTree::value(const char *name, int64_t value)
 {
     alloc_debug_entry(this, name, 0x000000FF, stdstrfmt("%lli", value).c_str(),
                       0x000077FF);
 }
 
-void GuiDebugTree::value(char *name, uint64_t value)
+void GuiDebugTree::value(const char *name, uint64_t value)
 {
     alloc_debug_entry(this, name, 0x000000FF, stdstrfmt("%llu", value).c_str(),
                       0x000077FF);
 }
 
-void GuiDebugTree::value(char *name, float value)
+void GuiDebugTree::value(const char *name, float value)
 {
     alloc_debug_entry(this, name, 0x000000FF, stdstrfmt("%g", value).c_str(),
                       0x000077FF);
 }
 
-void GuiDebugTree::value(char *name, double value)
+void GuiDebugTree::value(const char *name, double value)
 {
     alloc_debug_entry(this, name, 0x000000FF, stdstrfmt("%g", value).c_str(),
                       0x000077FF);
 }
 
-void GuiDebugTree::value(char *name, bool value)
+void GuiDebugTree::value(const char *name, bool value)
 {
     alloc_debug_entry(this, name, 0x000000FF,
                       stdstrfmt("%s", value ? "true" : "false").c_str(),
                       value ? 0x007700FF : 0x770000FF);
 }
 
-void GuiDebugTree::value(char *name, const char *value)
+void GuiDebugTree::value(const char *name, const char *value)
 {
     alloc_debug_entry(this, name, 0x000000FF, value, 0x777700FF);
 }

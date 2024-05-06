@@ -3,7 +3,6 @@
 #include "catedu/ui/user.hpp"
 #include <stdint.h>
 
-
 struct DebugEntry
 {
     char *name;
@@ -24,12 +23,12 @@ struct GuiDebugTree
 
     void reset();
 
-    void value(char *name, int64_t value);
-    void value(char *name, uint64_t value);
-    void value(char *name, float value);
-    void value(char *name, double value);
-    void value(char *name, bool value);
-    void value(char *name, const char *value);
+    void value(const char *name, int64_t value);
+    void value(const char *name, uint64_t value);
+    void value(const char *name, float value);
+    void value(const char *name, double value);
+    void value(const char *name, bool value);
+    void value(const char *name, const char *value);
 
     void show(UiUser &user);
 };
