@@ -16,9 +16,9 @@ struct InputKey
 #define INPUT_MB_RIGHT 513
 #define INPUT_MB_MIDDLE 514
 
-#define INPUT_CTRL 516
-#define INPUT_SHIFT 517
-#define INPUT_ALT 518
+#define INPUT_CTRL 515
+#define INPUT_SHIFT 516
+#define INPUT_ALT 517
 
 #define INPUT_COUNT 518
 
