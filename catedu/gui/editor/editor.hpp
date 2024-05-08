@@ -75,12 +75,6 @@ enum EditorTab
     EDITOR_TAB_SCRIPT
 };
 
-enum Backdrop
-{
-    BACKDROP_VOID,
-    BACKDROP_GRASS
-};
-
 struct GuiEditor
 {
     bool show_help_window;

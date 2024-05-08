@@ -5,28 +5,6 @@
 #include "offscreen.hpp"
 #include <umka_api.h>
 
-void show_backdrop(catedu::pbr::Renderer &renderer, ResourceSpec &resources)
-{
-    pbr_vs_params_t vs_params;
-
-    vs_params.model =
-        Matrix4::translate(renderer.camera.position) * Matrix4::scale(8);
-    vs_params.lightness = 1.0f;
-    vs_params.color_mul = {1.0f, 1.0f, 1.0f, 1.0f};
-    renderer.render_model(
-        resources.models.get_assert(resources.find_model_by_name("skybox"))
-            .model,
-        vs_params);
-
-    vs_params.model = Matrix4::identity();
-    vs_params.lightness = 0.0f;
-    vs_params.color_mul = {1.0f, 1.0f, 1.0f, 1.0f};
-    renderer.render_model(
-        resources.models.get_assert(resources.find_model_by_name("grass_floor"))
-            .model,
-        vs_params);
-}
-
 void show_generic_icon(UiUser &user, const char *s, Vector4 color,
                        float w = 0.0f)
 {
@@ -632,22 +610,31 @@ void show_editor_mode(UiUser &user, bool &show_help_window,
     end_toolbar(user);
 }
 
-void show_config_window(UiUser &user, GuiEditor &editor)
+void check_dirty(GuiEditor &editor, bool edited)
+{
+    if (edited)
+    {
+        editor.dirty = true;
+    }
+}
+
+void show_config_window(UiUser &user, Scene &scene, GuiEditor &editor)
 {
     begin_show_window(user,
                       {"World Configuration", centered_rect(user, 400, 400)});
 
     label(user, "Title");
-    static char title[64];
-    input(user, "title", title, 64);
+    check_dirty(editor, input(user, "title", scene.name, sizeof(scene.name)));
 
     label(user, "Description");
-    static char description[2084];
-    input(user, "description", description, 2084);
+    check_dirty(editor, input(user, "description", scene.description,
+                              sizeof(scene.description)));
 
     label(user, "Backdrop");
-    button_radio(user, "Void", (int &)editor.backdrop, BACKDROP_VOID);
-    button_radio(user, "GRASS", (int &)editor.backdrop, BACKDROP_GRASS);
+    check_dirty(editor, button_radio(user, "Void", (int &)scene.backdrop,
+                                     BACKDROP_VOID));
+    check_dirty(editor, button_radio(user, "GRASS", (int &)scene.backdrop,
+                                     BACKDROP_GRASS));
 
     end_show_window(user);
 }
@@ -1302,12 +1289,6 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
     renderer.begin_pass();
 
     SelectionState sel = {};
-
-    if (editor.backdrop == BACKDROP_GRASS)
-    {
-        show_backdrop(renderer, resources);
-    }
-
     scene.render(renderer, resources);
 
     // Handle main scene interactions
@@ -1339,7 +1320,7 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
                                reload_module, sel);
         break;
     case EDITOR_TAB_CONFIG:
-        show_config_window(user, editor);
+        show_config_window(user, scene, editor);
         break;
     }
 

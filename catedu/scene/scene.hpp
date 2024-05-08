@@ -30,10 +30,19 @@ struct Object
 
 typedef TableId ObjectId;
 
+enum Backdrop
+{
+    BACKDROP_VOID,
+    BACKDROP_GRASS
+};
+
 struct Scene
 {
     Table<Object> objects;
     PhysicsWorld physics;
+    Backdrop backdrop;
+    char name[64];
+    char description[2048];
 
     static Scene init();
     ObjectId add_object(Object object);

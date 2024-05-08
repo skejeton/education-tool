@@ -19,7 +19,7 @@ enum struct MsgBoxType
 bool begin_show_window(UiUser &user, WindowInfo info);
 void end_show_window(UiUser &user);
 
-void input(UiUser &user, const char *id, char *out, int max);
+bool input(UiUser &user, const char *id, char *out, int max);
 
 void begin_button_frame(UiUser &user, const char *id, AutoLayoutElement el = {},
                         Vector4 background = {1.0, 1.0, 1.0, 1.0});
@@ -29,7 +29,7 @@ bool button(UiUser &user, const char *text,
             Vector4 background = {1.0, 1.0, 1.0, 1.0});
 bool button_toggle(UiUser &user, const char *text, bool &state);
 
-int button_radio(UiUser &user, const char *text, int &mode, int val);
+bool button_radio(UiUser &user, const char *text, int &mode, int val);
 
 void img(UiUser &user, const char *path, Vector2 scale = {1, 1});
 void img(UiUser &user, UiImageId id, Vector2 scale = {1, 1});

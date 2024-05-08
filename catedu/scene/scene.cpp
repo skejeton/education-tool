@@ -1,6 +1,28 @@
 #include "scene.hpp"
 #include "catedu/core/alloc/bump_allocator.hpp"
 
+void show_backdrop(catedu::pbr::Renderer &renderer, ResourceSpec &resources)
+{
+    pbr_vs_params_t vs_params;
+
+    vs_params.model =
+        Matrix4::translate(renderer.camera.position) * Matrix4::scale(8);
+    vs_params.lightness = 1.0f;
+    vs_params.color_mul = {1.0f, 1.0f, 1.0f, 1.0f};
+    renderer.render_model(
+        resources.models.get_assert(resources.find_model_by_name("skybox"))
+            .model,
+        vs_params);
+
+    vs_params.model = Matrix4::identity();
+    vs_params.lightness = 0.0f;
+    vs_params.color_mul = {1.0f, 1.0f, 1.0f, 1.0f};
+    renderer.render_model(
+        resources.models.get_assert(resources.find_model_by_name("grass_floor"))
+            .model,
+        vs_params);
+}
+
 Scene Scene::init()
 {
     return Scene();
@@ -75,7 +97,13 @@ Buffer Scene::save()
 
     BumpAllocator alloc = BumpAllocator::init();
     buf.data = alloc.memory;
+
+    *(uint32_t *)alloc.alloc(sizeof(uint32_t)) = backdrop;
+    memcpy(alloc.alloc(64), name, 64);
+    memcpy(alloc.alloc(2048), description, 2048);
+
     *(uint32_t *)alloc.alloc(sizeof(uint32_t)) = objects.count;
+
     for (auto [id, object] : iter(objects))
     {
         *(uint32_t *)alloc.alloc(sizeof(uint32_t)) = object.type;
@@ -102,8 +130,15 @@ Scene Scene::load(Buffer buffer)
     Scene result = {};
 
     uint8_t *data = (uint8_t *)buffer.data;
-    uint32_t count = *(uint32_t *)buffer.data;
 
+    result.backdrop = (Backdrop)(*(uint32_t *)data);
+    data += sizeof(uint32_t);
+    memcpy(result.name, data, 64);
+    data += 64;
+    memcpy(result.description, data, 2048);
+    data += 2048;
+
+    uint32_t count = *(uint32_t *)data;
     data += sizeof(uint32_t);
 
     for (uint32_t i = 0; i < count; i++)
@@ -158,6 +193,11 @@ void Scene::update(ResourceSpec &resources)
 void Scene::render(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                    bool show_physics)
 {
+    if (backdrop == BACKDROP_GRASS)
+    {
+        show_backdrop(renderer, resources);
+    }
+
     for (auto [id, object] : iter(objects))
     {
         if (object.hide)

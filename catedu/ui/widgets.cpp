@@ -241,15 +241,16 @@ bool button_toggle(UiUser &user, const char *text, bool &state)
     return state;
 }
 
-int button_radio(UiUser &user, const char *text, int &mode, int val)
+bool button_radio(UiUser &user, const char *text, int &mode, int val)
 {
-    const Vector4 color = mode == val ? Vector4{0.8, 1.0, 0.8, 1.0}
-                                       : Vector4{1.0, 1.0, 1.0, 1.0};
-    if (button(user, text, color)) 
+    const Vector4 color =
+        mode == val ? Vector4{0.8, 1.0, 0.8, 1.0} : Vector4{1.0, 1.0, 1.0, 1.0};
+    if (button(user, text, color))
     {
         mode = val;
+        return true;
     }
-    return mode;
+    return false;
 }
 
 void img(UiUser &user, const char *path, Vector2 scale)
@@ -332,8 +333,10 @@ void label(UiUser &user, const char *text, Vector2 scale, UiBrush style)
     user.layout.add_element(user.current_node, el);
 }
 
-void input(UiUser &user, const char *id, char *out, int max)
+bool input(UiUser &user, const char *id, char *out, int max)
 {
+    bool edited = false;
+
     user.state->element_storage.push(id, {true});
     UiPersistentElement *pe = user.state->element_storage.value();
 
@@ -344,13 +347,17 @@ void input(UiUser &user, const char *id, char *out, int max)
             if (user.state->input.input[i] == '\b')
             {
                 if (strlen(out) > 0)
+                {
                     out[strlen(out) - 1] = 0;
+                    edited = true;
+                }
             }
             else if (user.state->input.input[i])
             {
                 if (strlen(out) < max - 1)
                 {
                     out[strlen(out)] = user.state->input.input[i];
+                    edited = true;
                 }
             }
         }
@@ -391,6 +398,8 @@ void input(UiUser &user, const char *id, char *out, int max)
     user.end_generic();
 
     user.state->element_storage.pop();
+
+    return edited;
 }
 
 AutoLayoutElement make_element(AutoLayout layout, Vector2 size, bool autox,
