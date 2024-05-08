@@ -597,17 +597,17 @@ bool icon_replacement_button(UiUser &user, const char *name,
     return end_button_frame(user);
 }
 
-void show_editor_mode(UiUser &user, bool &advanced)
+void show_editor_mode(UiUser &user, bool &advanced, EditorTab &active_tab)
 {
     begin_toolbar(user, "Mode", RectSide::Top);
 
     user.collection(AutoLayout::Row, [&] {
-        button(user, "Environment");
-        button(user, "Objects");
-        button(user, "Tiles");
-        button(user, "Characters");
-        button(user, "Events");
-        button_toggle(user, "Advanced", advanced);
+        button_radio(user, "Environment", (int&) active_tab, EDITOR_TAB_ENVIRONMENT);
+        button_radio(user, "Objects", (int&) active_tab, EDITOR_TAB_OBJECTS);
+        button_radio(user, "Tiles", (int&) active_tab, EDITOR_TAB_TILES);
+        button_radio(user, "Characters", (int&) active_tab, EDITOR_TAB_CHARACTERS);
+        button_radio(user, "Script", (int&) active_tab, EDITOR_TAB_SCRIPT);
+        button_toggle(user, "Legacy", advanced);
     });
 
     end_toolbar(user);
@@ -1293,7 +1293,7 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
         show_tile_editor(user, renderer, resources, editor);
     }
 
-    show_editor_mode(user, editor.advanced);
+    show_editor_mode(user, editor.advanced, editor.tab);
     show_editor_controls(user, editor, scene, reload_module, umka, return_back);
 
     return sel;

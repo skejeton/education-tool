@@ -241,6 +241,17 @@ bool button_toggle(UiUser &user, const char *text, bool &state)
     return state;
 }
 
+int button_radio(UiUser &user, const char *text, int &mode, int val)
+{
+    const Vector4 color = mode == val ? Vector4{0.8, 1.0, 0.8, 1.0}
+                                       : Vector4{1.0, 1.0, 1.0, 1.0};
+    if (button(user, text, color)) 
+    {
+        mode = val;
+    }
+    return mode;
+}
+
 void img(UiUser &user, const char *path, Vector2 scale)
 {
     UiImageId id = NULL_ID;

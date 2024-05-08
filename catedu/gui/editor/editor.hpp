@@ -67,6 +67,14 @@ struct SelectionState
     Vector2 position;
 };
 
+enum EditorTab {
+    EDITOR_TAB_ENVIRONMENT,
+    EDITOR_TAB_OBJECTS,
+    EDITOR_TAB_TILES,
+    EDITOR_TAB_CHARACTERS,
+    EDITOR_TAB_SCRIPT
+};
+
 struct GuiEditor
 {
     bool advanced;
@@ -90,6 +98,7 @@ struct GuiEditor
     size_t action_buoy;
     size_t action_count;
     DialogEditor dialog_editor;
+    EditorTab tab;
 
     static GuiEditor init(UiState *ui_state);
     void save(Scene &scene);
