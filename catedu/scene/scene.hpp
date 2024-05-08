@@ -2,11 +2,9 @@
 
 #include "catedu/core/memory/buffer.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
-#include "obj_backdrop.hpp"
 #include "obj_entity.hpp"
 #include "obj_tilemap.hpp"
 #include "physics.hpp"
-
 
 struct Object
 {
@@ -26,7 +24,6 @@ struct Object
     union {
         ObjTilemap tilemap;
         ObjEntity entity;
-        ObjBackdrop backdrop;
     };
 
     Object copy();
@@ -51,7 +48,6 @@ struct Scene
 
     static Object object(ObjTilemap);
     static Object object(ObjEntity);
-    static Object object(ObjBackdrop);
 
     Scene copy();
 

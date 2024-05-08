@@ -69,9 +69,6 @@ void show_object_icon(UiUser &user, Object::Type type)
     case Object::Type::Tilemap:
         show_generic_icon_char(user, 'T', {0.0f, 0.5f, 0.0f, 1.0f});
         break;
-    case Object::Type::Backdrop:
-        show_generic_icon_char(user, 'B', {0.5f, 0.0f, 0.0f, 1.0f});
-        break;
     case Object::Type::Generic:
         show_generic_icon_char(user, 'G', {0.2f, 0.2f, 0.2f, 1.0f});
         break;
@@ -87,9 +84,6 @@ void show_object_icon_ex(UiUser &user, Object::Type type)
         break;
     case Object::Type::Tilemap:
         show_generic_icon(user, "Tilemap", {0.0f, 0.5f, 0.0f, 1.0f});
-        break;
-    case Object::Type::Backdrop:
-        show_generic_icon(user, "Backdrop", {0.5f, 0.0f, 0.0f, 1.0f});
         break;
     case Object::Type::Generic:
         show_generic_icon(user, "Generic", {0.2f, 0.2f, 0.2f, 1.0f});
@@ -370,7 +364,6 @@ void show_help(UiUser &user, ResourceSpec &resources)
         user.bold = false;
         label(user, "[T] - Tilemap");
         label(user, "[E] - Entity");
-        label(user, "[B] - Backdrop");
         user.bold = true;
         label(user, "Controls:", {1.2, 1.2},
               UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
@@ -1213,8 +1206,7 @@ void show_popups(UiUser &user, GuiEditor &editor, bool &return_back)
         const char *options[] = {"Yes", "No", NULL};
         switch (msgbox(user, "Return to main menu",
                        "Are you sure you want to return to the main menu?\nAll "
-                       "unsaved changes "
-                       "will be lost.",
+                       "unsaved changes will be lost.",
                        MsgBoxType::Warning, options))
         {
         case 0:

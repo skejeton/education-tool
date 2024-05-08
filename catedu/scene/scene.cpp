@@ -57,14 +57,6 @@ Object Scene::object(ObjEntity e)
     return result;
 }
 
-Object Scene::object(ObjBackdrop b)
-{
-    Object result = {};
-    result.type = Object::Backdrop;
-    result.backdrop = b;
-    return result;
-}
-
 Scene Scene::copy()
 {
     Scene result = {};
@@ -97,9 +89,6 @@ Buffer Scene::save()
             break;
         case Object::Entity:
             object.entity.save(alloc);
-            break;
-        case Object::Backdrop:
-            object.backdrop.save(alloc);
             break;
         }
     }
@@ -136,9 +125,6 @@ Scene Scene::load(Buffer buffer)
         case Object::Entity:
             obj = object(ObjEntity::load((void **)&data));
             break;
-        case Object::Backdrop:
-            obj = object(ObjBackdrop::load((void **)&data));
-            break;
         }
         obj.hide = pobj.hide;
         memcpy(obj.id, pobj.id, 32);
@@ -165,9 +151,6 @@ void Scene::update(ResourceSpec &resources)
         case Object::Entity:
             object.entity.update(physics, resources);
             break;
-        case Object::Backdrop:
-            object.backdrop.update(physics, resources);
-            break;
         }
     }
 }
@@ -189,9 +172,6 @@ void Scene::render(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
             break;
         case Object::Entity:
             object.entity.render(renderer, resources);
-            break;
-        case Object::Backdrop:
-            object.backdrop.render(renderer, resources);
             break;
         }
     }
@@ -241,9 +221,6 @@ void Scene::deinit()
         case Object::Entity:
             object.entity.deinit();
             break;
-        case Object::Backdrop:
-            object.backdrop.deinit();
-            break;
         }
     }
 
@@ -263,9 +240,6 @@ Object Object::copy()
         break;
     case Object::Entity:
         result.entity = entity.copy();
-        break;
-    case Object::Backdrop:
-        result.backdrop = backdrop.copy();
         break;
     }
 
