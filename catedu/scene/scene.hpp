@@ -16,8 +16,7 @@ struct Object
     {
         Generic,
         Tilemap,
-        Entity,
-        Backdrop
+        Entity
     };
 
     Type type;
