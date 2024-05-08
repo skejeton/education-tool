@@ -68,16 +68,21 @@ struct SelectionState
 };
 
 enum EditorTab {
-    EDITOR_TAB_ENVIRONMENT,
-    EDITOR_TAB_OBJECTS,
-    EDITOR_TAB_TILES,
+    EDITOR_TAB_CONFIG,
+    EDITOR_TAB_BUILD,
     EDITOR_TAB_CHARACTERS,
     EDITOR_TAB_SCRIPT
+};
+
+enum Backdrop {
+    BACKDROP_VOID,
+    BACKDROP_GRASS
 };
 
 struct GuiEditor
 {
     bool advanced;
+    bool show_help_window;
     bool playtesting;
     bool playtest_no_player;
     Playtest playtest;
@@ -99,6 +104,7 @@ struct GuiEditor
     size_t action_count;
     DialogEditor dialog_editor;
     EditorTab tab;
+    Backdrop backdrop;
 
     static GuiEditor init(UiState *ui_state);
     void save(Scene &scene);

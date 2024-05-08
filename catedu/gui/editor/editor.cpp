@@ -5,6 +5,28 @@
 #include "offscreen.hpp"
 #include <umka_api.h>
 
+void show_backdrop(catedu::pbr::Renderer &renderer, ResourceSpec &resources)
+{
+    pbr_vs_params_t vs_params;
+
+    vs_params.model =
+        Matrix4::translate(renderer.camera.position) * Matrix4::scale(8);
+    vs_params.lightness = 1.0f;
+    vs_params.color_mul = {1.0f, 1.0f, 1.0f, 1.0f};
+    renderer.render_model(
+        resources.models.get_assert(resources.find_model_by_name("skybox"))
+            .model,
+        vs_params);
+
+    vs_params.model = Matrix4::identity();
+    vs_params.lightness = 0.0f;
+    vs_params.color_mul = {1.0f, 1.0f, 1.0f, 1.0f};
+    renderer.render_model(
+        resources.models.get_assert(resources.find_model_by_name("grass_floor"))
+            .model,
+        vs_params);
+}
+
 void show_generic_icon(UiUser &user, const char *s, Vector4 color,
                        float w = 0.0f)
 {
@@ -333,65 +355,75 @@ void undo_action(GuiEditor &editor, Scene &scene)
 
 void show_help(UiUser &user, ResourceSpec &resources)
 {
-    user.bold = true;
-    label(user, "On object screen: ", {1.2, 1.2},
-          UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
-    user.bold = false;
-    label(user, "`>` - Select object");
-    label(user, "`X` - Delete object");
-    label(user, "`H` - Hide object");
-    user.bold = true;
-    label(user, "There's different types of objects:", {1.2, 1.2},
-          UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
-    user.bold = false;
-    label(user, "[T] - Tilemap");
-    label(user, "[E] - Entity");
-    label(user, "[B] - Backdrop");
-    user.bold = true;
-    label(user, "Controls:", {1.2, 1.2},
-          UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
-    user.bold = false;
-    label(user, "WASD - Move camera");
-    label(user, "Middle click + drag - Move camera");
-    label(user, "Scroll - Zoom in/out");
-    label(user, "F3 - Debug window");
-    label(user, "Ctrl + Z - Undo");
-    label(user, "Ctrl + Y - Redo");
-    label(user, "Ctrl + S - Save");
-    label(user, "Back - Go back");
-    label(user, "Hold LMB on window to move it");
-    label(user, "Press RMB on window to collapse it");
-    label(user, "Press LMB on the scene to place objects");
-    label(user, "Press Ctrl +/- to zoom in/out the UI");
-    user.bold = true;
-    label(user, "Models:", {1.2, 1.2},
-          UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
-    user.bold = false;
-
-    char model_names[512] = {};
-    char *cur = model_names;
-    int model_i = 0;
-    for (auto [id, model] : iter(resources.models))
+    if (begin_show_window(user, {"Help", {0, 0, 250, 500}}))
     {
-        cur = strcat(cur, model.name);
-        cur = strcat(cur, ", ");
-        model_i++;
-        if (model_i % 4 == 0)
-        {
-            cur = strcat(cur, "\n");
-        }
-    }
+        user.bold = true;
+        label(user, "On object screen: ", {1.2, 1.2},
+            UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
+        user.bold = false;
+        label(user, "`>` - Select object");
+        label(user, "`X` - Delete object");
+        label(user, "`H` - Hide object");
+        user.bold = true;
+        label(user, "There's different types of objects:", {1.2, 1.2},
+            UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
+        user.bold = false;
+        label(user, "[T] - Tilemap");
+        label(user, "[E] - Entity");
+        label(user, "[B] - Backdrop");
+        user.bold = true;
+        label(user, "Controls:", {1.2, 1.2},
+            UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
+        user.bold = false;
+        label(user, "WASD - Move camera");
+        label(user, "Middle click + drag - Move camera");
+        label(user, "Scroll - Zoom in/out");
+        label(user, "F3 - Debug window");
+        label(user, "Ctrl + Z - Undo");
+        label(user, "Ctrl + Y - Redo");
+        label(user, "Ctrl + S - Save");
+        label(user, "Back - Go back");
+        label(user, "Hold LMB on window to move it");
+        label(user, "Press RMB on window to collapse it");
+        label(user, "Press LMB on the scene to place objects");
+        label(user, "Press Ctrl +/- to zoom in/out the UI");
+        user.bold = true;
+        label(user, "Models:", {1.2, 1.2},
+            UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
+        user.bold = false;
 
-    label(user, model_names);
+        char model_names[512] = {};
+        char *cur = model_names;
+        int model_i = 0;
+        for (auto [id, model] : iter(resources.models))
+        {
+            cur = strcat(cur, model.name);
+            cur = strcat(cur, ", ");
+            model_i++;
+            if (model_i % 4 == 0)
+            {
+                cur = strcat(cur, "\n");
+            }
+        }
+
+        label(user, model_names);
+    }
+    end_show_window(user);
+}
+
+Rect centered_rect(UiUser &user, float width, float height)
+{
+    Rect scr = sapp_screen_rect_scaled(user.state->dpi_scale);
+    Rect rect = rect_center_rect(scr, {0, 0, width, height});
+
+    return rect;
 }
 
 void show_place_object(UiUser &user, Scene &scene, GuiEditor &editor)
 {
-    Rect scr = sapp_screen_rect_scaled(editor.ui_state->dpi_scale);
-    Rect rect = rect_center_rect(scr, {0, 0, 100, 200});
     Object new_obj = {};
 
-    begin_show_window(user, {"Place object", rect});
+    begin_show_window(user, {"Place object", centered_rect(user, 100, 200)});
     label(user, "Type:");
     if (button(user, "Entity"))
     {
@@ -406,13 +438,6 @@ void show_place_object(UiUser &user, Scene &scene, GuiEditor &editor)
         new_obj.tilemap = ObjTilemap::init();
         strcpy(new_obj.name,
                stdstrfmt("Unnamed Tilemap %zu", scene.objects.count).c_str());
-    }
-    if (button(user, "Backdrop"))
-    {
-        new_obj.type = Object::Type::Backdrop;
-        new_obj.backdrop = ObjBackdrop::init({0, 32, 32, 32});
-        strcpy(new_obj.name,
-               stdstrfmt("Unnamed Backdrop %zu", scene.objects.count).c_str());
     }
     if (button(user, "Cancel"))
     {
@@ -597,20 +622,41 @@ bool icon_replacement_button(UiUser &user, const char *name,
     return end_button_frame(user);
 }
 
-void show_editor_mode(UiUser &user, bool &advanced, EditorTab &active_tab)
+void show_editor_mode(UiUser &user, bool &advanced, bool &show_help_window, EditorTab &active_tab)
 {
     begin_toolbar(user, "Mode", RectSide::Top);
 
     user.collection(AutoLayout::Row, [&] {
-        button_radio(user, "Environment", (int&) active_tab, EDITOR_TAB_ENVIRONMENT);
-        button_radio(user, "Objects", (int&) active_tab, EDITOR_TAB_OBJECTS);
-        button_radio(user, "Tiles", (int&) active_tab, EDITOR_TAB_TILES);
-        button_radio(user, "Characters", (int&) active_tab, EDITOR_TAB_CHARACTERS);
-        button_radio(user, "Script", (int&) active_tab, EDITOR_TAB_SCRIPT);
+        button_radio(user, "Config", (int &)active_tab, EDITOR_TAB_CONFIG);
+        button_radio(user, "Build", (int &)active_tab, EDITOR_TAB_BUILD);
+        button_radio(user, "Characters", (int &)active_tab,
+                     EDITOR_TAB_CHARACTERS);
+        button_radio(user, "Script", (int &)active_tab, EDITOR_TAB_SCRIPT);
         button_toggle(user, "Legacy", advanced);
+        button_toggle(user, "Help", show_help_window);
     });
 
     end_toolbar(user);
+}
+
+void show_config_window(UiUser &user, GuiEditor &editor)
+{
+    begin_show_window(user,
+                      {"World Configuration", centered_rect(user, 400, 400)});
+
+    label(user, "Title");
+    static char title[64];
+    input(user, "title", title, 64);
+
+    label(user, "Description");
+    static char description[2084];
+    input(user, "description", description, 2084);
+
+    label(user, "Backdrop");
+    button_radio(user, "Void", (int&) editor.backdrop, BACKDROP_VOID);
+    button_radio(user, "GRASS", (int&) editor.backdrop, BACKDROP_GRASS);
+
+    end_show_window(user);
 }
 
 void show_stencil_picker(UiUser &user, StencilEdit &stencil)
@@ -861,6 +907,7 @@ GuiEditor GuiEditor::init(UiState *ui_state)
     result.camera = camera;
     result.debug_tree = GuiDebugTree::init();
     result.dialog_editor = DialogEditor::init();
+    result.tab = EDITOR_TAB_CONFIG;
 
     printf("Init editor\n");
 
@@ -1116,12 +1163,6 @@ bool GuiEditor::show_advanced_mode(UiUser &user,
 
     Object *selected = scene.get_object(this->selection);
 
-    if (begin_show_window(user, {"Help", {0, 0, 250, 500}}))
-    {
-        show_help(user, resources);
-    }
-    end_show_window(user);
-
     if (selected)
     {
         show_properties(user, *selected, *this);
@@ -1263,6 +1304,10 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
 
     SelectionState sel = {};
 
+    if(editor.backdrop == BACKDROP_GRASS) {
+        show_backdrop(renderer, resources);
+    }
+
     scene.render(renderer, resources);
 
     // Handle main scene interactions
@@ -1293,8 +1338,17 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
         show_tile_editor(user, renderer, resources, editor);
     }
 
-    show_editor_mode(user, editor.advanced, editor.tab);
+    show_editor_mode(user, editor.advanced, editor.show_help_window, editor.tab);
     show_editor_controls(user, editor, scene, reload_module, umka, return_back);
+
+    if (editor.tab == EDITOR_TAB_CONFIG)
+    {
+        show_config_window(user, editor);
+    }
+
+    if (editor.show_help_window) {
+        show_help(user, resources);
+    }
 
     return sel;
 }
