@@ -32,8 +32,7 @@ const ModelProto model_protos[] = {
     {"grass_floor", "./assets/models/floor.gltf"},
     {"player", "./assets/models/actor.gltf"},
     {"npc", "./assets/models/actor.gltf", 1},
-    {"tree", "./assets/models/tree.gltf"},
-};
+    {"tree", "./assets/models/tree.gltf"}};
 
 const TileProto tile_protos[] = {{"barrel", "barrel", true},
                                  {"counter", "counter", true},

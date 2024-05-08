@@ -592,6 +592,18 @@ bool icon_replacement_button(UiUser &user, const char *name, Vector4 color)
     return end_button_frame(user);
 }
 
+void show_editor_mode(UiUser &user)
+{
+    begin_toolbar(user, "Mode", RectSide::Left);
+
+    button(user, "Objects");
+    button(user, "Tiles");
+    button(user, "Characters");
+    button(user, "Events");
+
+    end_toolbar(user);
+}
+
 void show_stencil_picker(UiUser &user, StencilEdit &stencil)
 {
     begin_toolbar(user, "Stencil", RectSide::Left);
@@ -799,7 +811,7 @@ void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
 void show_tile_editor(UiUser &user, catedu::pbr::Renderer &renderer,
                       ResourceSpec &resources, GuiEditor &editor)
 {
-    show_stencil_picker(user, editor.tilemap_edit.stencil);
+    show_editor_mode(user);
     show_tile_picker(user, renderer, resources, editor.tilemap_edit);
 }
 
