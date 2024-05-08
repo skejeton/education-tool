@@ -230,6 +230,17 @@ bool button(UiUser &user, const char *text, Vector4 background)
     return end_button_frame(user);
 }
 
+bool button_toggle(UiUser &user, const char *text, bool &state)
+{
+    if (button(user, text,
+               state ? Vector4{0.8, 1.0, 0.8, 1.0}
+                     : Vector4{1.0, 1.0, 1.0, 1.0}))
+    {
+        state = !state;
+    }
+    return state;
+}
+
 void img(UiUser &user, const char *path, Vector2 scale)
 {
     UiImageId id = NULL_ID;

@@ -118,4 +118,13 @@ struct UiUser
     void begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,
                        TableId persistent = NULL_ID);
     void end_generic();
+
+    template <typename T> void collection(AutoLayout::Type layout, T &&f)
+    {
+        AutoLayoutElement el = {};
+        el.layout.type = layout;
+        begin_generic(el, {}, {});
+        f();
+        end_generic();
+    }
 };

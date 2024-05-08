@@ -26,5 +26,6 @@ struct ResourceSpec
     Table<SpecTile> tiles;
 
     TableId find_model_by_name(const char *name);
+    TableId find_tile_by_name(const char *name);
     void deinit();
 };

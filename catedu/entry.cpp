@@ -148,6 +148,8 @@ void Entry::frame(void)
     user.begin_pass();
     this->ui_user = &user;
 
+    bool returned_to_menu = false;
+
     switch (ui_mode)
     {
     case MENU_DEBUG:
@@ -172,8 +174,7 @@ void Entry::frame(void)
                         this->umka, &reload_module))
         {
             ui_mode = MENU_MAIN_MENU;
-            this->scene.deinit();
-            this->editor.deinit();
+            returned_to_menu = true;
         }
         break;
     case MENU_GAME:
@@ -182,6 +183,12 @@ void Entry::frame(void)
 
     this->ui_user = NULL;
     user.end_pass();
+
+    if (returned_to_menu)
+    {
+        this->editor.deinit();
+        this->scene.deinit();
+    }
 
     if (reload_module)
     {

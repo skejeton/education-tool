@@ -268,7 +268,7 @@ void do_action(GuiEditor &editor, Scene &scene, EditAction action,
     }
 }
 
-void redo_action(GuiEditor &editor, Scene &scene)
+void redo_action(GuiEditor &editor, Scene &scene, bool firstcall = true)
 {
     if (editor.action_buoy >= editor.action_count)
     {
@@ -277,7 +277,11 @@ void redo_action(GuiEditor &editor, Scene &scene)
 
     EditAction action = editor.actions[editor.action_buoy];
 
-    do_action(editor, scene, action, false);
+    if (!action.final || firstcall)
+    {
+        do_action(editor, scene, action, false);
+        redo_action(editor, scene, false);
+    }
 }
 
 void undo_action(GuiEditor &editor, Scene &scene)
@@ -564,7 +568,7 @@ void end_toolbar(UiUser &user)
 }
 
 bool icon_button(UiUser &user, const char *name, const char *icon,
-                 Vector4 color)
+                 Vector4 color = {1.0, 1.0, 1.0, 1.0})
 {
     AutoLayoutElement el = {};
     el.padding = {2, 2, 2, 2};
@@ -576,7 +580,8 @@ bool icon_button(UiUser &user, const char *name, const char *icon,
     return end_button_frame(user);
 }
 
-bool icon_replacement_button(UiUser &user, const char *name, Vector4 color)
+bool icon_replacement_button(UiUser &user, const char *name,
+                             Vector4 color = {1.0, 1.0, 1.0, 1.0})
 {
     AutoLayoutElement el = {};
     el.width = {AutoLayoutDimension::Pixel, 64};
@@ -592,14 +597,18 @@ bool icon_replacement_button(UiUser &user, const char *name, Vector4 color)
     return end_button_frame(user);
 }
 
-void show_editor_mode(UiUser &user)
+void show_editor_mode(UiUser &user, bool &advanced)
 {
-    begin_toolbar(user, "Mode", RectSide::Left);
+    begin_toolbar(user, "Mode", RectSide::Top);
 
-    button(user, "Objects");
-    button(user, "Tiles");
-    button(user, "Characters");
-    button(user, "Events");
+    user.collection(AutoLayout::Row, [&] {
+        button(user, "Environment");
+        button(user, "Objects");
+        button(user, "Tiles");
+        button(user, "Characters");
+        button(user, "Events");
+        button_toggle(user, "Advanced", advanced);
+    });
 
     end_toolbar(user);
 }
@@ -689,7 +698,7 @@ void show_tile_picker(UiUser &user, catedu::pbr::Renderer &renderer,
 
     int limit = 5;
 
-    if (icon_replacement_button(user, "^", {1.0, 1.0, 1.0, 1.0}))
+    if (icon_replacement_button(user, "^"))
     {
         edit.scroll -= 1;
     }
@@ -699,6 +708,11 @@ void show_tile_picker(UiUser &user, catedu::pbr::Renderer &renderer,
     int i = 0;
     for (auto [id, tile] : iter(resources.tiles))
     {
+        if (tile.rotation != 0)
+        {
+            continue;
+        }
+
         if (i < edit.scroll || i >= edit.scroll + limit)
         {
             i++;
@@ -718,9 +732,14 @@ void show_tile_picker(UiUser &user, catedu::pbr::Renderer &renderer,
         i++;
     }
 
-    if (icon_replacement_button(user, "v", {1.0, 1.0, 1.0, 1.0}))
+    if (icon_replacement_button(user, "v"))
     {
         edit.scroll += 1;
+    }
+
+    if (edit.scroll > i - 5)
+    {
+        edit.scroll = i - 5;
     }
 
     Vector4 background = edit.tile == NULL_ID ? Vector4{0.8, 1.0, 0.8, 1.0}
@@ -734,16 +753,25 @@ void show_tile_picker(UiUser &user, catedu::pbr::Renderer &renderer,
 }
 
 void apply_stencil(GuiEditor &editor, StencilEdit &edit, TableId tile_id,
-                   TableId tilemap_entity, Scene &scene)
+                   TableId tilemap_entity, Scene &scene, bool turnable = false)
 {
     bool finalized = true;
 
-    edit.map([&](int x, int y) {
+    edit.map([&](int x, int y, float angle) {
+        int turn_angle = 4 - (int(snap(angle, 90)) / 90) % 4;
+
         EditAction action = {};
         action.type = EditAction::PlaceTile;
         action.cmd.place_tile.tilemap_entity = tilemap_entity;
         action.cmd.place_tile.pos = {x, y};
-        action.cmd.place_tile.tile_id = tile_id.id;
+        if (turnable)
+        {
+            action.cmd.place_tile.tile_id = tile_id.id + turn_angle - 3;
+        }
+        else
+        {
+            action.cmd.place_tile.tile_id = tile_id.id;
+        }
         action.final = finalized;
 
         finalized = false;
@@ -756,10 +784,13 @@ void show_stencil_model(StencilEdit &edit, TableId model_id, int rotation,
                         ResourceSpec &resources,
                         catedu::pbr::Renderer &renderer)
 {
-    edit.map([&](int x, int y) {
+    edit.map([&](int x, int y, float angle) {
         Vector3 pos = {float(x), 0, float(y)};
+
+        int turn_angle = (int(snap(angle, 90)) / 90 + 3) % 4;
+
         render_model_at(pos, resources, model_id, renderer, true, true,
-                        rotation);
+                        turn_angle);
     });
 }
 
@@ -803,7 +834,11 @@ void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
 
     if (input.k[INPUT_MB_LEFT].released)
     {
-        apply_stencil(editor, edit, tile_id, editor.selection, scene);
+        bool turnable =
+            tile_id == resources.find_tile_by_name("wall_east") ||
+            tile_id == resources.find_tile_by_name("wall_wood_east");
+
+        apply_stencil(editor, edit, tile_id, editor.selection, scene, turnable);
         edit.end = edit.start = {};
     }
 }
@@ -811,7 +846,7 @@ void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
 void show_tile_editor(UiUser &user, catedu::pbr::Renderer &renderer,
                       ResourceSpec &resources, GuiEditor &editor)
 {
-    show_editor_mode(user);
+    show_stencil_picker(user, editor.tilemap_edit.stencil);
     show_tile_picker(user, renderer, resources, editor.tilemap_edit);
 }
 
@@ -819,7 +854,7 @@ GuiEditor GuiEditor::init(UiState *ui_state)
 {
     Camera camera = Camera::init(45);
     camera.move(0, 10, 0);
-    camera.rotate(0, -45);
+    camera.rotate(0, -55);
 
     GuiEditor result = {};
     result.ui_state = ui_state;
@@ -833,12 +868,6 @@ GuiEditor GuiEditor::init(UiState *ui_state)
 
     return result;
 }
-
-struct SelectionState
-{
-    ObjTilemap *tilemap_selected;
-    Vector2 position;
-};
 
 SelectionState show_selection(GuiEditor &editor,
                               catedu::pbr::Renderer &renderer,
@@ -977,6 +1006,21 @@ bool handle_camera_movement(Camera &camera, Input &input, UiUser &user)
     }
 }
 
+void save_scene(Scene &scene, const char *path)
+{
+    Buffer data = scene.save();
+    FILE *file = fopen(path, "wb");
+    fwrite(data.data, 1, data.size, file);
+    fclose(file);
+    free(data.data);
+}
+
+void GuiEditor::save(Scene &scene)
+{
+    save_scene(scene, "assets/world.dat");
+    dirty = false;
+}
+
 void handle_shortcuts(GuiEditor &editor, Scene &scene, Input &input)
 {
     if (input.shortcut(INPUT_CTRL, SAPP_KEYCODE_Z))
@@ -989,29 +1033,16 @@ void handle_shortcuts(GuiEditor &editor, Scene &scene, Input &input)
     }
     if (input.shortcut(INPUT_CTRL, SAPP_KEYCODE_S))
     {
-        editor.dirty = false;
-
-        Buffer data = scene.save();
-        FILE *file = fopen("assets/world.dat", "wb");
-        fwrite(data.data, 1, data.size, file);
-        fclose(file);
-        free(data.data);
+        editor.save(scene);
     }
 }
 
-bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
-                              ResourceSpec &resources, Scene &scene, void *umka,
-                              bool *reload_module)
+bool GuiEditor::show_advanced_mode(UiUser &user,
+                                   catedu::pbr::Renderer &renderer,
+                                   ResourceSpec &resources, Scene &scene,
+                                   void *umka, bool *reload_module,
+                                   SelectionState &sel)
 {
-#ifdef RUNTIME_MODE
-    if (!this->playtesting)
-    {
-        start_playtest(scene, reload_module, umka);
-    }
-#endif
-    renderer.camera = camera;
-    renderer.begin_pass();
-
     Input &input = this->ui_state->input;
 
     if (input.k[SAPP_KEYCODE_F3].pressed ||
@@ -1020,15 +1051,9 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
         this->show_debug = !this->show_debug;
     }
 
-    AutoLayoutElement element = create_main_element(user);
-    user.state->element_storage.push("Main", {});
-    user.begin_generic(element, {}, {}, user.state->element_storage.id());
-
-    bool return_back = false;
     bool no_ui = false;
 
     debug_tree.reset();
-
     debug_tree.value("Camera Pos X", renderer.camera.position.x);
     debug_tree.value("Camera Pos Y", renderer.camera.position.y);
     debug_tree.value("Camera Pos Z", renderer.camera.position.z);
@@ -1036,178 +1061,81 @@ bool GuiEditor::show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
     debug_tree.value("Mouse Pos Y", input.mouse_pos.y);
     debug_tree.value("Dirty", dirty);
 
-    camera.set_aspect(sapp_widthf() / sapp_heightf());
-
-#ifndef RUNTIME_MODE
-    if (button(user, "Back"))
+    if (user.hovered() || this->placing_object)
     {
-        return_back = true;
-    }
+        camera_input_top_view_apply(&this->camera, &input);
 
-    if (button(user, this->playtesting ? "Exit playtest" : "Playtest"))
-    {
-        if (this->playtesting)
+        if (input.k[INPUT_MB_LEFT].pressed && user.hovered() &&
+            !sel.tilemap_selected)
         {
-            stop_playtest(this->playtest);
-        }
-        else
-        {
-            start_playtest(scene, reload_module, umka);
-        }
-    }
-#endif
+            ObjectId closest_object =
+                find_object_within_distance(scene, object_cursor_at, 1);
 
-    if (this->playtesting)
-    {
-        this->playtest.handle_update(input, resources, umka);
-        renderer.camera = this->playtest.camera;
-        this->playtest.handle_render(renderer, resources, this->show_debug);
-        this->playtest.handle_gui(user, resources, reload_module, umka);
-        renderer.end_pass();
-    }
-    else
-    {
-        handle_camera_movement(camera, input, user);
-        handle_shortcuts(*this, scene, input);
-
-        if (user.hovered())
-        {
-            camera_input_top_view_apply(&this->camera, &input);
-        }
-
-        if (user.hovered() || this->placing_object)
-        {
-            SelectionState sel =
-                show_selection(*this, renderer, resources, scene, input);
-            if (sel.tilemap_selected)
+            if (closest_object != NULL_ID)
             {
-                show_stencil_editor(input, *this, this->tilemap_edit.stencil,
-                                    this->tilemap_edit.tile, resources,
-                                    renderer, scene);
+                this->selection = closest_object;
             }
-
-            this->object_cursor_at = sel.position;
-
-            if (input.k[INPUT_MB_LEFT].pressed && user.hovered() &&
-                !sel.tilemap_selected)
+            else
             {
-                ObjectId closest_object =
-                    find_object_within_distance(scene, object_cursor_at, 1);
-
-                if (closest_object != NULL_ID)
+                if (this->selection != NULL_ID)
                 {
-                    this->selection = closest_object;
-                }
-                else
-                {
-                    if (this->selection != NULL_ID)
+                    Object *selected = scene.get_object(this->selection);
+                    if (selected && selected->type == Object::Type::Entity)
                     {
-                        Object *selected = scene.get_object(this->selection);
-                        if (selected && selected->type == Object::Type::Entity)
-                        {
-                            EditAction action = {};
-                            action.type = EditAction::MoveEntity;
-                            action.cmd.move_entity.entity = this->selection;
-                            action.cmd.move_entity.pos = this->object_cursor_at;
-                            action.final = true;
-                            do_action(*this, scene, action);
-                        }
-                        else
-                        {
-                            this->placing_object = true;
-                        }
+                        EditAction action = {};
+                        action.type = EditAction::MoveEntity;
+                        action.cmd.move_entity.entity = this->selection;
+                        action.cmd.move_entity.pos = this->object_cursor_at;
+                        action.final = true;
+                        do_action(*this, scene, action);
                     }
                     else
                     {
                         this->placing_object = true;
                     }
                 }
+                else
+                {
+                    this->placing_object = true;
+                }
             }
         }
-
-        if (button(user, "Undo"))
-        {
-            undo_action(*this, scene);
-        }
-        if (button(user, "Redo"))
-        {
-            redo_action(*this, scene);
-        }
-
-        char title[256];
-        snprintf(title, 256, "Objects | Page %zu", this->entity_list_page);
-
-        begin_show_window(user, {title, {20, 20, 200, 410}});
-        show_object_list(user, *this, scene);
-        end_show_window(user);
-
-        Object *selected = scene.get_object(this->selection);
-
-        if (begin_show_window(user, {"Help", {0, 0, 250, 500}}))
-        {
-            show_help(user, resources);
-        }
-        end_show_window(user);
-
-        if (selected)
-        {
-            show_properties(user, *selected, *this);
-
-            if (selected->type == Object::Type::Entity)
-            {
-                this->dialog_editor.show(user, selected->entity.dialog);
-            }
-        }
-
-        if (this->placing_object)
-        {
-            show_place_object(user, scene, *this);
-        }
-
-        scene.render(renderer, resources);
-        renderer.end_pass();
     }
 
-    user.end_generic();
-    this->ui_state->element_storage.pop();
-
-    if (this->playtest_no_player)
+    if (this->placing_object)
     {
-        const char *options[] = {"Ok", NULL};
-        switch (msgbox(user, "Error!",
-                       "To playtest, add an entity with id 'player'.",
-                       MsgBoxType::Error, options))
-        {
-        case 0:
-            this->playtest_no_player = false;
-        }
+        show_place_object(user, scene, *this);
     }
 
-    if (return_back && this->dirty || this->tried_to_return_back)
+    char title[256];
+    snprintf(title, 256, "Objects | Page %zu", this->entity_list_page);
+
+    begin_show_window(user, {title, {20, 20, 200, 410}});
+    show_object_list(user, *this, scene);
+    end_show_window(user);
+
+    Object *selected = scene.get_object(this->selection);
+
+    if (begin_show_window(user, {"Help", {0, 0, 250, 500}}))
     {
-        this->tried_to_return_back = true;
-        return_back = false;
-        const char *options[] = {"Yes", "No", NULL};
-        switch (msgbox(user, "Unsaved changes",
-                       "Are you sure you want to go back?\nAll unsaved changes "
-                       "will be lost.",
-                       MsgBoxType::Warning, options))
+        show_help(user, resources);
+    }
+    end_show_window(user);
+
+    if (selected)
+    {
+        show_properties(user, *selected, *this);
+
+        if (selected->type == Object::Type::Entity)
         {
-        case 0:
-            this->dirty = false;
-            return_back = true;
-            this->tried_to_return_back = false;
-            break;
-        case 1:
-            this->tried_to_return_back = false;
-            break;
+            this->dialog_editor.show(user, selected->entity.dialog);
         }
     }
 
-    return return_back;
+    return false;
 }
 
-void show_popups(UiUser &user, GuiEditor &editor)
+void show_popups(UiUser &user, GuiEditor &editor, bool &return_back)
 {
     if (editor.exit_requested)
     {
@@ -1221,8 +1149,32 @@ void show_popups(UiUser &user, GuiEditor &editor)
             editor.exit_requested = false;
             editor.dirty = false;
             sapp_request_quit();
+            break;
         case 1:
             editor.exit_requested = false;
+            break;
+        }
+    }
+
+    if (return_back)
+        editor.tried_to_return_back = true;
+
+    if (editor.tried_to_return_back && editor.dirty)
+    {
+        return_back = false;
+        const char *options[] = {"Yes", "No", NULL};
+        switch (msgbox(user, "Return to main menu",
+                       "Are you sure you want to return to the main menu?\nAll "
+                       "unsaved changes "
+                       "will be lost.",
+                       MsgBoxType::Warning, options))
+        {
+        case 0:
+            editor.dirty = false;
+            return_back = true;
+            break;
+        case 1:
+            editor.tried_to_return_back = false;
             break;
         }
     }
@@ -1236,92 +1188,149 @@ void show_popups(UiUser &user, GuiEditor &editor)
     }
 }
 
-void show_controls(UiUser &user, GuiEditor &editor, Scene &scene,
-                   bool *reload_module, void *umka)
+void show_playtest_controls(UiUser &user, GuiEditor &editor)
 {
     begin_toolbar(user, "Controls", RectSide::Bottom);
 
-    if (editor.playtesting)
+    if (icon_button(user, "Stop playtest", "assets/gui/stop.png"))
     {
-        if (icon_button(user, "Stop playtest", "assets/gui/stop.png",
-                        {1.0, 1.0, 1.0, 1.0}))
-        {
-            editor.stop_playtest(editor.playtest);
-        }
-    }
-    else
-    {
-        if (icon_button(user, "Start playtest", "assets/gui/play.png",
-                        {1.0, 1.0, 1.0, 1.0}))
-        {
-            editor.start_playtest(scene, reload_module, umka);
-        }
+        editor.stop_playtest(editor.playtest);
     }
 
     end_toolbar(user);
 }
 
-bool show_new_mode(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
-                   catedu::pbr::Renderer &renderer, Scene &scene, Input &input,
-                   bool *reload_module, void *umka)
+void show_editor_controls(UiUser &user, GuiEditor &editor, Scene &scene,
+                          bool *reload_module, void *umka, bool &return_back)
+{
+    begin_toolbar(user, "Controls", RectSide::Bottom);
+
+    if (icon_button(user, "Home", "assets/gui/home.png"))
+    {
+        return_back = true;
+    }
+
+    if (icon_button(user, "Undo", "assets/gui/undo.png"))
+    {
+        undo_action(editor, scene);
+    }
+
+    if (icon_button(user, "Start playtest", "assets/gui/play.png"))
+    {
+        editor.start_playtest(scene, reload_module, umka);
+    }
+
+    if (icon_button(user, "Redo", "assets/gui/redo.png"))
+    {
+        redo_action(editor, scene);
+    }
+
+    Vector4 color = editor.dirty ? Vector4{1.0, 0.4, 0.4, 1.0}
+                                 : Vector4{1.0, 1.0, 1.0, 1.0};
+    if (icon_button(user, "Save", "assets/gui/save.png", color))
+    {
+        editor.save(scene);
+    }
+
+    end_toolbar(user);
+}
+
+void show_playtest_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
+                      catedu::pbr::Renderer &renderer, Input &input,
+                      bool *reload_module, void *umka)
+{
+    renderer.camera = editor.playtest.camera;
+    renderer.begin_pass();
+    editor.playtest.handle_update(input, resources, umka);
+    editor.playtest.handle_render(renderer, resources, editor.show_debug);
+    editor.playtest.handle_gui(user, resources, reload_module, umka);
+    renderer.end_pass();
+
+    show_playtest_controls(user, editor);
+}
+
+SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
+                              ResourceSpec &resources,
+                              catedu::pbr::Renderer &renderer, Scene &scene,
+                              Input &input, bool *reload_module, void *umka,
+                              bool &return_back)
+{
+    handle_shortcuts(editor, scene, input);
+
+    editor.camera.set_aspect(sapp_widthf() / sapp_heightf());
+    renderer.camera = editor.camera;
+    renderer.begin_pass();
+
+    SelectionState sel = {};
+
+    scene.render(renderer, resources);
+
+    // Handle main scene interactions
+    if (user.hovered())
+    {
+        if (!handle_camera_movement(editor.camera, input, user))
+        {
+            sel = show_selection(editor, renderer, resources, scene, input);
+
+            editor.object_cursor_at = sel.position;
+
+            if (sel.tilemap_selected)
+            {
+                show_stencil_editor(input, editor, editor.tilemap_edit.stencil,
+                                    editor.tilemap_edit.tile, resources,
+                                    renderer, scene);
+            }
+        }
+    }
+    renderer.end_pass();
+
+    bool tilemap_selected =
+        editor.selection != NULL_ID &&
+        scene.get_object(editor.selection)->type == Object::Type::Tilemap;
+
+    if (tilemap_selected)
+    {
+        show_tile_editor(user, renderer, resources, editor);
+    }
+
+    show_editor_mode(user, editor.advanced);
+    show_editor_controls(user, editor, scene, reload_module, umka, return_back);
+
+    return sel;
+}
+
+bool show_main_editor(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
+                      catedu::pbr::Renderer &renderer, Scene &scene,
+                      Input &input, bool *reload_module, void *umka)
 {
     AutoLayoutElement element = create_main_element(user);
     user.state->element_storage.push("Main", {});
     user.begin_generic(element, {}, {}, user.state->element_storage.id());
 
+    bool return_back = false;
+
     if (editor.playtesting)
     {
-        renderer.camera = editor.playtest.camera;
-        renderer.begin_pass();
-        editor.playtest.handle_update(input, resources, umka);
-        editor.playtest.handle_render(renderer, resources, editor.show_debug);
-        editor.playtest.handle_gui(user, resources, reload_module, umka);
-        renderer.end_pass();
+        show_playtest_ui(editor, user, resources, renderer, input,
+                         reload_module, umka);
     }
     else
     {
-        handle_shortcuts(editor, scene, input);
+        SelectionState sel =
+            show_editor_ui(editor, user, resources, renderer, scene, input,
+                           reload_module, umka, return_back);
 
-        renderer.camera = editor.camera;
-        renderer.begin_pass();
-
-        scene.render(renderer, resources);
-
-        if (user.hovered())
+        if (editor.advanced)
         {
-            if (!handle_camera_movement(editor.camera, input, user))
-            {
-                SelectionState sel =
-                    show_selection(editor, renderer, resources, scene, input);
-
-                editor.object_cursor_at = sel.position;
-
-                if (sel.tilemap_selected)
-                {
-                    show_stencil_editor(
-                        input, editor, editor.tilemap_edit.stencil,
-                        editor.tilemap_edit.tile, resources, renderer, scene);
-                }
-            }
-        }
-        renderer.end_pass();
-
-        bool tilemap_selected =
-            editor.selection != NULL_ID &&
-            scene.get_object(editor.selection)->type == Object::Type::Tilemap;
-
-        if (tilemap_selected)
-        {
-            show_tile_editor(user, renderer, resources, editor);
+            editor.show_advanced_mode(user, renderer, resources, scene, umka,
+                                      reload_module, sel);
         }
     }
-
-    show_controls(user, editor, scene, reload_module, umka);
 
     user.end_generic();
     user.state->element_storage.pop();
 
-    return false;
+    return return_back;
 }
 
 bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
@@ -1332,23 +1341,13 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
 
     if (user.state->input.k[SAPP_KEYCODE_F5].pressed)
     {
-        this->new_mode = !this->new_mode;
+        this->advanced = !this->advanced;
     }
 
-    bool return_back = false;
+    bool return_back = show_main_editor(*this, user, resources, renderer, scene,
+                                        user.state->input, reload_module, umka);
 
-    if (new_mode)
-    {
-        return_back = show_new_mode(*this, user, resources, renderer, scene,
-                                    user.state->input, reload_module, umka);
-    }
-    else
-    {
-        return_back = show_old_mode(user, renderer, resources, scene, umka,
-                                    reload_module);
-    }
-
-    show_popups(user, *this);
+    show_popups(user, *this, return_back);
 
     return return_back;
 }

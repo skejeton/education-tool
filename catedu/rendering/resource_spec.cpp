@@ -19,3 +19,16 @@ TableId ResourceSpec::find_model_by_name(const char *name)
 
     return {};
 }
+
+TableId ResourceSpec::find_tile_by_name(const char *name)
+{
+    for (auto [id, tile] : iter(tiles))
+    {
+        if (strcmp(name, tile.name) == 0)
+        {
+            return id;
+        }
+    }
+
+    return {};
+}

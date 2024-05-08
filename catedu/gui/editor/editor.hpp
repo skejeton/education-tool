@@ -61,9 +61,15 @@ struct TilemapEdit
     int scroll;
 };
 
+struct SelectionState
+{
+    ObjTilemap *tilemap_selected;
+    Vector2 position;
+};
+
 struct GuiEditor
 {
-    bool new_mode;
+    bool advanced;
     bool playtesting;
     bool playtest_no_player;
     Playtest playtest;
@@ -86,12 +92,13 @@ struct GuiEditor
     DialogEditor dialog_editor;
 
     static GuiEditor init(UiState *ui_state);
+    void save(Scene &scene);
     void start_playtest(Scene &scene, bool *reload_module, void *umka);
     void stop_playtest(Playtest &playtest);
 
-    bool show_old_mode(UiUser &user, catedu::pbr::Renderer &renderer,
-                       ResourceSpec &resources, Scene &scene, void *umka,
-                       bool *reload_module);
+    bool show_advanced_mode(UiUser &user, catedu::pbr::Renderer &renderer,
+                            ResourceSpec &resources, Scene &scene, void *umka,
+                            bool *reload_module, SelectionState &sel);
     bool show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
               Scene &scene, UiUser &user, void *umka, bool *reload_module);
     void deinit();

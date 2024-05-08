@@ -940,3 +940,8 @@ template <class T> T max(T a, T b)
 {
     return a > b ? a : b;
 }
+
+inline float snap(float value, float snap)
+{
+    return round(value / snap) * snap;
+}
