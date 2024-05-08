@@ -359,21 +359,21 @@ void show_help(UiUser &user, ResourceSpec &resources)
     {
         user.bold = true;
         label(user, "On object screen: ", {1.2, 1.2},
-            UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
+              UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
         user.bold = false;
         label(user, "`>` - Select object");
         label(user, "`X` - Delete object");
         label(user, "`H` - Hide object");
         user.bold = true;
         label(user, "There's different types of objects:", {1.2, 1.2},
-            UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
+              UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
         user.bold = false;
         label(user, "[T] - Tilemap");
         label(user, "[E] - Entity");
         label(user, "[B] - Backdrop");
         user.bold = true;
         label(user, "Controls:", {1.2, 1.2},
-            UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
+              UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
         user.bold = false;
         label(user, "WASD - Move camera");
         label(user, "Middle click + drag - Move camera");
@@ -389,7 +389,7 @@ void show_help(UiUser &user, ResourceSpec &resources)
         label(user, "Press Ctrl +/- to zoom in/out the UI");
         user.bold = true;
         label(user, "Models:", {1.2, 1.2},
-            UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
+              UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
         user.bold = false;
 
         char model_names[512] = {};
@@ -622,7 +622,8 @@ bool icon_replacement_button(UiUser &user, const char *name,
     return end_button_frame(user);
 }
 
-void show_editor_mode(UiUser &user, bool &advanced, bool &show_help_window, EditorTab &active_tab)
+void show_editor_mode(UiUser &user, bool &show_help_window,
+                      EditorTab &active_tab)
 {
     begin_toolbar(user, "Mode", RectSide::Top);
 
@@ -632,7 +633,6 @@ void show_editor_mode(UiUser &user, bool &advanced, bool &show_help_window, Edit
         button_radio(user, "Characters", (int &)active_tab,
                      EDITOR_TAB_CHARACTERS);
         button_radio(user, "Script", (int &)active_tab, EDITOR_TAB_SCRIPT);
-        button_toggle(user, "Legacy", advanced);
         button_toggle(user, "Help", show_help_window);
     });
 
@@ -653,8 +653,8 @@ void show_config_window(UiUser &user, GuiEditor &editor)
     input(user, "description", description, 2084);
 
     label(user, "Backdrop");
-    button_radio(user, "Void", (int&) editor.backdrop, BACKDROP_VOID);
-    button_radio(user, "GRASS", (int&) editor.backdrop, BACKDROP_GRASS);
+    button_radio(user, "Void", (int &)editor.backdrop, BACKDROP_VOID);
+    button_radio(user, "GRASS", (int &)editor.backdrop, BACKDROP_GRASS);
 
     end_show_window(user);
 }
@@ -1084,11 +1084,10 @@ void handle_shortcuts(GuiEditor &editor, Scene &scene, Input &input)
     }
 }
 
-bool GuiEditor::show_advanced_mode(UiUser &user,
-                                   catedu::pbr::Renderer &renderer,
-                                   ResourceSpec &resources, Scene &scene,
-                                   void *umka, bool *reload_module,
-                                   SelectionState &sel)
+bool GuiEditor::show_build_mode(UiUser &user, catedu::pbr::Renderer &renderer,
+                                ResourceSpec &resources, Scene &scene,
+                                void *umka, bool *reload_module,
+                                SelectionState &sel)
 {
     Input &input = this->ui_state->input;
 
@@ -1171,6 +1170,14 @@ bool GuiEditor::show_advanced_mode(UiUser &user,
         {
             this->dialog_editor.show(user, selected->entity.dialog);
         }
+    }
+
+    bool tilemap_selected =
+        selection != NULL_ID &&
+        scene.get_object(selection)->type == Object::Type::Tilemap;
+    if (tilemap_selected)
+    {
+        show_tile_editor(user, renderer, resources, *this);
     }
 
     return false;
@@ -1304,7 +1311,8 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
 
     SelectionState sel = {};
 
-    if(editor.backdrop == BACKDROP_GRASS) {
+    if (editor.backdrop == BACKDROP_GRASS)
+    {
         show_backdrop(renderer, resources);
     }
 
@@ -1329,24 +1337,22 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
     }
     renderer.end_pass();
 
-    bool tilemap_selected =
-        editor.selection != NULL_ID &&
-        scene.get_object(editor.selection)->type == Object::Type::Tilemap;
-
-    if (tilemap_selected)
-    {
-        show_tile_editor(user, renderer, resources, editor);
-    }
-
-    show_editor_mode(user, editor.advanced, editor.show_help_window, editor.tab);
+    show_editor_mode(user, editor.show_help_window, editor.tab);
     show_editor_controls(user, editor, scene, reload_module, umka, return_back);
 
-    if (editor.tab == EDITOR_TAB_CONFIG)
+    switch (editor.tab)
     {
+    case EDITOR_TAB_BUILD:
+        editor.show_build_mode(user, renderer, resources, scene, umka,
+                               reload_module, sel);
+        break;
+    case EDITOR_TAB_CONFIG:
         show_config_window(user, editor);
+        break;
     }
 
-    if (editor.show_help_window) {
+    if (editor.show_help_window)
+    {
         show_help(user, resources);
     }
 
@@ -1370,15 +1376,8 @@ bool show_main_editor(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
     }
     else
     {
-        SelectionState sel =
-            show_editor_ui(editor, user, resources, renderer, scene, input,
-                           reload_module, umka, return_back);
-
-        if (editor.advanced)
-        {
-            editor.show_advanced_mode(user, renderer, resources, scene, umka,
-                                      reload_module, sel);
-        }
+        show_editor_ui(editor, user, resources, renderer, scene, input,
+                       reload_module, umka, return_back);
     }
 
     user.end_generic();
@@ -1393,9 +1392,21 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
 {
     offscreen_clear();
 
-    if (user.state->input.k[SAPP_KEYCODE_F5].pressed)
+    if (user.state->input.shortcut(INPUT_ALT, SAPP_KEYCODE_1))
     {
-        this->advanced = !this->advanced;
+        this->tab = EDITOR_TAB_CONFIG;
+    }
+    if (user.state->input.shortcut(INPUT_ALT, SAPP_KEYCODE_2))
+    {
+        this->tab = EDITOR_TAB_BUILD;
+    }
+    if (user.state->input.shortcut(INPUT_ALT, SAPP_KEYCODE_3))
+    {
+        this->tab = EDITOR_TAB_CHARACTERS;
+    }
+    if (user.state->input.shortcut(INPUT_ALT, SAPP_KEYCODE_4))
+    {
+        this->tab = EDITOR_TAB_SCRIPT;
     }
 
     bool return_back = show_main_editor(*this, user, resources, renderer, scene,

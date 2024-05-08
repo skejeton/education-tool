@@ -67,21 +67,22 @@ struct SelectionState
     Vector2 position;
 };
 
-enum EditorTab {
+enum EditorTab
+{
     EDITOR_TAB_CONFIG,
     EDITOR_TAB_BUILD,
     EDITOR_TAB_CHARACTERS,
     EDITOR_TAB_SCRIPT
 };
 
-enum Backdrop {
+enum Backdrop
+{
     BACKDROP_VOID,
     BACKDROP_GRASS
 };
 
 struct GuiEditor
 {
-    bool advanced;
     bool show_help_window;
     bool playtesting;
     bool playtest_no_player;
@@ -111,9 +112,9 @@ struct GuiEditor
     void start_playtest(Scene &scene, bool *reload_module, void *umka);
     void stop_playtest(Playtest &playtest);
 
-    bool show_advanced_mode(UiUser &user, catedu::pbr::Renderer &renderer,
-                            ResourceSpec &resources, Scene &scene, void *umka,
-                            bool *reload_module, SelectionState &sel);
+    bool show_build_mode(UiUser &user, catedu::pbr::Renderer &renderer,
+                         ResourceSpec &resources, Scene &scene, void *umka,
+                         bool *reload_module, SelectionState &sel);
     bool show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
               Scene &scene, UiUser &user, void *umka, bool *reload_module);
     void deinit();

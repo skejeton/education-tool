@@ -9,18 +9,7 @@ fn onInteract*(id: str) {}
 // This function is called every time you need to present some UI to the user.
 // Don't use UI functions outside of this function.
 fn onUI*() {
-    if !stop {
-        switch lib::msgbox(
-            .warning,
-            {"Elevator up", "Elevator down", "Exit"},
-            "Elevator",
-            sprintf("Floor: %d", lv)
-        ) {
-            case 0: lv += 1
-            case 1: lv -= 1
-            case 2: stop = true
-        }
-    }
+
 }
 
 // Necessary, don't delete!
