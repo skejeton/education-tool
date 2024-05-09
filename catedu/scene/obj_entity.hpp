@@ -2,16 +2,19 @@
 
 #include "catedu/core/alloc/bump_allocator.hpp"
 #include "catedu/core/math/math.hpp"
-#include "catedu/gui/dialogeditor/dialogeditor.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
 #include "catedu/rendering/resource_spec.hpp"
 #include "physics.hpp"
 
+struct Dialog
+{
+    char name[64];
+    char text[1024];
+};
 
 struct ObjEntity
 {
     char model_name[32];
-    DialogList dialog;
     Vector2 pos;
     TableId body_id;
 

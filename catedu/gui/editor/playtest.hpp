@@ -1,5 +1,7 @@
 #pragma once
 #include "catedu/scene/scene.hpp"
+#include "catedu/sys/input.hpp"
+#include "catedu/ui/user.hpp"
 
 enum class [[nodiscard]] PlaytestCreateError
 {
@@ -12,8 +14,6 @@ struct Playtest
     TableId player;
     Camera camera;
     Scene scene;
-    DialogList *dialog;
-    int conversation_stage;
 
     static PlaytestCreateError from_scene_copy(Playtest &out_, Scene &scene,
                                                Camera camera);

@@ -100,14 +100,82 @@ void umka_msgbox(UmkaStackSlot *params, UmkaStackSlot *result)
         msgbox(*entry_ptr->ui_user, title, text, MsgBoxType(type), ptrs);
 }
 
+void umka_getobj(UmkaStackSlot *params, UmkaStackSlot *result)
+{
+    char *id = (char *)params[2].ptrVal;
+    double *x = (double *)params[1].ptrVal;
+    double *y = (double *)params[0].ptrVal;
+
+    ObjectId obj_id = entry_ptr->editor.playtest.scene.find_object(id);
+
+    if (obj_id == NULL_ID)
+    {
+        result->uintVal = 0;
+        return;
+    }
+
+    Object *obj = entry_ptr->editor.playtest.scene.get_object(obj_id);
+
+    if (obj->type != Object::Entity)
+    {
+        result->uintVal = 0;
+        return;
+    }
+
+    PhysicsBody *body = entry_ptr->editor.playtest.scene.physics.bodies.get(
+        obj->entity.body_id);
+    assert(body);
+    *x = body->area.pos.x;
+    *y = body->area.pos.y;
+
+    result->uintVal = 1;
+}
+
+void umka_setobj(UmkaStackSlot *params, UmkaStackSlot *result)
+{
+    char *id = (char *)params[0].ptrVal;
+    double x = params[1].realVal;
+    double y = params[2].realVal;
+
+    ObjectId obj_id = entry_ptr->editor.playtest.scene.find_object(id);
+
+    if (obj_id == NULL_ID)
+    {
+        result->uintVal = 0;
+        return;
+    }
+
+    Object *obj = entry_ptr->editor.playtest.scene.get_object(obj_id);
+
+    if (obj->type != Object::Entity)
+    {
+        result->uintVal = 0;
+        return;
+    }
+
+    PhysicsBody *body = entry_ptr->editor.playtest.scene.physics.bodies.get(
+        obj->entity.body_id);
+    assert(body);
+    body->area.pos.x = x;
+    body->area.pos.y = y;
+    obj->entity.pos.x = x;
+    obj->entity.pos.y = y;
+
+    result->uintVal = 1;
+}
+
+void umka_sayobj(UmkaStackSlot *params, UmkaStackSlot *result)
+{
+}
+
 void load_umka(Entry &entry)
 {
     entry.umka = umkaAlloc();
 
     assert(entry.umka);
 
-    if (!umkaInit(entry.umka, "assets/main.um", NULL, 1024 * 1024, NULL, 0,
-                  NULL, false, false, NULL))
+    if (!umkaInit(entry.umka, "assets/script/main.um", NULL, 1024 * 1024, NULL,
+                  0, NULL, false, false, NULL))
     {
         return;
     }
@@ -118,6 +186,9 @@ void load_umka(Entry &entry)
     umkaAddFunc(entry.umka, "_msgbox", &umka_msgbox);
     umkaAddFunc(entry.umka, "_begin_window", &umka_begin_window);
     umkaAddFunc(entry.umka, "_end_window", &umka_end_window);
+    umkaAddFunc(entry.umka, "_getobj", &umka_getobj);
+    umkaAddFunc(entry.umka, "_setobj", &umka_setobj);
+    umkaAddFunc(entry.umka, "_sayobj", &umka_sayobj);
 
     if (!umkaCompile(entry.umka))
     {

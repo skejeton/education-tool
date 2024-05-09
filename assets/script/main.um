@@ -1,7 +1,7 @@
 import ("lib.um")
 
-lv := 0
-stop := false
+loopyX := 0.0
+dir := -1.0
 
 // When you interact with an entity (using Space key), this function is called
 fn onInteract*(id: str) {}
@@ -9,7 +9,15 @@ fn onInteract*(id: str) {}
 // This function is called every time you need to present some UI to the user.
 // Don't use UI functions outside of this function.
 fn onUI*() {
-
+    if obj, ok := lib.getObject("loopy"); ok {
+        if fabs(obj.x - loopyX) < 0.02 {
+            dir *= -1
+        }
+        loopyX = obj.x
+        obj.moveBy(0.05*dir, 0)
+    } else {
+        lib.msgbox(.error, {}, "Error", "Loopy not found")
+    }
 }
 
 // Necessary, don't delete!

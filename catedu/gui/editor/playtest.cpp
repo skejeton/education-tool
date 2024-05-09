@@ -76,17 +76,6 @@ void Playtest::handle_update(Input &input, ResourceSpec &resources, void *umka)
         ObjectId coll_id =
             find_object_within_distance_not_player(scene, obj->entity.pos, 3);
 
-        DialogList *dialog = nullptr;
-        if (coll_id != NULL_ID)
-        {
-            Object *coll_obj = scene.get_object(coll_id);
-            if (coll_obj->type == Object::Type::Entity)
-            {
-                dialog = &coll_obj->entity.dialog;
-                source = coll_obj->id;
-            }
-        }
-
         int func = umkaGetFunc(umka, NULL, "onInteract");
         assert(func);
         UmkaStackSlot id;
@@ -97,12 +86,6 @@ void Playtest::handle_update(Input &input, ResourceSpec &resources, void *umka)
         {
             umkaCall(umka, func, 1, &id, NULL);
         }
-
-        if (dialog)
-        {
-            this->dialog = dialog;
-            this->conversation_stage = 0;
-        }
     }
 
     this->scene.update(resources);
@@ -111,27 +94,6 @@ void Playtest::handle_update(Input &input, ResourceSpec &resources, void *umka)
 void Playtest::handle_gui(UiUser &user, ResourceSpec &resources,
                           bool *reload_module, void *umka)
 {
-    if (this->dialog)
-    {
-        int i = 0;
-        for (auto dialog : iter(this->dialog->dialogs))
-        {
-            if (conversation_stage == i)
-            {
-                const char *options[] = {"Next", NULL};
-                switch (msgbox(user, dialog.name, dialog.text, MsgBoxType::Info,
-                               options))
-                {
-                case 0:
-                    this->conversation_stage++;
-                    goto end;
-                }
-            }
-            i++;
-        }
-    end:;
-    }
-
     int func = umkaGetFunc(umka, NULL, "onUI");
 
     if (UmkaError *error = umkaGetError(umka); error->code != 0)

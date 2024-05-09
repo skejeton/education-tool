@@ -1,6 +1,7 @@
 #include "editor.hpp"
 #include "catedu/misc/camera_input.hpp"
 #include "catedu/rendering/render_model.hpp"
+#include "catedu/sys/fs/open_dir.hpp"
 #include "catedu/ui/widgets.hpp"
 #include "offscreen.hpp"
 #include <umka_api.h>
@@ -187,7 +188,6 @@ size_t show_pagination(UiUser &user, size_t page, size_t page_count)
 
 void select_object(GuiEditor &editor, TableId id)
 {
-    editor.dialog_editor.selected = -1;
     if (editor.selection != id)
     {
         editor.selection = id;
@@ -639,6 +639,39 @@ void show_config_window(UiUser &user, Scene &scene, GuiEditor &editor)
     end_show_window(user);
 }
 
+void show_script_window(UiUser &user, Scene &scene, GuiEditor &editor)
+{
+    begin_show_window(user, {"Script", centered_rect(user, 400, 400)});
+
+    if (button(user, "Open script directory"))
+    {
+#ifdef _WIN32
+        catedu::sys::open("assets\\script");
+#else
+        catedu::sys::open("assets/script");
+#endif
+    }
+
+    label(user, "Object References");
+    for (auto [id, obj] : iter(scene.objects))
+    {
+        if (obj.type == Object::Type::Entity)
+        {
+            if (strcmp(obj.id, "") != 0)
+            {
+                if (button(user, obj.id))
+                {
+                    editor.selection = id;
+                    editor.tab = EDITOR_TAB_BUILD;
+                    editor.dirty = true;
+                }
+            }
+        }
+    }
+
+    end_show_window(user);
+}
+
 void show_stencil_picker(UiUser &user, StencilEdit &stencil)
 {
     begin_toolbar(user, "Stencil", RectSide::Left);
@@ -886,7 +919,6 @@ GuiEditor GuiEditor::init(UiState *ui_state)
     result.ui_state = ui_state;
     result.camera = camera;
     result.debug_tree = GuiDebugTree::init();
-    result.dialog_editor = DialogEditor::init();
     result.tab = EDITOR_TAB_CONFIG;
 
     printf("Init editor\n");
@@ -1145,11 +1177,6 @@ bool GuiEditor::show_build_mode(UiUser &user, catedu::pbr::Renderer &renderer,
     if (selected)
     {
         show_properties(user, *selected, *this);
-
-        if (selected->type == Object::Type::Entity)
-        {
-            this->dialog_editor.show(user, selected->entity.dialog);
-        }
     }
 
     bool tilemap_selected =
@@ -1321,6 +1348,9 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
         break;
     case EDITOR_TAB_CONFIG:
         show_config_window(user, scene, editor);
+        break;
+    case EDITOR_TAB_SCRIPT:
+        show_script_window(user, scene, editor);
         break;
     }
 

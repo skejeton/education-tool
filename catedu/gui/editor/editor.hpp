@@ -1,6 +1,5 @@
 #pragma once
 #include "../debugtree/debugtree.hpp"
-#include "catedu/gui/dialogeditor/dialogeditor.hpp"
 #include "catedu/rendering/3d/camera.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
 #include "catedu/rendering/resource_spec.hpp"
@@ -97,7 +96,6 @@ struct GuiEditor
     EditAction actions[1 << 10];
     size_t action_buoy;
     size_t action_count;
-    DialogEditor dialog_editor;
     EditorTab tab;
     Backdrop backdrop;
 

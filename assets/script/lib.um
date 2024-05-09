@@ -1,7 +1,16 @@
+type Object = struct {
+    id: str
+    x: real
+    y: real
+}
+
 // Internal, do not use.
 fn _begin_window(title: str, width: real, height: real): bool
 fn _end_window()
 fn _msgbox(msg: int, options: ^[]str, title: str, text: str): int
+fn _getobj(id: str, x: ^real, y: ^real): bool
+fn _setobj(obj: Object): bool
+fn _sayobj(id: str, text: str)
 
 // Shows as simple button with the provided text. Returns true if the button was clicked.
 fn button*(text: str): bool
@@ -40,3 +49,24 @@ fn window*(title: str, width: real, height: real, body: fn(): void) {
     _end_window()
 }
 
+fn getObject*(id: str): (Object, bool) {
+    obj := Object{id: id}
+    ok := _getobj(obj.id, &obj.x, &obj.y)
+    return obj, ok
+}
+
+fn (obj: ^Object) say*(text: str) {
+    _sayobj(obj.id, text)
+}
+
+fn (obj: ^Object) moveBy*(x: real, y: real) {
+    obj.x += x
+    obj.y += y
+    _setobj(obj^)
+}
+
+fn (obj: ^Object) moveTo*(x: real, y: real) {
+    obj.x = x
+    obj.y = y
+    _setobj(obj^)
+}
