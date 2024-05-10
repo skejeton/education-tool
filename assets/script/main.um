@@ -4,7 +4,16 @@ loopyX := 0.0
 dir := -1.0
 
 // When you interact with an entity (using Space key), this function is called
-fn onInteract*(id: str) {}
+fn onInteract*(id: str) {
+    obj, ok := lib.getObject(id)
+
+    if !ok {
+        return
+    }
+
+    obj.say("Hello, I'm an entity with a dialogue!")
+    obj.say(sprintf("My id is %s!", id))
+}
 
 // This function is called every time you need to present some UI to the user.
 // Don't use UI functions outside of this function.
@@ -18,6 +27,7 @@ fn onUI*() {
     } else {
         lib.msgbox(.error, {}, "Error", "Loopy not found")
     }
+    lib.process()
 }
 
 // Necessary, don't delete!

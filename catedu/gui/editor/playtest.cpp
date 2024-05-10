@@ -70,21 +70,23 @@ void Playtest::handle_update(Input &input, ResourceSpec &resources, void *umka)
     }
     if (input.k[SAPP_KEYCODE_SPACE].pressed)
     {
-
-        const char *source = "";
-
         ObjectId coll_id =
             find_object_within_distance_not_player(scene, obj->entity.pos, 3);
 
-        int func = umkaGetFunc(umka, NULL, "onInteract");
-        assert(func);
-        UmkaStackSlot id;
-
-        id.ptrVal = umkaMakeStr(umka, (char *)source);
-
-        if (umkaGetError(umka)->code == 0)
+        if (coll_id != NULL_ID)
         {
-            umkaCall(umka, func, 1, &id, NULL);
+            Object *coll_obj = scene.get_object(coll_id);
+
+            int func = umkaGetFunc(umka, NULL, "onInteract");
+            assert(func);
+            UmkaStackSlot id;
+
+            id.ptrVal = umkaMakeStr(umka, coll_obj->id);
+
+            if (umkaGetError(umka)->code == 0)
+            {
+                umkaCall(umka, func, 1, &id, NULL);
+            }
         }
     }
 

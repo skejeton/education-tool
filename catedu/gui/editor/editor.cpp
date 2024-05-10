@@ -475,8 +475,6 @@ void show_object_list(UiUser &user, GuiEditor &editor, Scene &scene)
 
 void show_properties(UiUser &user, Object &obj, GuiEditor &editor)
 {
-    begin_show_window(user, {"Properties", {220, 20, 200, 200}});
-
     show_object_icon_ex(user, obj.type);
     label(user, "Name:", {1, 1},
           UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
@@ -494,8 +492,6 @@ void show_properties(UiUser &user, Object &obj, GuiEditor &editor)
     {
         select_object(editor, NULL_ID);
     }
-
-    end_show_window(user);
 }
 
 AutoLayoutElement create_main_element(UiUser &user)
@@ -905,7 +901,7 @@ void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
 void show_tile_editor(UiUser &user, catedu::pbr::Renderer &renderer,
                       ResourceSpec &resources, GuiEditor &editor)
 {
-    show_stencil_picker(user, editor.tilemap_edit.stencil);
+    // show_stencil_picker(user, editor.tilemap_edit.stencil);
     show_tile_picker(user, renderer, resources, editor.tilemap_edit);
 }
 
@@ -1165,19 +1161,27 @@ bool GuiEditor::show_build_mode(UiUser &user, catedu::pbr::Renderer &renderer,
         show_place_object(user, scene, *this);
     }
 
-    char title[256];
-    snprintf(title, 256, "Objects | Page %zu", this->entity_list_page);
+    AutoLayoutElement element = {};
+    element.height = {AutoLayoutDimension::Pixel,
+                      sapp_screen_rect_scaled(user.state->dpi_scale).siz.y};
+    user.begin_generic(element,
+                       UiMakeBrush::make_solid({1.0f, 1.0f, 1.0f, 1.0f}), {});
 
-    begin_show_window(user, {title, {20, 20, 200, 410}});
+    label(user, "Objects", {1.2, 1.2},
+          UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
     show_object_list(user, *this, scene);
-    end_show_window(user);
 
     Object *selected = scene.get_object(this->selection);
 
     if (selected)
     {
+        label(user, "Properties", {1.2, 1.2},
+              UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
+
         show_properties(user, *selected, *this);
     }
+
+    user.end_generic();
 
     bool tilemap_selected =
         selection != NULL_ID &&

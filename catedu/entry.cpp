@@ -164,10 +164,6 @@ void umka_setobj(UmkaStackSlot *params, UmkaStackSlot *result)
     result->uintVal = 1;
 }
 
-void umka_sayobj(UmkaStackSlot *params, UmkaStackSlot *result)
-{
-}
-
 void load_umka(Entry &entry)
 {
     entry.umka = umkaAlloc();
@@ -188,7 +184,6 @@ void load_umka(Entry &entry)
     umkaAddFunc(entry.umka, "_end_window", &umka_end_window);
     umkaAddFunc(entry.umka, "_getobj", &umka_getobj);
     umkaAddFunc(entry.umka, "_setobj", &umka_setobj);
-    umkaAddFunc(entry.umka, "_sayobj", &umka_sayobj);
 
     if (!umkaCompile(entry.umka))
     {
