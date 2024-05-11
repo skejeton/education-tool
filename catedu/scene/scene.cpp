@@ -82,6 +82,9 @@ Object Scene::object(ObjEntity e)
 Scene Scene::copy()
 {
     Scene result = {};
+    result.backdrop = backdrop;
+    memcpy(result.name, name, 64);
+    memcpy(result.description, description, 2048);
 
     for (auto [id, object] : iter(objects))
     {

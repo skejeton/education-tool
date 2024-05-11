@@ -3,6 +3,8 @@ lib
 -I
 lib/tau
 -I
+lib/umka/src
+-I
 lib/lib-enet/include
 -I
 .

@@ -57,7 +57,6 @@ Texture Texture::init(const char *png_path)
 
 void Texture::deinit()
 {
-
     sg_destroy_sampler(this->sysid_sampler);
     sg_destroy_image(this->sysid_texture);
 }

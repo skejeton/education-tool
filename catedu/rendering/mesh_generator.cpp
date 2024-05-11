@@ -29,6 +29,7 @@ void RenderMeshGenerator::push_tri(uint16_t a, uint16_t b, uint16_t c)
 RenderGeo RenderMeshGenerator::convert(RenderWriteDesc desc)
 {
     RenderGeo geo;
+
     geo.ibuf_size = this->indices.size();
     geo.ibuf =
         memory_copy_via_malloc(this->indices.data(), this->indices.size());
