@@ -23,10 +23,20 @@ static void write_char(Input &input, uint32_t chr)
 
 static void handle_key_event(Input &input, int key_code, bool down)
 {
-    key_on(input.k[key_code], down);
+    InputKey *target = input.k;
+
+    // If a modifier key is held, use the mk array
+    if (target[INPUT_CTRL].held || input.k[INPUT_SHIFT].held ||
+        target[INPUT_ALT].held)
+    {
+        target = input.mk;
+    }
+
+    key_on(target[key_code], down);
 
     switch (key_code)
     {
+    // Do not mask modifier keys
     case SAPP_KEYCODE_LEFT_CONTROL:
         key_on(input.k[INPUT_CTRL], down);
         break;
@@ -70,6 +80,13 @@ void Input::update()
         this->k[i].pressed = false;
         this->k[i].released = false;
         this->k[i].repeats = 0;
+    }
+
+    for (int i = 0; i < sizeof(Input::mk) / sizeof(InputKey); ++i)
+    {
+        this->mk[i].pressed = false;
+        this->mk[i].released = false;
+        this->mk[i].repeats = 0;
     }
 
     this->input_len = 0;
@@ -118,11 +135,13 @@ void Input::clear(int key)
 {
     this->k[key].pressed = false;
     this->k[key].released = false;
+    this->mk[key].pressed = false;
+    this->mk[key].released = false;
 }
 
 bool Input::shortcut(int modifier, int key)
 {
-    bool valid = this->k[modifier].held && this->k[key].pressed;
+    bool valid = this->k[modifier].held && this->mk[key].pressed;
     this->clear(key);
     return valid;
 }

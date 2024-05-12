@@ -199,14 +199,6 @@ void select_object(GuiEditor &editor, TableId id)
     }
 }
 
-void finalize_last_action(GuiEditor &editor, Scene &scene)
-{
-    if (editor.action_buoy > 0)
-    {
-        EditAction action = editor.actions[editor.action_buoy - 1];
-    }
-}
-
 void do_action(GuiEditor &editor, Scene &scene, EditAction action,
                bool discard = true)
 {

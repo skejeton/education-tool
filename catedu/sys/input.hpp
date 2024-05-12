@@ -24,7 +24,11 @@ struct InputKey
 
 struct Input
 {
+    // These are active when the keys are pressed without modifiers
     InputKey k[INPUT_COUNT];
+
+    // These are active when the keys are pressed with modifiers
+    InputKey mk[INPUT_COUNT];
     char input[32];
     size_t input_len;
     Vector2 mouse_pos;
