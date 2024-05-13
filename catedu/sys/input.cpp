@@ -38,12 +38,15 @@ static void handle_key_event(Input &input, int key_code, bool down)
     {
     // Do not mask modifier keys
     case SAPP_KEYCODE_LEFT_CONTROL:
+    case SAPP_KEYCODE_RIGHT_CONTROL:
         key_on(input.k[INPUT_CTRL], down);
         break;
     case SAPP_KEYCODE_LEFT_SHIFT:
+    case SAPP_KEYCODE_RIGHT_SHIFT:
         key_on(input.k[INPUT_SHIFT], down);
         break;
     case SAPP_KEYCODE_LEFT_ALT:
+    case SAPP_KEYCODE_RIGHT_ALT:
         key_on(input.k[INPUT_ALT], down);
         break;
     case SAPP_KEYCODE_ENTER:
@@ -61,6 +64,18 @@ static void handle_key_event(Input &input, int key_code, bool down)
     default:
         break;
     }
+}
+
+static int get_key_modifiers(Input &input)
+{
+    int modifiers = 0;
+    if (input.k[INPUT_CTRL].held)
+        modifiers |= MOD_CTRL;
+    if (input.k[INPUT_SHIFT].held)
+        modifiers |= MOD_SHIFT;
+    if (input.k[INPUT_ALT].held)
+        modifiers |= MOD_ALT;
+    return modifiers;
 }
 
 Input Input::init()
@@ -139,9 +154,13 @@ void Input::clear(int key)
     this->mk[key].released = false;
 }
 
-bool Input::shortcut(int modifier, int key)
+bool Input::shortcut(int modifiers, int key)
 {
-    bool valid = this->k[modifier].held && this->mk[key].pressed;
-    this->clear(key);
-    return valid;
+    if (modifiers == get_key_modifiers(*this))
+    {
+        bool valid = this->mk[key].pressed;
+        this->clear(key);
+        return valid;
+    }
+    return false;
 }

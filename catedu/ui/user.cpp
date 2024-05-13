@@ -196,11 +196,11 @@ UiState UiState::init(const char *font_path, const char *font_bold_path,
 bool UiState::feed_event(const sapp_event *event)
 {
     this->input.pass_event(event);
-    if (this->input.shortcut(INPUT_CTRL, SAPP_KEYCODE_MINUS))
+    if (this->input.shortcut(MOD_CTRL, SAPP_KEYCODE_MINUS))
     {
         this->dpi_scale /= 1.125;
     }
-    if (this->input.shortcut(INPUT_CTRL, SAPP_KEYCODE_EQUAL))
+    if (this->input.shortcut(MOD_CTRL, SAPP_KEYCODE_EQUAL))
     {
         this->dpi_scale *= 1.125;
     }

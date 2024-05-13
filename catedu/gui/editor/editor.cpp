@@ -10,10 +10,10 @@ void show_generic_icon(UiUser &user, const char *s, Vector4 color,
                        float w = 0.0f)
 {
     AutoLayoutElement element = {};
-    element.width.value = 16;
+    element.width.value = 12;
     element.width.type =
         w == 0.0f ? AutoLayoutDimension::Auto : AutoLayoutDimension::Pixel;
-    element.height.value = 16;
+    element.height.value = 12;
     element.height.type = AutoLayoutDimension::Pixel;
     element.border = {1, 1, 1, 1};
     element.padding = {2, 2, 2, 2};
@@ -27,7 +27,8 @@ void show_generic_icon(UiUser &user, const char *s, Vector4 color,
                        UiMakeBrush::make_gradient({0.0f, 0.0f, 0.0f, 0.5f},
                                                   {0.0f, 0.0f, 0.0f, 0.0f}));
 
-    label(user, s, {1, 1}, UiMakeBrush::make_solid({1.0f, 1.0f, 1.0f, 1.0f}));
+    label(user, s, {0.7, 0.7},
+          UiMakeBrush::make_solid({1.0f, 1.0f, 1.0f, 1.0f}));
 
     user.end_generic();
 }
@@ -77,6 +78,9 @@ enum ObjectInteractionEvent
     Delete,
 };
 
+bool icon_button(UiUser &user, const char *name, const char *icon,
+                 Vector4 color = {1.0, 1.0, 1.0, 1.0}, float scale = 1);
+
 ObjectInteractionEvent show_object_row(UiUser &user, Object &obj,
                                        bool is_selected)
 {
@@ -90,6 +94,7 @@ ObjectInteractionEvent show_object_row(UiUser &user, Object &obj,
     element.padding = {2, 2, 2, 2};
     element.margin = {1, 1, 1, 1};
     element.border = {0, 0, 1, 0};
+    element.align_height = 0.5;
 
     user.state->element_storage.push(obj.id, {});
 
@@ -106,11 +111,6 @@ ObjectInteractionEvent show_object_row(UiUser &user, Object &obj,
             result = Select;
         }
     }
-    if (obj.hide)
-    {
-        bgc *= 0.5;
-        bgc.w = 1.0f;
-    }
 
     Vector4 color_bottom = {bgc.x * 1.25f, bgc.y * 1.25f, bgc.z * 1.25f, bgc.w};
     bgc.w *= 0.4f;
@@ -120,17 +120,38 @@ ObjectInteractionEvent show_object_row(UiUser &user, Object &obj,
                                                   {0.0f, 0.0f, 0.0f, 0.0f}),
                        user.state->element_storage.id());
 
-    if (button(user, "H"))
+    show_object_icon(user, obj.type);
+    AutoLayoutElement el = {};
+    el.width.type = AutoLayoutDimension::Pixel;
+    el.width.value = 130;
+    user.begin_generic(el, {}, {});
+    if (obj.hide)
+    {
+        label(user, obj.name, {1, 1},
+              UiMakeBrush::make_solid({0.3f, 0.3f, 0.3f, 1.0f}));
+    }
+    else
+    {
+        label(user, obj.name, {1, 1},
+              UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
+    }
+    user.end_generic();
+
+    Vector4 color = {1.0f, 1.0f, 1.0f, 1.0f};
+    if (obj.hide)
+    {
+        color = {1.0f, 0.0f, 0.0f, 1.0f};
+    }
+
+    if (icon_button(user, "Hide", "assets/gui/hide.png", color, 0.2))
     {
         obj.hide = !obj.hide;
     }
-    if (button(user, "X"))
+    if (icon_button(user, "Delete", "assets/gui/delete.png",
+                    {1.0, 1.0, 1.0, 1.0}, 0.2))
     {
         result = Delete;
     }
-    show_object_icon(user, obj.type);
-    label(user, obj.name, {1, 1.2},
-          UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
 
     user.end_generic();
 
@@ -465,38 +486,6 @@ void show_object_list(UiUser &user, GuiEditor &editor, Scene &scene)
     }
 }
 
-void show_properties(UiUser &user, Object &obj, GuiEditor &editor)
-{
-    show_object_icon_ex(user, obj.type);
-    label(user, "Name:", {1, 1},
-          UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
-    input(user, "SelObjName", obj.name, 32);
-    label(user, "Id:", {1, 1},
-          UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
-    input(user, "SelObjId", obj.id, 32);
-    if (obj.type == Object::Type::Entity)
-    {
-        label(user, "Model:", {1, 1},
-              UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
-        input(user, "SelObjModel", obj.entity.model_name, 32);
-    }
-    if (button(user, "OK"))
-    {
-        select_object(editor, NULL_ID);
-    }
-}
-
-AutoLayoutElement create_main_element(UiUser &user)
-{
-    AutoLayoutElement element = {};
-    element.position = AutoLayoutPosition::Absolute;
-    element.width.type = AutoLayoutDimension::Pixel;
-    element.width.value = sapp_widthf() / user.state->dpi_scale;
-    element.height.type = AutoLayoutDimension::Pixel;
-    element.height.value = sapp_heightf() / user.state->dpi_scale;
-    return element;
-}
-
 enum class RectSide
 {
     Left,
@@ -508,6 +497,17 @@ enum class RectSide
 bool rect_side_is_horizontal(RectSide &side)
 {
     return side == RectSide::Bottom || side == RectSide::Top;
+}
+
+AutoLayoutElement create_main_element(UiUser &user)
+{
+    AutoLayoutElement element = {};
+    element.position = AutoLayoutPosition::Absolute;
+    element.width.type = AutoLayoutDimension::Pixel;
+    element.width.value = sapp_widthf() / user.state->dpi_scale;
+    element.height.type = AutoLayoutDimension::Pixel;
+    element.height.value = sapp_heightf() / user.state->dpi_scale;
+    return element;
 }
 
 void begin_toolbar(UiUser &user, const char *name, RectSide side)
@@ -552,7 +552,7 @@ void end_toolbar(UiUser &user)
 }
 
 bool icon_button(UiUser &user, const char *name, const char *icon,
-                 Vector4 color = {1.0, 1.0, 1.0, 1.0})
+                 Vector4 color, float scale)
 {
     AutoLayoutElement el = {};
     el.padding = {2, 2, 2, 2};
@@ -560,8 +560,63 @@ bool icon_button(UiUser &user, const char *name, const char *icon,
     el.border = {1, 1, 1, 1};
 
     begin_button_frame(user, name, el, color);
-    img(user, icon, {1, 1});
+    img(user, icon, {scale, scale});
     return end_button_frame(user);
+}
+
+void show_stencil_picker(UiUser &user, StencilEdit &stencil)
+{
+    auto stencil_button = [&](const char *name, const char *img,
+                              StencilType type) {
+        Vector4 color = stencil.type == type ? Vector4{0.8, 1.0, 0.8, 1.0}
+                                             : Vector4{1.0, 1.0, 1.0, 1.0};
+        if (icon_button(user, name, img, color, 0.465))
+        {
+            stencil.type = type;
+        }
+    };
+
+    user.collection(AutoLayout::Row, [&] {
+        stencil_button("Freeform", "assets/gui/freeform.png",
+                       StencilType::Freeform);
+        stencil_button("Rectangle", "assets/gui/rectangle.png",
+                       StencilType::Rectangle);
+        stencil_button("Line", "assets/gui/line.png", StencilType::Line);
+        stencil_button("LineRectangle", "assets/gui/line_rectangle.png",
+                       StencilType::LineRectangle);
+        stencil_button("Ellipse", "assets/gui/ellipse.png",
+                       StencilType::Ellipse);
+    });
+}
+
+void show_properties(UiUser &user, Object &obj, GuiEditor &editor)
+{
+    user.collection(AutoLayout::Row, [&] {
+        input(user, "SelObjName", obj.name, 32);
+        label(user, "Name", {1, 1},
+              UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
+    });
+    user.collection(AutoLayout::Row, [&] {
+        input(user, "SelObjId", obj.id, 32);
+        label(user, "Id", {1, 1},
+              UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
+    });
+    if (obj.type == Object::Type::Entity)
+    {
+        user.collection(AutoLayout::Row, [&] {
+            input(user, "SelObjModel", obj.entity.model_name, 32);
+            label(user, "Model", {1, 1},
+                  UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
+        });
+    }
+    if (obj.type == Object::Type::Tilemap)
+    {
+        show_stencil_picker(user, editor.tilemap_edit.stencil);
+    }
+    if (button(user, "OK"))
+    {
+        select_object(editor, NULL_ID);
+    }
 }
 
 bool icon_replacement_button(UiUser &user, const char *name,
@@ -619,9 +674,9 @@ void show_config_window(UiUser &user, Scene &scene, GuiEditor &editor)
                               sizeof(scene.description)));
 
     label(user, "Backdrop");
-    check_dirty(editor, button_radio(user, "Void", (int &)scene.backdrop,
+    check_dirty(editor, button_radio(user, "Interior", (int &)scene.backdrop,
                                      BACKDROP_VOID));
-    check_dirty(editor, button_radio(user, "GRASS", (int &)scene.backdrop,
+    check_dirty(editor, button_radio(user, "Exterior", (int &)scene.backdrop,
                                      BACKDROP_GRASS));
 
     end_show_window(user);
@@ -658,32 +713,6 @@ void show_script_window(UiUser &user, Scene &scene, GuiEditor &editor)
     }
 
     end_show_window(user);
-}
-
-void show_stencil_picker(UiUser &user, StencilEdit &stencil)
-{
-    begin_toolbar(user, "Stencil", RectSide::Left);
-
-    auto stencil_button = [&](const char *name, const char *img,
-                              StencilType type) {
-        Vector4 color = stencil.type == type ? Vector4{0.8, 1.0, 0.8, 1.0}
-                                             : Vector4{1.0, 1.0, 1.0, 1.0};
-        if (icon_button(user, name, img, color))
-        {
-            stencil.type = type;
-        }
-    };
-
-    stencil_button("Freeform", "assets/gui/freeform.png",
-                   StencilType::Freeform);
-    stencil_button("Rectangle", "assets/gui/rectangle.png",
-                   StencilType::Rectangle);
-    stencil_button("Line", "assets/gui/line.png", StencilType::Line);
-    stencil_button("LineRectangle", "assets/gui/line_rectangle.png",
-                   StencilType::LineRectangle);
-    stencil_button("Ellipse", "assets/gui/ellipse.png", StencilType::Ellipse);
-
-    end_toolbar(user);
 }
 
 bool tile_icon_button(UiUser &user, const char *name, TableId tile_id,
@@ -893,7 +922,6 @@ void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
 void show_tile_editor(UiUser &user, catedu::pbr::Renderer &renderer,
                       ResourceSpec &resources, GuiEditor &editor)
 {
-    // show_stencil_picker(user, editor.tilemap_edit.stencil);
     show_tile_picker(user, renderer, resources, editor.tilemap_edit);
 }
 
@@ -1070,18 +1098,48 @@ void GuiEditor::save(Scene &scene)
 
 void handle_shortcuts(GuiEditor &editor, Scene &scene, Input &input)
 {
-    if (input.shortcut(INPUT_CTRL, SAPP_KEYCODE_Z))
+    if (input.shortcut(MOD_CTRL, SAPP_KEYCODE_Z))
     {
         undo_action(editor, scene);
     }
-    if (input.shortcut(INPUT_CTRL, SAPP_KEYCODE_Y))
+    if (input.shortcut(MOD_CTRL, SAPP_KEYCODE_Y))
     {
         redo_action(editor, scene);
     }
-    if (input.shortcut(INPUT_CTRL, SAPP_KEYCODE_S))
+    if (input.shortcut(MOD_CTRL, SAPP_KEYCODE_S))
     {
         editor.save(scene);
     }
+}
+
+void show_left_panel(UiUser &user, GuiEditor &editor, Scene &scene)
+{
+    AutoLayoutElement element = {};
+    element.clip = true;
+    element.width = {AutoLayoutDimension::Pixel, 200};
+    element.height = {AutoLayoutDimension::Pixel,
+                      sapp_screen_rect_scaled(user.state->dpi_scale).siz.y};
+    user.state->element_storage.push("Left Panel", {});
+    user.begin_generic(element,
+                       UiMakeBrush::make_solid({1.0f, 1.0f, 1.0f, 1.0f}), {},
+                       user.state->element_storage.id());
+
+    label(user, "Objects", {1.2, 1.2},
+          UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
+    show_object_list(user, editor, scene);
+
+    Object *selected = scene.get_object(editor.selection);
+
+    if (selected)
+    {
+        label(user, "Properties", {1.2, 1.2},
+              UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
+
+        show_properties(user, *selected, editor);
+    }
+
+    user.end_generic();
+    user.state->element_storage.pop();
 }
 
 bool GuiEditor::show_build_mode(UiUser &user, catedu::pbr::Renderer &renderer,
@@ -1153,35 +1211,8 @@ bool GuiEditor::show_build_mode(UiUser &user, catedu::pbr::Renderer &renderer,
         show_place_object(user, scene, *this);
     }
 
-    AutoLayoutElement element = {};
-    element.height = {AutoLayoutDimension::Pixel,
-                      sapp_screen_rect_scaled(user.state->dpi_scale).siz.y};
-    user.begin_generic(element,
-                       UiMakeBrush::make_solid({1.0f, 1.0f, 1.0f, 1.0f}), {});
-
-    label(user, "Objects", {1.2, 1.2},
-          UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
-    show_object_list(user, *this, scene);
-
-    Object *selected = scene.get_object(this->selection);
-
-    if (selected)
-    {
-        label(user, "Properties", {1.2, 1.2},
-              UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
-
-        show_properties(user, *selected, *this);
-    }
-
-    user.end_generic();
-
-    bool tilemap_selected =
-        selection != NULL_ID &&
-        scene.get_object(selection)->type == Object::Type::Tilemap;
-    if (tilemap_selected)
-    {
-        show_tile_editor(user, renderer, resources, *this);
-    }
+    show_left_panel(user, *this, scene);
+    show_tile_editor(user, renderer, resources, *this);
 
     return false;
 }
@@ -1391,19 +1422,19 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
 {
     offscreen_clear();
 
-    if (user.state->input.shortcut(INPUT_ALT, SAPP_KEYCODE_1))
+    if (user.state->input.shortcut(MOD_ALT, SAPP_KEYCODE_1))
     {
         this->tab = EDITOR_TAB_CONFIG;
     }
-    if (user.state->input.shortcut(INPUT_ALT, SAPP_KEYCODE_2))
+    if (user.state->input.shortcut(MOD_ALT, SAPP_KEYCODE_2))
     {
         this->tab = EDITOR_TAB_BUILD;
     }
-    if (user.state->input.shortcut(INPUT_ALT, SAPP_KEYCODE_3))
+    if (user.state->input.shortcut(MOD_ALT, SAPP_KEYCODE_3))
     {
         this->tab = EDITOR_TAB_CHARACTERS;
     }
-    if (user.state->input.shortcut(INPUT_ALT, SAPP_KEYCODE_4))
+    if (user.state->input.shortcut(MOD_ALT, SAPP_KEYCODE_4))
     {
         this->tab = EDITOR_TAB_SCRIPT;
     }

@@ -12,6 +12,14 @@ struct InputKey
     int repeats;
 };
 
+enum KeyModifiers
+{
+    MOD_NONE = 0,
+    MOD_CTRL = 1,
+    MOD_SHIFT = 2,
+    MOD_ALT = 4
+};
+
 #define INPUT_MB_LEFT 512
 #define INPUT_MB_RIGHT 513
 #define INPUT_MB_MIDDLE 514
