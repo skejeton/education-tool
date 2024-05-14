@@ -250,11 +250,6 @@ void do_action(GuiEditor &editor, Scene &scene, EditAction action,
         assert(obj->type == Object::Type::Tilemap);
         action.cmd.place_tile.prev_id =
             obj->tilemap.get_tile(action.cmd.place_tile.pos);
-        if (obj->tilemap.get_tile(action.cmd.place_tile.pos) ==
-            action.cmd.place_tile.tile_id)
-        {
-            return;
-        }
         obj->tilemap.set_tile(action.cmd.place_tile.pos,
                               action.cmd.place_tile.tile_id);
         break;
@@ -894,8 +889,9 @@ void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
     if (input.k[INPUT_MB_LEFT].pressed)
     {
         edit.start = vector2_to_vector2i(editor.object_cursor_at);
+        edit.going = true;
     }
-    else if (input.k[INPUT_MB_LEFT].held)
+    else if (input.k[INPUT_MB_LEFT].held && edit.going)
     {
         edit.end = vector2_to_vector2i(editor.object_cursor_at);
 
@@ -908,7 +904,7 @@ void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
         }
     }
 
-    if (input.k[INPUT_MB_LEFT].released)
+    if (input.k[INPUT_MB_LEFT].released && edit.going)
     {
         bool turnable =
             tile_id == resources.find_tile_by_name("wall_east") ||
@@ -916,6 +912,7 @@ void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
 
         apply_stencil(editor, edit, tile_id, editor.selection, scene, turnable);
         edit.end = edit.start = {};
+        edit.going = false;
     }
 }
 
@@ -1346,13 +1343,13 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
     scene.render(renderer, resources);
 
     // Handle main scene interactions
+    sel = show_selection(editor, renderer, resources, scene, input);
+    editor.object_cursor_at = sel.position;
+
     if (user.hovered())
     {
         if (!handle_camera_movement(editor.camera, input, user))
         {
-            sel = show_selection(editor, renderer, resources, scene, input);
-
-            editor.object_cursor_at = sel.position;
 
             if (sel.tilemap_selected)
             {

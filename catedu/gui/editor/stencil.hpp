@@ -18,6 +18,7 @@ struct StencilEdit
     StencilType type;
     Vector2i start;
     Vector2i end;
+    bool going;
 
     void map(StencilEditMap f);
 };
