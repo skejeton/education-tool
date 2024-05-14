@@ -679,8 +679,6 @@ void show_config_window(UiUser &user, Scene &scene, GuiEditor &editor)
 
 void show_script_window(UiUser &user, Scene &scene, GuiEditor &editor)
 {
-    begin_show_window(user, {"Script", centered_rect(user, 400, 400)});
-
     if (button(user, "Open script directory"))
     {
 #ifdef _WIN32
@@ -706,8 +704,6 @@ void show_script_window(UiUser &user, Scene &scene, GuiEditor &editor)
             }
         }
     }
-
-    end_show_window(user);
 }
 
 bool tile_icon_button(UiUser &user, const char *name, TableId tile_id,
@@ -824,9 +820,10 @@ void show_tile_picker(UiUser &user, catedu::pbr::Renderer &renderer,
 }
 
 void apply_stencil(GuiEditor &editor, StencilEdit &edit, TableId tile_id,
-                   TableId tilemap_entity, Scene &scene, bool turnable = false)
+                   TableId tilemap_entity, Scene &scene, bool turnable = false,
+                   bool first = true)
 {
-    bool finalized = true;
+    bool finalized = first;
 
     edit.map([&](int x, int y, float angle) {
         int turn_angle = 4 - (int(snap(angle, 90)) / 90) % 4;
@@ -891,7 +888,8 @@ void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
         edit.start = vector2_to_vector2i(editor.object_cursor_at);
         edit.going = true;
     }
-    else if (input.k[INPUT_MB_LEFT].held && edit.going)
+
+    if (input.k[INPUT_MB_LEFT].held && edit.going)
     {
         edit.end = vector2_to_vector2i(editor.object_cursor_at);
 
@@ -899,12 +897,14 @@ void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
 
         if (edit.type == StencilType::Freeform)
         {
-            apply_stencil(editor, edit, tile_id, editor.selection, scene);
+            apply_stencil(editor, edit, tile_id, editor.selection, scene, false,
+                          input.k[INPUT_MB_LEFT].pressed);
             edit.start = edit.end;
         }
     }
 
-    if (input.k[INPUT_MB_LEFT].released && edit.going)
+    if (input.k[INPUT_MB_LEFT].released && edit.going &&
+        edit.type != StencilType::Freeform)
     {
         bool turnable =
             tile_id == resources.find_tile_by_name("wall_east") ||
