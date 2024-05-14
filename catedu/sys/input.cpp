@@ -108,6 +108,26 @@ void Input::update()
     memset(this->input, 0, 32 * sizeof(char));
 }
 
+void Input::reset()
+{
+    this->mouse_delta = {0, 0};
+    this->mouse_wheel = 0;
+
+    // Reset one-frame input states
+    for (int i = 0; i < sizeof(Input::k) / sizeof(InputKey); ++i)
+    {
+        this->k[i] = {};
+    }
+
+    for (int i = 0; i < sizeof(Input::mk) / sizeof(InputKey); ++i)
+    {
+        this->mk[i] = {};
+    }
+
+    this->input_len = 0;
+    memset(this->input, 0, 32 * sizeof(char));
+}
+
 void Input::pass_event(const sapp_event *event)
 {
     size_t mouse_button = INPUT_MB_LEFT + event->mouse_button;

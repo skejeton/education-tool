@@ -46,6 +46,7 @@ struct Input
 
     Input init();
     void update(); // called every frame
+    void reset();  // called when the window loses focus
     void clear(int key);
     bool shortcut(int modifier, int key);
     void pass_event(const sapp_event *event);

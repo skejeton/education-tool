@@ -319,6 +319,11 @@ void Entry::input(const sapp_event *event)
         }
     }
 
+    if (event->type == SAPP_EVENTTYPE_UNFOCUSED)
+    {
+        this->ui_state.input.reset();
+    }
+
     if (ui_state.feed_event(event))
     {
         return;
