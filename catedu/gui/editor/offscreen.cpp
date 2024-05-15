@@ -1,13 +1,18 @@
 #include "offscreen.hpp"
 
-OffscreenTarget cache[5] = {};
+enum
+{
+    CACHE_SIZE = 8
+};
+
+OffscreenTarget cache[CACHE_SIZE] = {};
 size_t available_target = 0;
 
 void offscreen_init_targets(UiRenderingCore *core)
 {
     printf("INIT: offscreen targets\n");
 
-    for (size_t i = 0; i < 5; i++)
+    for (size_t i = 0; i < CACHE_SIZE; i++)
     {
         OffscreenTarget target = {0};
 
@@ -61,7 +66,7 @@ void offscreen_clear()
 
 sg_attachments offscreen_alloc(UiImageId &id_out)
 {
-    if (available_target >= 5)
+    if (available_target >= CACHE_SIZE)
     {
         fprintf(stderr, "ERROR: No more offscreen targets available\n");
         return {};
@@ -76,7 +81,7 @@ void offscreen_deinit_targets(UiRenderingCore *core)
 {
     printf("DEINIT: offscreen targets\n");
 
-    for (size_t i = 0; i < 5; i++)
+    for (size_t i = 0; i < CACHE_SIZE; i++)
     {
         sg_destroy_image(cache[i].depth);
         sg_destroy_attachments(cache[i].attachment);

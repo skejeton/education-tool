@@ -534,9 +534,8 @@ void begin_toolbar(UiUser &user, const char *name, RectSide side)
     toolbar.padding = {2, 2, 2, 2};
     toolbar.margin = {2, 2, 2, 2};
     toolbar.border = {1, 1, 1, 1};
-    user.begin_generic(toolbar, UiMakeBrush::make_solid({0.8, 0.8, 0.8, 1.0}),
-                       UiMakeBrush::make_solid({0.0, 0.0, 0.0, 1.0}),
-                       user.state->element_storage.id());
+    user.begin_generic(toolbar, UiMakeBrush::make_solid({1.0, 1.0, 1.0, 0.6}),
+                       {}, user.state->element_storage.id());
 }
 
 void end_toolbar(UiUser &user)
@@ -656,10 +655,10 @@ void check_dirty(GuiEditor &editor, bool edited)
     }
 }
 
-void show_config_window(UiUser &user, Scene &scene, GuiEditor &editor)
+void show_config_panel(UiUser &user, Scene &scene, GuiEditor &editor)
 {
-    begin_show_window(user,
-                      {"World Configuration", centered_rect(user, 400, 400)});
+    label(user, "World Configuration", {1.5, 1.5},
+          UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
 
     label(user, "Title");
     check_dirty(editor, input(user, "title", scene.name, sizeof(scene.name)));
@@ -673,12 +672,13 @@ void show_config_window(UiUser &user, Scene &scene, GuiEditor &editor)
                                      BACKDROP_VOID));
     check_dirty(editor, button_radio(user, "Exterior", (int &)scene.backdrop,
                                      BACKDROP_GRASS));
-
-    end_show_window(user);
 }
 
-void show_script_window(UiUser &user, Scene &scene, GuiEditor &editor)
+void show_script_panel(UiUser &user, Scene &scene, GuiEditor &editor)
 {
+    label(user, "Script Configuration", {1.5, 1.5},
+          UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
+
     if (button(user, "Open script directory"))
     {
 #ifdef _WIN32
@@ -1109,18 +1109,8 @@ void handle_shortcuts(GuiEditor &editor, Scene &scene, Input &input)
     }
 }
 
-void show_left_panel(UiUser &user, GuiEditor &editor, Scene &scene)
+void show_build_panel(UiUser &user, GuiEditor &editor, Scene &scene)
 {
-    AutoLayoutElement element = {};
-    element.clip = true;
-    element.width = {AutoLayoutDimension::Pixel, 200};
-    element.height = {AutoLayoutDimension::Pixel,
-                      sapp_screen_rect_scaled(user.state->dpi_scale).siz.y};
-    user.state->element_storage.push("Left Panel", {});
-    user.begin_generic(element,
-                       UiMakeBrush::make_solid({1.0f, 1.0f, 1.0f, 1.0f}), {},
-                       user.state->element_storage.id());
-
     label(user, "Objects", {1.2, 1.2},
           UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
     show_object_list(user, editor, scene);
@@ -1133,6 +1123,32 @@ void show_left_panel(UiUser &user, GuiEditor &editor, Scene &scene)
               UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
 
         show_properties(user, *selected, editor);
+    }
+}
+
+void show_left_panel(UiUser &user, GuiEditor &editor, Scene &scene)
+{
+    AutoLayoutElement element = {};
+    element.clip = true;
+    element.width = {AutoLayoutDimension::Pixel, 200};
+    element.height = {AutoLayoutDimension::Pixel,
+                      sapp_screen_rect_scaled(user.state->dpi_scale).siz.y};
+    user.state->element_storage.push("Left Panel", {});
+    user.begin_generic(element,
+                       UiMakeBrush::make_gradient({1.0f, 1.0f, 1.0f, 0.6f},
+                                                  {1.0f, 1.0f, 1.0f, 0.7f}),
+                       {}, user.state->element_storage.id());
+    switch (editor.tab)
+    {
+    case EDITOR_TAB_CONFIG:
+        show_config_panel(user, scene, editor);
+        break;
+    case EDITOR_TAB_BUILD:
+        show_build_panel(user, editor, scene);
+        break;
+    case EDITOR_TAB_SCRIPT:
+        show_script_panel(user, scene, editor);
+        break;
     }
 
     user.end_generic();
@@ -1208,7 +1224,6 @@ bool GuiEditor::show_build_mode(UiUser &user, catedu::pbr::Renderer &renderer,
         show_place_object(user, scene, *this);
     }
 
-    show_left_panel(user, *this, scene);
     show_tile_editor(user, renderer, resources, *this);
 
     return false;
@@ -1363,19 +1378,12 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
 
     show_editor_mode(user, editor.show_help_window, editor.tab);
     show_editor_controls(user, editor, scene, reload_module, umka, return_back);
+    show_left_panel(user, editor, scene);
 
-    switch (editor.tab)
+    if (editor.tab == EDITOR_TAB_BUILD)
     {
-    case EDITOR_TAB_BUILD:
         editor.show_build_mode(user, renderer, resources, scene, umka,
                                reload_module, sel);
-        break;
-    case EDITOR_TAB_CONFIG:
-        show_config_window(user, scene, editor);
-        break;
-    case EDITOR_TAB_SCRIPT:
-        show_script_window(user, scene, editor);
-        break;
     }
 
     if (editor.show_help_window)

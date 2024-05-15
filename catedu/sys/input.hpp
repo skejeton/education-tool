@@ -12,7 +12,7 @@ struct InputKey
     int repeats;
 };
 
-enum KeyModifiers
+enum InputKeyModifiers
 {
     MOD_NONE = 0,
     MOD_CTRL = 1,
@@ -20,15 +20,18 @@ enum KeyModifiers
     MOD_ALT = 4
 };
 
-#define INPUT_MB_LEFT 512
-#define INPUT_MB_RIGHT 513
-#define INPUT_MB_MIDDLE 514
+enum InputExtraKeys
+{
+    INPUT_MB_LEFT = 512,
+    INPUT_MB_RIGHT = 513,
+    INPUT_MB_MIDDLE = 514,
 
-#define INPUT_CTRL 515
-#define INPUT_SHIFT 516
-#define INPUT_ALT 517
+    INPUT_CTRL = 515,
+    INPUT_SHIFT = 516,
+    INPUT_ALT = 517,
 
-#define INPUT_COUNT 518
+    INPUT_COUNT = 518
+};
 
 struct Input
 {
@@ -48,6 +51,7 @@ struct Input
     void update(); // called every frame
     void reset();  // called when the window loses focus
     void clear(int key);
+    bool repeating(int key);
     bool shortcut(int modifier, int key);
     void pass_event(const sapp_event *event);
 };

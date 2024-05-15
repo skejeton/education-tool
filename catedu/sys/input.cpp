@@ -4,6 +4,11 @@
 #define DOWN true
 #define UP false
 
+static bool boundcheck(int k)
+{
+    return k >= 0 && k < INPUT_COUNT;
+}
+
 static void key_on(InputKey &key, bool down)
 {
     key.pressed = down;
@@ -172,6 +177,16 @@ void Input::clear(int key)
     this->k[key].released = false;
     this->mk[key].pressed = false;
     this->mk[key].released = false;
+}
+
+bool Input::repeating(int key)
+{
+    if (boundcheck(key) && this->k[key].repeats > 0)
+    {
+        this->k[key].repeats--;
+        return true;
+    }
+    return false;
 }
 
 bool Input::shortcut(int modifiers, int key)
