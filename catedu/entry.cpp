@@ -29,10 +29,9 @@ void umka_button(UmkaStackSlot *params, UmkaStackSlot *result)
 
 void umka_label(UmkaStackSlot *params, UmkaStackSlot *result)
 {
+    // Color is in the format 0xRRGGBBAA
     uint32_t color = params[0].uintVal;
     char *string = (char *)params[1].ptrVal;
-
-    // Color is in the format 0xRRGGBBAA
 
     assert(entry_ptr->ui_user);
 

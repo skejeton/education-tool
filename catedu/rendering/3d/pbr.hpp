@@ -30,7 +30,7 @@ struct Renderer
 
     void begin_pass();
     void begin_pass_offscreen(sg_pass_action pa, sg_attachments att);
-    void render_model(Model &model, pbr_vs_params_t vs_params);
+    void render_model(const Model &model, pbr_vs_params_t vs_params);
     void end_pass();
 };
 

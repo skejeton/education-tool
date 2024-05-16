@@ -18,6 +18,7 @@ fn onInteract*(id: str) {
 // This function is called every time you need to present some UI to the user.
 // Don't use UI functions outside of this function.
 fn onUI*() {
+    /*
     if obj, ok := lib.getObject("loopy"); ok {
         if fabs(obj.x - loopyX) < 0.02 {
             dir *= -1
@@ -28,7 +29,10 @@ fn onUI*() {
         lib.msgbox(.error, {}, "Error", "Loopy not found")
     }
     lib.process()
+    */
 }
 
-// Necessary, don't delete!
+
+// For some reason, Umka requires a main function.
 fn main() {}
+

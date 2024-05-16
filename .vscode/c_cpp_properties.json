@@ -3,7 +3,7 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**",
+                "${workspaceFolder}/",
                 "${workspaceFolder}/lib/tau/**",
                 "${workspaceFolder}/lib/lib-enet/include/**",
                 "${workspaceFolder}/lib/**"

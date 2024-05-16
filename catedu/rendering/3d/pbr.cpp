@@ -97,7 +97,7 @@ void Renderer::begin_pass_offscreen(sg_pass_action pa, sg_attachments att)
     sg_apply_pipeline(offscreen_pipeline);
 }
 
-void Renderer::render_model(Model &model, pbr_vs_params_t vs_params)
+void Renderer::render_model(const Model &model, pbr_vs_params_t vs_params)
 {
     sg_bindings bindings = {};
     bindings.vertex_buffers[0] = model.vertex_buffer;

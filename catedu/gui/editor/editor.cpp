@@ -1,4 +1,6 @@
 #include "editor.hpp"
+#include "catedu/genobj/building.hpp"
+#include "catedu/genobj/render.hpp"
 #include "catedu/misc/camera_input.hpp"
 #include "catedu/rendering/render_model.hpp"
 #include "catedu/sys/fs/open_dir.hpp"
@@ -947,7 +949,6 @@ SelectionState show_selection(GuiEditor &editor,
                               Input &input)
 {
     float window_width = sapp_widthf(), window_height = sapp_heightf();
-    float aspect = window_width / window_height;
 
     float distance;
     Ray3 ray = editor.camera.screen_to_world_ray(
@@ -1149,6 +1150,7 @@ void show_left_panel(UiUser &user, GuiEditor &editor, Scene &scene)
     case EDITOR_TAB_SCRIPT:
         show_script_panel(user, scene, editor);
         break;
+    default:;
     }
 
     user.end_generic();
@@ -1167,8 +1169,6 @@ bool GuiEditor::show_build_mode(UiUser &user, catedu::pbr::Renderer &renderer,
     {
         this->show_debug = !this->show_debug;
     }
-
-    bool no_ui = false;
 
     debug_tree.reset();
     debug_tree.value("Camera Pos X", renderer.camera.position.x);
@@ -1353,6 +1353,12 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
     editor.camera.set_aspect(sapp_widthf() / sapp_heightf());
     renderer.camera = editor.camera;
     renderer.begin_pass();
+
+    GeneratedObject obj = genmesh_generate_building(4);
+    GenResources gen_resources = {};
+    gen_resources.box =
+        resources.models.get(resources.find_model_by_name("cube"))->model;
+    genobj_render_object(renderer, gen_resources, obj);
 
     SelectionState sel = {};
     scene.render(renderer, resources);

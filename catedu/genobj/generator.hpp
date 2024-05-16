@@ -1,0 +1,23 @@
+#pragma once
+#include "catedu/core/math/math.hpp"
+#include "catedu/rendering/color.hpp"
+
+enum
+{
+    COMPONENT_COUNT = 64
+};
+
+struct GeneratedObjectComponent
+{
+    Box3 box;
+    Color color;
+};
+
+struct GeneratedObject
+{
+    GeneratedObjectComponent components[COMPONENT_COUNT];
+    size_t num_components;
+
+    void push(GeneratedObjectComponent);
+    void push_colored_box(Box3 box, Color color);
+};
