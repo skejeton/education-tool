@@ -936,6 +936,7 @@ GuiEditor GuiEditor::init(UiState *ui_state)
     result.camera = camera;
     result.debug_tree = GuiDebugTree::init();
     result.tab = EDITOR_TAB_CONFIG;
+    result.world = World::create();
 
     printf("Init editor\n");
 
@@ -1373,15 +1374,36 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
             floors--;
         }
         floors = clamp(floors, 2, 10);
+        if (input.k[SAPP_KEYCODE_ENTER].pressed)
+        {
+            editor.world.add_building(floors, roundf(sel.position.x),
+                                      roundf(sel.position.y));
+        }
+        if (input.k[SAPP_KEYCODE_DELETE].pressed)
+        {
+            editor.world.remove_building(roundf(sel.position.x),
+                                         roundf(sel.position.y));
+        }
 
         GenResources gen_resources = {};
         gen_resources.box =
             resources.models.get(resources.find_model_by_name("cube"))->model;
 
+        for (int i = 0; i < editor.world.num_buildings; i++)
+        {
+            Building &building = editor.world.buildings[i];
+            GeneratedObject buildingobj =
+                genmesh_generate_building(building.floors);
+            genobj_render_object(renderer, gen_resources, buildingobj,
+                                 Matrix4::translate({roundf(building.x), 0,
+                                                     roundf(building.y)}));
+        }
+
         GeneratedObject building = genmesh_generate_building(floors);
         genobj_render_object(renderer, gen_resources, building,
-                             Matrix4::translate({round(sel.position.x), 0,
-                                                 round(sel.position.y)}));
+                             Matrix4::translate({roundf(sel.position.x), 0,
+                                                 roundf(sel.position.y)}));
+
         GeneratedObject grid = genmesh_generate_grid(32, 32);
         genobj_render_object(renderer, gen_resources, grid);
     }
@@ -1390,7 +1412,6 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
     {
         if (!handle_camera_movement(editor.camera, input, user))
         {
-
             if (sel.tilemap_selected)
             {
                 show_stencil_editor(input, editor, editor.tilemap_edit.stencil,

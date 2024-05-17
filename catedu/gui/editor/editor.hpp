@@ -10,7 +10,9 @@
 #include "catedu/ui/user.hpp"
 #include "playtest.hpp"
 #include "stencil.hpp"
+#include "world.hpp"
 #include <sokol/sokol_app.h>
+
 
 struct EditAction
 {
@@ -98,6 +100,7 @@ struct GuiEditor
     size_t action_count;
     EditorTab tab;
     Backdrop backdrop;
+    World world;
 
     static GuiEditor init(UiState *ui_state);
     void save(Scene &scene);
