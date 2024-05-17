@@ -9,4 +9,5 @@ struct GenResources
 
 void genobj_render_object(catedu::pbr::Renderer &renderer,
                           const GenResources &resources,
-                          const GeneratedObject &object);
+                          const GeneratedObject &object,
+                          Matrix4 matrix = Matrix4::identity());

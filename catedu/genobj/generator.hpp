@@ -4,7 +4,7 @@
 
 enum
 {
-    COMPONENT_COUNT = 64
+    COMPONENT_COUNT = 128
 };
 
 struct GeneratedObjectComponent

@@ -1,8 +1,8 @@
 #pragma once
+#include <algorithm>
 #include <catedu/core/math/math.hpp>
 #include <cmath>
 #include <cstdint>
-#include <utility>
 
 struct HSV
 {

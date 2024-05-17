@@ -84,6 +84,3 @@ fn process*() {
         }
     }
 }
-
-// For some reason, Umka requires a main function.
-fn main() {}

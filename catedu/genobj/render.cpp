@@ -10,21 +10,22 @@ static Matrix4 box_to_matrix(Box3 box)
 
 static void render_component(catedu::pbr::Renderer &renderer,
                              const GenResources &resources,
-                             const GeneratedObjectComponent &component)
+                             const GeneratedObjectComponent &component,
+                             Matrix4 matrix)
 {
     pbr_vs_params_t vs_params = {};
     vs_params.color_mul = component.color.to_vector4();
-    vs_params.model = box_to_matrix(component.box);
+    vs_params.model = matrix * box_to_matrix(component.box);
     vs_params.lightness = 0;
     renderer.render_model(resources.box, vs_params);
 }
 
 void genobj_render_object(catedu::pbr::Renderer &renderer,
                           const GenResources &resources,
-                          const GeneratedObject &object)
+                          const GeneratedObject &object, Matrix4 matrix)
 {
     for (size_t i = 0; i < object.num_components; i++)
     {
-        render_component(renderer, resources, object.components[i]);
+        render_component(renderer, resources, object.components[i], matrix);
     }
 }

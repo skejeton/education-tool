@@ -1,5 +1,6 @@
 #include "editor.hpp"
 #include "catedu/genobj/building.hpp"
+#include "catedu/genobj/grid.hpp"
 #include "catedu/genobj/render.hpp"
 #include "catedu/misc/camera_input.hpp"
 #include "catedu/rendering/render_model.hpp"
@@ -1354,18 +1355,36 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
     renderer.camera = editor.camera;
     renderer.begin_pass();
 
-    GeneratedObject obj = genmesh_generate_building(4);
-    GenResources gen_resources = {};
-    gen_resources.box =
-        resources.models.get(resources.find_model_by_name("cube"))->model;
-    genobj_render_object(renderer, gen_resources, obj);
-
     SelectionState sel = {};
     scene.render(renderer, resources);
 
     // Handle main scene interactions
     sel = show_selection(editor, renderer, resources, scene, input);
     editor.object_cursor_at = sel.position;
+
+    {
+        static int floors = 3;
+        if (input.k[SAPP_KEYCODE_UP].pressed)
+        {
+            floors++;
+        }
+        if (input.k[SAPP_KEYCODE_DOWN].pressed)
+        {
+            floors--;
+        }
+        floors = clamp(floors, 2, 10);
+
+        GenResources gen_resources = {};
+        gen_resources.box =
+            resources.models.get(resources.find_model_by_name("cube"))->model;
+
+        GeneratedObject building = genmesh_generate_building(floors);
+        genobj_render_object(renderer, gen_resources, building,
+                             Matrix4::translate({round(sel.position.x), 0,
+                                                 round(sel.position.y)}));
+        GeneratedObject grid = genmesh_generate_grid(32, 32);
+        genobj_render_object(renderer, gen_resources, grid);
+    }
 
     if (user.hovered())
     {
