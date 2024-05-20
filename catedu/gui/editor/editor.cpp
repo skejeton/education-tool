@@ -3,76 +3,12 @@
 #include "catedu/genobj/grid.hpp"
 #include "catedu/genobj/render.hpp"
 #include "catedu/misc/camera_input.hpp"
+#include "catedu/rendering/3d/pbr.hpp"
 #include "catedu/rendering/render_model.hpp"
 #include "catedu/sys/fs/open_dir.hpp"
 #include "catedu/ui/widgets.hpp"
 #include "offscreen.hpp"
 #include <umka_api.h>
-
-void show_generic_icon(UiUser &user, const char *s, Vector4 color,
-                       float w = 0.0f)
-{
-    AutoLayoutElement element = {};
-    element.width.value = 12;
-    element.width.type =
-        w == 0.0f ? AutoLayoutDimension::Auto : AutoLayoutDimension::Pixel;
-    element.height.value = 12;
-    element.height.type = AutoLayoutDimension::Pixel;
-    element.border = {1, 1, 1, 1};
-    element.padding = {2, 2, 2, 2};
-    element.margin = {2, 2, 2, 2};
-
-    Vector4 bottom = {color.x * 1.25f, color.y * 1.25f, color.z * 1.25f,
-                      color.w};
-    color.w *= 0.4f;
-
-    user.begin_generic(element, UiMakeBrush::make_gradient(bottom, color),
-                       UiMakeBrush::make_gradient({0.0f, 0.0f, 0.0f, 0.5f},
-                                                  {0.0f, 0.0f, 0.0f, 0.0f}));
-
-    label(user, s, {0.7, 0.7},
-          UiMakeBrush::make_solid({1.0f, 1.0f, 1.0f, 1.0f}));
-
-    user.end_generic();
-}
-
-void show_generic_icon_char(UiUser &user, char c, Vector4 color)
-{
-    char s[3] = {' ', c, 0};
-    show_generic_icon(user, s, color, 20.0f);
-}
-
-void show_object_icon(UiUser &user, Object::Type type)
-{
-    switch (type)
-    {
-    case Object::Type::Entity:
-        show_generic_icon_char(user, 'E', {0.0f, 0.0f, 0.5f, 1.0f});
-        break;
-    case Object::Type::Tilemap:
-        show_generic_icon_char(user, 'T', {0.0f, 0.5f, 0.0f, 1.0f});
-        break;
-    case Object::Type::Generic:
-        show_generic_icon_char(user, 'G', {0.2f, 0.2f, 0.2f, 1.0f});
-        break;
-    }
-}
-
-void show_object_icon_ex(UiUser &user, Object::Type type)
-{
-    switch (type)
-    {
-    case Object::Type::Entity:
-        show_generic_icon(user, "Entity", {0.0f, 0.0f, 0.5f, 1.0f});
-        break;
-    case Object::Type::Tilemap:
-        show_generic_icon(user, "Tilemap", {0.0f, 0.5f, 0.0f, 1.0f});
-        break;
-    case Object::Type::Generic:
-        show_generic_icon(user, "Generic", {0.2f, 0.2f, 0.2f, 1.0f});
-        break;
-    }
-}
 
 enum ObjectInteractionEvent
 {
@@ -83,132 +19,6 @@ enum ObjectInteractionEvent
 
 bool icon_button(UiUser &user, const char *name, const char *icon,
                  Vector4 color = {1.0, 1.0, 1.0, 1.0}, float scale = 1);
-
-ObjectInteractionEvent show_object_row(UiUser &user, Object &obj,
-                                       bool is_selected)
-{
-    ObjectInteractionEvent result = None;
-
-    AutoLayoutElement element = {};
-    element.layout.type = AutoLayout::Row;
-    element.width.type = AutoLayoutDimension::Pixel;
-    element.width.value = 200 - 8;
-    element.height.type = AutoLayoutDimension::Auto;
-    element.padding = {2, 2, 2, 2};
-    element.margin = {1, 1, 1, 1};
-    element.border = {0, 0, 1, 0};
-    element.align_height = 0.5;
-
-    user.state->element_storage.push(obj.id, {});
-
-    Vector4 bgc = {1.0f, 1.0f, 1.0f, 1.0f};
-    if (is_selected)
-    {
-        bgc = {0.8f, 0.8f, 0.0f, 1.0f};
-    }
-    if (user.hovered())
-    {
-        bgc = {0.7f, 0.7f, 0.6f, 1.0f};
-        if (user.state->input.k[INPUT_MB_LEFT].pressed)
-        {
-            result = Select;
-        }
-    }
-
-    Vector4 color_bottom = {bgc.x * 1.25f, bgc.y * 1.25f, bgc.z * 1.25f, bgc.w};
-    bgc.w *= 0.4f;
-
-    user.begin_generic(element, UiMakeBrush::make_gradient(color_bottom, bgc),
-                       UiMakeBrush::make_gradient({0.0f, 0.0f, 0.0f, 0.5f},
-                                                  {0.0f, 0.0f, 0.0f, 0.0f}),
-                       user.state->element_storage.id());
-
-    show_object_icon(user, obj.type);
-    AutoLayoutElement el = {};
-    el.width.type = AutoLayoutDimension::Pixel;
-    el.width.value = 130;
-    user.begin_generic(el, {}, {});
-    if (obj.hide)
-    {
-        label(user, obj.name, {1, 1},
-              UiMakeBrush::make_solid({0.3f, 0.3f, 0.3f, 1.0f}));
-    }
-    else
-    {
-        label(user, obj.name, {1, 1},
-              UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
-    }
-    user.end_generic();
-
-    Vector4 color = {1.0f, 1.0f, 1.0f, 1.0f};
-    if (obj.hide)
-    {
-        color = {1.0f, 0.0f, 0.0f, 1.0f};
-    }
-
-    if (icon_button(user, "Hide", "assets/gui/hide.png", color, 0.2))
-    {
-        obj.hide = !obj.hide;
-    }
-    if (icon_button(user, "Delete", "assets/gui/delete.png",
-                    {1.0, 1.0, 1.0, 1.0}, 0.2))
-    {
-        result = Delete;
-    }
-
-    user.end_generic();
-
-    user.state->element_storage.pop();
-
-    return result;
-}
-
-ObjectInteractionEvent show_object_properties(UiUser &user, Object &obj)
-{
-    return show_object_row(user, obj, false);
-}
-
-size_t show_pagination(UiUser &user, size_t page, size_t page_count)
-{
-    AutoLayoutElement element = {};
-    element.layout.type = AutoLayout::Row;
-    element.width.type = AutoLayoutDimension::Pixel;
-    element.width.value = 200 - 8;
-    element.height.type = AutoLayoutDimension::Auto;
-    element.padding = {2, 2, 2, 2};
-    element.margin = {1, 1, 1, 1};
-    element.border = {0, 0, 1, 0};
-
-    user.begin_generic(element,
-                       UiMakeBrush::make_solid({1.0f, 1.0f, 1.0f, 1.0f}),
-                       UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
-
-    if (button(user, " First "))
-    {
-        page = 0;
-    }
-    if (button(user, " < ") && page != 0)
-    {
-        page -= 1;
-    }
-    if (button(user, " > "))
-    {
-        page += 1;
-    }
-    if (button(user, " Last "))
-    {
-        page = page_count;
-    }
-
-    if (page > page_count)
-    {
-        page = page_count;
-    }
-
-    user.end_generic();
-
-    return page;
-}
 
 void select_object(GuiEditor &editor, TableId id)
 {
@@ -401,89 +211,6 @@ Rect centered_rect(UiUser &user, float width, float height)
     return rect;
 }
 
-void show_place_object(UiUser &user, Scene &scene, GuiEditor &editor)
-{
-    Object new_obj = {};
-
-    begin_show_window(user, {"Place object", centered_rect(user, 100, 200)});
-    label(user, "Type:");
-    if (button(user, "Entity"))
-    {
-        new_obj.type = Object::Type::Entity;
-        strcpy(new_obj.name,
-               stdstrfmt("Unnamed Entity %zu", scene.objects.count).c_str());
-        new_obj.entity = ObjEntity::init("", editor.object_cursor_at);
-    }
-    if (button(user, "Tilemap"))
-    {
-        new_obj.type = Object::Type::Tilemap;
-        new_obj.tilemap = ObjTilemap::init();
-        strcpy(new_obj.name,
-               stdstrfmt("Unnamed Tilemap %zu", scene.objects.count).c_str());
-    }
-    if (button(user, "Cancel"))
-    {
-        editor.placing_object = false;
-    }
-
-    if (new_obj.type != Object::Type::Generic)
-    {
-        EditAction action = {};
-        action.type = EditAction::CreateEntity;
-        action.cmd.create_entity.entity = new_obj;
-        action.final = true;
-
-        do_action(editor, scene, action);
-        editor.placing_object = false;
-    }
-
-    end_show_window(user);
-}
-
-void show_object_list(UiUser &user, GuiEditor &editor, Scene &scene)
-{
-    const size_t page_count =
-        scene.objects.count > 0 ? (scene.objects.count - 1) / 10 : 0;
-    editor.entity_list_page =
-        show_pagination(user, editor.entity_list_page, page_count);
-
-    size_t i = 0;
-
-    for (auto [id, obj] : iter(scene.objects))
-    {
-        if (i++ < editor.entity_list_page * 10)
-        {
-            continue;
-        }
-        if (i > (editor.entity_list_page + 1) * 10)
-        {
-            break;
-        }
-        char idstr[256];
-        snprintf(idstr, 256, "%zu", id.id);
-
-        user.state->element_storage.push(idstr, {});
-        switch (show_object_row(user, obj, editor.selection == id))
-        {
-        case Select:
-            select_object(editor, id);
-            editor.dirty = true;
-            break;
-        case Delete: {
-            EditAction action = {};
-            action.type = EditAction::DeleteEntity;
-            action.cmd.delete_entity.entity_id = id;
-            action.final = true;
-            do_action(editor, scene, action);
-        }
-        break;
-        default:
-            break;
-        }
-        user.state->element_storage.pop();
-    }
-}
-
 enum class RectSide
 {
     Left,
@@ -586,36 +313,6 @@ void show_stencil_picker(UiUser &user, StencilEdit &stencil)
     });
 }
 
-void show_properties(UiUser &user, Object &obj, GuiEditor &editor)
-{
-    user.collection(AutoLayout::Row, [&] {
-        input(user, "SelObjName", obj.name, 32);
-        label(user, "Name", {1, 1},
-              UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
-    });
-    user.collection(AutoLayout::Row, [&] {
-        input(user, "SelObjId", obj.id, 32);
-        label(user, "Id", {1, 1},
-              UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
-    });
-    if (obj.type == Object::Type::Entity)
-    {
-        user.collection(AutoLayout::Row, [&] {
-            input(user, "SelObjModel", obj.entity.model_name, 32);
-            label(user, "Model", {1, 1},
-                  UiMakeBrush::make_solid({0.0f, 0.0f, 0.0f, 1.0f}));
-        });
-    }
-    if (obj.type == Object::Type::Tilemap)
-    {
-        show_stencil_picker(user, editor.tilemap_edit.stencil);
-    }
-    if (button(user, "OK"))
-    {
-        select_object(editor, NULL_ID);
-    }
-}
-
 bool icon_replacement_button(UiUser &user, const char *name,
                              Vector4 color = {1.0, 1.0, 1.0, 1.0})
 {
@@ -709,13 +406,21 @@ void show_script_panel(UiUser &user, Scene &scene, GuiEditor &editor)
     }
 }
 
-bool tile_icon_button(UiUser &user, const char *name, TableId tile_id,
-                      Vector4 color, catedu::pbr::Renderer &renderer,
-                      ResourceSpec &resources)
+GenResources get_genres(ResourceSpec &resources)
+{
+    GenResources result = {};
+    result.box =
+        resources.models.get(resources.find_model_by_name("cube"))->model;
+    return result;
+}
+
+bool object_icon_button(UiUser &user, const char *name, Vector4 color,
+                        catedu::pbr::Renderer &renderer,
+                        ResourceSpec &resources)
 {
     AutoLayoutElement el = {};
-    el.width = {AutoLayoutDimension::Pixel, 64};
-    el.height = {AutoLayoutDimension::Pixel, 64};
+    el.width = {AutoLayoutDimension::Pixel, 190};
+    el.height = {AutoLayoutDimension::Pixel, 150};
     el.align_width = 0.5;
     el.align_height = 0.5;
     el.padding = {2, 2, 2, 2};
@@ -726,100 +431,25 @@ bool tile_icon_button(UiUser &user, const char *name, TableId tile_id,
 
     begin_button_frame(user, name, el, color);
     {
-        SpecTile tile = resources.tiles.get_assert(tile_id);
-
         Camera camera = Camera::init(5);
-        camera.set_aspect(1);
+        camera.set_aspect(190.f / 150.f);
 
-        if (tile.model_id == resources.find_model_by_name("wall") ||
-            tile.model_id == resources.find_model_by_name("wall_wood"))
-        {
-            camera.move(0, 0.5, -30);
-        }
-        else if (tile.model_id == resources.find_model_by_name("tree"))
-        {
-            camera.move(0, 1, -50);
-        }
-        else
-        {
-            camera.move(0, 0, -22);
-        }
-
+        camera.move(0, 0, -200);
         camera.rotate_around({0, 0, 0}, 45, -45);
+        camera.move(0, 5, 0);
 
         renderer.camera = camera;
         renderer.begin_pass_offscreen(offscreen_pass_action(),
                                       offscreen_alloc(id));
 
-        render_model_at({0, 0, 0}, resources, tile.model_id, renderer, true,
-                        false, tile.rotation);
+        GeneratedObject obj = genmesh_generate_building(5);
+        genobj_render_object(renderer, get_genres(resources), obj);
 
         renderer.end_pass();
     }
 
-    img(user, id, {0.5, 0.5});
+    img(user, id, {1, 1});
     return end_button_frame(user);
-}
-
-void show_tile_picker(UiUser &user, catedu::pbr::Renderer &renderer,
-                      ResourceSpec &resources, TilemapEdit &edit)
-{
-    begin_toolbar(user, "Tiles", RectSide::Right);
-
-    int limit = 5;
-
-    if (icon_replacement_button(user, "^"))
-    {
-        edit.scroll -= 1;
-    }
-
-    edit.scroll = clamp(edit.scroll, 0, (int)resources.tiles.count - limit);
-
-    int i = 0;
-    for (auto [id, tile] : iter(resources.tiles))
-    {
-        if (tile.rotation != 0)
-        {
-            continue;
-        }
-
-        if (i < edit.scroll || i >= edit.scroll + limit)
-        {
-            i++;
-            continue;
-        }
-
-        bool selected = edit.tile == id;
-        Vector4 background = selected ? Vector4{0.8, 1.0, 0.8, 1.0}
-                                      : Vector4{1.0, 1.0, 1.0, 1.0};
-
-        if (tile_icon_button(user, tile.name, id, background, renderer,
-                             resources))
-        {
-            edit.tile = selected ? NULL_ID : id;
-        }
-
-        i++;
-    }
-
-    if (icon_replacement_button(user, "v"))
-    {
-        edit.scroll += 1;
-    }
-
-    if (edit.scroll > i - 5)
-    {
-        edit.scroll = i - 5;
-    }
-
-    Vector4 background = edit.tile == NULL_ID ? Vector4{0.8, 1.0, 0.8, 1.0}
-                                              : Vector4{1.0, 1.0, 1.0, 1.0};
-    if (icon_replacement_button(user, "x", background))
-    {
-        edit.tile = NULL_ID;
-    }
-
-    end_toolbar(user);
 }
 
 void apply_stencil(GuiEditor &editor, StencilEdit &edit, TableId tile_id,
@@ -917,12 +547,6 @@ void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
         edit.end = edit.start = {};
         edit.going = false;
     }
-}
-
-void show_tile_editor(UiUser &user, catedu::pbr::Renderer &renderer,
-                      ResourceSpec &resources, GuiEditor &editor)
-{
-    show_tile_picker(user, renderer, resources, editor.tilemap_edit);
 }
 
 GuiEditor GuiEditor::init(UiState *ui_state)
@@ -1112,24 +736,15 @@ void handle_shortcuts(GuiEditor &editor, Scene &scene, Input &input)
     }
 }
 
-void show_build_panel(UiUser &user, GuiEditor &editor, Scene &scene)
+void show_build_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
+                      catedu::pbr::Renderer &renderer, Scene &scene)
 {
-    label(user, "Objects", {1.2, 1.2},
-          UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
-    show_object_list(user, editor, scene);
-
-    Object *selected = scene.get_object(editor.selection);
-
-    if (selected)
-    {
-        label(user, "Properties", {1.2, 1.2},
-              UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
-
-        show_properties(user, *selected, editor);
-    }
+    object_icon_button(user, "Building", {1.0, 1.0, 1.0, 1.0}, renderer,
+                       resources);
 }
 
-void show_left_panel(UiUser &user, GuiEditor &editor, Scene &scene)
+void show_left_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
+                     catedu::pbr::Renderer &renderer, Scene &scene)
 {
     AutoLayoutElement element = {};
     element.clip = true;
@@ -1147,7 +762,7 @@ void show_left_panel(UiUser &user, GuiEditor &editor, Scene &scene)
         show_config_panel(user, scene, editor);
         break;
     case EDITOR_TAB_BUILD:
-        show_build_panel(user, editor, scene);
+        show_build_panel(user, editor, resources, renderer, scene);
         break;
     case EDITOR_TAB_SCRIPT:
         show_script_panel(user, scene, editor);
@@ -1220,13 +835,6 @@ bool GuiEditor::show_build_mode(UiUser &user, catedu::pbr::Renderer &renderer,
             }
         }
     }
-
-    if (this->placing_object)
-    {
-        show_place_object(user, scene, *this);
-    }
-
-    show_tile_editor(user, renderer, resources, *this);
 
     return false;
 }
@@ -1385,9 +993,7 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
                                          roundf(sel.position.y));
         }
 
-        GenResources gen_resources = {};
-        gen_resources.box =
-            resources.models.get(resources.find_model_by_name("cube"))->model;
+        GenResources gen_resources = get_genres(resources);
 
         for (int i = 0; i < editor.world.num_buildings; i++)
         {
@@ -1431,7 +1037,7 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
 
     show_editor_mode(user, editor.show_help_window, editor.tab);
     show_editor_controls(user, editor, scene, reload_module, umka, return_back);
-    show_left_panel(user, editor, scene);
+    show_left_panel(user, editor, resources, renderer, scene);
 
     if (editor.tab == EDITOR_TAB_BUILD)
     {
