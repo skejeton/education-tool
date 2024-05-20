@@ -23,27 +23,15 @@ int building_space(int x, int y, Building *buildings, int num_buildings)
     return -1;
 }
 
-bool area_occupied(World *world, int x, int y, int w, int h)
-{
-    for (int i = 0; i < world->num_buildings; i++)
-    {
-        if (world->buildings[i].x - BUILDING_DIMENSIONS_W / 2 <= x + w &&
-            world->buildings[i].x + BUILDING_DIMENSIONS_W / 2 >= x &&
-            world->buildings[i].y - BUILDING_DIMENSIONS_D / 2 <= y + h &&
-            world->buildings[i].y + BUILDING_DIMENSIONS_D / 2 >= y)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
 void World::add_building(int floors, int x, int y)
 {
-    if (area_occupied(this, x - 4, y - 4, 8, 8))
+    RectI region = {x - 4, y - 4, 8, 8};
+
+    if (space.is_region_claimed(region))
     {
         return;
     }
+    space.claim_region_rect(region);
 
     buildings[num_buildings].floors = floors;
     buildings[num_buildings].x = x;
@@ -55,6 +43,9 @@ void World::remove_building(int x, int y)
 {
     if (int i = building_space(x, y, buildings, num_buildings); i != -1)
     {
+        x = buildings[i].x;
+        y = buildings[i].y;
+        space.unclaim_region_rect({x - 4, y - 4, 8, 8});
         for (int j = i; j < num_buildings - 1; j++)
         {
             // move buildings to the left

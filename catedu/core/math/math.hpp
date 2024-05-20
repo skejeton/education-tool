@@ -235,6 +235,12 @@ struct Rect
     Vector2 siz;
 };
 
+struct RectI
+{
+    Vector2i pos;
+    Vector2i siz;
+};
+
 inline Vector3 operator+(Vector3 a, Vector3 b)
 {
     return {a.x + b.x, a.y + b.y, a.z + b.z};

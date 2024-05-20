@@ -1,3 +1,6 @@
+#pragma once
+#include "catedu/scene/space.hpp"
+
 struct Building
 {
     int floors;
@@ -6,6 +9,7 @@ struct Building
 
 struct World
 {
+    Space space;
     Building buildings[100];
     int num_buildings;
 

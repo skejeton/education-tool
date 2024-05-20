@@ -1405,7 +1405,14 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
                                                  roundf(sel.position.y)}));
 
         GeneratedObject grid = genmesh_generate_grid(32, 32);
-        genobj_render_object(renderer, gen_resources, grid);
+        Ray3 ray = editor.camera.screen_to_world_ray({0.5, 0.5}, {1, 1});
+        float t;
+        ray3_vs_horizontal_plane(ray, 0, &t);
+        Vector2 offs = {round(ray.origin.x + ray.direction.x * t),
+                        round(ray.origin.z + ray.direction.z * t)};
+
+        genobj_render_object(renderer, gen_resources, grid,
+                             Matrix4::translate({offs.x, 0, offs.y}));
     }
 
     if (user.hovered())
