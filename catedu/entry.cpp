@@ -289,6 +289,7 @@ void Entry::init()
 
     ui_state = UiState::init("./assets/Roboto-Regular.ttf",
                              "./assets/Roboto-Bold.ttf", sapp_dpi_scale());
+
     main_menu = GuiMainMenu::init(&ui_state);
 
     if (ui_mode == MENU_EDITOR)

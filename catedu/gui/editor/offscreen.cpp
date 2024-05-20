@@ -1,4 +1,5 @@
 #include "offscreen.hpp"
+#include <cstdio>
 
 enum
 {
