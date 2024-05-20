@@ -20,19 +20,6 @@ enum ObjectInteractionEvent
 bool icon_button(UiUser &user, const char *name, const char *icon,
                  Vector4 color = {1.0, 1.0, 1.0, 1.0}, float scale = 1);
 
-void select_object(GuiEditor &editor, TableId id)
-{
-    if (editor.selection != id)
-    {
-        editor.selection = id;
-        editor.entity_list_page = id.id / 10;
-    }
-    else
-    {
-        editor.selection = {};
-    }
-}
-
 void do_action(GuiEditor &editor, Scene &scene, EditAction action,
                bool discard = true)
 {
@@ -146,69 +133,15 @@ void undo_action(GuiEditor &editor, Scene &scene)
     editor.dirty = true;
 }
 
-void show_help(UiUser &user, ResourceSpec &resources)
+AutoLayoutElement create_main_element(UiUser &user)
 {
-    if (begin_show_window(user, {"Help", {0, 0, 250, 500}}))
-    {
-        user.bold = true;
-        label(user, "On object screen: ", {1.2, 1.2},
-              UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
-        user.bold = false;
-        label(user, "`>` - Select object");
-        label(user, "`X` - Delete object");
-        label(user, "`H` - Hide object");
-        user.bold = true;
-        label(user, "There's different types of objects:", {1.2, 1.2},
-              UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
-        user.bold = false;
-        label(user, "[T] - Tilemap");
-        label(user, "[E] - Entity");
-        user.bold = true;
-        label(user, "Controls:", {1.2, 1.2},
-              UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
-        user.bold = false;
-        label(user, "WASD - Move camera");
-        label(user, "Middle click + drag - Move camera");
-        label(user, "Scroll - Zoom in/out");
-        label(user, "F3 - Debug window");
-        label(user, "Ctrl + Z - Undo");
-        label(user, "Ctrl + Y - Redo");
-        label(user, "Ctrl + S - Save");
-        label(user, "Back - Go back");
-        label(user, "Hold LMB on window to move it");
-        label(user, "Press RMB on window to collapse it");
-        label(user, "Press LMB on the scene to place objects");
-        label(user, "Press Ctrl +/- to zoom in/out the UI");
-        user.bold = true;
-        label(user, "Models:", {1.2, 1.2},
-              UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 1.0f}));
-        user.bold = false;
-
-        char model_names[512] = {};
-        char *cur = model_names;
-        int model_i = 0;
-        for (auto [id, model] : iter(resources.models))
-        {
-            cur = strcat(cur, model.name);
-            cur = strcat(cur, ", ");
-            model_i++;
-            if (model_i % 4 == 0)
-            {
-                cur = strcat(cur, "\n");
-            }
-        }
-
-        label(user, model_names);
-    }
-    end_show_window(user);
-}
-
-Rect centered_rect(UiUser &user, float width, float height)
-{
-    Rect scr = sapp_screen_rect_scaled(user.state->dpi_scale);
-    Rect rect = rect_center_rect(scr, {0, 0, width, height});
-
-    return rect;
+    AutoLayoutElement element = {};
+    element.position = AutoLayoutPosition::Absolute;
+    element.width.type = AutoLayoutDimension::Pixel;
+    element.width.value = sapp_widthf() / user.state->dpi_scale;
+    element.height.type = AutoLayoutDimension::Pixel;
+    element.height.value = sapp_heightf() / user.state->dpi_scale;
+    return element;
 }
 
 enum class RectSide
@@ -222,17 +155,6 @@ enum class RectSide
 bool rect_side_is_horizontal(RectSide &side)
 {
     return side == RectSide::Bottom || side == RectSide::Top;
-}
-
-AutoLayoutElement create_main_element(UiUser &user)
-{
-    AutoLayoutElement element = {};
-    element.position = AutoLayoutPosition::Absolute;
-    element.width.type = AutoLayoutDimension::Pixel;
-    element.width.value = sapp_widthf() / user.state->dpi_scale;
-    element.height.type = AutoLayoutDimension::Pixel;
-    element.height.value = sapp_heightf() / user.state->dpi_scale;
-    return element;
 }
 
 void begin_toolbar(UiUser &user, const char *name, RectSide side)
@@ -288,50 +210,7 @@ bool icon_button(UiUser &user, const char *name, const char *icon,
     return end_button_frame(user);
 }
 
-void show_stencil_picker(UiUser &user, StencilEdit &stencil)
-{
-    auto stencil_button = [&](const char *name, const char *img,
-                              StencilType type) {
-        Vector4 color = stencil.type == type ? Vector4{0.8, 1.0, 0.8, 1.0}
-                                             : Vector4{1.0, 1.0, 1.0, 1.0};
-        if (icon_button(user, name, img, color, 0.465))
-        {
-            stencil.type = type;
-        }
-    };
-
-    user.collection(AutoLayout::Row, [&] {
-        stencil_button("Freeform", "assets/gui/freeform.png",
-                       StencilType::Freeform);
-        stencil_button("Rectangle", "assets/gui/rectangle.png",
-                       StencilType::Rectangle);
-        stencil_button("Line", "assets/gui/line.png", StencilType::Line);
-        stencil_button("LineRectangle", "assets/gui/line_rectangle.png",
-                       StencilType::LineRectangle);
-        stencil_button("Ellipse", "assets/gui/ellipse.png",
-                       StencilType::Ellipse);
-    });
-}
-
-bool icon_replacement_button(UiUser &user, const char *name,
-                             Vector4 color = {1.0, 1.0, 1.0, 1.0})
-{
-    AutoLayoutElement el = {};
-    el.width = {AutoLayoutDimension::Pixel, 64};
-    el.height = {AutoLayoutDimension::Pixel, 64};
-    el.align_width = 0.5;
-    el.align_height = 0.5;
-    el.padding = {2, 2, 2, 2};
-    el.margin = {2, 2, 2, 2};
-    el.border = {1, 1, 1, 1};
-
-    begin_button_frame(user, name, el, color);
-    label(user, name, {6, 6});
-    return end_button_frame(user);
-}
-
-void show_editor_mode(UiUser &user, bool &show_help_window,
-                      EditorTab &active_tab)
+void show_editor_mode(UiUser &user, EditorTab &active_tab)
 {
     begin_toolbar(user, "Mode", RectSide::Top);
 
@@ -341,7 +220,6 @@ void show_editor_mode(UiUser &user, bool &show_help_window,
         button_radio(user, "Characters", (int &)active_tab,
                      EDITOR_TAB_CHARACTERS);
         button_radio(user, "Script", (int &)active_tab, EDITOR_TAB_SCRIPT);
-        button_toggle(user, "Help", show_help_window);
     });
 
     end_toolbar(user);
@@ -349,10 +227,7 @@ void show_editor_mode(UiUser &user, bool &show_help_window,
 
 void check_dirty(GuiEditor &editor, bool edited)
 {
-    if (edited)
-    {
-        editor.dirty = true;
-    }
+    editor.dirty = edited || editor.dirty;
 }
 
 void show_config_panel(UiUser &user, Scene &scene, GuiEditor &editor)
@@ -450,103 +325,6 @@ bool object_icon_button(UiUser &user, const char *name, Vector4 color,
 
     img(user, id, {1, 1});
     return end_button_frame(user);
-}
-
-void apply_stencil(GuiEditor &editor, StencilEdit &edit, TableId tile_id,
-                   TableId tilemap_entity, Scene &scene, bool turnable = false,
-                   bool first = true)
-{
-    bool finalized = first;
-
-    edit.map([&](int x, int y, float angle) {
-        int turn_angle = 4 - (int(snap(angle, 90)) / 90) % 4;
-
-        EditAction action = {};
-        action.type = EditAction::PlaceTile;
-        action.cmd.place_tile.tilemap_entity = tilemap_entity;
-        action.cmd.place_tile.pos = {x, y};
-        if (turnable)
-        {
-            action.cmd.place_tile.tile_id = tile_id.id + turn_angle - 3;
-        }
-        else
-        {
-            action.cmd.place_tile.tile_id = tile_id.id;
-        }
-        action.final = finalized;
-
-        finalized = false;
-
-        do_action(editor, scene, action);
-    });
-}
-
-void show_stencil_model(StencilEdit &edit, TableId model_id, int rotation,
-                        ResourceSpec &resources,
-                        catedu::pbr::Renderer &renderer)
-{
-    edit.map([&](int x, int y, float angle) {
-        Vector3 pos = {float(x), 0, float(y)};
-
-        int turn_angle = (int(snap(angle, 90)) / 90 + 3) % 4;
-
-        render_model_at(pos, resources, model_id, renderer, true, true,
-                        turn_angle);
-    });
-}
-
-void show_stencil(StencilEdit &edit, TableId tile, ResourceSpec &resources,
-                  catedu::pbr::Renderer &renderer)
-{
-    SpecTile *tile_spec = resources.tiles.get(tile);
-
-    if (tile_spec)
-    {
-        show_stencil_model(edit, tile_spec->model_id, tile_spec->rotation,
-                           resources, renderer);
-    }
-    else
-    {
-        show_stencil_model(edit, resources.find_model_by_name("selector"), 0,
-                           resources, renderer);
-    }
-}
-
-void show_stencil_editor(Input &input, GuiEditor &editor, StencilEdit &edit,
-                         TableId tile_id, ResourceSpec &resources,
-                         catedu::pbr::Renderer &renderer, Scene &scene)
-{
-    if (input.k[INPUT_MB_LEFT].pressed)
-    {
-        edit.start = vector2_to_vector2i(editor.object_cursor_at);
-        edit.going = true;
-    }
-
-    if (input.k[INPUT_MB_LEFT].held && edit.going)
-    {
-        edit.end = vector2_to_vector2i(editor.object_cursor_at);
-
-        show_stencil(edit, tile_id, resources, renderer);
-
-        if (edit.type == StencilType::Freeform)
-        {
-            apply_stencil(editor, edit, tile_id, editor.selection, scene, false,
-                          input.k[INPUT_MB_LEFT].pressed);
-            edit.start = edit.end;
-        }
-    }
-
-    if (input.k[INPUT_MB_LEFT].released && edit.going &&
-        edit.type != StencilType::Freeform)
-    {
-        bool turnable =
-            tile_id == resources.find_tile_by_name("wall_east") ||
-            tile_id == resources.find_tile_by_name("wall_wood_east");
-
-        apply_stencil(editor, edit, tile_id, editor.selection, scene, turnable);
-        edit.end = edit.start = {};
-        edit.going = false;
-    }
 }
 
 GuiEditor GuiEditor::init(UiState *ui_state)
@@ -795,47 +573,6 @@ bool GuiEditor::show_build_mode(UiUser &user, catedu::pbr::Renderer &renderer,
     debug_tree.value("Mouse Pos Y", input.mouse_pos.y);
     debug_tree.value("Dirty", dirty);
 
-    if (user.hovered() || this->placing_object)
-    {
-        camera_input_top_view_apply(&this->camera, &input);
-
-        if (input.k[INPUT_MB_LEFT].pressed && user.hovered() &&
-            !sel.tilemap_selected)
-        {
-            ObjectId closest_object =
-                find_object_within_distance(scene, object_cursor_at, 1);
-
-            if (closest_object != NULL_ID)
-            {
-                this->selection = closest_object;
-            }
-            else
-            {
-                if (this->selection != NULL_ID)
-                {
-                    Object *selected = scene.get_object(this->selection);
-                    if (selected && selected->type == Object::Type::Entity)
-                    {
-                        EditAction action = {};
-                        action.type = EditAction::MoveEntity;
-                        action.cmd.move_entity.entity = this->selection;
-                        action.cmd.move_entity.pos = this->object_cursor_at;
-                        action.final = true;
-                        do_action(*this, scene, action);
-                    }
-                    else
-                    {
-                        this->placing_object = true;
-                    }
-                }
-                else
-                {
-                    this->placing_object = true;
-                }
-            }
-        }
-    }
-
     return false;
 }
 
@@ -971,71 +708,63 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
     sel = show_selection(editor, renderer, resources, scene, input);
     editor.object_cursor_at = sel.position;
 
+    if (editor.tab == EDITOR_TAB_BUILD)
     {
-        static int floors = 3;
-        if (input.k[SAPP_KEYCODE_UP].pressed)
-        {
-            floors++;
-        }
-        if (input.k[SAPP_KEYCODE_DOWN].pressed)
-        {
-            floors--;
-        }
-        floors = clamp(floors, 2, 10);
-        if (input.k[SAPP_KEYCODE_ENTER].pressed)
-        {
-            editor.world.add_building(floors, roundf(sel.position.x),
-                                      roundf(sel.position.y));
-        }
-        if (input.k[SAPP_KEYCODE_DELETE].pressed)
-        {
-            editor.world.remove_building(roundf(sel.position.x),
-                                         roundf(sel.position.y));
-        }
-
         GenResources gen_resources = get_genres(resources);
-
-        for (int i = 0; i < editor.world.num_buildings; i++)
+        if (user.hovered())
         {
-            Building &building = editor.world.buildings[i];
-            GeneratedObject buildingobj =
-                genmesh_generate_building(building.floors);
-            genobj_render_object(renderer, gen_resources, buildingobj,
-                                 Matrix4::translate({roundf(building.x), 0,
-                                                     roundf(building.y)}));
+            static int floors = 3;
+
+            floors += input.k[SAPP_KEYCODE_UP].pressed;
+            floors -= input.k[SAPP_KEYCODE_DOWN].pressed;
+
+            floors = clamp(floors, 2, 10);
+            if (input.k[INPUT_MB_LEFT].pressed)
+            {
+                editor.world.add_building(floors, roundf(sel.position.x),
+                                          roundf(sel.position.y));
+            }
+            if (input.k[INPUT_MB_RIGHT].pressed)
+            {
+                editor.world.remove_building(roundf(sel.position.x),
+                                             roundf(sel.position.y));
+            }
+
+            GeneratedObject building = genmesh_generate_building(floors);
+            genobj_render_object(renderer, gen_resources, building,
+                                 Matrix4::translate({roundf(sel.position.x), 0,
+                                                     roundf(sel.position.y)}));
+
+            for (int i = 0; i < editor.world.num_buildings; i++)
+            {
+                Building &building = editor.world.buildings[i];
+                GeneratedObject buildingobj =
+                    genmesh_generate_building(building.floors);
+                genobj_render_object(renderer, gen_resources, buildingobj,
+                                     Matrix4::translate({roundf(building.x), 0,
+                                                         roundf(building.y)}));
+            }
         }
 
-        GeneratedObject building = genmesh_generate_building(floors);
-        genobj_render_object(renderer, gen_resources, building,
-                             Matrix4::translate({roundf(sel.position.x), 0,
-                                                 roundf(sel.position.y)}));
-
-        GeneratedObject grid = genmesh_generate_grid(32, 32);
         Ray3 ray = editor.camera.screen_to_world_ray({0.5, 0.5}, {1, 1});
         float t;
         ray3_vs_horizontal_plane(ray, 0, &t);
         Vector2 offs = {round(ray.origin.x + ray.direction.x * t),
                         round(ray.origin.z + ray.direction.z * t)};
 
+        GeneratedObject grid = genmesh_generate_grid(round(t), round(t));
         genobj_render_object(renderer, gen_resources, grid,
                              Matrix4::translate({offs.x, 0, offs.y}));
     }
 
     if (user.hovered())
     {
-        if (!handle_camera_movement(editor.camera, input, user))
-        {
-            if (sel.tilemap_selected)
-            {
-                show_stencil_editor(input, editor, editor.tilemap_edit.stencil,
-                                    editor.tilemap_edit.tile, resources,
-                                    renderer, scene);
-            }
-        }
+        handle_camera_movement(editor.camera, input, user);
     }
+
     renderer.end_pass();
 
-    show_editor_mode(user, editor.show_help_window, editor.tab);
+    show_editor_mode(user, editor.tab);
     show_editor_controls(user, editor, scene, reload_module, umka, return_back);
     show_left_panel(user, editor, resources, renderer, scene);
 
@@ -1043,11 +772,6 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
     {
         editor.show_build_mode(user, renderer, resources, scene, umka,
                                reload_module, sel);
-    }
-
-    if (editor.show_help_window)
-    {
-        show_help(user, resources);
     }
 
     return sel;

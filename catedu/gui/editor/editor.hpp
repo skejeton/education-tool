@@ -13,7 +13,6 @@
 #include "world.hpp"
 #include <sokol/sokol_app.h>
 
-
 struct EditAction
 {
     bool final; // if true, this action is the last in a sequence
@@ -78,7 +77,6 @@ enum EditorTab
 
 struct GuiEditor
 {
-    bool show_help_window;
     bool playtesting;
     bool playtest_no_player;
     Playtest playtest;
