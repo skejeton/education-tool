@@ -3,11 +3,9 @@
 ///
 
 #pragma once
-#include "catedu/core/math/math.hpp"
 #include "catedu/gui/editor/editor.hpp"
 #include "catedu/gui/main_menu/main_menu.hpp"
 #include "catedu/rendering/resource_spec.hpp"
-#include "catedu/scene/scene.hpp"
 #include "catedu/sys/input.hpp"
 #include "catedu/sys/sokol_setup.hpp"
 #include "sokol/sokol_app.h"
@@ -39,8 +37,6 @@ struct Entry : SokolSetup
     ResourceSpec res;
 
     void *umka;
-
-    Scene scene;
 
     catedu::pbr::Renderer renderer;
 

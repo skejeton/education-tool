@@ -37,7 +37,7 @@ UiUser UiUser::init(UiState &state)
 void UiUser::begin_pass()
 {
     this->layout = AutoLayoutProcess::init(this->current_node);
-    this->bump = BumpAllocator::init();
+    this->frame_storage = Arena::create_malloc();
     this->state->element_storage.begin_cycle();
     if (this->state->dpi_scale > 10.0)
     {
@@ -86,7 +86,7 @@ void render_object(UiUser &user, AutoLayoutResult &result)
 
 void render_out(UiUser &user)
 {
-    auto alloc = BumpAllocator::init();
+    auto alloc = Arena::create_malloc();
     AutoLayoutResult *result;
     user.layout.process(alloc, result);
     dpi_rescale_autolayout_result(result, user.state->dpi_scale);
@@ -103,7 +103,7 @@ void render_out(UiUser &user)
            "Unfinished begin_generic calls");
 
     user.layout.deinit();
-    alloc.deinit();
+    alloc.destroy();
 }
 
 void UiUser::end_pass()
@@ -127,7 +127,7 @@ void UiUser::end_pass()
     this->state->input.update();
     this->state->element_storage.end_cycle();
     this->styles.deinit();
-    this->bump.deinit();
+    this->frame_storage.destroy();
 }
 
 void UiUser::push_id(int64_t id)

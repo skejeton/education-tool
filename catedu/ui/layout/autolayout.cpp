@@ -7,12 +7,12 @@ struct ResultBuilder
 {
     AutoLayoutProcess *process;
     AutoLayoutResult *last;
-    BumpAllocator *alloc;
+    Arena *alloc;
 };
 
 AutoLayoutResult *alloc_result(ResultBuilder &builder)
 {
-    auto *result = zeroinit(builder.alloc->alloc<AutoLayoutResult>());
+    auto *result = zeroinit(builder.alloc->alloct<AutoLayoutResult>());
 
     builder.last->next = result;
     builder.last = result;
@@ -200,7 +200,7 @@ AutoLayoutProcess AutoLayoutProcess::init(AutoLayoutNodeId &root)
 void AutoLayoutProcess::deinit()
 {
     this->nodes.deinit();
-    this->notes.deinit();
+    this->notes.destroy();
 }
 
 AutoLayoutNodeId AutoLayoutProcess::add_element(AutoLayoutNodeId parent,
@@ -233,11 +233,11 @@ AutoLayoutNodeId AutoLayoutProcess::add_element(AutoLayoutNodeId parent,
     return {child};
 }
 
-void AutoLayoutProcess::process(BumpAllocator alloc, AutoLayoutResult *&result)
+void AutoLayoutProcess::process(Arena alloc, AutoLayoutResult *&result)
 {
     ResultBuilder builder = {};
     builder.process = this;
-    builder.last = result = zeroinit(alloc.alloc<AutoLayoutResult>());
+    builder.last = result = zeroinit(alloc.alloct<AutoLayoutResult>());
     builder.alloc = &alloc;
 
     recurse(this, builder.process->root);

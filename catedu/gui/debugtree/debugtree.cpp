@@ -2,16 +2,12 @@
 #include "catedu/sys/oom.hpp"
 #include "catedu/ui/rendering/colors.hpp"
 #include "catedu/ui/widgets.hpp"
-#include <stdio.h>
-#include <stdlib.h>
-
-#define MAX_CHARS 4096
 
 void alloc_debug_entry(GuiDebugTree *tree, const char *name,
                        uint32_t name_color, const char *value,
                        uint32_t value_color)
 {
-    DebugEntry *entry = tree->allocator.alloc<DebugEntry>();
+    DebugEntry *entry = tree->allocator.alloct<DebugEntry>();
     OOM_HANDLER(entry);
     char *name_slot = (char *)tree->allocator.alloc(strlen(name) + 1);
     OOM_HANDLER(name_slot);
@@ -33,20 +29,19 @@ GuiDebugTree GuiDebugTree::init()
 {
     GuiDebugTree result = {};
 
-    result.allocator = BumpAllocator::init();
+    result.allocator = Arena::create_malloc();
 
     return result;
 }
 
 void GuiDebugTree::deinit()
 {
-    this->allocator.deinit();
+    this->allocator.destroy();
 }
 
 void GuiDebugTree::reset()
 {
-    this->allocator.deinit();
-    this->allocator = BumpAllocator::init();
+    this->allocator.reset();
     this->entry = nullptr;
 }
 

@@ -183,7 +183,6 @@ void begin_button_frame(UiUser &user, const char *id, AutoLayoutElement el,
                         Vector4 background)
 {
     user.state->element_storage.push(id, {});
-    UiPersistentElement *pe = user.state->element_storage.value();
 
     el.position = AutoLayoutPosition::Relative;
 
@@ -317,7 +316,7 @@ void label(UiUser &user, const char *text, Vector2 scale, UiBrush style)
         size = user.state->font_bold.bounds_text_utf8({0, 0}, text, scale).siz;
     }
 
-    void *ptr = user.bump.alloc(strlen(text) + 1);
+    void *ptr = user.frame_storage.alloc(strlen(text) + 1);
     strcpy((char *)ptr, text);
 
     AutoLayoutElement el = {};
@@ -338,7 +337,6 @@ bool input(UiUser &user, const char *id, char *out, int max)
     bool edited = false;
 
     user.state->element_storage.push(id, {true});
-    UiPersistentElement *pe = user.state->element_storage.value();
 
     if (user.focused())
     {

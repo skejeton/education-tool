@@ -1,4 +1,5 @@
 #pragma once
+#include "catedu/core/alloc/arena.hpp"
 #include "catedu/core/math/math.hpp"
 #include "catedu/core/storage/id_retainer.hpp"
 #include "catedu/sys/input.hpp"
@@ -99,7 +100,7 @@ struct UiUser
     AutoLayoutProcess layout;
     AutoLayoutNodeId current_node;
     Table<UiGenericStyles> styles;
-    BumpAllocator bump;
+    Arena frame_storage;
     bool bold;
 
     static UiUser init(UiState &state);

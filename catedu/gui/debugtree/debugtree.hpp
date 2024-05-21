@@ -1,5 +1,5 @@
 #pragma once
-#include "catedu/core/alloc/bump_allocator.hpp"
+#include "catedu/core/alloc/arena.hpp"
 #include "catedu/ui/user.hpp"
 #include <stdint.h>
 
@@ -16,7 +16,7 @@ struct DebugEntry
 struct GuiDebugTree
 {
     DebugEntry *entry;
-    BumpAllocator allocator;
+    Arena allocator;
 
     static GuiDebugTree init();
     void deinit();

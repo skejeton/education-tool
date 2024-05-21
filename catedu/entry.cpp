@@ -49,120 +49,6 @@ void umka_nextrow(UmkaStackSlot *params, UmkaStackSlot *result)
     entry_ptr->ui_user->begin_generic(element, {}, {});
 }
 
-void umka_begin_window(UmkaStackSlot *params, UmkaStackSlot *result)
-{
-    assert(entry_ptr->ui_user);
-
-    WindowInfo info = {};
-
-    Rect sr = sapp_screen_rect_scaled(sapp_dpi_scale());
-    info.rect.siz.y = params[0].realVal;
-    info.rect.siz.x = params[1].realVal;
-    info.rect.pos.x = (sr.siz.x - info.rect.siz.x) / 2;
-    info.rect.pos.y = (sr.siz.y - info.rect.siz.y) / 2;
-    info.title = (const char *)params[2].ptrVal;
-
-    result->uintVal = begin_show_window(*entry_ptr->ui_user, info);
-
-    AutoLayoutElement element = {};
-    element.layout.type = AutoLayout::Row;
-    entry_ptr->ui_user->begin_generic(element, {}, {});
-}
-
-void umka_end_window(UmkaStackSlot *params, UmkaStackSlot *result)
-{
-    assert(entry_ptr->ui_user);
-
-    entry_ptr->ui_user->end_generic();
-
-    end_show_window(*entry_ptr->ui_user);
-}
-
-void umka_msgbox(UmkaStackSlot *params, UmkaStackSlot *result)
-{
-    assert(entry_ptr->ui_user);
-
-    char *text = (char *)params[0].ptrVal;
-    char *title = (char *)params[1].ptrVal;
-    typedef UmkaDynArray(char *) CharArr;
-    CharArr *buttons = (CharArr *)params[2].ptrVal;
-    int length = umkaGetDynArrayLen(buttons);
-    int type = params[3].uintVal;
-
-    const char *ptrs[32] = {0};
-    for (int i = 0; i < std::min(31, length); i++)
-    {
-        ptrs[i] = buttons->data[i];
-    }
-
-    result->intVal =
-        msgbox(*entry_ptr->ui_user, title, text, MsgBoxType(type), ptrs);
-}
-
-void umka_getobj(UmkaStackSlot *params, UmkaStackSlot *result)
-{
-    char *id = (char *)params[2].ptrVal;
-    double *x = (double *)params[1].ptrVal;
-    double *y = (double *)params[0].ptrVal;
-
-    ObjectId obj_id = entry_ptr->editor.playtest.scene.find_object(id);
-
-    if (obj_id == NULL_ID)
-    {
-        result->uintVal = 0;
-        return;
-    }
-
-    Object *obj = entry_ptr->editor.playtest.scene.get_object(obj_id);
-
-    if (obj->type != Object::Entity)
-    {
-        result->uintVal = 0;
-        return;
-    }
-
-    PhysicsBody *body = entry_ptr->editor.playtest.scene.physics.bodies.get(
-        obj->entity.body_id);
-    assert(body);
-    *x = body->area.pos.x;
-    *y = body->area.pos.y;
-
-    result->uintVal = 1;
-}
-
-void umka_setobj(UmkaStackSlot *params, UmkaStackSlot *result)
-{
-    char *id = (char *)params[0].ptrVal;
-    double x = params[1].realVal;
-    double y = params[2].realVal;
-
-    ObjectId obj_id = entry_ptr->editor.playtest.scene.find_object(id);
-
-    if (obj_id == NULL_ID)
-    {
-        result->uintVal = 0;
-        return;
-    }
-
-    Object *obj = entry_ptr->editor.playtest.scene.get_object(obj_id);
-
-    if (obj->type != Object::Entity)
-    {
-        result->uintVal = 0;
-        return;
-    }
-
-    PhysicsBody *body = entry_ptr->editor.playtest.scene.physics.bodies.get(
-        obj->entity.body_id);
-    assert(body);
-    body->area.pos.x = x;
-    body->area.pos.y = y;
-    obj->entity.pos.x = x;
-    obj->entity.pos.y = y;
-
-    result->uintVal = 1;
-}
-
 void load_umka(Entry &entry)
 {
     entry.umka = umkaAlloc();
@@ -178,11 +64,6 @@ void load_umka(Entry &entry)
     umkaAddFunc(entry.umka, "button", &umka_button);
     umkaAddFunc(entry.umka, "label", &umka_label);
     umkaAddFunc(entry.umka, "nextrow", &umka_nextrow);
-    umkaAddFunc(entry.umka, "_msgbox", &umka_msgbox);
-    umkaAddFunc(entry.umka, "_begin_window", &umka_begin_window);
-    umkaAddFunc(entry.umka, "_end_window", &umka_end_window);
-    umkaAddFunc(entry.umka, "_getobj", &umka_getobj);
-    umkaAddFunc(entry.umka, "_setobj", &umka_setobj);
 
     if (!umkaCompile(entry.umka))
     {
@@ -224,19 +105,10 @@ void Entry::frame(void)
         if (ui_mode == MENU_EDITOR)
         {
             this->editor = GuiEditor::init(&this->ui_state);
-
-            FILE *f = fopen("assets/world.dat", "rb");
-            if (f != NULL)
-            {
-                READ_FILE_TEMP(world, "assets/world.dat",
-                               { scene = Scene::load(world); });
-                fclose(f);
-            }
         }
         break;
     case MENU_EDITOR:
-        if (editor.show(this->renderer, this->res, this->scene, user,
-                        this->umka, &reload_module))
+        if (editor.show(this->renderer, this->res, user))
         {
             ui_mode = MENU_MAIN_MENU;
             returned_to_menu = true;
@@ -252,7 +124,6 @@ void Entry::frame(void)
     if (returned_to_menu)
     {
         this->editor.deinit();
-        this->scene.deinit();
     }
 
     if (reload_module)
@@ -267,7 +138,6 @@ void Entry::cleanup(void)
     if (ui_mode == MENU_EDITOR)
     {
         editor.deinit();
-        scene.deinit();
     }
     res.deinit();
     ui_state.deinit();
@@ -295,14 +165,6 @@ void Entry::init()
     if (ui_mode == MENU_EDITOR)
     {
         editor = GuiEditor::init(&ui_state);
-
-        FILE *f = fopen("assets/world.dat", "rb");
-        if (f != NULL)
-        {
-            READ_FILE_TEMP(world, "assets/world.dat",
-                           { scene = Scene::load(world); });
-            fclose(f);
-        }
     }
 
     this->renderer = catedu::pbr::Renderer::init();

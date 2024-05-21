@@ -1,5 +1,5 @@
 #pragma once
-#include "catedu/core/alloc/bump_allocator.hpp"
+#include "catedu/core/alloc/arena.hpp"
 #include "catedu/core/math/math.hpp"
 #include "catedu/core/storage/table.hpp"
 
@@ -120,7 +120,7 @@ struct AutoLayoutProcess
 {
     Table<AutoLayoutNode> nodes;
     AutoLayoutNodeId root;
-    BumpAllocator notes;
+    Arena notes;
 
     static AutoLayoutProcess init(AutoLayoutNodeId &root);
     void deinit();
@@ -129,5 +129,5 @@ struct AutoLayoutProcess
                                  AutoLayoutElement element);
 
     // Returns the count of elements in the destination array.
-    void process(BumpAllocator alloc, AutoLayoutResult *&result);
+    void process(Arena arena, AutoLayoutResult *&result);
 };
