@@ -21,7 +21,7 @@ jobs:
         run: |
           python3 build.py build -release
           mkdir package
-          copy bin\Release\educore.exe package
+          copy bin\educore.exe package
           move assets package
           cd package
           tar -acf ../educore-windows.zip *
