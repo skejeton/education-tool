@@ -734,16 +734,16 @@ SelectionState show_editor_ui(GuiEditor &editor, UiUser &user,
             genobj_render_object(renderer, gen_resources, building,
                                  Matrix4::translate({roundf(sel.position.x), 0,
                                                      roundf(sel.position.y)}));
+        }
 
-            for (int i = 0; i < editor.world.num_buildings; i++)
-            {
-                Building &building = editor.world.buildings[i];
-                GeneratedObject buildingobj =
-                    genmesh_generate_building(building.floors);
-                genobj_render_object(renderer, gen_resources, buildingobj,
-                                     Matrix4::translate({roundf(building.x), 0,
-                                                         roundf(building.y)}));
-            }
+        for (int i = 0; i < editor.world.num_buildings; i++)
+        {
+            Building &building = editor.world.buildings[i];
+            GeneratedObject buildingobj =
+                genmesh_generate_building(building.floors);
+            genobj_render_object(renderer, gen_resources, buildingobj,
+                                 Matrix4::translate({roundf(building.x), 0,
+                                                     roundf(building.y)}));
         }
 
         Ray3 ray = editor.camera.screen_to_world_ray({0.5, 0.5}, {1, 1});

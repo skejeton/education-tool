@@ -1,6 +1,7 @@
 #include "pbr.hpp"
 #include "catedu/shaders.hxx"
 #include "sokol/sokol_app.h"
+#include <cstring>
 #include <sokol/sokol_glue.h>
 #include <stdio.h>
 
