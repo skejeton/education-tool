@@ -3,7 +3,7 @@
 
 void show_backdrop(catedu::pbr::Renderer &renderer, ResourceSpec &resources)
 {
-    pbr_vs_params_t vs_params;
+    catedu::pbr::Params vs_params;
 
     vs_params.model =
         Matrix4::translate(renderer.camera.position) * Matrix4::scale(8);
@@ -121,6 +121,8 @@ Buffer Scene::save()
         case Object::Entity:
             object.entity.save(alloc);
             break;
+        default:
+            assert(false);
         }
     }
     buf.size = alloc.offset;
@@ -163,6 +165,8 @@ Scene Scene::load(Buffer buffer)
         case Object::Entity:
             obj = object(ObjEntity::load((void **)&data));
             break;
+        default:
+            assert(false);
         }
         obj.hide = pobj.hide;
         memcpy(obj.id, pobj.id, 32);
@@ -189,6 +193,8 @@ void Scene::update(ResourceSpec &resources)
         case Object::Entity:
             object.entity.update(physics, resources);
             break;
+        default:
+            assert(false);
         }
     }
 }
@@ -216,6 +222,8 @@ void Scene::render(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
         case Object::Entity:
             object.entity.render(renderer, resources);
             break;
+        default:
+            assert(false);
         }
     }
 
@@ -230,7 +238,6 @@ void Scene::render(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                 color.y = 1;
             }
 
-            Texture tex = resources.tileset.cropped({64, 192, 32, 32});
             Box3 box = {};
             box.min = {body.area.pos.x, 0 - 0.5f, body.area.pos.y};
             box.max = {body.area.pos.x + body.area.siz.x, 1 - 0.5f,
@@ -239,7 +246,7 @@ void Scene::render(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
             SpecModel &model = resources.models.get_assert(
                 resources.find_model_by_name("hitbox"));
 
-            pbr_vs_params_t vs_params;
+            catedu::pbr::Params vs_params = {};
             vs_params.model =
                 Matrix4::translate(
                     {box.min.x + 0.5f, box.min.y + 0.5f, box.min.z + 0.5f}) *
@@ -264,6 +271,8 @@ void Scene::deinit()
         case Object::Entity:
             object.entity.deinit();
             break;
+        default:
+            assert(false);
         }
     }
 
@@ -284,6 +293,8 @@ Object Object::copy()
     case Object::Entity:
         result.entity = entity.copy();
         break;
+    default:
+        assert(false);
     }
 
     memcpy(result.id, id, 32);

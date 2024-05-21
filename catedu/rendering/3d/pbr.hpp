@@ -9,7 +9,6 @@
 // clang-format off
 #include "sokol/sokol_gfx.h"
 #include "catedu/core/math/math.hpp"
-#include "catedu/shaders.hxx"
 // clang-format on
 
 #include "catedu/rendering/3d/camera.hpp"
@@ -17,6 +16,14 @@
 
 namespace catedu::pbr
 {
+
+struct Params
+{
+    Vector4 color_mul;
+    Matrix4 model;
+    Matrix4 viewproj;
+    float lightness;
+};
 
 struct Renderer
 {
@@ -30,7 +37,7 @@ struct Renderer
 
     void begin_pass();
     void begin_pass_offscreen(sg_pass_action pa, sg_attachments att);
-    void render_model(const Model &model, pbr_vs_params_t vs_params);
+    void render_model(const Model &model, Params params);
     void end_pass();
 };
 

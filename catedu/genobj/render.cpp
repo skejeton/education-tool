@@ -13,7 +13,7 @@ static void render_component(catedu::pbr::Renderer &renderer,
                              const GeneratedObjectComponent &component,
                              Matrix4 matrix)
 {
-    pbr_vs_params_t vs_params = {};
+    catedu::pbr::Params vs_params = {};
     vs_params.color_mul = component.color.to_vector4();
     vs_params.model = matrix * box_to_matrix(component.box);
     vs_params.lightness = 0;

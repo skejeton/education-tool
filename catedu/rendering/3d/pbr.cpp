@@ -1,5 +1,5 @@
 #include "pbr.hpp"
-#include "catedu/sys/sg_tricks.hpp"
+#include "catedu/shaders.hxx"
 #include "sokol/sokol_app.h"
 #include <sokol/sokol_glue.h>
 #include <stdio.h>
@@ -97,13 +97,16 @@ void Renderer::begin_pass_offscreen(sg_pass_action pa, sg_attachments att)
     sg_apply_pipeline(offscreen_pipeline);
 }
 
-void Renderer::render_model(const Model &model, pbr_vs_params_t vs_params)
+void Renderer::render_model(const Model &model, Params params)
 {
     sg_bindings bindings = {};
     bindings.vertex_buffers[0] = model.vertex_buffer;
     bindings.index_buffer = model.index_buffer;
     bindings.fs.images[0] = model.texture.sysid_texture;
     bindings.fs.samplers[0] = model.texture.sysid_sampler;
+
+    pbr_vs_params_t vs_params = {};
+    memcpy(&vs_params, &params, sizeof(Params));
 
     sg_apply_bindings(bindings);
 

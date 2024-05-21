@@ -89,8 +89,8 @@ def target_build(p: CompileProperties):
     command += "if not exist bin mkdir bin\r\n"
     command += "lib\\sokol-tools-bin\\bin\\win32\\sokol-shdc.exe --input catedu/shaders/amalgamation.glsl --output catedu/shaders.hxx --slang hlsl5 "
     command += "&& cd bin "
-    command += f"&& cmake -DCMAKE_BUILD_TYPE={mode_string} {test_string} .. "
-    command += f"&& msbuild educore.sln /maxcpucount /property:Configuration={mode_string} "
+    command += f"&& cmake -G Ninja -DCMAKE_BUILD_TYPE={mode_string} {test_string} .. "
+    command += f"&& cmake --build ."
     command += "&& cd .. "
     if p.prof:
       sleepy = "C:\\PROGRA~1\\VERYSL~1\\sleepy.exe"
@@ -99,7 +99,7 @@ def target_build(p: CompileProperties):
       command += f"&& {sleepy} /r .\\bin\\{mode_string}\\educore.exe"
       print(command)
     elif p.run_mode:
-      command += f"&& .\\bin\\{mode_string}\\educore.exe"
+      command += f"&& .\\bin\\educore.exe"
   elif sys.platform == "darwin":
     command += "mkdir -p bin "
     command += "&& lib/sokol-tools-bin/bin/osx/sokol-shdc --input catedu/shaders/amalgamation.glsl --output catedu/shaders.hxx --slang metal_macos "

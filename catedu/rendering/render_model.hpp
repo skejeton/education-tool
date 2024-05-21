@@ -1,6 +1,7 @@
 #pragma once
 #include "catedu/core/math/math.hpp"
 #include "catedu/core/storage/table.hpp"
+#include "catedu/rendering/3d/pbr.hpp"
 #include "resource_spec.hpp"
 
 static inline void render_model_at(Vector3 pos, ResourceSpec &res, TableId id,
@@ -11,7 +12,7 @@ static inline void render_model_at(Vector3 pos, ResourceSpec &res, TableId id,
 {
     SpecModel &model = res.models.get_assert(id);
 
-    pbr_vs_params_t vs_params;
+    catedu::pbr::Params vs_params;
     vs_params.model =
         Matrix4::translate(pos) * Matrix4::rotate_y(rotation * (MATH_TAU / 4));
     vs_params.lightness = 0.0f;
