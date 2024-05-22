@@ -1,4 +1,5 @@
 #pragma once
+#include "catedu/core/alloc/free_list.hpp"
 #include "catedu/scene/space.hpp"
 
 struct Building
@@ -10,8 +11,7 @@ struct Building
 struct World
 {
     Space space;
-    Building buildings[100];
-    int num_buildings;
+    FreeList<Building> buildings;
 
     static World create();
     void add_building(int floors, int x, int y);

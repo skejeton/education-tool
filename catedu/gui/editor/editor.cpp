@@ -1,5 +1,6 @@
 #include "editor.hpp"
 #include "catedu/genobj/building.hpp"
+#include "catedu/genobj/grid.hpp"
 #include "catedu/genobj/render.hpp"
 #include "catedu/misc/camera_input.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
@@ -87,26 +88,6 @@ bool icon_button(UiUser &user, const char *name, const char *icon,
     return end_button_frame(user);
 }
 
-void show_editor_mode(UiUser &user, EditorTab &active_tab)
-{
-    begin_toolbar(user, "Mode", RectSide::Top);
-
-    user.collection(AutoLayout::Row, [&] {
-        button_radio(user, "Config", (int &)active_tab, EDITOR_TAB_CONFIG);
-        button_radio(user, "Build", (int &)active_tab, EDITOR_TAB_BUILD);
-        button_radio(user, "Characters", (int &)active_tab,
-                     EDITOR_TAB_CHARACTERS);
-        button_radio(user, "Script", (int &)active_tab, EDITOR_TAB_SCRIPT);
-    });
-
-    end_toolbar(user);
-}
-
-void check_dirty(GuiEditor &editor, bool edited)
-{
-    editor.dirty = edited || editor.dirty;
-}
-
 GenResources get_genres(ResourceSpec &resources)
 {
     GenResources result = {};
@@ -163,7 +144,6 @@ GuiEditor GuiEditor::init(UiState *ui_state)
     result.ui_state = ui_state;
     result.camera = camera;
     result.debug_tree = GuiDebugTree::init();
-    result.tab = EDITOR_TAB_CONFIG;
     result.world = World::create();
 
     printf("Init editor\n");
@@ -193,17 +173,8 @@ void show_left_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
                        UiMakeBrush::make_gradient({1.0f, 1.0f, 1.0f, 0.6f},
                                                   {1.0f, 1.0f, 1.0f, 0.7f}),
                        {}, user.state->element_storage.id());
-    switch (editor.tab)
-    {
-    case EDITOR_TAB_CONFIG:
-        break;
-    case EDITOR_TAB_BUILD:
-        show_build_panel(user, editor, resources, renderer);
-        break;
-    case EDITOR_TAB_SCRIPT:
-        break;
-    default:;
-    }
+
+    show_build_panel(user, editor, resources, renderer);
 
     user.end_generic();
     user.state->element_storage.pop();
@@ -273,6 +244,30 @@ void show_editor_controls(UiUser &user, GuiEditor &editor, bool &return_back)
     end_toolbar(user);
 }
 
+bool handle_camera_movement(Camera &camera, Input &input, UiUser &user)
+{
+    if (camera.position.y > 5 && input.mouse_wheel > 0)
+    {
+        camera.move(0, -input.mouse_wheel * 2, input.mouse_wheel * 2);
+    }
+    if (camera.position.y < 40 && input.mouse_wheel < 0)
+    {
+        camera.move(0, -input.mouse_wheel * 2, input.mouse_wheel * 2);
+    }
+    if (input.k[INPUT_MB_MIDDLE].held)
+    {
+        camera.move(-input.mouse_delta.x / (20 * user.state->dpi_scale), 0,
+                    input.mouse_delta.y / (20 * user.state->dpi_scale));
+        sapp_lock_mouse(true);
+        return true;
+    }
+    else
+    {
+        sapp_lock_mouse(false);
+        return false;
+    }
+}
+
 void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
                     catedu::pbr::Renderer &renderer, Input &input,
                     bool &return_back)
@@ -281,60 +276,57 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
     renderer.camera = editor.camera;
     renderer.begin_pass();
 
-#if 0
-    if (editor.tab == EDITOR_TAB_BUILD)
+    Ray3 pointer_ray = editor.camera.screen_to_world_ray(
+        input.mouse_pos, {sapp_widthf(), sapp_heightf()});
+    float t;
+    ray3_vs_horizontal_plane(pointer_ray, -0.5, &t);
+
+    Vector2i pointer = {
+        (int)roundf(pointer_ray.origin.x + pointer_ray.direction.x * t),
+        (int)roundf(pointer_ray.origin.z + pointer_ray.direction.z * t)};
+
+    handle_camera_movement(editor.camera, input, user);
+
+    GenResources gen_resources = get_genres(resources);
+    if (user.hovered())
     {
-        GenResources gen_resources = get_genres(resources);
-        if (user.hovered())
+        static int floors = 3;
+
+        floors += input.k[SAPP_KEYCODE_UP].pressed;
+        floors -= input.k[SAPP_KEYCODE_DOWN].pressed;
+
+        floors = clamp(floors, 2, 10);
+        if (input.k[INPUT_MB_LEFT].pressed)
         {
-            static int floors = 3;
-
-            floors += input.k[SAPP_KEYCODE_UP].pressed;
-            floors -= input.k[SAPP_KEYCODE_DOWN].pressed;
-
-            floors = clamp(floors, 2, 10);
-            if (input.k[INPUT_MB_LEFT].pressed)
-            {
-                editor.world.add_building(floors, roundf(sel.position.x),
-                                          roundf(sel.position.y));
-            }
-            if (input.k[INPUT_MB_RIGHT].pressed)
-            {
-                editor.world.remove_building(roundf(sel.position.x),
-                                             roundf(sel.position.y));
-            }
-
-            GeneratedObject building = genmesh_generate_building(floors);
-            genobj_render_object(renderer, gen_resources, building,
-                                 Matrix4::translate({roundf(sel.position.x), 0,
-                                                     roundf(sel.position.y)}));
+            editor.world.add_building(floors, pointer.x, pointer.y);
+        }
+        if (input.k[INPUT_MB_RIGHT].pressed)
+        {
+            editor.world.remove_building(pointer.x, pointer.y);
         }
 
-        for (int i = 0; i < editor.world.num_buildings; i++)
-        {
-            Building &building = editor.world.buildings[i];
-            GeneratedObject buildingobj =
-                genmesh_generate_building(building.floors);
-            genobj_render_object(renderer, gen_resources, buildingobj,
-                                 Matrix4::translate({roundf(building.x), 0,
-                                                     roundf(building.y)}));
-        }
+        GeneratedObject building = genmesh_generate_building(floors);
+        genobj_render_object(
+            renderer, gen_resources, building,
+            Matrix4::translate({(float)pointer.x, 0, (float)pointer.y}));
 
-        Ray3 ray = editor.camera.screen_to_world_ray({0.5, 0.5}, {1, 1});
-        float t;
-        ray3_vs_horizontal_plane(ray, 0, &t);
-        Vector2 offs = {round(ray.origin.x + ray.direction.x * t),
-                        round(ray.origin.z + ray.direction.z * t)};
-
-        GeneratedObject grid = genmesh_generate_grid(round(t), round(t));
-        genobj_render_object(renderer, gen_resources, grid,
-                             Matrix4::translate({offs.x, 0, offs.y}));
+        GeneratedObject grid = genmesh_generate_grid(16, 16);
+        genobj_render_object(
+            renderer, gen_resources, grid,
+            Matrix4::translate({(float)pointer.x, 0, (float)pointer.y}));
     }
-#endif
+
+    for (auto &building : iter(editor.world.buildings))
+    {
+        GeneratedObject buildingobj =
+            genmesh_generate_building(building.floors);
+        genobj_render_object(
+            renderer, gen_resources, buildingobj,
+            Matrix4::translate({roundf(building.x), 0, roundf(building.y)}));
+    }
 
     renderer.end_pass();
 
-    show_editor_mode(user, editor.tab);
     show_editor_controls(user, editor, return_back);
     show_left_panel(user, editor, resources, renderer);
 }
@@ -358,23 +350,6 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                      UiUser &user)
 {
     offscreen_clear();
-
-    if (user.state->input.shortcut(MOD_ALT, SAPP_KEYCODE_1))
-    {
-        this->tab = EDITOR_TAB_CONFIG;
-    }
-    if (user.state->input.shortcut(MOD_ALT, SAPP_KEYCODE_2))
-    {
-        this->tab = EDITOR_TAB_BUILD;
-    }
-    if (user.state->input.shortcut(MOD_ALT, SAPP_KEYCODE_3))
-    {
-        this->tab = EDITOR_TAB_CHARACTERS;
-    }
-    if (user.state->input.shortcut(MOD_ALT, SAPP_KEYCODE_4))
-    {
-        this->tab = EDITOR_TAB_SCRIPT;
-    }
 
     bool return_back =
         show_main_editor(*this, user, resources, renderer, user.state->input);

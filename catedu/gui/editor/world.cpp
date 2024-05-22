@@ -5,22 +5,28 @@
 
 World World::create()
 {
-    return World();
+    World world = {};
+
+    world.space = Space::create();
+    world.buildings = FreeList<Building>::create(Arena::create_malloc());
+
+    return world;
 }
 
-int building_space(int x, int y, Building *buildings, int num_buildings)
+Building *building_space(int x, int y, FreeList<Building> &buildings)
 {
-    for (int i = 0; i < num_buildings; i++)
+    for (auto &building : iter(buildings))
     {
-        if (buildings[i].x - BUILDING_DIMENSIONS_W / 2 <= x &&
-            buildings[i].x + BUILDING_DIMENSIONS_W / 2 >= x &&
-            buildings[i].y - BUILDING_DIMENSIONS_D / 2 <= y &&
-            buildings[i].y + BUILDING_DIMENSIONS_D / 2 >= y)
+        if (building.x - BUILDING_DIMENSIONS_W / 2 <= x &&
+            building.x + BUILDING_DIMENSIONS_W / 2 >= x &&
+            building.y - BUILDING_DIMENSIONS_D / 2 <= y &&
+            building.y + BUILDING_DIMENSIONS_D / 2 >= y)
         {
-            return i;
+            return &building;
         }
     }
-    return -1;
+
+    return nullptr;
 }
 
 void World::add_building(int floors, int x, int y)
@@ -33,24 +39,21 @@ void World::add_building(int floors, int x, int y)
     }
     space.claim_region_rect(region);
 
-    buildings[num_buildings].floors = floors;
-    buildings[num_buildings].x = x;
-    buildings[num_buildings].y = y;
-    num_buildings++;
+    Building *building = buildings.alloc();
+
+    building->floors = floors;
+    building->x = x;
+    building->y = y;
 }
 
 void World::remove_building(int x, int y)
 {
-    if (int i = building_space(x, y, buildings, num_buildings); i != -1)
+    if (Building *building = building_space(x, y, buildings);
+        building != nullptr)
     {
-        x = buildings[i].x;
-        y = buildings[i].y;
+        x = building->x;
+        y = building->y;
         space.unclaim_region_rect({x - 4, y - 4, 8, 8});
-        for (int j = i; j < num_buildings - 1; j++)
-        {
-            // move buildings to the left
-            buildings[j] = buildings[j + 1];
-        }
-        num_buildings--;
+        buildings.free(building);
     }
 }

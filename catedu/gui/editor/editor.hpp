@@ -7,14 +7,6 @@
 #include "world.hpp"
 #include <sokol/sokol_app.h>
 
-enum EditorTab
-{
-    EDITOR_TAB_CONFIG,
-    EDITOR_TAB_BUILD,
-    EDITOR_TAB_CHARACTERS,
-    EDITOR_TAB_SCRIPT
-};
-
 struct GuiEditor
 {
     bool dirty;
@@ -24,7 +16,6 @@ struct GuiEditor
     UiState *ui_state;
     Camera camera;
     GuiDebugTree debug_tree;
-    EditorTab tab;
     World world;
 
     static GuiEditor init(UiState *ui_state);
