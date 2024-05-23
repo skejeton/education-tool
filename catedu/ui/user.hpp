@@ -60,8 +60,12 @@ struct UiState
     UiElementStorage element_storage;
     UiInteractionStateTable interaction_table;
     Table<UiImageCache> image_cache;
+    Arena lifetime_storage;
+    Arena frame_storage;
 
     float dpi_scale;
+
+    UiImageId get_image(const char *path);
 
     static UiState init(const char *font_path, const char *font_bold_path,
                         float dpi_scale = 1);
@@ -98,9 +102,7 @@ struct UiUser
     UiState *state;
     UiRenderingPass pass;
     AutoLayoutProcess layout;
-    AutoLayoutNodeId current_node;
-    Table<UiGenericStyles> styles;
-    Arena frame_storage;
+    AutoLayoutNode *current_node;
     bool bold;
 
     static UiUser init(UiState &state);

@@ -1,5 +1,5 @@
 #include "mesh_generator.hpp"
-#include "catedu/core/memory/operations.hpp"
+#include "catedu/core/alloc/allocator.hpp"
 #include <assert.h>
 
 RenderMeshGenerator RenderMeshGenerator::init(size_t vertex_stride)
@@ -31,10 +31,13 @@ RenderGeo RenderMeshGenerator::convert(RenderWriteDesc desc)
     RenderGeo geo;
 
     geo.ibuf_size = this->indices.size();
-    geo.ibuf =
-        memory_copy_via_malloc(this->indices.data(), this->indices.size());
+    geo.ibuf = (uint16_t *)ALLOCATOR_MALLOC.alloc(this->indices.size() *
+                                                  sizeof(uint16_t));
+    memcpy(geo.ibuf, this->indices.data(),
+           this->indices.size() * sizeof(uint16_t));
+
     geo.vbuf_size = this->vertices.size() / this->vertex_stride * desc.stride;
-    geo.vbuf = (float *)OOM_HANDLER(malloc(geo.vbuf_size * sizeof(float)));
+    geo.vbuf = (float *)ALLOCATOR_MALLOC.alloc(geo.vbuf_size * sizeof(float));
     memset(geo.vbuf, 0, geo.vbuf_size * sizeof(float));
     geo.stride = desc.stride;
 

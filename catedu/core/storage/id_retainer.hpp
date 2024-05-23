@@ -1,6 +1,5 @@
 #pragma once
 #include "catedu/misc/util.hpp"
-#include "catedu/sys/oom.hpp"
 #include <assert.h>
 #include <map>
 #include <stddef.h>

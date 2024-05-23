@@ -1,5 +1,4 @@
 #include "widgets.hpp"
-#include "catedu/sys/oom.hpp"
 #include "resources/load_image.hpp"
 
 static const Vector4 theme[] = {
@@ -254,25 +253,7 @@ bool button_radio(UiUser &user, const char *text, int &mode, int val)
 
 void img(UiUser &user, const char *path, Vector2 scale)
 {
-    UiImageId id = NULL_ID;
-    for (auto [i, img] : iter(user.state->image_cache))
-    {
-        if (strcmp(img.path, path) == 0)
-        {
-            id = img.id;
-            break;
-        }
-    }
-
-    if (id == NULL_ID)
-    {
-        id = ui_resources_load_image(user.state->core, path);
-
-        char *newpath =
-            strcpy((char *)OOM_HANDLER(malloc(strlen(path) + 1)), path);
-
-        user.state->image_cache.allocate({newpath, id});
-    }
+    UiImageId id = user.state->get_image(path);
 
     AutoLayoutElement el = {};
     el.layout = {AutoLayout::Row};
@@ -316,7 +297,7 @@ void label(UiUser &user, const char *text, Vector2 scale, UiBrush style)
         size = user.state->font_bold.bounds_text_utf8({0, 0}, text, scale).siz;
     }
 
-    void *ptr = user.frame_storage.alloc(strlen(text) + 1);
+    void *ptr = user.state->frame_storage.alloc(strlen(text) + 1);
     strcpy((char *)ptr, text);
 
     AutoLayoutElement el = {};
@@ -327,7 +308,8 @@ void label(UiUser &user, const char *text, Vector2 scale, UiBrush style)
     UiGenericStyles styles = {style, {}, (char *)ptr, scale, 0};
     styles.bold = user.bold;
 
-    el.userdata = user.styles.allocate(styles);
+    el.userdata = user.state->frame_storage.alloct<UiGenericStyles>();
+    *(UiGenericStyles *)el.userdata = styles;
 
     user.layout.add_element(user.current_node, el);
 }
@@ -385,14 +367,13 @@ bool input(UiUser &user, const char *id, char *out, int max)
 
     user.begin_generic(el, bg, border, user.state->element_storage.id());
 
-    char *t = (char *)OOM_HANDLER(malloc(max + 3));
+    char *t = (char *)user.state->frame_storage.alloc(strlen(out) + 2);
     memcpy(t, out, strlen(out));
     t[strlen(out)] = user.focused() ? '|' : 0;
     t[strlen(out) + 1] = 0;
 
     label(user, t, {1.2, 1.2}, UiMakeBrush::make_solid(theme[2]));
 
-    free(t);
     user.end_generic();
 
     user.state->element_storage.pop();

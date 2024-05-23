@@ -1,6 +1,11 @@
 ///
 /// Free list allocator for fast entity allocation at a fixed place.
 ///
+/// WARNING: If you pass an arena that is in use, the free list will iterate
+///          over unrelated data, causing undefined behavior.
+////
+/// TODO:    Either reserve an arena for itself, or use a linked list.
+///
 
 #pragma once
 #include "arena.hpp"

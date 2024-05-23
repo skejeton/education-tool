@@ -1,9 +1,23 @@
 #include "basic_tilemap.hpp"
 
+static ChunkPositionToChunk *get_chunk(BasicTilemap *tilemap,
+                                       Vector2i chunk_position)
+{
+    for (auto &chunk : iter(tilemap->chunks))
+    {
+        if (chunk.chunk_position == chunk_position)
+        {
+            return &chunk;
+        }
+    }
+
+    return nullptr;
+}
+
 static ChunkPositionToChunk &get_or_create_chunk(BasicTilemap *tilemap,
                                                  Vector2i chunk_position)
 {
-    for (auto [id, chunk] : iter(tilemap->chunks))
+    for (auto &chunk : iter(tilemap->chunks))
     {
         if (chunk.chunk_position == chunk_position)
         {
@@ -11,11 +25,9 @@ static ChunkPositionToChunk &get_or_create_chunk(BasicTilemap *tilemap,
         }
     }
 
-    ChunkPositionToChunk p = {};
-    p.chunk_position = chunk_position;
-    TableId id = tilemap->chunks.allocate(p);
-
-    return tilemap->chunks.get_assert(id);
+    ChunkPositionToChunk *c = tilemap->chunks.alloc();
+    *c = {chunk_position, {}};
+    return *c;
 }
 
 static Vector2i chunk_tile_position_to_tile_position(Vector2i chunk_position,
@@ -24,28 +36,6 @@ static Vector2i chunk_tile_position_to_tile_position(Vector2i chunk_position,
     Vector2i chunk_tile_position = {tile_id % BASIC_TILEMAP_CHUNK_DIM,
                                     tile_id / BASIC_TILEMAP_CHUNK_DIM};
     return chunk_position * BASIC_TILEMAP_CHUNK_DIM + chunk_tile_position;
-}
-
-static int *tile_address(BasicTilemap *tilemap, Vector2i tile_position)
-{
-    Vector2i chunk_position = tile_position / BASIC_TILEMAP_CHUNK_DIM;
-    Vector2i chunk_tile_position = tile_position % BASIC_TILEMAP_CHUNK_DIM;
-
-    // Negative modulo is not what we want
-    if (chunk_tile_position.x < 0)
-    {
-        chunk_tile_position.x += BASIC_TILEMAP_CHUNK_DIM;
-        chunk_position.x -= 1;
-    }
-    if (chunk_tile_position.y < 0)
-    {
-        chunk_tile_position.y += BASIC_TILEMAP_CHUNK_DIM;
-        chunk_position.y -= 1;
-    }
-
-    ChunkPositionToChunk &chunk = get_or_create_chunk(tilemap, chunk_position);
-    return &chunk.chunk.data[chunk_tile_position.y * BASIC_TILEMAP_CHUNK_DIM +
-                             chunk_tile_position.x];
 }
 
 BasicTilemapSerial BasicTilemapSerial::init(BasicTilemap &tilemap)
@@ -61,10 +51,8 @@ void BasicTilemapSerial::deinit()
 
 TilePositionToTile BasicTilemapSerial::next()
 {
-    for (; chunk_id < tilemap->chunks.count; chunk_id++)
+    for (auto &chunk : iter(tilemap->chunks))
     {
-        ChunkPositionToChunk &chunk =
-            tilemap->chunks.get_assert({(size_t)chunk_id + 1, 0});
         for (; tile_id < BASIC_TILEMAP_CHUNK_SIZE; tile_id++)
         {
             if (chunk.chunk.data[tile_id] != 0)
@@ -87,20 +75,61 @@ TilePositionToTile BasicTilemapSerial::next()
 
 BasicTilemap BasicTilemap::init()
 {
-    return BasicTilemap();
+    BasicTilemap tilemap = {};
+    tilemap.chunks = FreeList<ChunkPositionToChunk>::create(
+        Arena::create(&ALLOCATOR_MALLOC));
+    return tilemap;
 }
 
 void BasicTilemap::deinit()
 {
-    this->chunks.deinit();
+    this->chunks.destroy();
 }
 
 void BasicTilemap::set_tile(Vector2i tile_position, int tile_id)
 {
-    *tile_address(this, tile_position) = tile_id;
+    Vector2i chunk_position = tile_position / BASIC_TILEMAP_CHUNK_DIM;
+    Vector2i chunk_tile_position = tile_position % BASIC_TILEMAP_CHUNK_DIM;
+
+    // Negative modulo is not what we want
+    if (chunk_tile_position.x < 0)
+    {
+        chunk_tile_position.x += BASIC_TILEMAP_CHUNK_DIM;
+        chunk_position.x -= 1;
+    }
+    if (chunk_tile_position.y < 0)
+    {
+        chunk_tile_position.y += BASIC_TILEMAP_CHUNK_DIM;
+        chunk_position.y -= 1;
+    }
+
+    ChunkPositionToChunk &chunk = get_or_create_chunk(this, chunk_position);
+    chunk.chunk.data[chunk_tile_position.y * BASIC_TILEMAP_CHUNK_DIM +
+                     chunk_tile_position.x] = tile_id;
 }
 
 int BasicTilemap::get_tile(Vector2i tile_position)
 {
-    return *tile_address(this, tile_position);
+    Vector2i chunk_position = tile_position / BASIC_TILEMAP_CHUNK_DIM;
+    Vector2i chunk_tile_position = tile_position % BASIC_TILEMAP_CHUNK_DIM;
+
+    // Negative modulo is not what we want
+    if (chunk_tile_position.x < 0)
+    {
+        chunk_tile_position.x += BASIC_TILEMAP_CHUNK_DIM;
+        chunk_position.x -= 1;
+    }
+    if (chunk_tile_position.y < 0)
+    {
+        chunk_tile_position.y += BASIC_TILEMAP_CHUNK_DIM;
+        chunk_position.y -= 1;
+    }
+
+    ChunkPositionToChunk *chunk = get_chunk(this, chunk_position);
+    if (!chunk)
+    {
+        return 0;
+    }
+    return chunk->chunk.data[chunk_tile_position.y * BASIC_TILEMAP_CHUNK_DIM +
+                             chunk_tile_position.x];
 }

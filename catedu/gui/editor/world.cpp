@@ -8,9 +8,15 @@ World World::create()
     World world = {};
 
     world.space = Space::create();
-    world.objects = FreeList<Object>::create(Arena::create_malloc());
+    world.objects = FreeList<Object>::create(Arena::create(&ALLOCATOR_MALLOC));
 
     return world;
+}
+
+void World::destroy()
+{
+    objects.destroy();
+    space.destroy();
 }
 
 RectI object_dimensions(Object &object)

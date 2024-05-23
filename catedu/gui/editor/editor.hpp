@@ -35,7 +35,6 @@ struct GuiEditor
     EditorCamera editor_camera;
     GuiDebugTree debug_tree;
     World world;
-
     SubEditor sub_editor;
 
     static GuiEditor init(UiState *ui_state);

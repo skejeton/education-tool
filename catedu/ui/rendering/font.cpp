@@ -1,6 +1,4 @@
 #include "font.hpp"
-#include "catedu/misc/util.hpp"
-#include "catedu/sys/oom.hpp"
 #include "make_brush.hpp"
 #include "pass.hpp"
 #include "transform.hpp"
@@ -25,7 +23,7 @@ void populate_chunk(UiFontRenderer *renderer, int i)
     }
 
     UiFontChunk *chunk =
-        (UiFontChunk *)OOM_HANDLER(malloc(sizeof(UiFontChunk)));
+        (UiFontChunk *)ALLOCATOR_MALLOC.alloc(sizeof(UiFontChunk));
     *chunk = {0};
 
     stbtt_pack_context pack_context = {};
@@ -221,7 +219,6 @@ Rect UiFontRenderer::bounds_text_utf8(Vector2 position, const char *text,
     scale /= this->scale_factor;
     Vector2 pos = {0, 0};
     float max_w = 0;
-    int line_count = 1;
     int chara_num = 0;
 
     for (size_t i = 0; text[i];)
@@ -240,7 +237,6 @@ Rect UiFontRenderer::bounds_text_utf8(Vector2 position, const char *text,
 
         if (chara == '\n')
         {
-            line_count++;
             if (pos.x > max_w)
             {
                 max_w = pos.x;
@@ -274,7 +270,7 @@ void UiFontRenderer::deinit()
         if (this->chunks[i])
         {
             this->core->dealloc_image(this->chunks[i]->image);
-            free(this->chunks[i]);
+            ALLOCATOR_MALLOC.free(this->chunks[i]);
         }
     }
 }

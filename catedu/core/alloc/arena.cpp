@@ -10,22 +10,23 @@ static size_t align_up(size_t size, size_t align)
     return (size + align - 1) & ~(align - 1);
 }
 
-static Chunk *create_chunk(size_t size)
+static Chunk *create_chunk(Allocator *allocator, size_t cap)
 {
-    Chunk *chunk = (Chunk *)malloc(sizeof(Chunk) + size);
+    Chunk *chunk = (Chunk *)allocator->alloc(sizeof(Chunk) + cap);
     chunk->next = nullptr;
     chunk->size = 0;
-    chunk->cap = size;
+    chunk->cap = cap;
     return chunk;
 }
 
 //------------------------------------------------------------------------------
 
-Arena Arena::create_malloc()
+Arena Arena::create(Allocator *allocator)
 {
     Arena arena = {};
-    arena.next_size = 1 << 16;
-    arena.last = arena.first = create_chunk(arena.next_size);
+    arena.next_size = 1;
+    arena.last = arena.first = create_chunk(allocator, arena.next_size);
+    arena.allocator = allocator;
     return arena;
 }
 
@@ -35,7 +36,7 @@ void Arena::destroy()
     while (chunk)
     {
         Chunk *next = chunk->next;
-        free(chunk);
+        allocator->free(chunk);
         chunk = next;
     }
 }
@@ -48,7 +49,6 @@ void Arena::reset()
         chunk->size = 0;
         chunk = chunk->next;
     }
-    this->last = this->first;
 }
 
 void *Arena::alloc(size_t size)
@@ -58,7 +58,8 @@ void *Arena::alloc(size_t size)
     // 1. Check the current chunk
     Chunk *last = this->last;
     size_t remaining = last->cap - last->size;
-    if (remaining >= size)
+
+    [[likely]] if (remaining >= size)
     {
         void *ptr = last->data + last->size;
         last->size += size;
@@ -67,7 +68,7 @@ void *Arena::alloc(size_t size)
 
     // 2. Find an existing chunk
     Chunk *chunk = this->first;
-    while (chunk->next)
+    while (chunk)
     {
         remaining = chunk->cap - chunk->size;
         if (remaining >= size)
@@ -87,7 +88,8 @@ void *Arena::alloc(size_t size)
         cap = size;
     }
 
-    Chunk *new_chunk = create_chunk(this->next_size);
+    Chunk *new_chunk = create_chunk(allocator, cap);
+    new_chunk->size = size;
     this->last->next = new_chunk;
     this->last = new_chunk;
     return new_chunk->data;

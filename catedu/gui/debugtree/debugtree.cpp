@@ -1,5 +1,4 @@
 #include "debugtree.hpp"
-#include "catedu/sys/oom.hpp"
 #include "catedu/ui/rendering/colors.hpp"
 #include "catedu/ui/widgets.hpp"
 
@@ -8,11 +7,8 @@ void alloc_debug_entry(GuiDebugTree *tree, const char *name,
                        uint32_t value_color)
 {
     DebugEntry *entry = tree->allocator.alloct<DebugEntry>();
-    OOM_HANDLER(entry);
     char *name_slot = (char *)tree->allocator.alloc(strlen(name) + 1);
-    OOM_HANDLER(name_slot);
     char *value_slot = (char *)tree->allocator.alloc(strlen(value) + 1);
-    OOM_HANDLER(value_slot);
     memcpy(name_slot, name, strlen(name) + 1);
     memcpy(value_slot, value, strlen(value) + 1);
 
@@ -29,7 +25,7 @@ GuiDebugTree GuiDebugTree::init()
 {
     GuiDebugTree result = {};
 
-    result.allocator = Arena::create_malloc();
+    result.allocator = Arena::create(&ALLOCATOR_MALLOC);
 
     return result;
 }
@@ -37,6 +33,7 @@ GuiDebugTree GuiDebugTree::init()
 void GuiDebugTree::deinit()
 {
     this->allocator.destroy();
+    this->entry = nullptr;
 }
 
 void GuiDebugTree::reset()

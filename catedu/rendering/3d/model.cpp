@@ -1,8 +1,8 @@
 #include "model.hpp"
 #include "catedu/sys/fs/read_file_temp.hpp"
-#include "catedu/sys/oom.hpp"
 #include "cgltf/cgltf.h"
 
+#include <catedu/core/alloc/allocator.hpp>
 #include <stdlib.h>
 #include <string.h>
 
@@ -11,7 +11,7 @@ using namespace catedu;
 float *merge_buffers(float *pos, float *norm, float *uv, size_t vertex_count)
 {
     float *result =
-        (float *)OOM_HANDLER(malloc(vertex_count * 8 * sizeof(float)));
+        (float *)ALLOCATOR_MALLOC.alloc(vertex_count * 8 * sizeof(float));
 
     for (size_t i = 0; i < vertex_count; i++)
     {
@@ -54,8 +54,8 @@ bool RawModel::load_gltf(const char *path, RawModel &dest)
     assert(data->images_count <= 1 && "Only one image is supported for now");
     if (data->images_count > 0)
     {
-        dest.texture_path = (char *)calloc(1024, 1);
-        OOM_HANDLER(dest.texture_path);
+        dest.texture_path = (char *)ALLOCATOR_MALLOC.alloc(1024);
+        memset(dest.texture_path, 0, 1024);
 
         strncpy(dest.texture_path, path, 1024);
 
@@ -72,7 +72,7 @@ bool RawModel::load_gltf(const char *path, RawModel &dest)
 
 void RawModel::deinit()
 {
-    free(texture_path);
+    ALLOCATOR_MALLOC.free(texture_path);
     cgltf_free(data);
 }
 
@@ -198,7 +198,7 @@ bool catedu::Model::load_from_raw(RawModel &raw, Model &dest, int submodel)
     vertex_buffer_desc.type = SG_BUFFERTYPE_VERTEXBUFFER;
     dest.vertex_buffer = sg_make_buffer(vertex_buffer_desc);
 
-    free(buf);
+    ALLOCATOR_MALLOC.free(buf);
 
     sg_buffer_desc index_buffer_desc = {};
     index_buffer_desc.data = {indices, index_count * sizeof(uint16_t)};
@@ -226,6 +226,8 @@ bool catedu::Model::load_from_raw(RawModel &raw, Model &dest, int submodel)
             dest.texture = Texture::init(raw.texture_path);
         }
     }
+
+    ALLOCATOR_MALLOC.free(raw.texture_path);
 
     return true;
 }

@@ -145,6 +145,9 @@ void Entry::cleanup(void)
     sg_tricks_deinit();
 
     umkaFree(this->umka);
+
+    fprintf(stderr, "Memory leaked: %zu",
+            ALLOCATOR_MALLOC.tracer.total_bytes_allocated);
 }
 
 void Entry::init()

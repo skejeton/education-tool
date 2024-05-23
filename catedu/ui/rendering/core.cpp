@@ -52,8 +52,8 @@ UiBuffer generate_buffer(RenderGeo geo)
     result.vertex_buffer = sg_make_buffer(vertex_buffer_desc);
     result.indices = geo.ibuf_size;
 
-    free(geo.vbuf);
-    free(geo.ibuf);
+    ALLOCATOR_MALLOC.free(geo.vbuf);
+    ALLOCATOR_MALLOC.free(geo.ibuf);
 
     return result;
 }
@@ -167,9 +167,6 @@ void UiRenderingCore::render_object(UiBrush brush)
 
     UiImage *img = this->get_image(brush.image);
     assert(img && "Trying to render with an invalid image id");
-
-    const float width = this->pip_size.x;
-    const float height = this->pip_size.y;
 
     UiBuffer *buf = &this->buffers[(size_t)brush.buffer];
 

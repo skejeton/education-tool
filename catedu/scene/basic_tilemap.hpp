@@ -1,6 +1,6 @@
 #pragma once
+#include "catedu/core/alloc/free_list.hpp"
 #include "catedu/core/math/math.hpp"
-#include "catedu/core/storage/table.hpp"
 
 #define BASIC_TILEMAP_CHUNK_DIM 64
 #define BASIC_TILEMAP_CHUNK_SIZE                                               \
@@ -25,7 +25,7 @@ struct TilePositionToTile
 
 struct BasicTilemap
 {
-    Table<ChunkPositionToChunk> chunks;
+    FreeList<ChunkPositionToChunk> chunks;
 
     static BasicTilemap init();
     void deinit();

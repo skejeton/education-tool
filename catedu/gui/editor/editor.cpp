@@ -253,6 +253,12 @@ void show_popups(UiUser &user, GuiEditor &editor, bool &return_back)
     if (editor.show_debug)
     {
         WindowInfo info = {"Debug", {0, 0, 300, 400}};
+        editor.debug_tree.reset();
+        editor.debug_tree.value("frees", ALLOCATOR_MALLOC.tracer.total_frees);
+        editor.debug_tree.value("allocs",
+                                ALLOCATOR_MALLOC.tracer.total_allocations);
+        editor.debug_tree.value("bytes",
+                                ALLOCATOR_MALLOC.tracer.total_bytes_allocated);
         begin_show_window(user, info);
         editor.debug_tree.show(user);
         end_show_window(user);
@@ -328,6 +334,11 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
 
     show_editor_controls(user, editor, return_back);
     show_left_panel(user, editor, resources, renderer);
+
+    if (input.k[SAPP_KEYCODE_F3].pressed)
+    {
+        editor.show_debug = !editor.show_debug;
+    }
 }
 
 bool show_main_editor(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
@@ -362,6 +373,7 @@ void GuiEditor::deinit()
 {
     offscreen_deinit_targets(this->ui_state->core);
 
+    world.destroy();
     debug_tree.deinit();
 }
 

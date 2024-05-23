@@ -4,6 +4,7 @@
 
 #pragma once
 #include <assert.h>
+#include <catedu/core/alloc/allocator.hpp>
 #include <iterator>
 #include <stdlib.h>
 #include <string.h>
@@ -44,8 +45,8 @@ template <class T> struct Table
 
     void deinit()
     {
-        free(values);
-        free(slots);
+        ALLOCATOR_MALLOC.free(values);
+        ALLOCATOR_MALLOC.free(slots);
     }
 
     bool scale()
@@ -56,7 +57,8 @@ template <class T> struct Table
         else
             new_capacity *= 2;
 
-        T *new_values = (T *)realloc(values, sizeof(T) * new_capacity);
+        T *new_values =
+            (T *)ALLOCATOR_MALLOC.realloc(values, sizeof(T) * new_capacity);
         // NOTE: Allocation error
         if (new_values == NULL)
         {
@@ -64,7 +66,8 @@ template <class T> struct Table
         }
         values = new_values;
 
-        Slot *new_slots = (Slot *)realloc(slots, sizeof(Slot) * new_capacity);
+        Slot *new_slots = (Slot *)ALLOCATOR_MALLOC.realloc(
+            slots, sizeof(Slot) * new_capacity);
         // NOTE: Allocation error
         if (new_slots == NULL)
         {

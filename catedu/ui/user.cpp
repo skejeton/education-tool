@@ -1,6 +1,7 @@
 #include "user.hpp"
 #include "catedu/ui/layout/dpi_scale.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
+#include "resources/load_image.hpp"
 
 void draw_rectangle_gradient(UiRenderingPass &pass, Rect rect,
                              Vector4 color_top, Vector4 color_bottom)
@@ -36,8 +37,10 @@ UiUser UiUser::init(UiState &state)
 
 void UiUser::begin_pass()
 {
-    this->layout = AutoLayoutProcess::init(this->current_node);
-    this->frame_storage = Arena::create_malloc();
+    this->state->frame_storage.reset();
+    this->layout = AutoLayoutProcess::init(this->state->frame_storage,
+                                           &this->current_node);
+    assert(this->current_node != nullptr && "Root node failed to initialize");
     this->state->element_storage.begin_cycle();
     if (this->state->dpi_scale > 10.0)
     {
@@ -47,7 +50,7 @@ void UiUser::begin_pass()
 
 void render_object(UiUser &user, AutoLayoutResult &result)
 {
-    UiGenericStyles *styles = user.styles.get(result.userdata);
+    UiGenericStyles *styles = (UiGenericStyles *)result.userdata;
 
     // TODO: Why would style be null?
     if (styles == nullptr)
@@ -86,9 +89,8 @@ void render_object(UiUser &user, AutoLayoutResult &result)
 
 void render_out(UiUser &user)
 {
-    auto alloc = Arena::create_malloc();
     AutoLayoutResult *result;
-    user.layout.process(alloc, result);
+    user.layout.process(user.state->frame_storage, result);
     dpi_rescale_autolayout_result(result, user.state->dpi_scale);
 
     while (result)
@@ -99,11 +101,10 @@ void render_out(UiUser &user)
     }
     user.pass.end_scissor();
 
-    assert(user.current_node.id == user.layout.root.id &&
+    assert(user.current_node == user.layout.root &&
            "Unfinished begin_generic calls");
 
     user.layout.deinit();
-    alloc.destroy();
 }
 
 void UiUser::end_pass()
@@ -126,8 +127,6 @@ void UiUser::end_pass()
 
     this->state->input.update();
     this->state->element_storage.end_cycle();
-    this->styles.deinit();
-    this->frame_storage.destroy();
 }
 
 void UiUser::push_id(int64_t id)
@@ -165,32 +164,17 @@ void UiUser::begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,
 {
     UiGenericStyles styles = {brush, border, nullptr, {1, 1}, persistent_id};
 
-    el.userdata = this->styles.allocate(styles);
+    el.userdata = this->state->frame_storage.alloct<UiGenericStyles>();
+    *(UiGenericStyles *)el.userdata = styles;
 
     this->current_node = this->layout.add_element(this->current_node, el);
 }
 
 void UiUser::end_generic()
 {
-    auto node = this->layout.nodes.get(this->current_node.id);
-    assert(node && "Begin generic was not called");
+    assert(this->current_node && "Begin generic was not called");
 
-    this->current_node = node->parent;
-}
-
-UiState UiState::init(const char *font_path, const char *font_bold_path,
-                      float dpi_scale)
-{
-    UiState state = {};
-    state.dpi_scale = dpi_scale;
-    state.core =
-        (UiRenderingCore *)OOM_HANDLER(malloc(sizeof(UiRenderingCore)));
-    *state.core = UiRenderingCore::init();
-    state.font =
-        UiFontRenderer::init(state.core, {font_path, 16}, dpi_scale * 2);
-    state.font_bold =
-        UiFontRenderer::init(state.core, {font_bold_path, 16}, dpi_scale * 2);
-    return state;
+    this->current_node = this->current_node->parent;
 }
 
 bool UiState::feed_event(const sapp_event *event)
@@ -209,13 +193,63 @@ bool UiState::feed_event(const sapp_event *event)
            this->interaction_table.hovered != NULL_ID;
 }
 
+UiImageId UiState::get_image(const char *path)
+{
+    UiImageId id = NULL_ID;
+    for (auto [i, img] : iter(image_cache))
+    {
+        if (strcmp(img.path, path) == 0)
+        {
+            id = img.id;
+            break;
+        }
+    }
+
+    if (id == NULL_ID)
+    {
+        id = ui_resources_load_image(core, path);
+
+        char *newpath =
+            strcpy((char *)lifetime_storage.alloc(strlen(path) + 1), path);
+
+        image_cache.allocate({newpath, id});
+    }
+
+    return id;
+}
+
+UiState UiState::init(const char *font_path, const char *font_bold_path,
+                      float dpi_scale)
+{
+    UiState state = {};
+    state.dpi_scale = dpi_scale;
+    state.core =
+        (UiRenderingCore *)ALLOCATOR_MALLOC.alloc(sizeof(UiRenderingCore));
+    *state.core = UiRenderingCore::init();
+    state.font =
+        UiFontRenderer::init(state.core, {font_path, 16}, dpi_scale * 2);
+    state.font_bold =
+        UiFontRenderer::init(state.core, {font_bold_path, 16}, dpi_scale * 2);
+    state.frame_storage = Arena::create(&ALLOCATOR_MALLOC);
+    state.lifetime_storage = Arena::create(&ALLOCATOR_MALLOC);
+    return state;
+}
+
 void UiState::deinit()
 {
+    for (auto [id, el] : iter(this->image_cache))
+    {
+        this->core->dealloc_image(el.id);
+    }
+
+    this->image_cache.deinit();
     this->element_storage.deinit();
     this->font_bold.deinit();
     this->font.deinit();
     this->core->deinit();
-    free(this->core);
+    this->frame_storage.destroy();
+    this->lifetime_storage.destroy();
+    ALLOCATOR_MALLOC.free(this->core);
 }
 
 void UiElementStorage::begin_cycle()

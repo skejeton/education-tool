@@ -20,9 +20,8 @@ AutoLayoutResult *alloc_result(ResultBuilder &builder)
     return result;
 }
 
-void recurse(AutoLayoutProcess *process, AutoLayoutNodeId n)
+void recurse(AutoLayoutProcess *process, AutoLayoutNode *node)
 {
-    AutoLayoutNode *node = process->nodes.get(n.id);
     assert(node);
     AutoLayoutElement el = node->element;
     if (el.hidden)
@@ -31,19 +30,13 @@ void recurse(AutoLayoutProcess *process, AutoLayoutNodeId n)
     }
     Vector2 my_size = {0, 0};
 
-    AutoLayoutNodeId child = node->child;
-    if (!child.id.valid())
-    {
-        goto done;
-    }
+    AutoLayoutNode *child = node->child;
 
-    while (child.id.valid())
+    while (child != nullptr)
     {
         recurse(process, child);
-        AutoLayoutNode *child_node = process->nodes.get(child.id);
-        assert(child_node);
 
-        AutoLayoutElement &cel = child_node->element;
+        AutoLayoutElement &cel = child->element;
 
         Vector2 size = cel.margin_box.siz;
         Vector2 delta = {0, 0};
@@ -66,15 +59,14 @@ void recurse(AutoLayoutProcess *process, AutoLayoutNodeId n)
             }
         }
 
-        child_node->element.margin_box.pos += delta;
-        child_node->element.border_box.pos += delta;
-        child_node->element.base_box.pos += delta;
-        child_node->element.padding_box.pos += delta;
+        child->element.margin_box.pos += delta;
+        child->element.border_box.pos += delta;
+        child->element.base_box.pos += delta;
+        child->element.padding_box.pos += delta;
 
-        child = child_node->sibling;
+        child = child->sibling;
     }
 
-done:
     if (el.width.type == AutoLayoutDimension::Type::Pixel)
     {
         my_size.x = el.width.value;
@@ -97,53 +89,48 @@ done:
         Vector2{el.padding.l, el.padding.t} + node->element.base_box.pos;
 }
 
-void align_to_parents(AutoLayoutProcess *process, AutoLayoutNodeId n)
+void align_to_parents(AutoLayoutProcess *process, AutoLayoutNode *node)
 {
-    AutoLayoutNode *node = process->nodes.get(n.id);
     assert(node);
-    AutoLayoutNodeId child = node->child;
     if (node->element.hidden)
     {
         return;
     }
 
-    while (child.id.valid())
-    {
-        AutoLayoutNode *child_node = process->nodes.get(child.id);
-        assert(child_node);
+    AutoLayoutNode *child = node->child;
 
+    while (child != nullptr)
+    {
         Vector2 delta = {0, 0};
 
-        if (child_node->element.position != AutoLayoutPosition::Absolute)
+        if (child->element.position != AutoLayoutPosition::Absolute)
         {
-            child_node->element.padding_box.pos +=
-                node->element.padding_box.pos;
-            child_node->element.base_box.pos += node->element.padding_box.pos;
-            child_node->element.border_box.pos += node->element.padding_box.pos;
-            child_node->element.margin_box.pos += node->element.padding_box.pos;
+            child->element.padding_box.pos += node->element.padding_box.pos;
+            child->element.base_box.pos += node->element.padding_box.pos;
+            child->element.border_box.pos += node->element.padding_box.pos;
+            child->element.margin_box.pos += node->element.padding_box.pos;
             delta =
                 (node->element.padding_box.siz -
-                 child_node->element.margin_box.siz) *
+                 child->element.margin_box.siz) *
                 Vector2{node->element.align_width, node->element.align_height};
         }
 
-        delta += child_node->element.offset;
+        delta += child->element.offset;
 
-        child_node->element.padding_box.pos += delta;
-        child_node->element.base_box.pos += delta;
-        child_node->element.border_box.pos += delta;
-        child_node->element.margin_box.pos += delta;
+        child->element.padding_box.pos += delta;
+        child->element.base_box.pos += delta;
+        child->element.border_box.pos += delta;
+        child->element.margin_box.pos += delta;
         align_to_parents(process, child);
 
-        child = child_node->sibling;
+        child = child->sibling;
     }
 }
 
 // FIXME: Using a giant clip rect for now.
-void build_results(ResultBuilder &builder, AutoLayoutNodeId n, bool hidden,
+void build_results(ResultBuilder &builder, AutoLayoutNode *node, bool hidden,
                    Rect clip = {0, 0, 100000, 100000})
 {
-    AutoLayoutNode *node = builder.process->nodes.get(n.id);
     assert(node);
 
     if (node->element.hidden)
@@ -174,37 +161,39 @@ void build_results(ResultBuilder &builder, AutoLayoutNodeId n, bool hidden,
         clip = rect_and(clip, result->padding_box);
     }
 
-    AutoLayoutNodeId child = node->child;
-    while (child.id.valid())
+    AutoLayoutNode *child = node->child;
+    while (child != nullptr)
     {
-        AutoLayoutNode *child_node = builder.process->nodes.get(child.id);
-        assert(child_node);
+        assert(child);
         build_results(builder, child, hidden, clip);
-        child = child_node->sibling;
+        child = child->sibling;
     }
 }
 
-AutoLayoutProcess AutoLayoutProcess::init(AutoLayoutNodeId &root)
+AutoLayoutProcess AutoLayoutProcess::init(Arena &arena, AutoLayoutNode **root)
 {
     AutoLayoutProcess result = {};
+    result.arena = &arena;
 
     AutoLayoutNode node = {0};
     node.element.layout = {AutoLayout::Row};
 
     // TODO: Properly initialize root element.
-    root = result.root = {result.nodes.allocate(node)};
+    result.root = arena.alloct<AutoLayoutNode>();
+    assert(result.root != nullptr);
+    *result.root = node;
+
+    *root = result.root;
 
     return result;
 }
 
 void AutoLayoutProcess::deinit()
 {
-    this->nodes.deinit();
-    this->notes.destroy();
 }
 
-AutoLayoutNodeId AutoLayoutProcess::add_element(AutoLayoutNodeId parent,
-                                                AutoLayoutElement element)
+AutoLayoutNode *AutoLayoutProcess::add_element(AutoLayoutNode *parent,
+                                               AutoLayoutElement element)
 {
     AutoLayoutNode node = {};
     node.element = element;
@@ -212,28 +201,25 @@ AutoLayoutNodeId AutoLayoutProcess::add_element(AutoLayoutNodeId parent,
     node.child = {0};
     node.sibling = {0};
 
-    AutoLayoutNodeId child = {this->nodes.allocate(node)};
-    assert(child.id.valid());
-    AutoLayoutNode *parent_node = this->nodes.get(parent.id);
-    assert(parent_node);
+    AutoLayoutNode *child = this->arena->alloct<AutoLayoutNode>();
+    assert(child != nullptr);
+    *child = node;
 
-    if (!parent_node->last.id.valid())
+    if (!parent->last)
     {
-        parent_node->child = child;
+        parent->child = child;
     }
     else
     {
-        AutoLayoutNode *last_node = this->nodes.get(parent_node->last.id);
-        assert(last_node);
-        last_node->sibling = child;
+        parent->last->sibling = child;
     }
 
-    parent_node->last = child;
+    parent->last = child;
 
-    return {child};
+    return child;
 }
 
-void AutoLayoutProcess::process(Arena alloc, AutoLayoutResult *&result)
+void AutoLayoutProcess::process(Arena &alloc, AutoLayoutResult *&result)
 {
     ResultBuilder builder = {};
     builder.process = this;

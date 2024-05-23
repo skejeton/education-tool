@@ -5,8 +5,8 @@
 #include <unistd.h>
 #endif
 
-#include "catedu/sys/oom.hpp"
 #include "sokol/sokol_app.h"
+#include <catedu/core/alloc/allocator.hpp>
 #include <stdio.h>
 #include <string.h>
 #include <string>
@@ -20,7 +20,7 @@ char *string_duplicate(const char *string)
         return nullptr;
     }
     size_t count = strlen(string) + 1;
-    char *new_string = (char *)OOM_HANDLER(malloc(count));
+    char *new_string = (char *)ALLOCATOR_MALLOC.alloc(count);
 
     memcpy(new_string, string, count);
     return new_string;

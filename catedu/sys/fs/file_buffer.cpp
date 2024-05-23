@@ -1,5 +1,5 @@
 #include "file_buffer.hpp"
-#include "catedu/sys/oom.hpp"
+#include <catedu/core/alloc/allocator.hpp>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,7 +10,7 @@ FileBuffer FileBuffer::read_whole_file(FILE *f)
     size_t file_size = ftell(f);
     fseek(f, 0, SEEK_SET);
 
-    uint8_t *data = (uint8_t *)OOM_HANDLER(malloc(file_size));
+    uint8_t *data = (uint8_t *)ALLOCATOR_MALLOC.alloc(file_size);
 
     fread(data, 1, file_size, f);
 
@@ -24,5 +24,5 @@ void FileBuffer::write_whole_file(FILE *f)
 
 void FileBuffer::deinit()
 {
-    free(data);
+    ALLOCATOR_MALLOC.free(data);
 }

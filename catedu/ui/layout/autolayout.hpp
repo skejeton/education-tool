@@ -65,7 +65,7 @@ enum AutoLayoutPosition
 
 struct AutoLayoutElement
 {
-    TableId userdata; // Reference to userdata.
+    void *userdata; // Reference to userdata.
     Vector2 offset;
     AutoLayoutDimension width;
     AutoLayoutDimension height;
@@ -89,7 +89,7 @@ struct AutoLayoutElement
 
 struct AutoLayoutResult
 {
-    TableId userdata;
+    void *userdata;
     Rect padding_box; // Box inside padding.
     Rect base_box;    // Box inside border.
     Rect border_box;  // Box inside margin.
@@ -100,34 +100,28 @@ struct AutoLayoutResult
     AutoLayoutResult *next;
 };
 
-struct AutoLayoutNodeId
-{
-    TableId id;
-};
-
 // Different from the `AutoLayoutElement` because it contains references to
 // other nodes.
 struct AutoLayoutNode
 {
-    AutoLayoutNodeId parent;
-    AutoLayoutNodeId last;
-    AutoLayoutNodeId sibling;  // Reference to the layout tree sibling.
-    AutoLayoutNodeId child;    // Reference to the layout tree child.
+    AutoLayoutNode *parent;
+    AutoLayoutNode *last;
+    AutoLayoutNode *sibling;   // Reference to the layout tree sibling.
+    AutoLayoutNode *child;     // Reference to the layout tree child.
     AutoLayoutElement element; // Element data.
 };
 
 struct AutoLayoutProcess
 {
-    Table<AutoLayoutNode> nodes;
-    AutoLayoutNodeId root;
-    Arena notes;
+    AutoLayoutNode *root;
+    Arena *arena;
 
-    static AutoLayoutProcess init(AutoLayoutNodeId &root);
+    static AutoLayoutProcess init(Arena &arena, AutoLayoutNode **root);
     void deinit();
 
-    AutoLayoutNodeId add_element(AutoLayoutNodeId parent,
-                                 AutoLayoutElement element);
+    AutoLayoutNode *add_element(AutoLayoutNode *parent,
+                                AutoLayoutElement element);
 
     // Returns the count of elements in the destination array.
-    void process(Arena arena, AutoLayoutResult *&result);
+    void process(Arena &arena, AutoLayoutResult *&result);
 };
