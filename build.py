@@ -156,6 +156,10 @@ def main():
     p.set_run()
   elif arguments.target == "build":
     pass
+  elif arguments.target == "version":
+    with open("docs/version", "rb") as f:
+      print(f.read().decode("utf-8").strip())
+    exit(0)
   else:
     raise Exception(f"Unknown target: {arguments.target}")
 

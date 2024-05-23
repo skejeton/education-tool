@@ -26,6 +26,11 @@ jobs:
           cd package
           tar -acf ../educore-windows.zip *
           cd ..
+      - name: get version
+        id: version
+        run: |
+          set /p ver=<.\docs\version
+          echo "version=$ver" >> $GITHUB_ENV
       - name: release
         uses: actions/create-release@v1
         id: create_release
