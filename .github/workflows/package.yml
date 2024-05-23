@@ -27,7 +27,7 @@ jobs:
           tar -acf ../educore-windows.zip *
           cd ..
       - name: get version
-        id: version
+        id: vars
         run: |
           "version="+(Get-Content -Path .\docs\version).Trim() >> $env:GITHUB_ENV
       - name: release
@@ -36,8 +36,8 @@ jobs:
         with:
           draft: false
           prerelease: false
-          release_name: ${{ steps.version.outputs.version }}
-          tag_name: ${{ steps.version.outputs.version }}.${{ steps.short-sha.outputs.sha }}
+          release_name: ${{ steps.vars.outputs.version }}
+          tag_name: ${{ steps.vars.outputs.version }}.${{ steps.short-sha.outputs.sha }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
       - name: upload windows artifact
