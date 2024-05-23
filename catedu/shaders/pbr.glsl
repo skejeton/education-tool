@@ -14,9 +14,10 @@ in vec2 uv;
 out vec4 color;
 out vec2 frag_uv;
 out vec3 frag_normal;
+out vec4 frag_pos;
 
 void main() {
-    gl_Position = viewproj * model * vec4(position, 1.0);
+    frag_pos = viewproj * model * vec4(position, 1.0);
 
     vec3 light_dir = -normalize(vec3(0.4, -1.3, 1.0));
     vec4 light_color = vec4(0.7, 0.5, 1.0, 1.0);
@@ -29,6 +30,7 @@ void main() {
 
     frag_uv = uv;
     frag_normal = normal;
+    gl_Position = frag_pos;
 }
 
 @end
@@ -40,11 +42,17 @@ uniform sampler image_sampler;
 in vec4 color;
 in vec2 frag_uv;
 in vec3 frag_normal;
+in vec4 frag_pos;
 out vec4 frag_color;
 
 void main() {
     vec4 sample_value = texture(sampler2D(image, image_sampler), frag_uv);
-    frag_color = color * sample_value;
+
+    // show fog
+    float fog = smoothstep(0.3, 1.0, distance(vec3(0.0, 0.0, 0.0), frag_pos.xyz) / 100.0);
+    const vec4 fog_color = vec4(0.2, 0.2, 0.7, 1.0);
+
+    frag_color = mix(color, fog_color, fog) * sample_value;
 }
 @end
 ////////////////////////////////////////////////////////////////////////////////

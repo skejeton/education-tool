@@ -1,5 +1,6 @@
 #pragma once
 #include "../debugtree/debugtree.hpp"
+#include "catedu/gui/editor/camera.hpp"
 #include "catedu/gui/editor/edit_building.hpp"
 #include "catedu/rendering/3d/camera.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
@@ -31,7 +32,7 @@ struct GuiEditor
     bool tried_to_return_back;
     bool show_debug;
     UiState *ui_state;
-    Camera camera;
+    EditorCamera editor_camera;
     GuiDebugTree debug_tree;
     World world;
 

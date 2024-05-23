@@ -44,6 +44,7 @@ void EditBuilding::show(UiUser &user, catedu::pbr::Renderer &renderer,
     if (input.k[INPUT_MB_RIGHT].pressed && !placing)
     {
         world.remove_object(pointer.x, pointer.y);
+        placing = false;
     }
 
     if (world.can_place_building(floors, x, y))

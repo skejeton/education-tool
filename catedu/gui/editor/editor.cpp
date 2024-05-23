@@ -6,6 +6,7 @@
 #include "catedu/ui/widgets.hpp"
 #include "edit_building.hpp"
 #include "offscreen.hpp"
+#include <catedu/genobj/ground.hpp>
 #include <catedu/genobj/road.hpp>
 #include <umka_api.h>
 
@@ -124,9 +125,18 @@ bool object_icon_button(UiUser &user, const char *name, SubEditor::Type type,
         Camera camera = Camera::init(5);
         camera.set_aspect(190.f / 150.f);
 
-        camera.move(0, 0, -200);
-        camera.rotate_around({0, 0, 0}, 45, -45);
-        camera.move(0, 5, 0);
+        if (type == SubEditor::Type::Building)
+        {
+            camera.move(0, 0, -20);
+            camera.rotate_around({0, 0, 0}, 45, -45);
+            camera.move(0, 0.5, 0);
+        }
+        else
+        {
+            camera.move(0, 0, -10);
+            camera.rotate_around({0, 0, 0}, 45, -45);
+            camera.move(0, 0.1, 0);
+        }
 
         renderer.camera = camera;
         renderer.begin_pass_offscreen(offscreen_pass_action(),
@@ -142,7 +152,8 @@ bool object_icon_button(UiUser &user, const char *name, SubEditor::Type type,
             obj = genmesh_generate_road();
             break;
         }
-        genobj_render_object(renderer, get_genres(resources), obj);
+        genobj_render_object(renderer, get_genres(resources), obj,
+                             Matrix4::scale(0.1f));
 
         renderer.end_pass();
     }
@@ -158,13 +169,8 @@ bool object_icon_button(UiUser &user, const char *name, SubEditor::Type type,
 
 GuiEditor GuiEditor::init(UiState *ui_state)
 {
-    Camera camera = Camera::init(45);
-    camera.move(0, 10, 0);
-    camera.rotate(0, -55);
-
     GuiEditor result = {};
     result.ui_state = ui_state;
-    result.camera = camera;
     result.debug_tree = GuiDebugTree::init();
     result.world = World::create();
 
@@ -193,10 +199,7 @@ void show_left_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
     element.height = {AutoLayoutDimension::Pixel,
                       sapp_screen_rect_scaled(user.state->dpi_scale).siz.y};
     user.state->element_storage.push("Left Panel", {});
-    user.begin_generic(element,
-                       UiMakeBrush::make_gradient({1.0f, 1.0f, 1.0f, 0.6f},
-                                                  {1.0f, 1.0f, 1.0f, 0.7f}),
-                       {}, user.state->element_storage.id());
+    user.begin_generic(element, {}, {}, user.state->element_storage.id());
 
     show_build_panel(user, editor, resources, renderer);
 
@@ -268,45 +271,36 @@ void show_editor_controls(UiUser &user, GuiEditor &editor, bool &return_back)
     end_toolbar(user);
 }
 
-bool handle_camera_movement(Camera &camera, Input &input, UiUser &user)
-{
-    if (camera.position.y > 5 && input.mouse_wheel > 0)
-    {
-        camera.move(0, -input.mouse_wheel * 2, input.mouse_wheel * 2);
-    }
-    if (camera.position.y < 40 && input.mouse_wheel < 0)
-    {
-        camera.move(0, -input.mouse_wheel * 2, input.mouse_wheel * 2);
-    }
-    if (input.k[INPUT_MB_MIDDLE].held)
-    {
-        camera.move(-input.mouse_delta.x / (20 * user.state->dpi_scale), 0,
-                    input.mouse_delta.y / (20 * user.state->dpi_scale));
-        sapp_lock_mouse(true);
-        return true;
-    }
-    else
-    {
-        sapp_lock_mouse(false);
-        return false;
-    }
-}
-
 void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
                     catedu::pbr::Renderer &renderer, Input &input,
                     bool &return_back)
 {
-    editor.camera.set_aspect(sapp_widthf() / sapp_heightf());
-    renderer.camera = editor.camera;
+    renderer.camera = editor.editor_camera.cam;
     renderer.begin_pass();
 
     GenResources gen_resources = get_genres(resources);
 
     if (user.hovered())
     {
-        editor.sub_editor.show(user, renderer, editor.world, gen_resources,
-                               input, editor.camera);
-        handle_camera_movement(editor.camera, input, user);
+        sapp_lock_mouse(input.k[INPUT_MB_MIDDLE].held);
+        if (input.k[INPUT_MB_MIDDLE].held)
+        {
+            editor.editor_camera.handle_controls(input,
+                                                 {sapp_width(), sapp_height()});
+            input.clear(INPUT_MB_MIDDLE);
+            input.clear(INPUT_MB_LEFT);
+            input.clear(INPUT_MB_RIGHT);
+
+            editor.sub_editor.show(user, renderer, editor.world, gen_resources,
+                                   input, editor.editor_camera.cam);
+        }
+        else
+        {
+            editor.sub_editor.show(user, renderer, editor.world, gen_resources,
+                                   input, editor.editor_camera.cam);
+            editor.editor_camera.handle_controls(input,
+                                                 {sapp_width(), sapp_height()});
+        }
     }
 
     for (auto &object : iter(editor.world.objects))
@@ -327,6 +321,8 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
             renderer, gen_resources, mesh,
             Matrix4::translate({(float)object.x, 0, (float)object.y}));
     }
+
+    genobj_render_object(renderer, gen_resources, genmesh_generate_ground());
 
     renderer.end_pass();
 

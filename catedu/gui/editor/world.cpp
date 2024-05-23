@@ -22,7 +22,7 @@ RectI object_dimensions(Object &object)
                 object.y - BUILDING_DIMENSIONS_D / 2, BUILDING_DIMENSIONS_W,
                 BUILDING_DIMENSIONS_D};
     case Object::Type::Road:
-        return {object.x - 1, object.y - 1, 2, 2};
+        return {object.x - 2, object.y - 2, 4, 4};
     }
 
     assert(false);
@@ -67,7 +67,7 @@ void World::add_building(int floors, int x, int y)
 
 void World::add_road(int x, int y)
 {
-    RectI region = {x - 1, y - 1, 2, 2};
+    RectI region = {x - 2, y - 2, 4, 4};
 
     if (space.is_region_claimed(region))
     {
@@ -86,24 +86,14 @@ bool World::can_place_building(int floors, int x, int y)
 {
     RectI region = {x - 4, y - 4, 8, 8};
 
-    if (space.is_region_claimed(region))
-    {
-        return false;
-    }
-
-    return true;
+    return !space.is_region_claimed(region);
 }
 
 bool World::can_place_road(int x, int y)
 {
-    RectI region = {x - 1, y - 1, 2, 2};
+    RectI region = {x - 2, y - 2, 4, 4};
 
-    if (space.is_region_claimed(region))
-    {
-        return false;
-    }
-
-    return true;
+    return !space.is_region_claimed(region);
 }
 
 void World::remove_object(int x, int y)

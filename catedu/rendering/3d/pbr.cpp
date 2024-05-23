@@ -47,7 +47,7 @@ static sg_pass_action init_pass_action()
 
     result.colors[0].load_action = SG_LOADACTION_CLEAR;
     result.colors[0].store_action = SG_STOREACTION_STORE;
-    result.colors[0].clear_value = {0.0f, 0.0f, 0.0f, 1.0f};
+    result.colors[0].clear_value = {0.2f, 0.2f, 0.7f, 1.0f};
 
     return result;
 }

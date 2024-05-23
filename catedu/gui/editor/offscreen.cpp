@@ -19,8 +19,8 @@ void offscreen_init_targets(UiRenderingCore *core)
 
         sg_image_desc img_desc = {};
         img_desc.render_target = true;
-        img_desc.width = 128;
-        img_desc.height = 128;
+        img_desc.width = 256;
+        img_desc.height = 256;
         img_desc.pixel_format = SG_PIXELFORMAT_RGBA8;
         img_desc.sample_count = 1;
 
