@@ -1,11 +1,12 @@
 #include "editor.hpp"
 #include "catedu/genobj/building.hpp"
-#include "catedu/genobj/grid.hpp"
 #include "catedu/genobj/render.hpp"
 #include "catedu/misc/camera_input.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
 #include "catedu/ui/widgets.hpp"
+#include "edit_building.hpp"
 #include "offscreen.hpp"
+#include <catedu/genobj/road.hpp>
 #include <umka_api.h>
 
 bool icon_button(UiUser &user, const char *name, const char *icon,
@@ -96,7 +97,8 @@ GenResources get_genres(ResourceSpec &resources)
     return result;
 }
 
-bool object_icon_button(UiUser &user, const char *name, Vector4 color,
+bool object_icon_button(UiUser &user, const char *name, SubEditor::Type type,
+                        SubEditor::Type &current,
                         catedu::pbr::Renderer &renderer,
                         ResourceSpec &resources)
 {
@@ -111,6 +113,12 @@ bool object_icon_button(UiUser &user, const char *name, Vector4 color,
 
     UiImageId id;
 
+    Vector4 color = {1.0, 1.0, 1.0, 1.0};
+    if (current == type)
+    {
+        color = {0.8, 1.0, 0.8, 1.0};
+    }
+
     begin_button_frame(user, name, el, color);
     {
         Camera camera = Camera::init(5);
@@ -124,14 +132,28 @@ bool object_icon_button(UiUser &user, const char *name, Vector4 color,
         renderer.begin_pass_offscreen(offscreen_pass_action(),
                                       offscreen_alloc(id));
 
-        GeneratedObject obj = genmesh_generate_building(5);
+        GeneratedObject obj;
+        switch (type)
+        {
+        case SubEditor::Type::Building:
+            obj = genmesh_generate_building(5);
+            break;
+        case SubEditor::Type::Road:
+            obj = genmesh_generate_road();
+            break;
+        }
         genobj_render_object(renderer, get_genres(resources), obj);
 
         renderer.end_pass();
     }
 
     img(user, id, {1, 1});
-    return end_button_frame(user);
+    if (end_button_frame(user))
+    {
+        current = type;
+        return true;
+    }
+    return false;
 }
 
 GuiEditor GuiEditor::init(UiState *ui_state)
@@ -156,8 +178,10 @@ GuiEditor GuiEditor::init(UiState *ui_state)
 void show_build_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
                       catedu::pbr::Renderer &renderer)
 {
-    object_icon_button(user, "Building", {1.0, 1.0, 1.0, 1.0}, renderer,
-                       resources);
+    object_icon_button(user, "Building", SubEditor::Type::Building,
+                       editor.sub_editor.type, renderer, resources);
+    object_icon_button(user, "Road", SubEditor::Type::Road,
+                       editor.sub_editor.type, renderer, resources);
 }
 
 void show_left_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
@@ -276,53 +300,32 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
     renderer.camera = editor.camera;
     renderer.begin_pass();
 
-    Ray3 pointer_ray = editor.camera.screen_to_world_ray(
-        input.mouse_pos, {sapp_widthf(), sapp_heightf()});
-    float t;
-    ray3_vs_horizontal_plane(pointer_ray, -0.5, &t);
-
-    Vector2i pointer = {
-        (int)roundf(pointer_ray.origin.x + pointer_ray.direction.x * t),
-        (int)roundf(pointer_ray.origin.z + pointer_ray.direction.z * t)};
-
-    handle_camera_movement(editor.camera, input, user);
-
     GenResources gen_resources = get_genres(resources);
+
     if (user.hovered())
     {
-        static int floors = 3;
-
-        floors += input.k[SAPP_KEYCODE_UP].pressed;
-        floors -= input.k[SAPP_KEYCODE_DOWN].pressed;
-
-        floors = clamp(floors, 2, 10);
-        if (input.k[INPUT_MB_LEFT].pressed)
-        {
-            editor.world.add_building(floors, pointer.x, pointer.y);
-        }
-        if (input.k[INPUT_MB_RIGHT].pressed)
-        {
-            editor.world.remove_building(pointer.x, pointer.y);
-        }
-
-        GeneratedObject building = genmesh_generate_building(floors);
-        genobj_render_object(
-            renderer, gen_resources, building,
-            Matrix4::translate({(float)pointer.x, 0, (float)pointer.y}));
-
-        GeneratedObject grid = genmesh_generate_grid(16, 16);
-        genobj_render_object(
-            renderer, gen_resources, grid,
-            Matrix4::translate({(float)pointer.x, 0, (float)pointer.y}));
+        editor.sub_editor.show(user, renderer, editor.world, gen_resources,
+                               input, editor.camera);
+        handle_camera_movement(editor.camera, input, user);
     }
 
-    for (auto &building : iter(editor.world.buildings))
+    for (auto &object : iter(editor.world.objects))
     {
-        GeneratedObject buildingobj =
-            genmesh_generate_building(building.floors);
+        GeneratedObject mesh = {};
+
+        switch (object.type)
+        {
+        case Object::Type::Road:
+            mesh = genmesh_generate_road();
+            break;
+        case Object::Type::Building:
+            mesh = genmesh_generate_building(object.floors);
+            break;
+        }
+
         genobj_render_object(
-            renderer, gen_resources, buildingobj,
-            Matrix4::translate({roundf(building.x), 0, roundf(building.y)}));
+            renderer, gen_resources, mesh,
+            Matrix4::translate({(float)object.x, 0, (float)object.y}));
     }
 
     renderer.end_pass();
@@ -364,4 +367,19 @@ void GuiEditor::deinit()
     offscreen_deinit_targets(this->ui_state->core);
 
     debug_tree.deinit();
+}
+
+void SubEditor::show(UiUser &user, catedu::pbr::Renderer &renderer,
+                     World &world, GenResources &gen_resources, Input &input,
+                     Camera &camera)
+{
+    switch (type)
+    {
+    case Type::Building:
+        edit_building.show(user, renderer, world, gen_resources, input, camera);
+        break;
+    case Type::Road:
+        edit_road.show(user, renderer, world, gen_resources, input, camera);
+        break;
+    }
 }

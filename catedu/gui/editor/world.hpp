@@ -2,8 +2,14 @@
 #include "catedu/core/alloc/free_list.hpp"
 #include "catedu/scene/space.hpp"
 
-struct Building
+struct Object
 {
+    enum class Type
+    {
+        Building,
+        Road,
+    } type;
+
     int floors;
     int x, y;
 };
@@ -11,9 +17,12 @@ struct Building
 struct World
 {
     Space space;
-    FreeList<Building> buildings;
+    FreeList<Object> objects;
 
     static World create();
     void add_building(int floors, int x, int y);
-    void remove_building(int x, int y);
+    void add_road(int x, int y);
+    bool can_place_building(int floors, int x, int y);
+    bool can_place_road(int x, int y);
+    void remove_object(int x, int y);
 };

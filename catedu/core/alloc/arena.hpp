@@ -6,6 +6,8 @@
 
 struct Arena
 {
+    static const constexpr size_t ALIGN = 16;
+
     struct Chunk
     {
         Chunk *next;

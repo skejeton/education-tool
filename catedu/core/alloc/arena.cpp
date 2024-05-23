@@ -53,7 +53,7 @@ void Arena::reset()
 
 void *Arena::alloc(size_t size)
 {
-    size = align_up(size, 16);
+    size = align_up(size, ALIGN);
 
     // 1. Check the current chunk
     Chunk *last = this->last;

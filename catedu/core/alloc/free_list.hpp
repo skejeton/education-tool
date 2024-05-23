@@ -7,17 +7,21 @@
 #include <assert.h>
 #include <iterator>
 
+int rand();
+
 template <class T> struct FreeList
 {
-    struct Node
+    struct alignas(Arena::ALIGN) Node
     {
         T data;
         uint64_t free;
+        uint64_t check;
         Node *next;
     };
 
     Arena arena;
     Node *freed;
+    uint64_t check;
 
     static FreeList create(Arena arena);
     void destroy();
@@ -30,6 +34,7 @@ template <class T> inline FreeList<T> FreeList<T>::create(Arena arena)
 {
     FreeList fl = {};
     fl.arena = arena;
+    fl.check = rand();
     return fl;
 }
 
@@ -50,6 +55,7 @@ template <class T> inline T *FreeList<T>::alloc()
 
     Node *node = (Node *)this->arena.alloc(sizeof(Node));
     node->free = 0;
+    node->check = this->check;
     node->next = nullptr;
 
     return &node->data;
@@ -58,6 +64,7 @@ template <class T> inline T *FreeList<T>::alloc()
 template <class T> inline void FreeList<T>::free(T *ptr)
 {
     Node *node = (Node *)ptr;
+    assert(!node->free);
     node->next = this->freed;
     node->free = 1;
     this->freed = node;
@@ -67,6 +74,8 @@ template <class T> inline void FreeList<T>::free(T *ptr)
 
 template <class T> struct FreeListIterator
 {
+    using N = typename FreeList<T>::Node;
+    static const constexpr size_t S = sizeof(N);
     size_t index;
     Arena::Chunk *node;
 
@@ -81,14 +90,7 @@ inline FreeListIterator<T> FreeListIterator<T>::create(FreeList<T> *fl)
 {
     FreeListIterator it = {};
     it.node = fl->arena.first;
-
-    while (it.node &&
-           it.index >= (it.node->size / sizeof(typename FreeList<T>::Node)))
-    {
-        it.node = it.node->next;
-        it.index = 0;
-    }
-
+    it.skip();
     return it;
 }
 
@@ -96,26 +98,22 @@ template <class T> inline void FreeListIterator<T>::skip()
 {
     assert(this->node);
 
-    index++;
-
-    while (this->node && this->index >= (this->node->size /
-                                         sizeof(typename FreeList<T>::Node)))
+    while (this->node && this->index >= (this->node->size / S))
     {
         this->node = this->node->next;
         this->index = 0;
     }
 
-    if (this->node &&
-        ((typename FreeList<T>::Node *)this->node->data + this->index)->free)
+    if (this->node && ((((N *)this->node->data)[this->index]).free))
     {
+        index++;
         skip();
     }
 }
 
 template <class T> inline T *FreeListIterator<T>::get()
 {
-    return &((typename FreeList<T>::Node *)this->node->data + this->index)
-                ->data;
+    return &((((N *)this->node->data)[this->index]).data);
 }
 
 template <class T> inline T *FreeListIterator<T>::next()
@@ -123,6 +121,7 @@ template <class T> inline T *FreeListIterator<T>::next()
     assert(this->node);
 
     T *data = get();
+    index++;
     skip();
 
     return data;
