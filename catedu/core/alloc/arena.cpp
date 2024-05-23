@@ -24,7 +24,7 @@ static Chunk *create_chunk(Allocator *allocator, size_t cap)
 Arena Arena::create(Allocator *allocator)
 {
     Arena arena = {};
-    arena.next_size = 1;
+    arena.next_size = 1 << 12;
     arena.last = arena.first = create_chunk(allocator, arena.next_size);
     arena.allocator = allocator;
     return arena;
