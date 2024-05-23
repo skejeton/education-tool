@@ -31,8 +31,8 @@ jobs:
         run: |
           setlocal EnableDelayedExpansion
           set ver=
-          for /f "delims=" %%A in (.\bin\version) do set ver=!ver!%%A
-          echo version=%ver% >> $GITHUB_ENV
+          for /f %%A in (.\docs\version) do set ver=!ver!%%A
+          echo version=%ver% >> $env:GITHUB_ENV
       - name: release
         uses: actions/create-release@v1
         id: create_release
