@@ -49,7 +49,7 @@ void main() {
     vec4 sample_value = texture(sampler2D(image, image_sampler), frag_uv);
 
     // show fog
-    float fog = smoothstep(0.3, 1.0, distance(vec3(0.0, 0.0, 0.0), frag_pos.xyz) / 100.0);
+    float fog = smoothstep(0.6, 1.0, distance(vec3(0.0, 0.0, 0.0), frag_pos.xyz) / 100.0);
     const vec4 fog_color = vec4(0.2, 0.2, 0.7, 1.0);
 
     frag_color = mix(color, fog_color, fog) * sample_value;

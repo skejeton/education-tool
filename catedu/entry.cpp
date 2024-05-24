@@ -146,7 +146,7 @@ void Entry::cleanup(void)
 
     umkaFree(this->umka);
 
-    fprintf(stderr, "Memory leaked: %zu",
+    fprintf(stderr, "Memory leaked: %zu\n",
             ALLOCATOR_MALLOC.tracer.total_bytes_allocated);
 }
 

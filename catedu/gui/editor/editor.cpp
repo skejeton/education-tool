@@ -257,11 +257,11 @@ void show_popups(UiUser &user, GuiEditor &editor, bool &return_back)
         editor.debug_tree.value("frees", ALLOCATOR_MALLOC.tracer.total_frees);
         editor.debug_tree.value("allocs",
                                 ALLOCATOR_MALLOC.tracer.total_allocations);
-        editor.debug_tree.value("bytes",
-                                ALLOCATOR_MALLOC.tracer.total_bytes_allocated);
-        begin_show_window(user, info);
+        editor.debug_tree.size("bytes",
+                               ALLOCATOR_MALLOC.tracer.total_bytes_allocated);
+        // begin_show_window(user, info);
         editor.debug_tree.show(user);
-        end_show_window(user);
+        // end_show_window(user);
     }
 }
 

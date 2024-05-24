@@ -23,6 +23,7 @@ struct GuiDebugTree
 
     void reset();
 
+    void size(const char *name, size_t value);
     void value(const char *name, int64_t value);
     void value(const char *name, uint64_t value);
     void value(const char *name, float value);

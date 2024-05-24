@@ -1,6 +1,8 @@
 #include "sokol_setup.hpp"
+#include "catedu/core/alloc/allocator.hpp"
 #include "sokol/sokol_gfx.h"
 #include "sokol/sokol_glue.h"
+#include <stdio.h>
 
 static inline SokolSetup *userdata_to_setup(void *userdata)
 {
@@ -40,6 +42,18 @@ static void event_callback(const sapp_event *event, void *userdata)
     userdata_to_setup(userdata)->input(event);
 }
 
+static void *alloc_callback(size_t size, void *userdata)
+{
+    printf("Allocation from Sokol: %zu\n", size);
+    return ((MallocAllocator *)userdata)->alloc(size);
+}
+
+static void free_callback(void *ptr, void *userdata)
+{
+    printf("Free from Sokol\n");
+    ((MallocAllocator *)userdata)->free(ptr);
+}
+
 sapp_desc sokol_setup_default(const char *title, SokolSetup *setup)
 {
     // Wish C++ had `using` for variables...
@@ -53,6 +67,9 @@ sapp_desc sokol_setup_default(const char *title, SokolSetup *setup)
     r.frame_userdata_cb = frame_callback;
     r.cleanup_userdata_cb = cleanup_callback;
     r.event_userdata_cb = event_callback;
+
+    // Allocator settings
+    r.allocator = {alloc_callback, free_callback, &ALLOCATOR_MALLOC};
 
     // Window settings
     r.window_title = title;

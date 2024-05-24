@@ -42,6 +42,38 @@ void GuiDebugTree::reset()
     this->entry = nullptr;
 }
 
+void GuiDebugTree::size(const char *name, size_t value)
+{
+    size_t bytes = value;
+    size_t kibibytes = value / 1024;
+    size_t mebibytes = kibibytes / 1024;
+    size_t gibibytes = mebibytes / 1024;
+
+    if (gibibytes > 0)
+    {
+        alloc_debug_entry(
+            this, name, 0x000000FF,
+            stdstrfmt("%zu GiB (%zu B)", gibibytes, bytes).c_str(), 0x000077FF);
+    }
+    else if (mebibytes > 0)
+    {
+        alloc_debug_entry(
+            this, name, 0x000000FF,
+            stdstrfmt("%zu MiB (%zu B)", mebibytes, bytes).c_str(), 0x000077FF);
+    }
+    else if (kibibytes > 0)
+    {
+        alloc_debug_entry(
+            this, name, 0x000000FF,
+            stdstrfmt("%zu KiB (%zu B)", kibibytes, bytes).c_str(), 0x000077FF);
+    }
+    else
+    {
+        alloc_debug_entry(this, name, 0x000000FF,
+                          stdstrfmt("%zu B", bytes).c_str(), 0x000077FF);
+    }
+}
+
 void GuiDebugTree::value(const char *name, int64_t value)
 {
     alloc_debug_entry(this, name, 0x000000FF, stdstrfmt("%lli", value).c_str(),
