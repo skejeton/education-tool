@@ -6,6 +6,7 @@
 #include "catedu/ui/widgets.hpp"
 #include "edit_building.hpp"
 #include "offscreen.hpp"
+#include "world_file.hpp"
 #include <catedu/genobj/ground.hpp>
 #include <catedu/genobj/road.hpp>
 #include <umka_api.h>
@@ -172,7 +173,7 @@ GuiEditor GuiEditor::init(UiState *ui_state)
     GuiEditor result = {};
     result.ui_state = ui_state;
     result.debug_tree = GuiDebugTree::init();
-    result.dispatcher = Dispatcher::create();
+    result.dispatcher = WorldFile::load("assets/world.dat");
 
     printf("Init editor\n");
 
@@ -219,7 +220,7 @@ void show_popups(UiUser &user, GuiEditor &editor, bool &return_back)
         {
         case 0:
             editor.exit_requested = false;
-            editor.dirty = false;
+            editor.dispatcher.dirty = false;
             sapp_request_quit();
             break;
         case 1:
@@ -231,7 +232,7 @@ void show_popups(UiUser &user, GuiEditor &editor, bool &return_back)
     if (return_back)
         editor.tried_to_return_back = true;
 
-    if (editor.tried_to_return_back && editor.dirty)
+    if (editor.tried_to_return_back && editor.dispatcher.dirty)
     {
         return_back = false;
         const char *options[] = {"Yes", "No", NULL};
@@ -241,8 +242,8 @@ void show_popups(UiUser &user, GuiEditor &editor, bool &return_back)
                        MsgBoxType::Warning, options))
         {
         case 0:
-            editor.dirty = false;
             return_back = true;
+            editor.dispatcher.dirty = false;
             break;
         case 1:
             editor.tried_to_return_back = false;
@@ -281,6 +282,17 @@ void show_editor_controls(UiUser &user, GuiEditor &editor, bool &return_back)
     if (icon_button(user, "Home", "assets/gui/home.png"))
     {
         return_back = true;
+    }
+
+    Vector4 color = {1.0, 1.0, 1.0, 1.0};
+    if (editor.dispatcher.dirty)
+    {
+        color = {1.0, 0.8, 0.8, 1.0};
+    }
+
+    if (icon_button(user, "Save", "assets/gui/save.png", color))
+    {
+        WorldFile::save("assets/world.dat", editor.dispatcher);
     }
 
     end_toolbar(user);

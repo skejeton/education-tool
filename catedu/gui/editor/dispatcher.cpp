@@ -91,18 +91,25 @@ void Dispatcher::place_object(Object object)
     op.object = object;
     if (perform_op(op, &world))
     {
+        dirty = true;
         append(*this, op);
     }
 }
 
 void Dispatcher::remove_object(int x, int y)
 {
+    Object *obj = world.get_object_at(x, y);
+    if (obj == nullptr)
+    {
+        return;
+    }
+
     EditOp op = {};
     op.type = EditOp::Type::Remove;
-    op.object.x = x;
-    op.object.y = y;
+    op.object = *obj;
     if (perform_op(op, &world))
     {
+        dirty = true;
         append(*this, op);
     }
 }
@@ -114,6 +121,7 @@ void Dispatcher::undo()
         return;
     }
 
+    dirty = true;
     unperform_op(*current, &world);
 
     current = current->prev;
@@ -128,5 +136,6 @@ void Dispatcher::redo()
 
     current = current->next;
 
+    dirty = true;
     assert(perform_op(*current, &world));
 }

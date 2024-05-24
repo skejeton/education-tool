@@ -177,7 +177,7 @@ void Entry::input(const sapp_event *event)
 {
     if (event->type == SAPP_EVENTTYPE_QUIT_REQUESTED)
     {
-        if (this->editor.dirty)
+        if (this->editor.dispatcher.dirty)
         {
             sapp_cancel_quit();
             this->editor.exit_requested = true;

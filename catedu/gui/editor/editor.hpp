@@ -8,7 +8,6 @@
 #include "catedu/rendering/resource_spec.hpp"
 #include "catedu/ui/user.hpp"
 #include "edit_road.hpp"
-#include "world.hpp"
 #include <sokol/sokol_app.h>
 
 struct SubEditor
@@ -28,7 +27,6 @@ struct SubEditor
 
 struct GuiEditor
 {
-    bool dirty;
     bool exit_requested;
     bool tried_to_return_back;
     bool show_debug;

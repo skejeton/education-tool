@@ -28,6 +28,7 @@ struct Dispatcher
     World world;
     FreeList<EditOp> history;
     EditOp *current;
+    bool dirty;
 
     static Dispatcher create();
     void destroy();
