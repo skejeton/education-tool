@@ -8,10 +8,11 @@ struct Object
     {
         Building,
         Road,
+        Player
     } type;
 
     int floors;
-    int x, y;
+    float x, y;
 };
 
 struct World
@@ -21,6 +22,8 @@ struct World
 
     static World create();
     void destroy();
+    World clone();
+
     Object *place_object(Object object);
     void remove_object(int x, int y);
     Object *get_object_at(int x, int y);

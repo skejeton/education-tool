@@ -7,8 +7,8 @@
 struct EditBuilding
 {
     bool placing;
-    int x;
-    int y;
+    float x;
+    float y;
     int floors;
 
     void show(UiUser &user, catedu::pbr::Renderer &renderer, Dispatcher &disp,

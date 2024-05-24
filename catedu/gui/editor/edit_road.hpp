@@ -4,8 +4,9 @@
 #include <catedu/rendering/3d/camera.hpp>
 #include <catedu/ui/user.hpp>
 
-struct EditRoad
+struct EditBasic
 {
     void show(UiUser &user, catedu::pbr::Renderer &renderer, Dispatcher &disp,
-              GenResources &gen_resources, Input &input, Camera &camera);
+              GenResources &gen_resources, Input &input, Camera &camera,
+              Object::Type type);
 };

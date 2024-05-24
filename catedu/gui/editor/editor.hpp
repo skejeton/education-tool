@@ -8,7 +8,9 @@
 #include "catedu/rendering/resource_spec.hpp"
 #include "catedu/ui/user.hpp"
 #include "edit_road.hpp"
+#include "playtest.hpp"
 #include <sokol/sokol_app.h>
+
 
 struct SubEditor
 {
@@ -16,9 +18,10 @@ struct SubEditor
     {
         Building,
         Road,
+        Player
     } type;
 
-    EditRoad edit_road;
+    EditBasic edit_basic;
     EditBuilding edit_building;
 
     void show(UiUser &user, catedu::pbr::Renderer &renderer, Dispatcher &disp,
@@ -30,6 +33,8 @@ struct GuiEditor
     bool exit_requested;
     bool tried_to_return_back;
     bool show_debug;
+    bool playtesting;
+    Playtest playtest;
     UiState *ui_state;
     EditorCamera editor_camera;
     GuiDebugTree debug_tree;

@@ -13,7 +13,7 @@ void EditBuilding::show(UiUser &user, catedu::pbr::Renderer &renderer,
     ray3_vs_horizontal_plane(pointer_ray, 0, &t);
 
     Vector3 at = ray3_at(pointer_ray, t);
-    Vector2i pointer = {(int)roundf(at.x), (int)roundf(at.z)};
+    Vector2 pointer = {roundf(at.x), roundf(at.z)};
 
     if (placing)
     {
@@ -51,10 +51,10 @@ void EditBuilding::show(UiUser &user, catedu::pbr::Renderer &renderer,
     {
         GeneratedObject building = genmesh_generate_building(floors);
         genobj_render_object(renderer, gen_resources, building,
-                             Matrix4::translate({(float)x, 0, (float)y}));
+                             Matrix4::translate({x, 0, y}));
     }
 
     GeneratedObject grid = genmesh_generate_grid(16, 16);
     genobj_render_object(renderer, gen_resources, grid,
-                         Matrix4::translate({(float)x, 0, (float)y}));
+                         Matrix4::translate({x, 0, y}));
 }

@@ -8,6 +8,7 @@
 #include "offscreen.hpp"
 #include "world_file.hpp"
 #include <catedu/genobj/ground.hpp>
+#include <catedu/genobj/player.hpp>
 #include <catedu/genobj/road.hpp>
 #include <umka_api.h>
 
@@ -152,6 +153,9 @@ bool object_icon_button(UiUser &user, const char *name, SubEditor::Type type,
         case SubEditor::Type::Road:
             obj = genmesh_generate_road();
             break;
+        case SubEditor::Type::Player:
+            obj = genmesh_generate_player();
+            break;
         }
         genobj_render_object(renderer, get_genres(resources), obj,
                              Matrix4::scale(0.1f));
@@ -188,6 +192,8 @@ void show_build_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
     object_icon_button(user, "Building", SubEditor::Type::Building,
                        editor.sub_editor.type, renderer, resources);
     object_icon_button(user, "Road", SubEditor::Type::Road,
+                       editor.sub_editor.type, renderer, resources);
+    object_icon_button(user, "Player", SubEditor::Type::Player,
                        editor.sub_editor.type, renderer, resources);
 }
 
@@ -284,6 +290,22 @@ void show_editor_controls(UiUser &user, GuiEditor &editor, bool &return_back)
         return_back = true;
     }
 
+    if (icon_button(user, "Playtest", "assets/gui/play.png"))
+    {
+        // TODO: Find a better way of handling playtest memory.
+        if (editor.playtesting)
+        {
+            editor.playtesting = false;
+            editor.playtest.world.destroy();
+            editor.playtest = {};
+        }
+        else
+        {
+            editor.playtesting = true;
+            editor.playtest = Playtest::create(editor.dispatcher.world.clone());
+        }
+    }
+
     Vector4 color = {1.0, 1.0, 1.0, 1.0};
     if (editor.dispatcher.dirty)
     {
@@ -307,7 +329,7 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
 
     GenResources gen_resources = get_genres(resources);
 
-    if (user.hovered())
+    if (user.hovered() && !editor.playtesting)
     {
         sapp_lock_mouse(input.k[INPUT_MB_MIDDLE].held);
         if (input.k[INPUT_MB_MIDDLE].held)
@@ -332,7 +354,15 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
         }
     }
 
-    for (auto &object : iter(editor.dispatcher.world.objects))
+    World *world = &editor.dispatcher.world;
+
+    if (editor.playtesting)
+    {
+        editor.playtest.update(input);
+        world = &editor.playtest.world;
+    }
+
+    for (auto &object : iter(world->objects))
     {
         GeneratedObject mesh = {};
 
@@ -343,6 +373,9 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
             break;
         case Object::Type::Building:
             mesh = genmesh_generate_building(object.floors);
+            break;
+        case Object::Type::Player:
+            mesh = genmesh_generate_player();
             break;
         }
 
@@ -410,7 +443,12 @@ void SubEditor::show(UiUser &user, catedu::pbr::Renderer &renderer,
         edit_building.show(user, renderer, disp, gen_resources, input, camera);
         break;
     case Type::Road:
-        edit_road.show(user, renderer, disp, gen_resources, input, camera);
+        edit_basic.show(user, renderer, disp, gen_resources, input, camera,
+                        Object::Type::Road);
+        break;
+    case Type::Player:
+        edit_basic.show(user, renderer, disp, gen_resources, input, camera,
+                        Object::Type::Player);
         break;
     }
 }

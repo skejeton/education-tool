@@ -3,32 +3,18 @@
 #define BUILDING_DIMENSIONS_W 8
 #define BUILDING_DIMENSIONS_D 8
 
-World World::create()
-{
-    World world = {};
-
-    world.space = Space::create();
-    world.objects = FreeList<Object>::create(Arena::create(&ALLOCATOR_MALLOC));
-
-    return world;
-}
-
-void World::destroy()
-{
-    objects.destroy();
-    space.destroy();
-}
-
 RectI object_dimensions(Object &object)
 {
     switch (object.type)
     {
     case Object::Type::Building:
-        return {object.x - BUILDING_DIMENSIONS_W / 2,
-                object.y - BUILDING_DIMENSIONS_D / 2, BUILDING_DIMENSIONS_W,
-                BUILDING_DIMENSIONS_D};
+        return {int(object.x) - BUILDING_DIMENSIONS_W / 2,
+                int(object.y) - BUILDING_DIMENSIONS_D / 2,
+                BUILDING_DIMENSIONS_W, BUILDING_DIMENSIONS_D};
     case Object::Type::Road:
-        return {object.x - 2, object.y - 2, 4, 4};
+        return {int(object.x) - 2, int(object.y) - 2, 4, 4};
+    case Object::Type::Player:
+        return {int(object.x) - 1, int(object.y) - 1, 2, 2};
     }
 
     assert(false);
@@ -51,6 +37,36 @@ Object *object_space(int x, int y, FreeList<Object> &objects)
     }
 
     return nullptr;
+}
+
+World World::create()
+{
+    World world = {};
+
+    world.space = Space::create();
+    world.objects = FreeList<Object>::create(Arena::create(&ALLOCATOR_MALLOC));
+
+    return world;
+}
+
+void World::destroy()
+{
+    objects.destroy();
+    space.destroy();
+}
+
+World World::clone()
+{
+    World world = World::create();
+
+    for (auto &object : iter(objects))
+    {
+        world.space.claim_region_rect(object_dimensions(object));
+        Object *obj = world.objects.alloc();
+        *obj = object;
+    }
+
+    return world;
 }
 
 Object *World::place_object(Object object)

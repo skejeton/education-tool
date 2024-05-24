@@ -31,7 +31,6 @@ endif()
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC UMKA_STATIC UMKA_EXT_LIBS)
 
-target_compile_options(${PROJECT_NAME} PUBLIC)
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
 if (WIN32)
