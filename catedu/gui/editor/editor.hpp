@@ -1,6 +1,7 @@
 #pragma once
 #include "../debugtree/debugtree.hpp"
 #include "catedu/gui/editor/camera.hpp"
+#include "catedu/gui/editor/dispatcher.hpp"
 #include "catedu/gui/editor/edit_building.hpp"
 #include "catedu/rendering/3d/camera.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
@@ -21,7 +22,7 @@ struct SubEditor
     EditRoad edit_road;
     EditBuilding edit_building;
 
-    void show(UiUser &user, catedu::pbr::Renderer &renderer, World &world,
+    void show(UiUser &user, catedu::pbr::Renderer &renderer, Dispatcher &disp,
               GenResources &gen_resources, Input &input, Camera &camera);
 };
 
@@ -34,8 +35,8 @@ struct GuiEditor
     UiState *ui_state;
     EditorCamera editor_camera;
     GuiDebugTree debug_tree;
-    World world;
     SubEditor sub_editor;
+    Dispatcher dispatcher;
 
     static GuiEditor init(UiState *ui_state);
 

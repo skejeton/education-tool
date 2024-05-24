@@ -172,7 +172,7 @@ GuiEditor GuiEditor::init(UiState *ui_state)
     GuiEditor result = {};
     result.ui_state = ui_state;
     result.debug_tree = GuiDebugTree::init();
-    result.world = World::create();
+    result.dispatcher = Dispatcher::create();
 
     printf("Init editor\n");
 
@@ -252,7 +252,6 @@ void show_popups(UiUser &user, GuiEditor &editor, bool &return_back)
 
     if (editor.show_debug)
     {
-        WindowInfo info = {"Debug", {0, 0, 300, 400}};
         editor.debug_tree.reset();
         editor.debug_tree.value("frees", ALLOCATOR_MALLOC.tracer.total_frees);
         editor.debug_tree.value("allocs",
@@ -268,6 +267,16 @@ void show_popups(UiUser &user, GuiEditor &editor, bool &return_back)
 void show_editor_controls(UiUser &user, GuiEditor &editor, bool &return_back)
 {
     begin_toolbar(user, "Controls", RectSide::Bottom);
+
+    if (icon_button(user, "Undo", "assets/gui/undo.png"))
+    {
+        editor.dispatcher.undo();
+    }
+
+    if (icon_button(user, "Redo", "assets/gui/redo.png"))
+    {
+        editor.dispatcher.redo();
+    }
 
     if (icon_button(user, "Home", "assets/gui/home.png"))
     {
@@ -297,19 +306,21 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
             input.clear(INPUT_MB_LEFT);
             input.clear(INPUT_MB_RIGHT);
 
-            editor.sub_editor.show(user, renderer, editor.world, gen_resources,
-                                   input, editor.editor_camera.cam);
+            editor.sub_editor.show(user, renderer, editor.dispatcher,
+                                   gen_resources, input,
+                                   editor.editor_camera.cam);
         }
         else
         {
-            editor.sub_editor.show(user, renderer, editor.world, gen_resources,
-                                   input, editor.editor_camera.cam);
+            editor.sub_editor.show(user, renderer, editor.dispatcher,
+                                   gen_resources, input,
+                                   editor.editor_camera.cam);
             editor.editor_camera.handle_controls(input,
                                                  {sapp_width(), sapp_height()});
         }
     }
 
-    for (auto &object : iter(editor.world.objects))
+    for (auto &object : iter(editor.dispatcher.world.objects))
     {
         GeneratedObject mesh = {};
 
@@ -373,21 +384,21 @@ void GuiEditor::deinit()
 {
     offscreen_deinit_targets(this->ui_state->core);
 
-    world.destroy();
+    dispatcher.destroy();
     debug_tree.deinit();
 }
 
 void SubEditor::show(UiUser &user, catedu::pbr::Renderer &renderer,
-                     World &world, GenResources &gen_resources, Input &input,
-                     Camera &camera)
+                     Dispatcher &disp, GenResources &gen_resources,
+                     Input &input, Camera &camera)
 {
     switch (type)
     {
     case Type::Building:
-        edit_building.show(user, renderer, world, gen_resources, input, camera);
+        edit_building.show(user, renderer, disp, gen_resources, input, camera);
         break;
     case Type::Road:
-        edit_road.show(user, renderer, world, gen_resources, input, camera);
+        edit_road.show(user, renderer, disp, gen_resources, input, camera);
         break;
     }
 }

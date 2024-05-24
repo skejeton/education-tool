@@ -53,39 +53,21 @@ Object *object_space(int x, int y, FreeList<Object> &objects)
     return nullptr;
 }
 
-void World::add_building(int floors, int x, int y)
+Object *World::place_object(Object object)
 {
-    RectI region = {x - 4, y - 4, 8, 8};
+    RectI region = object_dimensions(object);
 
     if (space.is_region_claimed(region))
     {
-        return;
+        return nullptr;
     }
+
     space.claim_region_rect(region);
 
-    Object *building = objects.alloc();
+    Object *obj = objects.alloc();
+    *obj = object;
 
-    building->type = Object::Type::Building;
-    building->floors = floors;
-    building->x = x;
-    building->y = y;
-}
-
-void World::add_road(int x, int y)
-{
-    RectI region = {x - 2, y - 2, 4, 4};
-
-    if (space.is_region_claimed(region))
-    {
-        return;
-    }
-    space.claim_region_rect(region);
-
-    Object *road = objects.alloc();
-
-    road->type = Object::Type::Road;
-    road->x = x;
-    road->y = y;
+    return obj;
 }
 
 bool World::can_place_building(int floors, int x, int y)
@@ -109,4 +91,9 @@ void World::remove_object(int x, int y)
         space.unclaim_region_rect(object_dimensions(*obj));
         objects.free(obj);
     }
+}
+
+Object *World::get_object_at(int x, int y)
+{
+    return object_space(x, y, objects);
 }

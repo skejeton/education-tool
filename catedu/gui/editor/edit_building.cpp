@@ -3,8 +3,8 @@
 #include <catedu/genobj/grid.hpp>
 
 void EditBuilding::show(UiUser &user, catedu::pbr::Renderer &renderer,
-                        World &world, GenResources &gen_resources, Input &input,
-                        Camera &camera)
+                        Dispatcher &disp, GenResources &gen_resources,
+                        Input &input, Camera &camera)
 {
     Ray3 pointer_ray = camera.screen_to_world_ray(
         input.mouse_pos, {sapp_widthf(), sapp_heightf()});
@@ -34,20 +34,20 @@ void EditBuilding::show(UiUser &user, catedu::pbr::Renderer &renderer,
 
     if (input.k[INPUT_MB_LEFT].pressed && placing)
     {
-        world.add_building(floors, x, y);
+        disp.place_object({Object::Type::Building, floors, x, y});
         placing = false;
     }
     else if (input.k[INPUT_MB_LEFT].pressed)
     {
-        placing = world.can_place_building(floors, x, y);
+        placing = disp.world.can_place_building(floors, x, y);
     }
     if (input.k[INPUT_MB_RIGHT].pressed && !placing)
     {
-        world.remove_object(pointer.x, pointer.y);
+        disp.remove_object(pointer.x, pointer.y);
         placing = false;
     }
 
-    if (world.can_place_building(floors, x, y))
+    if (disp.world.can_place_building(floors, x, y))
     {
         GeneratedObject building = genmesh_generate_building(floors);
         genobj_render_object(renderer, gen_resources, building,

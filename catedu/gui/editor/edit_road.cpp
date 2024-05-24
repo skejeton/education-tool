@@ -1,9 +1,11 @@
 #include "edit_road.hpp"
+#include "catedu/gui/editor/world.hpp"
 #include <catedu/genobj/grid.hpp>
 #include <catedu/genobj/road.hpp>
 
-void EditRoad::show(UiUser &user, catedu::pbr::Renderer &renderer, World &world,
-                    GenResources &gen_resources, Input &input, Camera &camera)
+void EditRoad::show(UiUser &user, catedu::pbr::Renderer &renderer,
+                    Dispatcher &disp, GenResources &gen_resources, Input &input,
+                    Camera &camera)
 {
     Ray3 pointer_ray = camera.screen_to_world_ray(
         input.mouse_pos, {sapp_widthf(), sapp_heightf()});
@@ -16,14 +18,14 @@ void EditRoad::show(UiUser &user, catedu::pbr::Renderer &renderer, World &world,
 
     if (input.k[INPUT_MB_LEFT].pressed)
     {
-        world.add_road(pointer.x, pointer.y);
+        disp.place_object({Object::Type::Road, 0, pointer.x, pointer.y});
     }
     else if (input.k[INPUT_MB_RIGHT].pressed)
     {
-        world.remove_object(pointer.x, pointer.y);
+        disp.remove_object(pointer.x, pointer.y);
     }
 
-    if (world.can_place_road(pointer.x, pointer.y))
+    if (disp.world.can_place_road(pointer.x, pointer.y))
     {
         GeneratedObject road = genmesh_generate_road();
         genobj_render_object(
