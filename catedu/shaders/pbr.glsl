@@ -11,6 +11,7 @@ in vec3 position;
 in vec3 normal;
 in vec2 uv;
 
+out float frag_lightness;
 out vec4 color;
 out vec2 frag_uv;
 out vec3 frag_normal;
@@ -26,6 +27,8 @@ void main() {
     float dp = dot(light_dir, transformed_normal);
     vec4 all = vec4(dp, dp, dp, 1) * light_color + ambient_color;
 
+    frag_lightness = lightness;
+
     color = color_mul*mix(all, vec4(1, 1, 1, 1), lightness);
 
     frag_uv = uv;
@@ -39,6 +42,7 @@ void main() {
 
 uniform texture2D image;
 uniform sampler image_sampler;
+in float frag_lightness;
 in vec4 color;
 in vec2 frag_uv;
 in vec3 frag_normal;
@@ -49,8 +53,9 @@ void main() {
     vec4 sample_value = texture(sampler2D(image, image_sampler), frag_uv);
 
     // show fog
-    float fog = smoothstep(0.6, 1.0, distance(vec3(0.0, 0.0, 0.0), frag_pos.xyz) / 100.0);
-    const vec4 fog_color = vec4(0.2, 0.2, 0.7, 1.0);
+    float fog = smoothstep(0.6, 1.0, distance(vec3(0.0, 0.0, 0.0), frag_pos.xyz) / 200.0);
+    fog = (1.0-frag_lightness)*fog;
+    const vec4 fog_color = vec4(0.52549019607, 0.63921568627, 0.76862745098, 1.0);
 
     frag_color = mix(color, fog_color, fog) * sample_value;
 }

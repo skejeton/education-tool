@@ -5,7 +5,7 @@ Playtest Playtest::create(World world)
     return {world};
 }
 
-void Playtest::update(Input &input)
+void Playtest::update(Input &input, EditorCamera &camera)
 {
     Vector2 movement = {0, 0};
 
@@ -26,6 +26,8 @@ void Playtest::update(Input &input)
         {
             obj.x += movement.x;
             obj.y += movement.y;
+
+            camera.follow({obj.x, 0, obj.y});
         }
     }
 }

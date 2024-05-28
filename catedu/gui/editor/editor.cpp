@@ -3,6 +3,7 @@
 #include "catedu/genobj/render.hpp"
 #include "catedu/misc/camera_input.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
+#include "catedu/rendering/render_model.hpp"
 #include "catedu/ui/widgets.hpp"
 #include "edit_building.hpp"
 #include "offscreen.hpp"
@@ -178,6 +179,7 @@ GuiEditor GuiEditor::init(UiState *ui_state)
     result.ui_state = ui_state;
     result.debug_tree = GuiDebugTree::init();
     result.dispatcher = WorldFile::load("assets/world.dat");
+    result.editor_camera = EditorCamera::create();
 
     printf("Init editor\n");
 
@@ -275,49 +277,66 @@ void show_editor_controls(UiUser &user, GuiEditor &editor, bool &return_back)
 {
     begin_toolbar(user, "Controls", RectSide::Bottom);
 
-    if (icon_button(user, "Undo", "assets/gui/undo.png"))
+    if (!editor.playtesting)
     {
-        editor.dispatcher.undo();
-    }
-
-    if (icon_button(user, "Redo", "assets/gui/redo.png"))
-    {
-        editor.dispatcher.redo();
-    }
-
-    if (icon_button(user, "Home", "assets/gui/home.png"))
-    {
-        return_back = true;
-    }
-
-    if (icon_button(user, "Playtest", "assets/gui/play.png"))
-    {
-        // TODO: Find a better way of handling playtest memory.
-        if (editor.playtesting)
+        if (icon_button(user, "Undo", "assets/gui/undo.png"))
         {
-            editor.playtesting = false;
-            editor.playtest.world.destroy();
-            editor.playtest = {};
+            editor.dispatcher.undo();
         }
-        else
+
+        if (icon_button(user, "Redo", "assets/gui/redo.png"))
+        {
+            editor.dispatcher.redo();
+        }
+
+        if (icon_button(user, "Playtest", "assets/gui/play.png"))
         {
             editor.playtesting = true;
             editor.playtest = Playtest::create(editor.dispatcher.world.clone());
         }
-    }
 
-    Vector4 color = {1.0, 1.0, 1.0, 1.0};
-    if (editor.dispatcher.dirty)
-    {
-        color = {1.0, 0.8, 0.8, 1.0};
-    }
+        if (icon_button(user, "Home", "assets/gui/home.png"))
+        {
+            return_back = true;
+        }
 
-    if (icon_button(user, "Save", "assets/gui/save.png", color))
+        Vector4 color = {1.0, 1.0, 1.0, 1.0};
+        if (editor.dispatcher.dirty)
+        {
+            color = {1.0, 0.8, 0.8, 1.0};
+        }
+
+        if (icon_button(user, "Save", "assets/gui/save.png", color))
+        {
+            WorldFile::save("assets/world.dat", editor.dispatcher);
+        }
+    }
+    else
     {
-        WorldFile::save("assets/world.dat", editor.dispatcher);
+        if (icon_button(user, "Stop Playtest", "assets/gui/stop.png"))
+        {
+            // TODO: Find a better way of handling playtest memory.
+            editor.playtesting = false;
+            editor.playtest.world.destroy();
+            editor.playtest = {};
+        }
     }
 
     end_toolbar(user);
+}
+
+void show_backdrop(catedu::pbr::Renderer &renderer, ResourceSpec &resources)
+{
+    catedu::pbr::Params vs_params;
+
+    vs_params.model =
+        Matrix4::translate(renderer.camera.position) * Matrix4::scale(32);
+    vs_params.lightness = 1.0f;
+    vs_params.color_mul = {1.0f, 1.0f, 1.0f, 1.0f};
+    renderer.render_model(
+        resources.models.get_assert(resources.find_model_by_name("skybox"))
+            .model,
+        vs_params);
 }
 
 void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
@@ -336,13 +355,6 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
         {
             editor.editor_camera.handle_controls(input,
                                                  {sapp_width(), sapp_height()});
-            input.clear(INPUT_MB_MIDDLE);
-            input.clear(INPUT_MB_LEFT);
-            input.clear(INPUT_MB_RIGHT);
-
-            editor.sub_editor.show(user, renderer, editor.dispatcher,
-                                   gen_resources, input,
-                                   editor.editor_camera.cam);
         }
         else
         {
@@ -356,9 +368,14 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
 
     World *world = &editor.dispatcher.world;
 
+    show_backdrop(renderer, resources);
+
     if (editor.playtesting)
     {
-        editor.playtest.update(input);
+        input.mouse_wheel = 0;
+        editor.playtest.update(input, editor.editor_camera);
+        editor.editor_camera.handle_controls(input,
+                                             {sapp_width(), sapp_height()});
         world = &editor.playtest.world;
     }
 
@@ -389,7 +406,11 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
     renderer.end_pass();
 
     show_editor_controls(user, editor, return_back);
-    show_left_panel(user, editor, resources, renderer);
+
+    if (!editor.playtesting)
+    {
+        show_left_panel(user, editor, resources, renderer);
+    }
 
     if (input.k[SAPP_KEYCODE_F3].pressed)
     {
