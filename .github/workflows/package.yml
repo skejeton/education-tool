@@ -29,13 +29,13 @@ jobs:
       - name: get version
         id: vars
         run: |
-          "version="+(Get-Content -Path .\docs\version).Trim() >> $env:GITHUB_ENV
+          "version="+(Get-Content -Path .\docs\version).Trim() >> $GITHUB_OUTPUT
       - name: release
         uses: actions/create-release@v1
         id: create_release
         with:
           draft: false
-          prerelease: false
+          prerelease: true
           release_name: ${{ steps.vars.outputs.version }}
           tag_name: ${{ steps.vars.outputs.version }}.${{ steps.short-sha.outputs.sha }}
         env:
