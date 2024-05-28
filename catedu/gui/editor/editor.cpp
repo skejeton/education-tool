@@ -3,7 +3,6 @@
 #include "catedu/genobj/render.hpp"
 #include "catedu/misc/camera_input.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
-#include "catedu/rendering/render_model.hpp"
 #include "catedu/ui/widgets.hpp"
 #include "edit_building.hpp"
 #include "offscreen.hpp"

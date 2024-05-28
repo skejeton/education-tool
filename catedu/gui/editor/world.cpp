@@ -39,25 +39,25 @@ Object *object_space(int x, int y, FreeList<Object> &objects)
     return nullptr;
 }
 
-World World::create()
+Place Place::create()
 {
-    World world = {};
+    Place place = {};
 
-    world.space = Space::create();
-    world.objects = FreeList<Object>::create(Arena::create(&ALLOCATOR_MALLOC));
+    place.space = Space::create();
+    place.objects = FreeList<Object>::create(Arena::create(&ALLOCATOR_MALLOC));
 
-    return world;
+    return place;
 }
 
-void World::destroy()
+void Place::destroy()
 {
     objects.destroy();
     space.destroy();
 }
 
-World World::clone()
+Place Place::clone()
 {
-    World world = World::create();
+    Place world = Place::create();
 
     for (auto &object : iter(objects))
     {
@@ -69,7 +69,7 @@ World World::clone()
     return world;
 }
 
-Object *World::place_object(Object object)
+Object *Place::place_object(Object object)
 {
     RectI region = object_dimensions(object);
 
@@ -86,14 +86,14 @@ Object *World::place_object(Object object)
     return obj;
 }
 
-bool World::can_place_building(int floors, int x, int y)
+bool Place::can_place_building(int floors, int x, int y)
 {
     RectI region = {x - 4, y - 4, 8, 8};
 
     return !space.is_region_claimed(region);
 }
 
-bool World::can_place_objtype(Object::Type type, int x, int y)
+bool Place::can_place_objtype(Object::Type type, int x, int y)
 {
     RectI region;
 
@@ -116,7 +116,7 @@ bool World::can_place_objtype(Object::Type type, int x, int y)
     return false;
 }
 
-void World::remove_object(int x, int y)
+void Place::remove_object(int x, int y)
 {
     if (Object *obj = object_space(x, y, objects); obj != nullptr)
     {
@@ -125,7 +125,38 @@ void World::remove_object(int x, int y)
     }
 }
 
-Object *World::get_object_at(int x, int y)
+Object *Place::get_object_at(int x, int y)
 {
     return object_space(x, y, objects);
+}
+
+World World::create()
+{
+    World world = {};
+
+    world.places = FreeList<Place>::create(Arena::create(&ALLOCATOR_MALLOC));
+
+    return world;
+}
+
+void World::destroy()
+{
+    for (auto &place : iter(places))
+    {
+        place.destroy();
+    }
+
+    places.destroy();
+}
+
+World World::clone()
+{
+    World world = World::create();
+
+    for (auto &place : iter(places))
+    {
+        *world.places.alloc() = place.clone();
+    }
+
+    return world;
 }

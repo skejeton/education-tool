@@ -2,6 +2,8 @@
 #include "catedu/core/alloc/free_list.hpp"
 #include "catedu/scene/space.hpp"
 
+struct Place;
+
 struct Object
 {
     enum class Type
@@ -13,16 +15,17 @@ struct Object
 
     int floors;
     float x, y;
+    Place *inside;
 };
 
-struct World
+struct Place
 {
     Space space;
     FreeList<Object> objects;
 
-    static World create();
+    static Place create();
     void destroy();
-    World clone();
+    Place clone();
 
     Object *place_object(Object object);
     void remove_object(int x, int y);
@@ -30,4 +33,13 @@ struct World
 
     bool can_place_building(int floors, int x, int y);
     bool can_place_objtype(Object::Type type, int x, int y);
+};
+
+struct World
+{
+    FreeList<Place> places;
+
+    static World create();
+    void destroy();
+    World clone();
 };
