@@ -15,10 +15,10 @@ EditorCamera EditorCamera::create()
     return camera;
 }
 
-void EditorCamera::follow(Vector3 pos)
+void EditorCamera::follow(Vector3 pos, float rotation)
 {
     cam.move(0, -(zoom * zoom), (zoom * zoom));
-    cam.rotate(-cam.yaw * (360 / MATH_TAU) / 8, 0);
+    cam.yaw = lerp(cam.yaw, rotation, 0.2);
     zoom_target = 4;
     cam.position.x = lerp(cam.position.x, pos.x, 0.2);
     cam.position.z = lerp(cam.position.z, pos.z, 0.2);

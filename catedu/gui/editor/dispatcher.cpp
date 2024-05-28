@@ -89,6 +89,18 @@ void Dispatcher::place_object(Object object)
     EditOp op = {};
     op.type = EditOp::Type::Place;
     op.object = object;
+
+    if (object.type == Object::Type::Player)
+    {
+        for (auto &obj : iter(world.objects))
+        {
+            if (obj.type == Object::Type::Player)
+            {
+                remove_object(obj.x, obj.y);
+            }
+        }
+    }
+
     if (perform_op(op, &world))
     {
         dirty = true;

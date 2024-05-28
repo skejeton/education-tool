@@ -120,7 +120,7 @@ bool object_icon_button(UiUser &user, const char *name, SubEditor::Type type,
     Vector4 color = {1.0, 1.0, 1.0, 1.0};
     if (current == type)
     {
-        color = {0.8, 1.0, 0.8, 1.0};
+        color = {0.4, 1.0, 0.4, 1.0};
     }
 
     begin_button_frame(user, name, el, color);
@@ -317,7 +317,7 @@ void show_editor_controls(UiUser &user, GuiEditor &editor, bool &return_back)
         {
             // TODO: Find a better way of handling playtest memory.
             editor.playtesting = false;
-            editor.playtest.world.destroy();
+            editor.playtest.destroy();
             editor.playtest = {};
         }
     }
@@ -337,6 +337,24 @@ void show_backdrop(catedu::pbr::Renderer &renderer, ResourceSpec &resources)
         resources.models.get_assert(resources.find_model_by_name("skybox"))
             .model,
         vs_params);
+}
+
+void handle_shortcuts(GuiEditor &editor, Input &input)
+{
+    if (input.shortcut(MOD_CTRL, SAPP_KEYCODE_S))
+    {
+        WorldFile::save("assets/world.dat", editor.dispatcher);
+    }
+
+    if (input.shortcut(MOD_CTRL, SAPP_KEYCODE_Z))
+    {
+        editor.dispatcher.undo();
+    }
+
+    if (input.shortcut(MOD_CTRL, SAPP_KEYCODE_Y))
+    {
+        editor.dispatcher.redo();
+    }
 }
 
 void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
@@ -416,6 +434,8 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
     {
         editor.show_debug = !editor.show_debug;
     }
+
+    handle_shortcuts(editor, input);
 }
 
 bool show_main_editor(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
@@ -448,6 +468,11 @@ bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
 
 void GuiEditor::deinit()
 {
+    if (playtesting)
+    {
+        playtest.destroy();
+    }
+
     offscreen_deinit_targets(this->ui_state->core);
 
     dispatcher.destroy();

@@ -26,7 +26,7 @@ void EditBasic::show(UiUser &user, catedu::pbr::Renderer &renderer,
         disp.remove_object(pointer.x, pointer.y);
     }
 
-    if (disp.world.can_place_road(pointer.x, pointer.y))
+    if (disp.world.can_place_objtype(type, pointer.x, pointer.y))
     {
         GeneratedObject obj;
 

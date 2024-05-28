@@ -29,5 +29,5 @@ struct World
     Object *get_object_at(int x, int y);
 
     bool can_place_building(int floors, int x, int y);
-    bool can_place_road(int x, int y);
+    bool can_place_objtype(Object::Type type, int x, int y);
 };

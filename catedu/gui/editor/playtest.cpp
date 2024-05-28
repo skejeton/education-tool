@@ -2,7 +2,37 @@
 
 Playtest Playtest::create(World world)
 {
-    return {world};
+    TableId player = {};
+    PhysicsWorld physics = {};
+    for (auto &obj : iter(world.objects))
+    {
+        if (obj.type == Object::Type::Building)
+        {
+            PhysicsBody body = {};
+            body.area = {obj.x - 4 + 0.5f, obj.y - 4 + 0.5f, 8, 8};
+            body.solid = true;
+            body.dynamic = false;
+
+            physics.bodies.allocate(body);
+        }
+        if (obj.type == Object::Type::Player)
+        {
+            PhysicsBody body = {};
+            body.area = {obj.x, obj.y, 1, 1};
+            body.solid = true;
+            body.dynamic = true;
+
+            player = physics.bodies.allocate(body);
+        }
+    }
+
+    return {player, physics, world};
+}
+
+void Playtest::destroy()
+{
+    physics.bodies.deinit();
+    world.destroy();
 }
 
 void Playtest::update(Input &input, EditorCamera &camera)
@@ -20,14 +50,23 @@ void Playtest::update(Input &input, EditorCamera &camera)
 
     movement *= 0.2f;
 
+    PhysicsBody &player = physics.bodies.get_assert(this->player);
+
+    player.area.pos.x += movement.x;
+    player.area.pos.y += movement.y;
+
+    PhysicsManifolds manifolds = physics.detect_collisions();
+    physics.resolve_physics(manifolds);
+    manifolds.manifolds.deinit();
+
     for (auto &obj : iter(world.objects))
     {
         if (obj.type == Object::Type::Player)
         {
-            obj.x += movement.x;
-            obj.y += movement.y;
+            obj.x = player.area.pos.x;
+            obj.y = player.area.pos.y;
 
-            camera.follow({obj.x, 0, obj.y});
+            camera.follow({obj.x, 0, obj.y}, 0);
         }
     }
 }
