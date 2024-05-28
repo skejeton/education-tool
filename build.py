@@ -96,7 +96,7 @@ def target_build(p: CompileProperties):
       sleepy = "C:\\PROGRA~1\\VERYSL~1\\sleepy.exe"
       if not os.path.isfile(sleepy):
         raise Exception("Very Sleepy is not installed, it is required for profiling on Windows")
-      command += f"&& {sleepy} /r .\\bin\\{mode_string}\\educore.exe"
+      command += f"&& {sleepy} /r .\\bin\\educore.exe"
       print(command)
     elif p.run_mode:
       command += f"&& .\\bin\\educore.exe"
