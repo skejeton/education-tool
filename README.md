@@ -15,7 +15,7 @@ High level editor for development of educational 3D games.
 ## Development Installation
 
 ```
-git clone --recurse-submodules https://github.com/skejeton/ducation-tool
+git clone --recurse-submodules https://github.com/skejeton/education-tool
 ```
 
 If you cloned without the submodules, you can run:
