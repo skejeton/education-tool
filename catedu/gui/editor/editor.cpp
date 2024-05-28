@@ -396,7 +396,7 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
         world = &editor.playtest.world;
     }
 
-    for (auto &object : iter(world->objects))
+    for (auto &object : iter(world->first->objects))
     {
         GeneratedObject mesh = {};
 

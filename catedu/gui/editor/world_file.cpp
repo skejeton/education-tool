@@ -9,16 +9,27 @@ void WorldFile::save(const char *path, Dispatcher &dispatcher)
     }
 
     uint32_t count = 0;
-    for (auto &_ : iter(dispatcher.world.objects))
+    for (auto &_ : iter(dispatcher.world.places))
     {
         count++;
     }
 
     fwrite(&count, sizeof(count), 1, file);
 
-    for (auto &obj : iter(dispatcher.world.objects))
+    for (auto &place : iter(dispatcher.world.places))
     {
-        fwrite(&obj, sizeof(obj), 1, file);
+        uint32_t count = 0;
+        for (auto &_ : iter(place.objects))
+        {
+            count++;
+        }
+
+        fwrite(&count, sizeof(count), 1, file);
+
+        for (auto &obj : iter(place.objects))
+        {
+            fwrite(&obj, sizeof(obj), 1, file);
+        }
     }
 
     fclose(file);
@@ -42,9 +53,20 @@ Dispatcher WorldFile::load(const char *path)
 
     for (size_t i = 0; i < count; i++)
     {
-        Object obj;
-        fread(&obj, sizeof(obj), 1, file);
-        dispatcher.world.place_object(obj);
+        Place place = Place::create();
+
+        uint32_t count = 0;
+        fread(&count, sizeof(count), 1, file);
+
+        for (size_t i = 0; i < count; i++)
+        {
+            Object obj = {};
+            fread(&obj, sizeof(obj), 1, file);
+
+            *place.objects.alloc() = obj;
+        }
+
+        *dispatcher.world.places.alloc() = place;
     }
 
     fclose(file);

@@ -6,12 +6,13 @@ void unperform_op(EditOp &op, World *world)
     switch (op.type)
     {
     case EditOp::Type::Place:
-        assert(world->get_object_at(op.object.x, op.object.y) != nullptr);
-        world->remove_object(op.object.x, op.object.y);
+        assert(world->first->get_object_at(op.object.x, op.object.y) !=
+               nullptr);
+        world->first->remove_object(op.object.x, op.object.y);
         return;
         break;
     case EditOp::Type::Remove:
-        assert(world->place_object(op.object) != nullptr);
+        assert(world->first->place_object(op.object) != nullptr);
         return;
         break;
     case EditOp::Type::Noop:
@@ -27,14 +28,14 @@ bool perform_op(EditOp &op, World *world)
     switch (op.type)
     {
     case EditOp::Type::Place:
-        return world->place_object(op.object) != nullptr;
+        return world->first->place_object(op.object) != nullptr;
         break;
     case EditOp::Type::Remove:
-        if (world->get_object_at(op.object.x, op.object.y) == nullptr)
+        if (world->first->get_object_at(op.object.x, op.object.y) == nullptr)
         {
             return false;
         }
-        world->remove_object(op.object.x, op.object.y);
+        world->first->remove_object(op.object.x, op.object.y);
         return true;
         break;
     case EditOp::Type::Noop:
@@ -92,7 +93,7 @@ void Dispatcher::place_object(Object object)
 
     if (object.type == Object::Type::Player)
     {
-        for (auto &obj : iter(world.objects))
+        for (auto &obj : iter(world.first->objects))
         {
             if (obj.type == Object::Type::Player)
             {
@@ -110,7 +111,7 @@ void Dispatcher::place_object(Object object)
 
 void Dispatcher::remove_object(int x, int y)
 {
-    Object *obj = world.get_object_at(x, y);
+    Object *obj = world.first->get_object_at(x, y);
     if (obj == nullptr)
     {
         return;

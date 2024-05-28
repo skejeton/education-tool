@@ -4,7 +4,7 @@ Playtest Playtest::create(World world)
 {
     TableId player = {};
     PhysicsWorld physics = {};
-    for (auto &obj : iter(world.objects))
+    for (auto &obj : iter(world.first->objects))
     {
         if (obj.type == Object::Type::Building)
         {
@@ -59,7 +59,7 @@ void Playtest::update(Input &input, EditorCamera &camera)
     physics.resolve_physics(manifolds);
     manifolds.manifolds.deinit();
 
-    for (auto &obj : iter(world.objects))
+    for (auto &obj : iter(world.first->objects))
     {
         if (obj.type == Object::Type::Player)
         {

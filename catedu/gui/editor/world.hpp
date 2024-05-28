@@ -38,6 +38,7 @@ struct Place
 struct World
 {
     FreeList<Place> places;
+    Place *first;
 
     static World create();
     void destroy();

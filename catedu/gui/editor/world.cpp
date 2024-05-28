@@ -136,6 +136,10 @@ World World::create()
 
     world.places = FreeList<Place>::create(Arena::create(&ALLOCATOR_MALLOC));
 
+    world.first = world.places.alloc();
+
+    *world.first = Place::create();
+
     return world;
 }
 
@@ -147,6 +151,8 @@ void World::destroy()
     }
 
     places.destroy();
+
+    first = nullptr;
 }
 
 World World::clone()
@@ -155,6 +161,13 @@ World World::clone()
 
     for (auto &place : iter(places))
     {
+        if (&place == first)
+        {
+            world.first = world.places.alloc();
+            *world.first = place.clone();
+            continue;
+        }
+
         *world.places.alloc() = place.clone();
     }
 
