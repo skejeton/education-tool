@@ -29,7 +29,7 @@ jobs:
       - name: get version
         id: vars
         run: |
-          "version="+(Get-Content -Path .\docs\version).Trim() >> $GITHUB_OUTPUT
+          "version="+(Get-Content -Path .\docs\version).Trim() >> $env:GITHUB_OUTPUT
       - name: release
         uses: actions/create-release@v1
         id: create_release
