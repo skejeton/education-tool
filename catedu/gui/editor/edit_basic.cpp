@@ -1,4 +1,4 @@
-#include "edit_road.hpp"
+#include "edit_basic.hpp"
 #include "catedu/gui/editor/world.hpp"
 #include <catedu/genobj/grid.hpp>
 #include <catedu/genobj/player.hpp>

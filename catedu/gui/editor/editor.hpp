@@ -7,10 +7,9 @@
 #include "catedu/rendering/3d/pbr.hpp"
 #include "catedu/rendering/resource_spec.hpp"
 #include "catedu/ui/user.hpp"
-#include "edit_road.hpp"
+#include "edit_basic.hpp"
 #include "playtest.hpp"
 #include <sokol/sokol_app.h>
-
 
 struct SubEditor
 {
@@ -32,6 +31,7 @@ struct GuiEditor
 {
     bool exit_requested;
     bool tried_to_return_back;
+    bool playtest_no_player;
     bool show_debug;
     bool playtesting;
     Playtest playtest;

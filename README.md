@@ -1,5 +1,3 @@
-
-
 # Educore
 
 High level editor for development of educational 3D games. 

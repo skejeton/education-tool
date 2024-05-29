@@ -236,6 +236,19 @@ void show_popups(UiUser &user, GuiEditor &editor, bool &return_back)
         }
     }
 
+    if (editor.playtest_no_player)
+    {
+        return_back = false;
+        const char *options[] = {"Ok", NULL};
+        switch (msgbox(user, "Error", "Add a player to the scene",
+                       MsgBoxType::Error, options))
+        {
+        case 0:
+            editor.playtest_no_player = false;
+            break;
+        }
+    }
+
     if (return_back)
         editor.tried_to_return_back = true;
 
@@ -292,6 +305,13 @@ void show_editor_controls(UiUser &user, GuiEditor &editor, bool &return_back)
         {
             editor.playtesting = true;
             editor.playtest = Playtest::create(editor.dispatcher.world.clone());
+            // FIXME: There's probably better ways to handle this
+            if (editor.playtest.player == NULL_ID)
+            {
+                editor.playtest.destroy();
+                editor.playtesting = false;
+                editor.playtest_no_player = true;
+            }
         }
 
         if (icon_button(user, "Home", "assets/gui/home.png"))
@@ -383,9 +403,7 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
         }
     }
 
-    World *world = &editor.dispatcher.world;
-
-    show_backdrop(renderer, resources);
+    // show_backdrop(renderer, resources);
 
     if (editor.playtesting)
     {
@@ -393,10 +411,12 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
         editor.playtest.update(input, editor.editor_camera);
         editor.editor_camera.handle_controls(input,
                                              {sapp_width(), sapp_height()});
-        world = &editor.playtest.world;
     }
 
-    for (auto &object : iter(world->first->objects))
+    World &world =
+        !editor.playtesting ? editor.dispatcher.world : editor.playtest.world;
+
+    for (auto &object : iter(world.first->objects))
     {
         GeneratedObject mesh = {};
 
@@ -418,7 +438,8 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
             Matrix4::translate({(float)object.x, 0, (float)object.y}));
     }
 
-    genobj_render_object(renderer, gen_resources, genmesh_generate_ground());
+    genobj_render_object(renderer, gen_resources,
+                         genmesh_generate_ground(true));
 
     renderer.end_pass();
 

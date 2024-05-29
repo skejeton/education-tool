@@ -66,7 +66,14 @@ Dispatcher WorldFile::load(const char *path)
             *place.objects.alloc() = obj;
         }
 
-        *dispatcher.world.places.alloc() = place;
+        if (i == 0)
+        {
+            *dispatcher.world.first = place;
+        }
+        else
+        {
+            dispatcher.world.places.alloc();
+        }
     }
 
     fclose(file);
