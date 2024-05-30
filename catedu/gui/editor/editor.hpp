@@ -17,7 +17,8 @@ struct SubEditor
     {
         Building,
         Road,
-        Player
+        Player,
+        Wall
     } type;
 
     EditBasic edit_basic;

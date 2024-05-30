@@ -6,13 +6,13 @@ void unperform_op(EditOp &op, World *world)
     switch (op.type)
     {
     case EditOp::Type::Place:
-        assert(world->first->get_object_at(op.object.x, op.object.y) !=
+        assert(world->current->get_object_at(op.object.x, op.object.y) !=
                nullptr);
-        world->first->remove_object(op.object.x, op.object.y);
+        world->current->remove_object(op.object.x, op.object.y);
         return;
         break;
     case EditOp::Type::Remove:
-        assert(world->first->place_object(op.object) != nullptr);
+        assert(world->current->place_object(op.object) != nullptr);
         return;
         break;
     case EditOp::Type::Noop:
@@ -28,14 +28,14 @@ bool perform_op(EditOp &op, World *world)
     switch (op.type)
     {
     case EditOp::Type::Place:
-        return world->first->place_object(op.object) != nullptr;
+        return world->current->place_object(op.object) != nullptr;
         break;
     case EditOp::Type::Remove:
-        if (world->first->get_object_at(op.object.x, op.object.y) == nullptr)
+        if (world->current->get_object_at(op.object.x, op.object.y) == nullptr)
         {
             return false;
         }
-        world->first->remove_object(op.object.x, op.object.y);
+        world->current->remove_object(op.object.x, op.object.y);
         return true;
         break;
     case EditOp::Type::Noop:
@@ -51,6 +51,7 @@ bool perform_op(EditOp &op, World *world)
 static void append(Dispatcher &disp, EditOp op)
 {
     assert(disp.current);
+    op.place = disp.world.current;
 
     EditOp *alloc = disp.history.alloc();
     *alloc = op;
@@ -93,7 +94,7 @@ void Dispatcher::place_object(Object object)
 
     if (object.type == Object::Type::Player)
     {
-        for (auto &obj : iter(world.first->objects))
+        for (auto &obj : iter(world.current->objects))
         {
             if (obj.type == Object::Type::Player)
             {
@@ -111,11 +112,18 @@ void Dispatcher::place_object(Object object)
 
 void Dispatcher::remove_object(int x, int y)
 {
-    Object *obj = world.first->get_object_at(x, y);
+    Object *obj = world.current->get_object_at(x, y);
     if (obj == nullptr)
     {
         return;
     }
+
+    if (obj->place && obj->place != world.first)
+    {
+        world.places.free(obj->place);
+    }
+
+    obj->place = nullptr;
 
     EditOp op = {};
     op.type = EditOp::Type::Remove;
@@ -127,9 +135,21 @@ void Dispatcher::remove_object(int x, int y)
     }
 }
 
+void Dispatcher::enter_place(Object *object)
+{
+    if (object->place == nullptr)
+    {
+        object->place = world.places.alloc();
+        *object->place = Place::create();
+        object->place->interior = true;
+    }
+
+    world.current = object->place;
+}
+
 void Dispatcher::undo()
 {
-    if (!current || !current->prev)
+    if (!current || !current->prev || current->place != world.current)
     {
         return;
     }
@@ -142,7 +162,7 @@ void Dispatcher::undo()
 
 void Dispatcher::redo()
 {
-    if (!current || !current->next)
+    if (!current || !current->next || current->place != world.current)
     {
         return;
     }

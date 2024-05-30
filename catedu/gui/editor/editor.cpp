@@ -10,6 +10,7 @@
 #include <catedu/genobj/ground.hpp>
 #include <catedu/genobj/player.hpp>
 #include <catedu/genobj/road.hpp>
+#include <catedu/genobj/wall.hpp>
 #include <umka_api.h>
 
 bool icon_button(UiUser &user, const char *name, const char *icon,
@@ -156,6 +157,9 @@ bool object_icon_button(UiUser &user, const char *name, SubEditor::Type type,
         case SubEditor::Type::Player:
             obj = genmesh_generate_player();
             break;
+        case SubEditor::Type::Wall:
+            obj = genmesh_generate_wall();
+            break;
         }
         genobj_render_object(renderer, get_genres(resources), obj,
                              Matrix4::scale(0.1f));
@@ -190,12 +194,26 @@ GuiEditor GuiEditor::init(UiState *ui_state)
 void show_build_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
                       catedu::pbr::Renderer &renderer)
 {
-    object_icon_button(user, "Building", SubEditor::Type::Building,
-                       editor.sub_editor.type, renderer, resources);
-    object_icon_button(user, "Road", SubEditor::Type::Road,
-                       editor.sub_editor.type, renderer, resources);
-    object_icon_button(user, "Player", SubEditor::Type::Player,
-                       editor.sub_editor.type, renderer, resources);
+    if (editor.dispatcher.world.first != editor.dispatcher.world.current)
+    {
+        if (editor.sub_editor.type == SubEditor::Type::Building)
+        {
+            editor.sub_editor.type = SubEditor::Type::Wall;
+        }
+        object_icon_button(user, "Wall", SubEditor::Type::Wall,
+                           editor.sub_editor.type, renderer, resources);
+        object_icon_button(user, "Player", SubEditor::Type::Player,
+                           editor.sub_editor.type, renderer, resources);
+    }
+    else
+    {
+        object_icon_button(user, "Building", SubEditor::Type::Building,
+                           editor.sub_editor.type, renderer, resources);
+        object_icon_button(user, "Road", SubEditor::Type::Road,
+                           editor.sub_editor.type, renderer, resources);
+        object_icon_button(user, "Player", SubEditor::Type::Player,
+                           editor.sub_editor.type, renderer, resources);
+    }
 }
 
 void show_left_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
@@ -208,6 +226,14 @@ void show_left_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
                       sapp_screen_rect_scaled(user.state->dpi_scale).siz.y};
     user.state->element_storage.push("Left Panel", {});
     user.begin_generic(element, {}, {}, user.state->element_storage.id());
+
+    if (editor.dispatcher.world.current != editor.dispatcher.world.first)
+    {
+        if (button(user, "Back"))
+        {
+            editor.dispatcher.world.current = editor.dispatcher.world.first;
+        }
+    }
 
     show_build_panel(user, editor, resources, renderer);
 
@@ -376,6 +402,25 @@ void handle_shortcuts(GuiEditor &editor, Input &input)
     }
 }
 
+void render_physics_boxes(catedu::pbr::Renderer &renderer, PhysicsWorld &world,
+                          ResourceSpec &resources)
+{
+    catedu::Model *hitbox =
+        &resources.models.get(resources.find_model_by_name("hitbox"))->model;
+
+    for (auto [id, body] : iter(world.bodies))
+    {
+        catedu::pbr::Params vs_params;
+        vs_params.model =
+            Matrix4::translate({body.area.pos.x + body.area.siz.x / 2.0f, 0,
+                                body.area.pos.y + body.area.siz.y / 2.0f}) *
+            Matrix4::scale_v({body.area.siz.x, 1.0f, body.area.siz.y});
+        vs_params.lightness = 1.0f;
+        vs_params.color_mul = {1.0f, 1.0f, 1.0f, 1.0f};
+        renderer.render_model(*hitbox, vs_params);
+    }
+}
+
 void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
                     catedu::pbr::Renderer &renderer, Input &input,
                     bool &return_back)
@@ -403,8 +448,6 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
         }
     }
 
-    // show_backdrop(renderer, resources);
-
     if (editor.playtesting)
     {
         input.mouse_wheel = 0;
@@ -416,7 +459,7 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
     World &world =
         !editor.playtesting ? editor.dispatcher.world : editor.playtest.world;
 
-    for (auto &object : iter(world.first->objects))
+    for (auto &object : iter(world.current->objects))
     {
         GeneratedObject mesh = {};
 
@@ -431,6 +474,9 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
         case Object::Type::Player:
             mesh = genmesh_generate_player();
             break;
+        case Object::Type::Wall:
+            mesh = genmesh_generate_wall();
+            break;
         }
 
         genobj_render_object(
@@ -438,8 +484,19 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
             Matrix4::translate({(float)object.x, 0, (float)object.y}));
     }
 
-    genobj_render_object(renderer, gen_resources,
-                         genmesh_generate_ground(true));
+    // render_physics_boxes(renderer, editor.playtest.physics, resources);
+
+    if (world.current->interior)
+    {
+        genobj_render_object(renderer, gen_resources,
+                             genmesh_generate_ground(true));
+    }
+    else
+    {
+        show_backdrop(renderer, resources);
+        genobj_render_object(renderer, gen_resources,
+                             genmesh_generate_ground(false));
+    }
 
     renderer.end_pass();
 
@@ -511,6 +568,10 @@ void SubEditor::show(UiUser &user, catedu::pbr::Renderer &renderer,
     case Type::Road:
         edit_basic.show(user, renderer, disp, gen_resources, input, camera,
                         Object::Type::Road);
+        break;
+    case Type::Wall:
+        edit_basic.show(user, renderer, disp, gen_resources, input, camera,
+                        Object::Type::Wall);
         break;
     case Type::Player:
         edit_basic.show(user, renderer, disp, gen_resources, input, camera,

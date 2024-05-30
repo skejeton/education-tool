@@ -39,7 +39,18 @@ void EditBuilding::show(UiUser &user, catedu::pbr::Renderer &renderer,
     }
     else if (input.k[INPUT_MB_LEFT].pressed)
     {
-        placing = disp.world.first->can_place_building(floors, x, y);
+        placing = disp.world.current->can_place_building(floors, x, y);
+        if (!placing)
+        {
+            if (Object *obj = disp.world.current->get_object_at(x, y);
+                obj != nullptr)
+            {
+                if (obj->type == Object::Type::Building)
+                {
+                    disp.enter_place(obj);
+                }
+            }
+        }
     }
     if (input.k[INPUT_MB_RIGHT].pressed && !placing)
     {
@@ -47,7 +58,7 @@ void EditBuilding::show(UiUser &user, catedu::pbr::Renderer &renderer,
         placing = false;
     }
 
-    if (disp.world.first->can_place_building(floors, x, y))
+    if (disp.world.current->can_place_building(floors, x, y))
     {
         GeneratedObject building = genmesh_generate_building(floors);
         genobj_render_object(renderer, gen_resources, building,

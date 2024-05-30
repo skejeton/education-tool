@@ -3,6 +3,7 @@
 #include <catedu/genobj/grid.hpp>
 #include <catedu/genobj/player.hpp>
 #include <catedu/genobj/road.hpp>
+#include <catedu/genobj/wall.hpp>
 
 void EditBasic::show(UiUser &user, catedu::pbr::Renderer &renderer,
                      Dispatcher &disp, GenResources &gen_resources,
@@ -15,7 +16,7 @@ void EditBasic::show(UiUser &user, catedu::pbr::Renderer &renderer,
     ray3_vs_horizontal_plane(pointer_ray, -0.5, &t);
 
     Vector3 at = ray3_at(pointer_ray, t);
-    Vector2 pointer = {roundf(at.x), roundf(at.z)};
+    Vector2 pointer = {floorf(at.x), floorf(at.z)};
 
     if (input.k[INPUT_MB_LEFT].pressed)
     {
@@ -26,7 +27,7 @@ void EditBasic::show(UiUser &user, catedu::pbr::Renderer &renderer,
         disp.remove_object(pointer.x, pointer.y);
     }
 
-    if (disp.world.first->can_place_objtype(type, pointer.x, pointer.y))
+    if (disp.world.current->can_place_objtype(type, pointer.x, pointer.y))
     {
         GeneratedObject obj;
 
@@ -38,7 +39,12 @@ void EditBasic::show(UiUser &user, catedu::pbr::Renderer &renderer,
         case Object::Type::Player:
             obj = genmesh_generate_player();
             break;
-        default:;
+        case Object::Type::Wall:
+            obj = genmesh_generate_wall();
+            break;
+        case Object::Type::Building:
+            assert(false);
+            break;
         }
 
         genobj_render_object(renderer, gen_resources, obj,

@@ -9,6 +9,7 @@ struct PhysicsBody
     Rect area;
     bool solid;
     bool dynamic;
+    void *userdata;
 };
 
 struct PhysicsManifold

@@ -1,11 +1,19 @@
 #include "playtest.hpp"
 
-Playtest Playtest::create(World world)
+PhysicsWorld create_bodies(Place *parent, Place &place, TableId &player)
 {
-    TableId player = {};
     PhysicsWorld physics = {};
-    for (auto &obj : iter(world.first->objects))
+    for (auto &obj : iter(place.objects))
     {
+        if (obj.type == Object::Type::Wall)
+        {
+            PhysicsBody body = {};
+            body.area = {obj.x + 0.5f, obj.y + 0.5f, 1, 1};
+            body.solid = true;
+            body.dynamic = false;
+
+            physics.bodies.allocate(body);
+        }
         if (obj.type == Object::Type::Building)
         {
             PhysicsBody body = {};
@@ -14,6 +22,14 @@ Playtest Playtest::create(World world)
             body.dynamic = false;
 
             physics.bodies.allocate(body);
+
+            PhysicsBody door = {};
+            door.area = {obj.x, obj.y - 4.1f, 1, 1};
+            door.solid = false;
+            door.dynamic = false;
+            door.userdata = obj.place;
+
+            physics.bodies.allocate(door);
         }
         if (obj.type == Object::Type::Player)
         {
@@ -25,7 +41,24 @@ Playtest Playtest::create(World world)
             player = physics.bodies.allocate(body);
         }
     }
+    if (place.interior)
+    {
+        PhysicsBody door = {};
+        door.area = {0, -7, 2, 1};
+        door.solid = false;
+        door.dynamic = false;
+        door.userdata = parent;
 
+        physics.bodies.allocate(door);
+    }
+
+    return physics;
+}
+
+Playtest Playtest::create(World world)
+{
+    TableId player = {};
+    PhysicsWorld physics = create_bodies(nullptr, *world.first, player);
     return {player, physics, world};
 }
 
@@ -37,6 +70,7 @@ void Playtest::destroy()
 
 void Playtest::update(Input &input, EditorCamera &camera)
 {
+    bool enter = false;
     Vector2 movement = {0, 0};
 
     if (input.k[SAPP_KEYCODE_UP].held)
@@ -47,26 +81,71 @@ void Playtest::update(Input &input, EditorCamera &camera)
         movement.x -= 1;
     if (input.k[SAPP_KEYCODE_RIGHT].held)
         movement.x += 1;
+    if (input.k[SAPP_KEYCODE_SPACE].pressed)
+        enter = true;
 
     movement *= 0.2f;
 
-    PhysicsBody &player = physics.bodies.get_assert(this->player);
+    if (world.current->interior)
+    {
+        movement *= -1.0f;
+    }
 
+    PhysicsBody &player = physics.bodies.get_assert(this->player);
     player.area.pos.x += movement.x;
     player.area.pos.y += movement.y;
 
     PhysicsManifolds manifolds = physics.detect_collisions();
     physics.resolve_physics(manifolds);
+    for (auto [id, manifold] : iter(manifolds.manifolds))
+    {
+        PhysicsBody &b = physics.bodies.get_assert(manifold.second);
+
+        if (manifold.first == this->player && b.userdata)
+        {
+            if (enter)
+            {
+                PhysicsBody body = {};
+                body.area = {0, 0, 1, 1};
+                body.solid = true;
+                body.dynamic = true;
+                void *userdata = b.userdata;
+
+                physics.bodies.deinit();
+                world.current = (Place *)userdata;
+                physics =
+                    create_bodies(world.first, *world.current, this->player);
+                break;
+            }
+        }
+    }
     manifolds.manifolds.deinit();
 
-    for (auto &obj : iter(world.first->objects))
+    player = physics.bodies.get_assert(this->player);
+
+    if (enter)
+    {
+        camera.follow({player.area.pos.x, 0, player.area.pos.y}, 0);
+        camera.follow({player.area.pos.x, 0, player.area.pos.y}, 0);
+        camera.follow({player.area.pos.x, 0, player.area.pos.y}, 0);
+        camera.follow({player.area.pos.x, 0, player.area.pos.y}, 0);
+    }
+
+    for (auto &obj : iter(world.current->objects))
     {
         if (obj.type == Object::Type::Player)
         {
             obj.x = player.area.pos.x;
             obj.y = player.area.pos.y;
 
-            camera.follow({obj.x, 0, obj.y}, 0);
+            if (world.current->interior)
+            {
+                camera.follow({obj.x, 0, obj.y}, 3.1415);
+            }
+            else
+            {
+                camera.follow({obj.x, 0, obj.y}, 0);
+            }
         }
     }
 }

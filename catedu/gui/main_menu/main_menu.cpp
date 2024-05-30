@@ -106,7 +106,7 @@ int GuiMainMenu::show(UiUser &user)
 
     user.bold = true;
     label(
-        user, "EDUCORE", {5, 5},
+        user, "STORYLAND", {5, 5},
         UiMakeBrush::make_gradient({0.2, 0.8, 0.0, 1.0}, {0.5, 1.0, 0.0, 1.0}));
     user.bold = false;
 

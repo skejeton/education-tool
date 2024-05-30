@@ -8,13 +8,15 @@ RectI object_dimensions(Object &object)
     switch (object.type)
     {
     case Object::Type::Building:
-        return {int(object.x) - BUILDING_DIMENSIONS_W / 2,
-                int(object.y) - BUILDING_DIMENSIONS_D / 2,
+        return {(int)ceilf(object.x) - BUILDING_DIMENSIONS_W / 2,
+                (int)ceilf(object.y) - BUILDING_DIMENSIONS_D / 2,
                 BUILDING_DIMENSIONS_W, BUILDING_DIMENSIONS_D};
     case Object::Type::Road:
-        return {int(object.x) - 2, int(object.y) - 2, 4, 4};
+        return {(int)ceilf(object.x) - 2, (int)ceilf(object.y) - 2, 4, 4};
     case Object::Type::Player:
-        return {int(object.x) - 1, int(object.y) - 1, 2, 2};
+        return {(int)ceilf(object.x) - 1, (int)ceilf(object.y) - 1, 2, 2};
+    case Object::Type::Wall:
+        return {(int)ceilf(object.x), (int)ceilf(object.y), 1, 1};
     }
 
     assert(false);
@@ -109,6 +111,10 @@ bool Place::can_place_objtype(Object::Type type, int x, int y)
         region = {x - 1, y - 1, 2, 2};
         return !space.is_region_claimed(region);
         break;
+    case Object::Type::Wall:
+        region = {x, y, 1, 1};
+        return !space.is_region_claimed(region);
+        break;
     default:
         break;
     }
@@ -140,6 +146,8 @@ World World::create()
 
     *world.first = Place::create();
 
+    world.current = world.first;
+
     return world;
 }
 
@@ -165,6 +173,7 @@ World World::clone()
         {
             world.first = world.places.alloc();
             *world.first = place.clone();
+            world.current = world.first;
             continue;
         }
 

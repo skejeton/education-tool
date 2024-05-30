@@ -10,16 +10,18 @@ struct Object
     {
         Building,
         Road,
-        Player
+        Player,
+        Wall
     } type;
 
     int floors;
     float x, y;
-    Place *inside;
+    Place *place;
 };
 
 struct Place
 {
+    bool interior;
     Space space;
     FreeList<Object> objects;
 
@@ -39,6 +41,7 @@ struct World
 {
     FreeList<Place> places;
     Place *first;
+    Place *current;
 
     static World create();
     void destroy();

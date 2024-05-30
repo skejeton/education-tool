@@ -13,6 +13,7 @@
 #define BUILDING_COLOR_BOTTOM 0x777777FF
 #define BUILDING_COLOR_MIDDLE 0x999999FF
 #define BUILDING_COLOR_WINDOW 0x000077FF
+#define BUILDING_COLOR_DOOR 0x770000FF
 
 GeneratedObject genmesh_generate_building(int floor_count)
 {
@@ -64,6 +65,11 @@ GeneratedObject genmesh_generate_building(int floor_count)
             box3_translate(construct_box(Baseline::Bottom, size), pos),
             Color::hex(BUILDING_COLOR_MIDDLE));
     }
+
+    object.push_colored_box(
+        box3_translate(construct_box(Baseline::Bottom, {1, 2, 0.1}),
+                       {0, 0, -4}),
+        Color::hex(BUILDING_COLOR_DOOR));
 
     return object;
 }
