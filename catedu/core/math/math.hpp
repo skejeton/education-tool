@@ -15,8 +15,16 @@
 #include <float.h>
 #include <stdint.h>
 
-#define MATH_TAU 6.283185307179586
-#define MATH_EPSILON FLT_MIN
+#pragma region constants
+constexpr float MATH_TAU = 6.283185307179586;
+constexpr float MATH_PI = 3.141592653589793;
+constexpr float MATH_HALF_PI = 1.5707963267948966;
+constexpr float MATH_DEG_TO_RAD = MATH_PI / 180.0f;
+constexpr float MATH_RAD_TO_DEG = 180.0f / MATH_PI;
+constexpr float MATH_EPSILON = FLT_MIN;
+constexpr float MATH_INFINITY = FLT_MAX;
+constexpr float MATH_E = 2.718281828459045;
+#pragma endregion
 
 struct Vector2i
 {
@@ -25,7 +33,7 @@ struct Vector2i
         {
             int32_t x, y;
         };
-        int32_t values[2];
+        int32_t data[2];
     };
 };
 
@@ -367,6 +375,51 @@ inline Vector4 operator*(Vector4 a, float b)
 inline Vector4 operator*=(Vector4 &a, float b)
 {
     return a = {a.x * b, a.y * b, a.z * b, a.w * b};
+}
+
+inline Vector4 operator/(Vector4 a, float b)
+{
+    return {a.x / b, a.y / b, a.z / b, a.w / b};
+}
+
+inline Vector4 operator/=(Vector4 &a, float b)
+{
+    return a = {a.x / b, a.y / b, a.z / b, a.w / b};
+}
+
+inline Vector4 operator+(Vector4 a, Vector4 b)
+{
+    return {a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};
+}
+
+inline Vector4 operator+=(Vector4 &a, Vector4 b)
+{
+    return a = {a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};
+}
+
+inline Vector4 operator-(Vector4 a, Vector4 b)
+{
+    return {a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w};
+}
+
+inline Vector4 operator-=(Vector4 &a, Vector4 b)
+{
+    return a = {a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w};
+}
+
+inline float vector4_dot(Vector4 a, Vector4 b)
+{
+    return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+}
+
+inline float vector4_length(Vector4 a)
+{
+    return sqrt(vector4_dot(a, a));
+}
+
+inline Vector4 vector4_normalize(Vector4 a)
+{
+    return a / vector4_length(a);
 }
 
 inline Box3 box3_extrude_from_point_volume(Vector3 point, Vector3 extrude)
@@ -932,6 +985,8 @@ inline Vector2 vector2i_to_vector2(Vector2i v)
     return {(float)v.x, (float)v.y};
 }
 
+// Bounds Operations
+
 template <class T> T clamp(T value, T min, T max)
 {
     return value < min ? min : value > max ? max : value;
@@ -950,4 +1005,46 @@ template <class T> T max(T a, T b)
 inline float snap(float value, float snap)
 {
     return round(value / snap) * snap;
+}
+
+// Interpolation Operations
+
+inline float slerp(float a, float b, float decay, float dt)
+{
+    return a + (b - a) * (1.0f - exp(-decay * dt));
+}
+
+inline Vector2 slerp(Vector2 a, Vector2 b, float decay, float dt)
+{
+    return a + (b - a) * (1.0f - exp(-decay * dt));
+}
+
+inline Vector3 slerp(Vector3 a, Vector3 b, float decay, float dt)
+{
+    return a + (b - a) * (1.0f - exp(-decay * dt));
+}
+
+inline Vector4 slerp(Vector4 a, Vector4 b, float decay, float dt)
+{
+    return a + (b - a) * (1.0f - exp(-decay * dt));
+}
+
+inline float lerp(float a, float b, float t)
+{
+    return a + (b - a) * t;
+}
+
+inline Vector2 lerp(Vector2 a, Vector2 b, float t)
+{
+    return a + (b - a) * t;
+}
+
+inline Vector3 lerp(Vector3 a, Vector3 b, float t)
+{
+    return a + (b - a) * t;
+}
+
+inline Vector4 lerp(Vector4 a, Vector4 b, float t)
+{
+    return a + (b - a) * t;
 }

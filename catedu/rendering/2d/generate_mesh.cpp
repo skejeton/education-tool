@@ -1,7 +1,6 @@
 /// TODO: respect winding (currently its CCW if function goes clockwise)
 #include "generate_mesh.hpp"
 #include "../mesh_generator.hpp"
-#include "catedu/core/math/interpolation.hpp"
 #include "catedu/core/math/superellipse.hpp"
 
 #define PUSH_2D_V values, 2
@@ -19,7 +18,7 @@ RenderGeo rendering_2d_generate_mesh_centered_function(RenderWriteDesc desc,
 
     for (size_t i = 0; i < sample_count; i++)
     {
-        float t = math_lerp(range_begin, range_end, (float)i / sample_count);
+        float t = lerp(range_begin, range_end, (float)i / sample_count);
         uint16_t current = generator.push_vert(function(t).PUSH_2D_V);
         if (previous)
         {

@@ -1,6 +1,5 @@
 #include "camera.hpp"
 #include <cassert>
-#include <stdio.h>
 
 static Matrix4 rotation_matrix(Camera *camera)
 {
