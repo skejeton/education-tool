@@ -539,6 +539,16 @@ bool show_main_editor(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
 bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
                      UiUser &user)
 {
+    if (this->previous_place != this->dispatcher.world.current)
+    {
+        float angle = 0;
+        if (this->dispatcher.world.current->interior)
+        {
+            angle = MATH_TAU / 2;
+        }
+        this->editor_camera.lockin({0, 0, 0}, angle);
+    }
+    this->previous_place = this->dispatcher.world.current;
     offscreen_clear();
 
     bool return_back =

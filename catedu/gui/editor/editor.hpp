@@ -47,6 +47,10 @@ struct GuiEditor
     SubEditor sub_editor;
     Dispatcher dispatcher;
 
+    // HACK: This is a hack to allow to set the camera position to the center of
+    // the place, because the editor can't track when the place is changed.
+    Place *previous_place;
+
     static GuiEditor init(UiState *ui_state);
 
     bool show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
