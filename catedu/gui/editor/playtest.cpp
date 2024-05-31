@@ -1,4 +1,5 @@
 #include "playtest.hpp"
+#include "catedu/core/storage/table.hpp"
 #include "catedu/gui/transition/transition.hpp"
 #include "catedu/scene/physics.hpp"
 #include "catedu/sys/input.hpp"
@@ -8,6 +9,7 @@
 PhysicsWorld create_bodies(Place *parent, Place &place, TableId &player)
 {
     PhysicsWorld physics = {};
+    player = NULL_ID;
     for (auto &obj : iter(place.objects))
     {
         if (obj.type == Object::Type::Wall)
@@ -49,7 +51,7 @@ PhysicsWorld create_bodies(Place *parent, Place &place, TableId &player)
     if (place.interior)
     {
         PhysicsBody door = {};
-        door.area = {0, -7, 2, 1};
+        door.area = {0, -11, 2, 1};
         door.solid = false;
         door.dynamic = false;
         door.userdata = parent;
@@ -76,6 +78,11 @@ void Playtest::destroy()
 void Playtest::update(UiUser &user, Input &input, EditorCamera &camera,
                       GuiTransition &transition)
 {
+    if (this->player == NULL_ID)
+    {
+        return;
+    }
+
     bool enter = false;
     Vector2 movement = {0, 0};
 
@@ -145,6 +152,11 @@ void Playtest::update(UiUser &user, Input &input, EditorCamera &camera,
         physics.bodies.deinit();
         world.current = switch_target;
         physics = create_bodies(world.first, *world.current, this->player);
+
+        if (this->player == NULL_ID)
+        {
+            return;
+        }
 
         PhysicsBody &player = physics.bodies.get_assert(this->player);
 
