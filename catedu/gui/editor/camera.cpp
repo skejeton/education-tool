@@ -1,4 +1,5 @@
 #include "camera.hpp"
+#include <cstdio>
 
 EditorCamera EditorCamera::create()
 {
@@ -13,8 +14,8 @@ void EditorCamera::lockin(Vector3 pos, float rotation)
 {
     cam.move(0, -(zoom * zoom), (zoom * zoom));
     cam.yaw = rotation;
-    cam.position.x = pos.x;
-    cam.position.z = pos.z;
+    zoom_target = 4;
+    cam.position = pos;
     cam.move(0, 0, 0);
     cam.move(0, (zoom * zoom), -(zoom * zoom));
 }
@@ -26,6 +27,13 @@ void EditorCamera::follow(Vector3 pos, float rotation)
     zoom_target = 4;
     cam.position = slerp(cam.position, pos, 5, sapp_frame_duration());
     cam.move(0, 0, 0);
+    cam.move(0, (zoom * zoom), -(zoom * zoom));
+}
+
+void EditorCamera::update()
+{
+    cam.move(0, -(zoom * zoom), (zoom * zoom));
+    zoom = slerp(zoom, zoom_target, 5, sapp_frame_duration());
     cam.move(0, (zoom * zoom), -(zoom * zoom));
 }
 
@@ -49,7 +57,6 @@ void EditorCamera::handle_controls(Input &input, Vector2i window_size)
 
     zoom_target -= input.mouse_wheel;
     zoom_target = clamp<float>(zoom_target, 2, 8);
-    zoom = slerp(zoom, zoom_target, 5, sapp_frame_duration());
 
     cam.move(0, (zoom * zoom), -(zoom * zoom));
 }

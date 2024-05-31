@@ -1,4 +1,5 @@
 #pragma once
+#include "catedu/gui/transition/transition.hpp"
 #include "catedu/ui/user.hpp"
 #include <sokol/sokol_app.h>
 
@@ -15,5 +16,5 @@ struct GuiMainMenu
     static GuiMainMenu init(UiState *ui_state);
     void deinit();
 
-    int show(UiUser &user);
+    int show(UiUser &user, GuiTransition &transition);
 };

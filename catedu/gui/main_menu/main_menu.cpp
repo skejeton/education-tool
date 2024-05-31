@@ -1,4 +1,5 @@
 #include "main_menu.hpp"
+#include "catedu/gui/transition/transition.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/widgets.hpp"
 #include "sokol/sokol_app.h"
@@ -86,7 +87,7 @@ static void menu_exit(UiUser &user, GuiMainMenu &state)
     }
 }
 
-int GuiMainMenu::show(UiUser &user)
+int GuiMainMenu::show(UiUser &user, GuiTransition &transition)
 {
     int exitcode = 1;
 
@@ -119,7 +120,7 @@ int GuiMainMenu::show(UiUser &user)
     }
     if (big_menu_button(user, "Play & Edit", true))
     {
-        exitcode = 2;
+        transition.begin();
     }
     if (big_menu_button(user, "Exit"))
     {
@@ -142,6 +143,11 @@ int GuiMainMenu::show(UiUser &user)
         break;
     default:
         break;
+    }
+
+    if (transition.switching())
+    {
+        exitcode = 2;
     }
 
     // FIXME: This will scale while the UI User is in the pass, but it will not

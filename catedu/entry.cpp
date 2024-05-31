@@ -1,4 +1,5 @@
 #include "entry.hpp"
+#include "catedu/gui/transition/transition.hpp"
 #include "catedu/misc/camera_input.hpp"
 #include "catedu/rendering/3d/camera.hpp"
 #include "catedu/sys/sg_tricks.hpp"
@@ -99,14 +100,14 @@ void Entry::frame(void)
     case MENU_DEBUG:
         break;
     case MENU_MAIN_MENU:
-        ui_mode = main_menu.show(user);
+        ui_mode = main_menu.show(user, transition);
         if (ui_mode == MENU_EDITOR)
         {
             this->editor = GuiEditor::init(&this->ui_state);
         }
         break;
     case MENU_EDITOR:
-        if (editor.show(this->renderer, this->res, user))
+        if (editor.show(user, transition, this->renderer, this->res))
         {
             ui_mode = MENU_MAIN_MENU;
             returned_to_menu = true;
@@ -115,6 +116,8 @@ void Entry::frame(void)
     case MENU_GAME:
         break;
     }
+
+    transition.show(user, user.state->input);
 
     this->ui_user = NULL;
     user.end_pass();
@@ -167,6 +170,8 @@ void Entry::init()
     {
         editor = GuiEditor::init(&ui_state);
     }
+
+    transition = GuiTransition::create();
 
     this->renderer = catedu::pbr::Renderer::init();
 }

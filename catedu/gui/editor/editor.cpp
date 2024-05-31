@@ -2,6 +2,7 @@
 #include "catedu/genobj/building.hpp"
 #include "catedu/genobj/deleter.hpp"
 #include "catedu/genobj/render.hpp"
+#include "catedu/gui/transition/transition.hpp"
 #include "catedu/misc/camera_input.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
 #include "catedu/ui/widgets.hpp"
@@ -187,6 +188,7 @@ GuiEditor GuiEditor::init(UiState *ui_state)
     result.debug_tree = GuiDebugTree::init();
     result.dispatcher = WorldFile::load("assets/world.dat");
     result.editor_camera = EditorCamera::create();
+    result.previous_place = result.dispatcher.world.current;
 
     printf("Init editor\n");
 
@@ -429,7 +431,7 @@ void render_physics_boxes(catedu::pbr::Renderer &renderer, PhysicsWorld &world,
 
 void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
                     catedu::pbr::Renderer &renderer, Input &input,
-                    bool &return_back)
+                    bool &return_back, GuiTransition &transition)
 {
     renderer.camera = editor.editor_camera.cam;
     renderer.begin_pass();
@@ -453,19 +455,27 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
                                                  {sapp_width(), sapp_height()});
         }
     }
+    editor.editor_camera.update();
 
     if (editor.playtesting)
     {
         input.mouse_wheel = 0;
-        editor.playtest.update(input, editor.editor_camera);
+        editor.playtest.update(user, input, editor.editor_camera, transition);
         editor.editor_camera.handle_controls(input,
                                              {sapp_width(), sapp_height()});
     }
 
-    World &world =
-        !editor.playtesting ? editor.dispatcher.world : editor.playtest.world;
+    if (editor.previous_place != editor.dispatcher.world.current)
+    {
+        transition.begin();
+    }
 
-    for (auto &object : iter(world.current->objects))
+    Place *place = (transition.going() && !editor.playtesting)
+                       ? editor.previous_place
+                       : (!editor.playtesting ? editor.dispatcher.world.current
+                                              : editor.playtest.world.current);
+
+    for (auto &object : iter(place->objects))
     {
         GeneratedObject mesh = {};
 
@@ -492,7 +502,7 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
 
     // render_physics_boxes(renderer, editor.playtest.physics, resources);
 
-    if (world.current->interior)
+    if (place->interior)
     {
         genobj_render_object(renderer, gen_resources,
                              genmesh_generate_ground(true));
@@ -522,37 +532,46 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
 }
 
 bool show_main_editor(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
-                      catedu::pbr::Renderer &renderer, Input &input)
+                      catedu::pbr::Renderer &renderer, Input &input,
+                      GuiTransition &transition)
 {
     AutoLayoutElement element = create_main_element(user);
     user.state->element_storage.push("Main", {});
     user.begin_generic(element, {}, {}, user.state->element_storage.id());
 
     bool return_back = false;
-    show_editor_ui(editor, user, resources, renderer, input, return_back);
+    show_editor_ui(editor, user, resources, renderer, input, return_back,
+                   transition);
     user.end_generic();
     user.state->element_storage.pop();
 
     return return_back;
 }
 
-bool GuiEditor::show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
-                     UiUser &user)
+bool GuiEditor::show(UiUser &user, GuiTransition &transition,
+                     catedu::pbr::Renderer &renderer, ResourceSpec &resources)
 {
+    offscreen_clear();
+
+    bool return_back = show_main_editor(*this, user, resources, renderer,
+                                        user.state->input, transition);
+
     if (this->previous_place != this->dispatcher.world.current)
     {
+        transition.begin();
+    }
+
+    if (transition.switching())
+    {
+        this->previous_place = this->dispatcher.world.current;
         float angle = 0;
         if (this->dispatcher.world.current->interior)
         {
             angle = MATH_TAU / 2;
         }
         this->editor_camera.lockin({0, 0, 0}, angle);
+        std::swap(this->previous_place, this->dispatcher.world.current);
     }
-    this->previous_place = this->dispatcher.world.current;
-    offscreen_clear();
-
-    bool return_back =
-        show_main_editor(*this, user, resources, renderer, user.state->input);
 
     show_popups(user, *this, return_back);
 

@@ -1,5 +1,9 @@
 #include "playtest.hpp"
+#include "catedu/gui/transition/transition.hpp"
 #include "catedu/scene/physics.hpp"
+#include "catedu/sys/input.hpp"
+#include "catedu/ui/layout/autolayout.hpp"
+#include "catedu/ui/rendering/make_brush.hpp"
 
 PhysicsWorld create_bodies(Place *parent, Place &place, TableId &player)
 {
@@ -69,7 +73,8 @@ void Playtest::destroy()
     world.destroy();
 }
 
-void Playtest::update(Input &input, EditorCamera &camera)
+void Playtest::update(UiUser &user, Input &input, EditorCamera &camera,
+                      GuiTransition &transition)
 {
     bool enter = false;
     Vector2 movement = {0, 0};
@@ -107,15 +112,8 @@ void Playtest::update(Input &input, EditorCamera &camera)
             if (enter)
             {
                 void *userdata = b.userdata;
-                physics.bodies.deinit();
-                world.current = (Place *)userdata;
-                physics =
-                    create_bodies(world.first, *world.current, this->player);
-
-                PhysicsBody &player = physics.bodies.get_assert(this->player);
-
-                camera.lockin({player.area.pos.x, 0, player.area.pos.y},
-                              world.current->interior ? 3.1415 : 0);
+                switch_target = (Place *)userdata;
+                transition.begin();
                 break;
             }
         }
@@ -140,5 +138,18 @@ void Playtest::update(Input &input, EditorCamera &camera)
                 camera.follow({obj.x, 0, obj.y}, 0);
             }
         }
+    }
+
+    if (transition.switching())
+    {
+        physics.bodies.deinit();
+        world.current = switch_target;
+        physics = create_bodies(world.first, *world.current, this->player);
+
+        PhysicsBody &player = physics.bodies.get_assert(this->player);
+
+        camera.lockin({player.area.pos.x, 0, player.area.pos.y},
+                      world.current->interior ? 3.1415 : 0);
+        switch_target = nullptr;
     }
 }

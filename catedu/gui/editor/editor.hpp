@@ -5,6 +5,7 @@
 #include "catedu/gui/editor/edit_building.hpp"
 #include "catedu/gui/editor/edit_delete.hpp"
 #include "catedu/gui/editor/edit_line.hpp"
+#include "catedu/gui/transition/transition.hpp"
 #include "catedu/rendering/3d/camera.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
 #include "catedu/rendering/resource_spec.hpp"
@@ -53,7 +54,7 @@ struct GuiEditor
 
     static GuiEditor init(UiState *ui_state);
 
-    bool show(catedu::pbr::Renderer &renderer, ResourceSpec &resources,
-              UiUser &user);
+    bool show(UiUser &user, GuiTransition &transition,
+              catedu::pbr::Renderer &renderer, ResourceSpec &resources);
     void deinit();
 };

@@ -5,6 +5,7 @@
 #pragma once
 #include "catedu/gui/editor/editor.hpp"
 #include "catedu/gui/main_menu/main_menu.hpp"
+#include "catedu/gui/transition/transition.hpp"
 #include "catedu/rendering/resource_spec.hpp"
 #include "catedu/sys/input.hpp"
 #include "catedu/sys/sokol_setup.hpp"
@@ -34,6 +35,7 @@ struct Entry : SokolSetup
 #endif
     GuiMainMenu main_menu;
     GuiEditor editor;
+    GuiTransition transition;
     ResourceSpec res;
 
     void *umka;
