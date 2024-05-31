@@ -1,4 +1,7 @@
 #include "edit_delete.hpp"
+#include "catedu/genobj/bounds.hpp"
+#include "catedu/genobj/generator.hpp"
+#include "catedu/genobj/render.hpp"
 #include "catedu/sys/input.hpp"
 
 void EditDelete::show(UiUser &user, catedu::pbr::Renderer &renderer,
@@ -15,8 +18,19 @@ void EditDelete::show(UiUser &user, catedu::pbr::Renderer &renderer,
     Vector3 at = ray3_at(pointer_ray, t);
     Vector2 pointer = {roundf(at.x), roundf(at.z)};
 
-    if (input.k[INPUT_MB_LEFT].pressed)
+    Object *obj = disp.world.current->get_object_at(pointer.x, pointer.y);
+    if (obj)
     {
-        disp.remove_object(pointer.x, pointer.y);
+        RectI bounds = disp.world.current->object_bounds(*obj);
+
+        GeneratedObject obj =
+            genmesh_generate_bounds(bounds, Color::hex(0xFF0000FF));
+
+        genobj_render_object(renderer, gen_resources, obj);
+
+        if (input.k[INPUT_MB_LEFT].pressed)
+        {
+            disp.remove_object(pointer.x, pointer.y);
+        }
     }
 }

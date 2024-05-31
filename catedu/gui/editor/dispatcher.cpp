@@ -129,6 +129,8 @@ void Dispatcher::remove_object(int x, int y)
     EditOp op = {};
     op.type = EditOp::Type::Remove;
     op.object = *obj;
+    op.object.x = x;
+    op.object.y = y;
     if (perform_op(op, &world))
     {
         dirty = true;

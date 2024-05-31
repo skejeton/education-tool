@@ -32,6 +32,7 @@ struct Place
     Object *place_object(Object object);
     void remove_object(int x, int y);
     Object *get_object_at(int x, int y);
+    RectI object_bounds(Object &object);
 
     bool can_place_building(int floors, int x, int y);
     bool can_place_objtype(Object::Type type, int x, int y);

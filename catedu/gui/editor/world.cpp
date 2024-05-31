@@ -136,6 +136,11 @@ Object *Place::get_object_at(int x, int y)
     return object_space(x, y, objects);
 }
 
+RectI Place::object_bounds(Object &object)
+{
+    return object_dimensions(object);
+}
+
 World World::create()
 {
     World world = {};
