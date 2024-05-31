@@ -22,10 +22,6 @@ void EditBasic::show(UiUser &user, catedu::pbr::Renderer &renderer,
     {
         disp.place_object({type, 0, pointer.x, pointer.y});
     }
-    else if (input.k[INPUT_MB_RIGHT].pressed)
-    {
-        disp.remove_object(pointer.x, pointer.y);
-    }
 
     if (disp.world.current->can_place_objtype(type, pointer.x, pointer.y))
     {
@@ -33,16 +29,10 @@ void EditBasic::show(UiUser &user, catedu::pbr::Renderer &renderer,
 
         switch (type)
         {
-        case Object::Type::Road:
-            obj = genmesh_generate_road();
-            break;
         case Object::Type::Player:
             obj = genmesh_generate_player();
             break;
-        case Object::Type::Wall:
-            obj = genmesh_generate_wall();
-            break;
-        case Object::Type::Building:
+        default:
             assert(false);
             break;
         }

@@ -1,5 +1,6 @@
 #include "editor.hpp"
 #include "catedu/genobj/building.hpp"
+#include "catedu/genobj/deleter.hpp"
 #include "catedu/genobj/render.hpp"
 #include "catedu/misc/camera_input.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
@@ -107,8 +108,8 @@ bool object_icon_button(UiUser &user, const char *name, SubEditor::Type type,
                         ResourceSpec &resources)
 {
     AutoLayoutElement el = {};
-    el.width = {AutoLayoutDimension::Pixel, 190};
-    el.height = {AutoLayoutDimension::Pixel, 150};
+    el.width = {AutoLayoutDimension::Pixel, 140};
+    el.height = {AutoLayoutDimension::Pixel, 100};
     el.align_width = 0.5;
     el.align_height = 0.5;
     el.padding = {2, 2, 2, 2};
@@ -126,7 +127,7 @@ bool object_icon_button(UiUser &user, const char *name, SubEditor::Type type,
     begin_button_frame(user, name, el, color);
     {
         Camera camera = Camera::init(5);
-        camera.set_aspect(190.f / 150.f);
+        camera.set_aspect(el.width.value / el.height.value);
 
         if (type == SubEditor::Type::Building)
         {
@@ -148,6 +149,9 @@ bool object_icon_button(UiUser &user, const char *name, SubEditor::Type type,
         GeneratedObject obj;
         switch (type)
         {
+        case SubEditor::Type::Deleter:
+            obj = genmesh_generate_deleter();
+            break;
         case SubEditor::Type::Building:
             obj = genmesh_generate_building(5);
             break;
@@ -167,7 +171,7 @@ bool object_icon_button(UiUser &user, const char *name, SubEditor::Type type,
         renderer.end_pass();
     }
 
-    img(user, id, {1, 1});
+    img(user, id, {0.8, 0.8});
     if (end_button_frame(user))
     {
         current = type;
@@ -194,6 +198,9 @@ GuiEditor GuiEditor::init(UiState *ui_state)
 void show_build_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
                       catedu::pbr::Renderer &renderer)
 {
+    object_icon_button(user, "Delete", SubEditor::Type::Deleter,
+                       editor.sub_editor.type, renderer, resources);
+
     if (editor.dispatcher.world.first != editor.dispatcher.world.current)
     {
         if (editor.sub_editor.type == SubEditor::Type::Building)
@@ -202,8 +209,6 @@ void show_build_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
         }
         object_icon_button(user, "Wall", SubEditor::Type::Wall,
                            editor.sub_editor.type, renderer, resources);
-        object_icon_button(user, "Player", SubEditor::Type::Player,
-                           editor.sub_editor.type, renderer, resources);
     }
     else
     {
@@ -211,9 +216,10 @@ void show_build_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
                            editor.sub_editor.type, renderer, resources);
         object_icon_button(user, "Road", SubEditor::Type::Road,
                            editor.sub_editor.type, renderer, resources);
-        object_icon_button(user, "Player", SubEditor::Type::Player,
-                           editor.sub_editor.type, renderer, resources);
     }
+
+    object_icon_button(user, "Player", SubEditor::Type::Player,
+                       editor.sub_editor.type, renderer, resources);
 }
 
 void show_left_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
@@ -562,16 +568,19 @@ void SubEditor::show(UiUser &user, catedu::pbr::Renderer &renderer,
 {
     switch (type)
     {
+    case Type::Deleter:
+        edit_delete.show(user, renderer, disp, gen_resources, input, camera);
+        break;
     case Type::Building:
         edit_building.show(user, renderer, disp, gen_resources, input, camera);
         break;
     case Type::Road:
-        edit_basic.show(user, renderer, disp, gen_resources, input, camera,
-                        Object::Type::Road);
+        edit_line.show(user, Object::Type::Road, renderer, disp, gen_resources,
+                       input, camera);
         break;
     case Type::Wall:
-        edit_basic.show(user, renderer, disp, gen_resources, input, camera,
-                        Object::Type::Wall);
+        edit_line.show(user, Object::Type::Wall, renderer, disp, gen_resources,
+                       input, camera);
         break;
     case Type::Player:
         edit_basic.show(user, renderer, disp, gen_resources, input, camera,

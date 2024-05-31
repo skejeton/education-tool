@@ -1,5 +1,4 @@
 #include "camera.hpp"
-#include <stdio.h>
 
 float lerp(float a, float b, float t)
 {
@@ -13,6 +12,16 @@ EditorCamera EditorCamera::create()
     camera.cam.rotate(0, -45);
     camera.zoom_target = 6;
     return camera;
+}
+
+void EditorCamera::lockin(Vector3 pos, float rotation)
+{
+    cam.move(0, -(zoom * zoom), (zoom * zoom));
+    cam.yaw = rotation;
+    cam.position.x = pos.x;
+    cam.position.z = pos.z;
+    cam.move(0, 0, 0);
+    cam.move(0, (zoom * zoom), -(zoom * zoom));
 }
 
 void EditorCamera::follow(Vector3 pos, float rotation)

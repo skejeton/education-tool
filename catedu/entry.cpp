@@ -1,8 +1,6 @@
 #include "entry.hpp"
-#include "catedu/core/math/math.hpp"
 #include "catedu/misc/camera_input.hpp"
 #include "catedu/rendering/3d/camera.hpp"
-#include "catedu/sys/fs/read_file_temp.hpp"
 #include "catedu/sys/sg_tricks.hpp"
 #include "catedu/ui/rendering/colors.hpp"
 #include "catedu/ui/widgets.hpp"

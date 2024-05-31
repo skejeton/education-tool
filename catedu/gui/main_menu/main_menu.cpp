@@ -1,5 +1,4 @@
 #include "main_menu.hpp"
-#include "catedu/misc/util.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/widgets.hpp"
 #include "sokol/sokol_app.h"
@@ -106,7 +105,7 @@ int GuiMainMenu::show(UiUser &user)
 
     user.bold = true;
     label(
-        user, "STORYLAND", {5, 5},
+        user, "STORYLAND", {2.5, 2.5},
         UiMakeBrush::make_gradient({0.2, 0.8, 0.0, 1.0}, {0.5, 1.0, 0.0, 1.0}));
     user.bold = false;
 
@@ -140,6 +139,8 @@ int GuiMainMenu::show(UiUser &user)
         break;
     case GuiMainMenu::Exit:
         menu_exit(user, *this);
+        break;
+    default:
         break;
     }
 

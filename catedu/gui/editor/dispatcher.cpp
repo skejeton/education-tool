@@ -120,6 +120,7 @@ void Dispatcher::remove_object(int x, int y)
 
     if (obj->place && obj->place != world.first)
     {
+        obj->place->destroy();
         world.places.free(obj->place);
     }
 

@@ -3,6 +3,8 @@
 #include "catedu/gui/editor/camera.hpp"
 #include "catedu/gui/editor/dispatcher.hpp"
 #include "catedu/gui/editor/edit_building.hpp"
+#include "catedu/gui/editor/edit_delete.hpp"
+#include "catedu/gui/editor/edit_line.hpp"
 #include "catedu/rendering/3d/camera.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
 #include "catedu/rendering/resource_spec.hpp"
@@ -15,14 +17,17 @@ struct SubEditor
 {
     enum class Type
     {
+        Deleter,
         Building,
         Road,
         Player,
         Wall
     } type;
 
+    EditDelete edit_delete;
     EditBasic edit_basic;
     EditBuilding edit_building;
+    EditLine edit_line;
 
     void show(UiUser &user, catedu::pbr::Renderer &renderer, Dispatcher &disp,
               GenResources &gen_resources, Input &input, Camera &camera);

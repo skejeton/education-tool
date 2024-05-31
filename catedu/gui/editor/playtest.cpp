@@ -1,4 +1,5 @@
 #include "playtest.hpp"
+#include "catedu/scene/physics.hpp"
 
 PhysicsWorld create_bodies(Place *parent, Place &place, TableId &player)
 {
@@ -105,16 +106,16 @@ void Playtest::update(Input &input, EditorCamera &camera)
         {
             if (enter)
             {
-                PhysicsBody body = {};
-                body.area = {0, 0, 1, 1};
-                body.solid = true;
-                body.dynamic = true;
                 void *userdata = b.userdata;
-
                 physics.bodies.deinit();
                 world.current = (Place *)userdata;
                 physics =
                     create_bodies(world.first, *world.current, this->player);
+
+                PhysicsBody &player = physics.bodies.get_assert(this->player);
+
+                camera.lockin({player.area.pos.x, 0, player.area.pos.y},
+                              world.current->interior ? 3.1415 : 0);
                 break;
             }
         }
@@ -122,14 +123,6 @@ void Playtest::update(Input &input, EditorCamera &camera)
     manifolds.manifolds.deinit();
 
     player = physics.bodies.get_assert(this->player);
-
-    if (enter)
-    {
-        camera.follow({player.area.pos.x, 0, player.area.pos.y}, 0);
-        camera.follow({player.area.pos.x, 0, player.area.pos.y}, 0);
-        camera.follow({player.area.pos.x, 0, player.area.pos.y}, 0);
-        camera.follow({player.area.pos.x, 0, player.area.pos.y}, 0);
-    }
 
     for (auto &obj : iter(world.current->objects))
     {

@@ -1,0 +1,4 @@
+- [ ] Make the delete option highlight the object
+- [ ] Show the city panorama on the main menu
+- [ ] Try to implement basic SSAO
+  - Note, SSAO is pretty slow, maybe I shouldn't do it for the web version
