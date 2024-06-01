@@ -307,11 +307,12 @@ void show_popups(UiUser &user, GuiEditor &editor, bool &return_back)
     if (editor.show_debug)
     {
         editor.debug_tree.reset();
-        editor.debug_tree.value("frees", ALLOCATOR_MALLOC.tracer.total_frees);
-        editor.debug_tree.value("allocs",
-                                ALLOCATOR_MALLOC.tracer.total_allocations);
-        editor.debug_tree.size("bytes",
-                               ALLOCATOR_MALLOC.tracer.total_bytes_allocated);
+        editor.debug_tree.value("frees",
+                                (size_t)ALLOCATOR_MALLOC.tracer.total_frees);
+        editor.debug_tree.value(
+            "allocs", (size_t)ALLOCATOR_MALLOC.tracer.total_allocations);
+        editor.debug_tree.size(
+            "bytes", (size_t)ALLOCATOR_MALLOC.tracer.total_bytes_allocated);
         // begin_show_window(user, info);
         editor.debug_tree.show(user);
         // end_show_window(user);
