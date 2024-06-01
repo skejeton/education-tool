@@ -20,27 +20,27 @@ void EditorCamera::lockin(Vector3 pos, float rotation)
     cam.move(0, (zoom * zoom), -(zoom * zoom));
 }
 
-void EditorCamera::follow(Vector3 pos, float rotation)
+void EditorCamera::follow(Vector3 pos, float rotation, float zoom_target)
 {
     cam.move(0, -(zoom * zoom), (zoom * zoom));
     cam.yaw = slerp(cam.yaw, rotation, 5, sapp_frame_duration());
-    zoom_target = 4;
+    this->zoom_target = zoom_target;
     cam.position = slerp(cam.position, pos, 5, sapp_frame_duration());
     cam.move(0, 0, 0);
     cam.move(0, (zoom * zoom), -(zoom * zoom));
 }
 
-void EditorCamera::update()
+void EditorCamera::update(Vector2i window_size)
 {
+    cam.set_aspect((float)window_size.x / (float)window_size.y);
+
     cam.move(0, -(zoom * zoom), (zoom * zoom));
     zoom = slerp(zoom, zoom_target, 5, sapp_frame_duration());
     cam.move(0, (zoom * zoom), -(zoom * zoom));
 }
 
-void EditorCamera::handle_controls(Input &input, Vector2i window_size)
+void EditorCamera::handle_controls(Input &input)
 {
-    cam.set_aspect((float)window_size.x / (float)window_size.y);
-
     cam.move(0, -(zoom * zoom), (zoom * zoom));
 
     if (input.k[INPUT_MB_MIDDLE].held)

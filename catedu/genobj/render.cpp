@@ -17,7 +17,14 @@ static void render_component(catedu::pbr::Renderer &renderer,
     vs_params.color_mul = component.color.to_vector4();
     vs_params.model = matrix * box_to_matrix(component.box);
     vs_params.lightness = 0;
-    renderer.render_model(resources.box, vs_params);
+    if (component.shaded)
+    {
+        renderer.render_model(resources.box_shaded, vs_params);
+    }
+    else
+    {
+        renderer.render_model(resources.box, vs_params);
+    }
 }
 
 void genobj_render_object(catedu::pbr::Renderer &renderer,

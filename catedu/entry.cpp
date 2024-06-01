@@ -1,4 +1,5 @@
 #include "entry.hpp"
+#include "catedu/gui/editor/world_file.hpp"
 #include "catedu/gui/transition/transition.hpp"
 #include "catedu/misc/camera_input.hpp"
 #include "catedu/rendering/3d/camera.hpp"
@@ -100,7 +101,8 @@ void Entry::frame(void)
     case MENU_DEBUG:
         break;
     case MENU_MAIN_MENU:
-        ui_mode = main_menu.show(user, transition);
+        ui_mode = this->main_menu.show(user, transition, this->panorama.world,
+                                       this->renderer, this->res);
         if (ui_mode == MENU_EDITOR)
         {
             this->editor = GuiEditor::init(&this->ui_state);
@@ -147,6 +149,8 @@ void Entry::cleanup(void)
 
     umkaFree(this->umka);
 
+    this->panorama.destroy();
+
     fprintf(stderr, "Memory leaked: %zu\n",
             ALLOCATOR_MALLOC.tracer.total_bytes_allocated);
 }
@@ -170,6 +174,8 @@ void Entry::init()
     {
         editor = GuiEditor::init(&ui_state);
     }
+
+    panorama = WorldFile::load("assets/world.dat");
 
     transition = GuiTransition::create();
 

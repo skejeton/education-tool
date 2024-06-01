@@ -18,6 +18,7 @@ struct TileProto
 const ModelProto model_protos[] = {
     {"invalid", "./assets/models/cube.gltf", 1},
     {"cube", "./assets/models/cube.gltf"},
+    {"cube_shaded", "./assets/models/cube_shaded.gltf"},
     {"selector", "./assets/models/cube.gltf", 2},
     {"hitbox", "./assets/models/cube.gltf", 3},
     {"barrel", "./assets/models/barrel.gltf"},

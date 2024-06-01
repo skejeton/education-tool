@@ -5,6 +5,7 @@
 struct GenResources
 {
     catedu::Model box;
+    catedu::Model box_shaded;
 };
 
 void genobj_render_object(catedu::pbr::Renderer &renderer,

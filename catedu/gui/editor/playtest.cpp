@@ -3,8 +3,6 @@
 #include "catedu/gui/transition/transition.hpp"
 #include "catedu/scene/physics.hpp"
 #include "catedu/sys/input.hpp"
-#include "catedu/ui/layout/autolayout.hpp"
-#include "catedu/ui/rendering/make_brush.hpp"
 
 PhysicsWorld create_bodies(Place *parent, Place &place, TableId &player)
 {
@@ -48,6 +46,7 @@ PhysicsWorld create_bodies(Place *parent, Place &place, TableId &player)
             player = physics.bodies.allocate(body);
         }
     }
+
     if (place.interior)
     {
         PhysicsBody door = {};

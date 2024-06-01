@@ -10,7 +10,7 @@ struct EditorCamera
 
     static EditorCamera create();
     void lockin(Vector3 pos, float rotation);
-    void follow(Vector3 pos, float rotation);
-    void update();
-    void handle_controls(Input &input, Vector2i window_size);
+    void follow(Vector3 pos, float rotation, float zoom_target = 4);
+    void update(Vector2i window_size);
+    void handle_controls(Input &input);
 };

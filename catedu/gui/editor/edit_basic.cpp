@@ -1,4 +1,5 @@
 #include "edit_basic.hpp"
+#include "catedu/genobj/tree.hpp"
 #include "catedu/gui/editor/world.hpp"
 #include <catedu/genobj/grid.hpp>
 #include <catedu/genobj/player.hpp>
@@ -31,6 +32,9 @@ void EditBasic::show(UiUser &user, catedu::pbr::Renderer &renderer,
         {
         case Object::Type::Player:
             obj = genmesh_generate_player();
+            break;
+        case Object::Type::Tree:
+            obj = genmesh_generate_tree();
             break;
         default:
             assert(false);

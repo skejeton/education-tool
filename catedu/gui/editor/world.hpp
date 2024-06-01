@@ -11,7 +11,8 @@ struct Object
         Building,
         Road,
         Player,
-        Wall
+        Wall,
+        Tree
     } type;
 
     int floors;

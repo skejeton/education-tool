@@ -17,6 +17,8 @@ RectI object_dimensions(Object &object)
         return {(int)ceilf(object.x) - 1, (int)ceilf(object.y) - 1, 2, 2};
     case Object::Type::Wall:
         return {(int)ceilf(object.x), (int)ceilf(object.y), 1, 1};
+    case Object::Type::Tree:
+        return {(int)ceilf(object.x) - 1, (int)ceilf(object.y) - 1, 2, 2};
     }
 
     assert(false);
@@ -98,28 +100,11 @@ bool Place::can_place_building(int floors, int x, int y)
 bool Place::can_place_objtype(Object::Type type, int x, int y)
 {
     RectI region;
-
-    switch (type)
-    {
-    case Object::Type::Building:
-        assert(false);
-        break;
-    case Object::Type::Road:
-        region = {x - 2, y - 2, 4, 4};
-        return !space.is_region_claimed(region);
-    case Object::Type::Player:
-        region = {x - 1, y - 1, 2, 2};
-        return !space.is_region_claimed(region);
-        break;
-    case Object::Type::Wall:
-        region = {x, y, 1, 1};
-        return !space.is_region_claimed(region);
-        break;
-    default:
-        break;
-    }
-
-    return false;
+    Object mock = {};
+    mock.type = type;
+    mock.x = x;
+    mock.y = y;
+    return !space.is_region_claimed(object_bounds(mock));
 }
 
 void Place::remove_object(int x, int y)

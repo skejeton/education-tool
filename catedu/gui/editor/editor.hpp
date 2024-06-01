@@ -22,7 +22,8 @@ struct SubEditor
         Building,
         Road,
         Player,
-        Wall
+        Wall,
+        Tree
     } type;
 
     EditDelete edit_delete;

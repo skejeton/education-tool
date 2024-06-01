@@ -2,6 +2,8 @@
 #include "catedu/genobj/building.hpp"
 #include "catedu/genobj/deleter.hpp"
 #include "catedu/genobj/render.hpp"
+#include "catedu/genobj/tree.hpp"
+#include "catedu/gui/editor/render_world.hpp"
 #include "catedu/gui/transition/transition.hpp"
 #include "catedu/misc/camera_input.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
@@ -95,14 +97,6 @@ bool icon_button(UiUser &user, const char *name, const char *icon,
     return end_button_frame(user);
 }
 
-GenResources get_genres(ResourceSpec &resources)
-{
-    GenResources result = {};
-    result.box =
-        resources.models.get(resources.find_model_by_name("cube"))->model;
-    return result;
-}
-
 bool object_icon_button(UiUser &user, const char *name, SubEditor::Type type,
                         SubEditor::Type &current,
                         catedu::pbr::Renderer &renderer,
@@ -165,6 +159,9 @@ bool object_icon_button(UiUser &user, const char *name, SubEditor::Type type,
         case SubEditor::Type::Wall:
             obj = genmesh_generate_wall();
             break;
+        case SubEditor::Type::Tree:
+            obj = genmesh_generate_tree();
+            break;
         }
         genobj_render_object(renderer, get_genres(resources), obj,
                              Matrix4::scale(0.1f));
@@ -217,6 +214,8 @@ void show_build_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
         object_icon_button(user, "Building", SubEditor::Type::Building,
                            editor.sub_editor.type, renderer, resources);
         object_icon_button(user, "Road", SubEditor::Type::Road,
+                           editor.sub_editor.type, renderer, resources);
+        object_icon_button(user, "Tree", SubEditor::Type::Tree,
                            editor.sub_editor.type, renderer, resources);
     }
 
@@ -378,20 +377,6 @@ void show_editor_controls(UiUser &user, GuiEditor &editor, bool &return_back)
     end_toolbar(user);
 }
 
-void show_backdrop(catedu::pbr::Renderer &renderer, ResourceSpec &resources)
-{
-    catedu::pbr::Params vs_params;
-
-    vs_params.model =
-        Matrix4::translate(renderer.camera.position) * Matrix4::scale(32);
-    vs_params.lightness = 1.0f;
-    vs_params.color_mul = {1.0f, 1.0f, 1.0f, 1.0f};
-    renderer.render_model(
-        resources.models.get_assert(resources.find_model_by_name("skybox"))
-            .model,
-        vs_params);
-}
-
 void handle_shortcuts(GuiEditor &editor, Input &input)
 {
     if (input.shortcut(MOD_CTRL, SAPP_KEYCODE_S))
@@ -443,26 +428,23 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
         sapp_lock_mouse(input.k[INPUT_MB_MIDDLE].held);
         if (input.k[INPUT_MB_MIDDLE].held)
         {
-            editor.editor_camera.handle_controls(input,
-                                                 {sapp_width(), sapp_height()});
+            editor.editor_camera.handle_controls(input);
         }
         else
         {
             editor.sub_editor.show(user, renderer, editor.dispatcher,
                                    gen_resources, input,
                                    editor.editor_camera.cam);
-            editor.editor_camera.handle_controls(input,
-                                                 {sapp_width(), sapp_height()});
+            editor.editor_camera.handle_controls(input);
         }
     }
-    editor.editor_camera.update();
+    editor.editor_camera.update({sapp_width(), sapp_height()});
 
     if (editor.playtesting)
     {
         input.mouse_wheel = 0;
         editor.playtest.update(user, input, editor.editor_camera, transition);
-        editor.editor_camera.handle_controls(input,
-                                             {sapp_width(), sapp_height()});
+        editor.editor_camera.handle_controls(input);
     }
 
     if (editor.previous_place != editor.dispatcher.world.current)
@@ -475,44 +457,7 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
                        : (!editor.playtesting ? editor.dispatcher.world.current
                                               : editor.playtest.world.current);
 
-    for (auto &object : iter(place->objects))
-    {
-        GeneratedObject mesh = {};
-
-        switch (object.type)
-        {
-        case Object::Type::Road:
-            mesh = genmesh_generate_road();
-            break;
-        case Object::Type::Building:
-            mesh = genmesh_generate_building(object.floors);
-            break;
-        case Object::Type::Player:
-            mesh = genmesh_generate_player();
-            break;
-        case Object::Type::Wall:
-            mesh = genmesh_generate_wall();
-            break;
-        }
-
-        genobj_render_object(
-            renderer, gen_resources, mesh,
-            Matrix4::translate({(float)object.x, 0, (float)object.y}));
-    }
-
-    // render_physics_boxes(renderer, editor.playtest.physics, resources);
-
-    if (place->interior)
-    {
-        genobj_render_object(renderer, gen_resources,
-                             genmesh_generate_ground(true));
-    }
-    else
-    {
-        show_backdrop(renderer, resources);
-        genobj_render_object(renderer, gen_resources,
-                             genmesh_generate_ground(false));
-    }
+    render_place(*place, renderer, resources);
 
     renderer.end_pass();
 
@@ -614,6 +559,10 @@ void SubEditor::show(UiUser &user, catedu::pbr::Renderer &renderer,
     case Type::Player:
         edit_basic.show(user, renderer, disp, gen_resources, input, camera,
                         Object::Type::Player);
+        break;
+    case Type::Tree:
+        edit_basic.show(user, renderer, disp, gen_resources, input, camera,
+                        Object::Type::Tree);
         break;
     }
 }

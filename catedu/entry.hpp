@@ -37,6 +37,7 @@ struct Entry : SokolSetup
     GuiEditor editor;
     GuiTransition transition;
     ResourceSpec res;
+    Dispatcher panorama;
 
     void *umka;
 

@@ -7,3 +7,5 @@
 - [ ] Place player in the default location in a building
 - [ ] Place default walls in the building
 - [ ] Add decals to generated objects
+  - [x] Shaded decals
+  - [ ] Window decals

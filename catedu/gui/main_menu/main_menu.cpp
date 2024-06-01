@@ -1,4 +1,6 @@
 #include "main_menu.hpp"
+#include "catedu/gui/editor/camera.hpp"
+#include "catedu/gui/editor/render_world.hpp"
 #include "catedu/gui/transition/transition.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/widgets.hpp"
@@ -34,7 +36,9 @@ AutoLayoutElement make_auto(AutoLayout layout, Vector2 align = {})
 
 GuiMainMenu GuiMainMenu::init(UiState *ui_state)
 {
-    return {Normal, ui_state};
+    GuiMainMenu mm = {Normal, ui_state};
+    mm.camera = EditorCamera::create();
+    return mm;
 }
 
 void GuiMainMenu::deinit()
@@ -87,8 +91,17 @@ static void menu_exit(UiUser &user, GuiMainMenu &state)
     }
 }
 
-int GuiMainMenu::show(UiUser &user, GuiTransition &transition)
+int GuiMainMenu::show(UiUser &user, GuiTransition &transition, World &world,
+                      catedu::pbr::Renderer &renderer, ResourceSpec &resources)
 {
+    this->angle += sapp_frame_duration() * 10.0f;
+    this->camera.follow({20, 0, -10}, this->angle * MATH_DEG_TO_RAD, 6);
+    this->camera.update({sapp_width(), sapp_height()});
+    renderer.camera = camera.cam;
+    renderer.begin_pass();
+    render_place(*world.first, renderer, resources);
+    renderer.end_pass();
+
     int exitcode = 1;
 
     user.begin_generic(
@@ -96,7 +109,8 @@ int GuiMainMenu::show(UiUser &user, GuiTransition &transition)
                      {sapp_widthf() / this->ui_state->dpi_scale,
                       sapp_heightf() / this->ui_state->dpi_scale},
                      false, false, {0.5, 0.5}, 0),
-        UiMakeBrush::make_gradient({0, 0.0, 0.4, 1.0}, {0, 0.1, 0.6, 1.0}), {});
+        UiMakeBrush::make_gradient({0, 0.0, 0.3, 0.6}, {0, 0.05, 0.5, 0.6}),
+        {});
 
     user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
     user.begin_generic(make_auto({AutoLayout::Column}, {0.5, 0}), {}, {});
