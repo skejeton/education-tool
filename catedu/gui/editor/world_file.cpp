@@ -14,6 +14,14 @@ struct Mapper
     size_t count;
 };
 
+struct SavingObject
+{
+    Object::Type type;
+    int floors;
+    float x, y;
+    uint32_t place;
+};
+
 void pushmapper(Mapper *mapper, void *ptr, uint32_t handle)
 {
     assert(mapper->count < 64);
@@ -75,14 +83,16 @@ void WorldFile::save(const char *path, Dispatcher &dispatcher)
         fwrite(&count, sizeof(count), 1, file);
         fwrite(&place.interior, sizeof(place.interior), 1, file);
 
-        for (auto obj : iter(place.objects))
+        for (auto &obj : iter(place.objects))
         {
-            // HACK: Reassigning a pointer with a handle to use in fwrite
-            // FIX BY TOMORROW, THE WORLDS WILL NOT BE COMPATIBLE ON WEB
-            // DUE TO DIFFERENCE IN POINTER SIZES.
-            obj.place = (Place *)(size_t)gethandle(&mapper, obj.place);
+            SavingObject so = {};
+            so.type = obj.type;
+            so.floors = obj.floors;
+            so.x = obj.x;
+            so.y = obj.y;
+            so.place = gethandle(&mapper, obj.place);
 
-            fwrite(&obj, sizeof(obj), 1, file);
+            fwrite(&so, sizeof(so), 1, file);
         }
     }
 
@@ -133,10 +143,15 @@ Dispatcher WorldFile::load(const char *path)
 
         for (size_t i = 0; i < count; i++)
         {
-            Object obj = {};
-            fread(&obj, sizeof(obj), 1, file);
+            SavingObject so = {};
+            fread(&so, sizeof(so), 1, file);
 
-            obj.place = (Place *)getptr(&mapper, (uint32_t)(size_t)obj.place);
+            Object obj = {};
+            obj.type = so.type;
+            obj.floors = so.floors;
+            obj.x = so.x;
+            obj.y = so.y;
+            obj.place = (Place *)getptr(&mapper, so.place);
             place->place_object(obj);
         }
     }

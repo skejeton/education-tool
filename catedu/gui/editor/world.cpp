@@ -1,5 +1,5 @@
 #include "world.hpp"
-
+#include <cstdio>
 #define BUILDING_DIMENSIONS_W 8
 #define BUILDING_DIMENSIONS_D 8
 
@@ -20,6 +20,8 @@ RectI object_dimensions(Object &object)
     case Object::Type::Tree:
         return {(int)ceilf(object.x) - 1, (int)ceilf(object.y) - 1, 2, 2};
     }
+
+    fprintf(stderr, "Type %d\n", (int)object.type);
 
     assert(false);
 }
@@ -99,7 +101,6 @@ bool Place::can_place_building(int floors, int x, int y)
 
 bool Place::can_place_objtype(Object::Type type, int x, int y)
 {
-    RectI region;
     Object mock = {};
     mock.type = type;
     mock.x = x;

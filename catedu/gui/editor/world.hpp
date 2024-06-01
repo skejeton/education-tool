@@ -6,7 +6,7 @@ struct Place;
 
 struct Object
 {
-    enum class Type
+    enum class Type : int
     {
         Building,
         Road,
