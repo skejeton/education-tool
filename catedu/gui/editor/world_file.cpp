@@ -1,4 +1,5 @@
 #include "world_file.hpp"
+#include <stdio.h>
 
 // TODO: Get rid of this and use handles instead
 struct PtrToHandle
