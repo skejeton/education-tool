@@ -91,8 +91,8 @@ static void menu_exit(UiUser &user, GuiMainMenu &state)
     }
 }
 
-int GuiMainMenu::show(UiUser &user, GuiTransition &transition, World &world,
-                      catedu::pbr::Renderer &renderer, ResourceSpec &resources)
+bool GuiMainMenu::show(UiUser &user, GuiTransition &transition, World &world,
+                       catedu::pbr::Renderer &renderer, ResourceSpec &resources)
 {
     this->angle += sapp_frame_duration() * 10.0f;
     this->camera.follow({20, 0, -10}, this->angle * MATH_DEG_TO_RAD, 6);
@@ -101,8 +101,6 @@ int GuiMainMenu::show(UiUser &user, GuiTransition &transition, World &world,
     renderer.begin_pass();
     render_place(*world.first, renderer, resources);
     renderer.end_pass();
-
-    int exitcode = 1;
 
     user.begin_generic(
         make_element({AutoLayout::Row},
@@ -159,14 +157,9 @@ int GuiMainMenu::show(UiUser &user, GuiTransition &transition, World &world,
         break;
     }
 
-    if (transition.switching())
-    {
-        exitcode = 2;
-    }
-
     // FIXME: This will scale while the UI User is in the pass, but it will not
     // be applied until the next frame. This is a bug.
     user.state->dpi_scale += scale_delta;
 
-    return exitcode;
+    return transition.switching();
 }

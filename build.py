@@ -1,3 +1,4 @@
+#!/bin/python
 import os
 import sys
 import shutil
@@ -143,7 +144,12 @@ def main():
   if "runtime" in arguments.switches:
     p.set_runtime()
 
-  if arguments.target == "build-wasm":
+  if arguments.target == "up":
+    script = "git pull"
+    script += "&& git submodule update --init --recursive"
+    script += "&& git lfs install"
+    script += "&& git lfs pull"
+  elif arguments.target == "build-wasm":
     script = target_build_wasm()
   elif arguments.target == "test":
     p.set_test()
@@ -163,16 +169,14 @@ def main():
   else:
     raise Exception(f"Unknown target: {arguments.target}")
 
-  if arguments.target != "build-wasm":
+  if arguments.target != "build-wasm" and arguments.target != "up":
     script = target_build(p)
-
 
   lines = script.split('\n')
   for line in lines:
     status = os.system(line)
     if status != 0:
       exit(status)
-
 
 if __name__ == "__main__":
   main()

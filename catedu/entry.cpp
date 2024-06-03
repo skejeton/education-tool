@@ -77,6 +77,32 @@ void reload_umka(Entry &entry)
     load_umka(entry);
 }
 
+void show_debug_panel(UiUser &user, RuntimeMode &mode)
+{
+    user.collection(AutoLayout::Column, [&]() {
+        label(user, "Debug panel", {2, 2},
+              UiMakeBrush::make_solid({1, 1, 1, 1}));
+
+        label(user, "Select mode", {1, 1},
+              UiMakeBrush::make_solid({1, 1, 1, 0.5}));
+
+        user.collection(AutoLayout::Row, [&]() {
+            if (button(user, "Menu"))
+            {
+                mode = RuntimeMode::menu;
+            }
+            if (button(user, "Editor"))
+            {
+                mode = RuntimeMode::editor;
+            }
+            if (button(user, "Game"))
+            {
+                mode = RuntimeMode::game;
+            }
+        });
+    });
+}
+
 void Entry::frame(void)
 {
     // Clear the screen
@@ -96,26 +122,30 @@ void Entry::frame(void)
 
     bool returned_to_menu = false;
 
-    switch (ui_mode)
+    switch (mode)
     {
-    case MENU_DEBUG:
-        break;
-    case MENU_MAIN_MENU:
-        ui_mode = this->main_menu.show(user, transition, this->panorama.world,
-                                       this->renderer, this->res);
-        if (ui_mode == MENU_EDITOR)
+    case RuntimeMode::debug:
+        show_debug_panel(user, mode);
+        if (mode == RuntimeMode::editor)
         {
             this->editor = GuiEditor::init(&this->ui_state);
         }
         break;
-    case MENU_EDITOR:
-        if (editor.show(user, transition, this->renderer, this->res))
+    case RuntimeMode::menu:
+        if (this->main_menu.show(user, transition, this->panorama.world,
+                                 this->renderer, this->res))
         {
-            ui_mode = MENU_MAIN_MENU;
-            returned_to_menu = true;
+            this->editor = GuiEditor::init(&this->ui_state);
+            this->mode = RuntimeMode::editor;
         }
         break;
-    case MENU_GAME:
+    case RuntimeMode::editor:
+    case RuntimeMode::game:
+        if (editor.show(user, transition, this->renderer, this->res))
+        {
+            mode = RuntimeMode::menu;
+            returned_to_menu = true;
+        }
         break;
     }
 
@@ -138,7 +168,7 @@ void Entry::frame(void)
 void Entry::cleanup(void)
 {
     main_menu.deinit();
-    if (ui_mode == MENU_EDITOR)
+    if (mode == RuntimeMode::editor)
     {
         editor.deinit();
     }
@@ -170,7 +200,7 @@ void Entry::init()
 
     main_menu = GuiMainMenu::init(&ui_state);
 
-    if (ui_mode == MENU_EDITOR)
+    if (mode == RuntimeMode::editor)
     {
         editor = GuiEditor::init(&ui_state);
     }

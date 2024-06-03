@@ -23,6 +23,7 @@ struct GuiMainMenu
     static GuiMainMenu init(UiState *ui_state);
     void deinit();
 
-    int show(UiUser &user, GuiTransition &transition, World &world,
-             catedu::pbr::Renderer &renderer, ResourceSpec &resources);
+    // @returns true if the menu switched to the editor.
+    bool show(UiUser &user, GuiTransition &transition, World &world,
+              catedu::pbr::Renderer &renderer, ResourceSpec &resources);
 };

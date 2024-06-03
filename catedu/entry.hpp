@@ -15,12 +15,12 @@
 #include "sokol/sokol_log.h"
 #include <umka_api.h>
 
-enum
+enum class RuntimeMode
 {
-    MENU_DEBUG,
-    MENU_MAIN_MENU,
-    MENU_EDITOR,
-    MENU_GAME,
+    debug,
+    menu,
+    editor,
+    game,
 };
 
 struct Entry : SokolSetup
@@ -28,11 +28,8 @@ struct Entry : SokolSetup
     UiState ui_state;
     UiUser *ui_user;
 
-#ifdef RUNTIME_MODE
-    int ui_mode = MENU_EDITOR;
-#else
-    int ui_mode = MENU_MAIN_MENU;
-#endif
+    RuntimeMode mode = RuntimeMode::menu;
+
     GuiMainMenu main_menu;
     GuiEditor editor;
     GuiTransition transition;
