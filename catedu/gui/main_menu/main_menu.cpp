@@ -107,8 +107,7 @@ bool GuiMainMenu::show(UiUser &user, GuiTransition &transition, World &world,
                      {sapp_widthf() / this->ui_state->dpi_scale,
                       sapp_heightf() / this->ui_state->dpi_scale},
                      false, false, {0.5, 0.5}, 0),
-        UiMakeBrush::make_gradient({0, 0.0, 0.3, 0.6}, {0, 0.05, 0.5, 0.6}),
-        {});
+        UiMakeBrush::make_gradient(0x00004499, 0x000A8899), {});
 
     user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
     user.begin_generic(make_auto({AutoLayout::Column}, {0.5, 0}), {}, {});
@@ -117,9 +116,8 @@ bool GuiMainMenu::show(UiUser &user, GuiTransition &transition, World &world,
     user.begin_generic(el, {}, {});
 
     user.bold = true;
-    label(
-        user, "STORYLAND", {2.5, 2.5},
-        UiMakeBrush::make_gradient({0.2, 0.8, 0.0, 1.0}, {0.5, 1.0, 0.0, 1.0}));
+    label(user, "STORYLAND", {2.5, 2.5},
+          UiMakeBrush::make_gradient(0x44CC00FF, 0x88CC00FF));
     user.bold = false;
 
     user.end_generic();

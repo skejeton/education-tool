@@ -3,10 +3,11 @@
 #include "catedu/gui/transition/transition.hpp"
 #include "catedu/misc/camera_input.hpp"
 #include "catedu/rendering/3d/camera.hpp"
+#include "catedu/resources/resources.hpp"
 #include "catedu/sys/sg_tricks.hpp"
 #include "catedu/ui/rendering/colors.hpp"
+#include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/widgets.hpp"
-#include "resources/resources.hpp"
 #include <cstdlib>
 
 Camera camera = Camera::init(45);
@@ -35,8 +36,7 @@ void umka_label(UmkaStackSlot *params, UmkaStackSlot *result)
 
     assert(entry_ptr->ui_user);
 
-    label(*entry_ptr->ui_user, string, {1, 1},
-          UiMakeBrush::make_solid(to_color(color)));
+    label(*entry_ptr->ui_user, string, {1, 1}, UiMakeBrush::make_solid(color));
 }
 
 void umka_nextrow(UmkaStackSlot *params, UmkaStackSlot *result)
@@ -80,11 +80,9 @@ void reload_umka(Entry &entry)
 void show_debug_panel(UiUser &user, RuntimeMode &mode)
 {
     user.collection(AutoLayout::Column, [&]() {
-        label(user, "Debug panel", {2, 2},
-              UiMakeBrush::make_solid({1, 1, 1, 1}));
+        label(user, "Debug panel", {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
 
-        label(user, "Select mode", {1, 1},
-              UiMakeBrush::make_solid({1, 1, 1, 0.5}));
+        label(user, "Select mode", {1, 1}, UiMakeBrush::make_solid(0xFFFFFF88));
 
         user.collection(AutoLayout::Row, [&]() {
             if (button(user, "Menu"))

@@ -1,5 +1,5 @@
 #include "widgets.hpp"
-#include "resources/load_image.hpp"
+#include "catedu/ui/rendering/make_brush.hpp"
 
 static const Vector4 theme[] = {
     {0.9, 0.9, 1.0, 1.0}, {0.7, 0.7, 0.8, 1.0}, // Button
@@ -54,8 +54,7 @@ bool begin_show_window(UiUser &user, WindowInfo info)
     cel.layout.type = AutoLayout::Column;
     cel.border = {1, 1, 2, 1};
     user.begin_generic(cel, {},
-                       UiMakeBrush::make_gradient({0.0f, 0.0f, 0.0f, 0.3f},
-                                                  {0.0f, 0.0f, 0.0f, 0.0f}),
+                       UiMakeBrush::make_gradient(0x00000044, 0x00000000),
                        user.state->element_storage.id());
 
     // Titlebar
@@ -70,7 +69,7 @@ bool begin_show_window(UiUser &user, WindowInfo info)
 
         UiBrush border = UiMakeBrush::make_gradient(
             theme[0] * Vector4{1, 1, 1, 0.9}, theme[1] * Vector4{1, 1, 1, 0.7});
-        UiBrush background = UiMakeBrush::make_solid({0.0f, 0.0f, 0.5f, 0.0f});
+        UiBrush background = UiMakeBrush::make_solid(0x000088FF);
         user.begin_generic(el, background, border);
         label(user, info.title, {1, 1});
         user.end_generic();
@@ -202,8 +201,7 @@ void begin_button_frame(UiUser &user, const char *id, AutoLayoutElement el,
     color_top.w = 0.4f;
 
     user.begin_generic(el, UiMakeBrush::make_gradient(color_bottom, color_top),
-                       UiMakeBrush::make_gradient({0.0f, 0.0f, 0.0f, 0.5f},
-                                                  {0.0f, 0.0f, 0.0f, 0.0f}),
+                       UiMakeBrush::make_gradient(0x00000088, 0x00000000),
                        user.state->element_storage.id());
 }
 
@@ -266,7 +264,7 @@ void img(UiUser &user, const char *path, Vector2 scale)
                        UiMakeBrush::make_image_brush(UiBuffers::Rectangle,
                                                      user.state->core, id)
                            .build(),
-                       UiMakeBrush::make_solid({1.0, 1.0, 1.0, 0.0}));
+                       UiMakeBrush::make_solid(0xFFFFFF00));
 
     user.end_generic();
 }
@@ -284,7 +282,7 @@ void img(UiUser &user, UiImageId id, Vector2 scale)
                        UiMakeBrush::make_image_brush(UiBuffers::Rectangle,
                                                      user.state->core, id)
                            .build(),
-                       UiMakeBrush::make_solid({1.0, 1.0, 1.0, 0.0}));
+                       UiMakeBrush::make_solid(0xFFFFFF00));
 
     user.end_generic();
 }
@@ -353,14 +351,12 @@ bool input(UiUser &user, const char *id, char *out, int max)
     el.border = {1, 1, 1, 1};
 
     UiBrush bg = UiMakeBrush::make_gradient(theme[0], theme[1]);
-    bg.color_top.w = 0.4;
-    UiBrush border = UiMakeBrush::make_gradient({0.0f, 0.0f, 0.0f, 0.5f},
-                                                {0.0f, 0.0f, 0.0f, 0.0f});
+    bg.color_top.a = 0x66;
+    UiBrush border = UiMakeBrush::make_gradient(0x00000088, 0x00000088);
 
     if (user.focused())
     {
         bg = UiMakeBrush::make_gradient(theme[5], theme[4]);
-        bg.color_top.w = 0.4;
         el.width = {AutoLayoutDimension::Auto};
         el.pop = true;
     }
@@ -399,8 +395,7 @@ int msgbox(UiUser &user, const char *title, const char *text, MsgBoxType type,
 
     user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
 
-    UiBrush border =
-        UiMakeBrush::make_gradient({0.0, 0.0, 0.0, 0.5}, {0.0, 0.0, 0.0, 0.0});
+    UiBrush border = UiMakeBrush::make_gradient(0x00000088, 0x00000000);
 
     switch (type)
     {
@@ -408,26 +403,23 @@ int msgbox(UiUser &user, const char *title, const char *text, MsgBoxType type,
     case MsgBoxType::Info:
         user.begin_generic(make_element({AutoLayout::Column}, {40, 40}, false,
                                         false, {0.5, 0.5}, 1, 1),
-                           UiMakeBrush::make_gradient({0.3, 0.3, 1.0, 1.0},
-                                                      {0, 0.2, 1.0, 0.4}),
+                           UiMakeBrush::make_gradient(0x4444FFFF, 0x0033FF66),
                            border);
-        label(user, "?", {2, 2}, UiMakeBrush::make_solid({1, 1, 1, 1.0}));
+        label(user, "?", {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
         break;
     case MsgBoxType::Warning:
         user.begin_generic(make_element({AutoLayout::Column}, {40, 40}, false,
                                         false, {0.5, 0.5}, 1, 1),
-                           UiMakeBrush::make_gradient({1.0, 0.8, 0.3, 1.0},
-                                                      {1.0, 0.7, 0.0, 0.4}),
+                           UiMakeBrush::make_gradient(0xFFCC44FF, 0xFFAA0066),
                            border);
-        label(user, ":/", {2, 2}, UiMakeBrush::make_solid({1, 1, 1, 1.0}));
+        label(user, ":/", {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
         break;
     case MsgBoxType::Error:
         user.begin_generic(make_element({AutoLayout::Column}, {40, 40}, false,
                                         false, {0.5, 0.5}, 1, 1),
-                           UiMakeBrush::make_gradient({1.0, 0.3, 0.3, 1.0},
-                                                      {1.0, 0.0, 0.0, 0.4}),
+                           UiMakeBrush::make_gradient(0xFF4444FF, 0xFF000066),
                            border);
-        label(user, "!", {2, 2}, UiMakeBrush::make_solid({1, 1, 1, 1.0}));
+        label(user, "!", {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
         break;
     }
     user.end_generic();

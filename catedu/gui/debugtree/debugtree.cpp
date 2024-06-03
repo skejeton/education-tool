@@ -1,5 +1,6 @@
 #include "debugtree.hpp"
 #include "catedu/ui/rendering/colors.hpp"
+#include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/widgets.hpp"
 
 void alloc_debug_entry(GuiDebugTree *tree, const char *name,
@@ -123,7 +124,7 @@ void GuiDebugTree::show(UiUser &user)
     for (DebugEntry *entry = this->entry; entry; entry = entry->next)
     {
         label(user, entry->name, {1, 1},
-              UiMakeBrush::make_solid(to_color(entry->name_color)));
+              UiMakeBrush::make_solid(entry->name_color));
     }
 
     user.end_generic();
@@ -141,7 +142,7 @@ void GuiDebugTree::show(UiUser &user)
     for (DebugEntry *entry = this->entry; entry; entry = entry->next)
     {
         label(user, entry->value, {1, 1},
-              UiMakeBrush::make_solid(to_color(entry->value_color)));
+              UiMakeBrush::make_solid(entry->value_color));
     }
 
     user.end_generic();

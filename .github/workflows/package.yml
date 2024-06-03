@@ -1,7 +1,7 @@
 name: Educore Workflow
 on: [push]
 jobs:
-  MakePkg-Msbuild:
+  MakePkg-Windows:
     name: Build for Windows
     runs-on: windows-latest
     steps:

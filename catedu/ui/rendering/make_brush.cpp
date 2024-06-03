@@ -25,28 +25,28 @@ UiMakeBrush UiMakeBrush::make_image_brush(UiBuffers shape,
     return maker;
 }
 
-UiBrush UiMakeBrush::make_solid(Vector4 color)
+UiBrush UiMakeBrush::make_solid(Color color)
 {
     return UiMakeBrush::make_plain_brush(UiBuffers::Rectangle)
         .with_solid(color)
         .build();
 }
 
-UiBrush UiMakeBrush::make_gradient(Vector4 color_bottom, Vector4 color_top)
+UiBrush UiMakeBrush::make_gradient(Color color_bottom, Color color_top)
 {
     return UiMakeBrush::make_plain_brush(UiBuffers::Rectangle)
         .with_gradient(color_bottom, color_top)
         .build();
 }
 
-UiMakeBrush &UiMakeBrush::with_solid(Vector4 color)
+UiMakeBrush &UiMakeBrush::with_solid(Color color)
 {
     this->brush.color_bottom = color;
     this->brush.color_top = color;
     return *this;
 }
 
-UiMakeBrush &UiMakeBrush::with_gradient(Vector4 color_bottom, Vector4 color_top)
+UiMakeBrush &UiMakeBrush::with_gradient(Color color_bottom, Color color_top)
 {
     this->brush.color_bottom = color_bottom;
     this->brush.color_top = color_top;

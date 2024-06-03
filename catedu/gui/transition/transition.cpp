@@ -48,7 +48,7 @@ void GuiTransition::show(UiUser &user, Input &input)
     element.width = {AutoLayoutDimension::Pixel, sapp_widthf()};
     element.height = {AutoLayoutDimension::Pixel, sapp_heightf()};
     element.position = AutoLayoutPosition::Absolute;
-    user.begin_generic(element, UiMakeBrush::make_solid({0.0, 0.0, 0.0, alpha}),
+    user.begin_generic(element, UiMakeBrush::make_solid(Color(0, 0, 0, alpha)),
                        {});
     user.end_generic();
 }

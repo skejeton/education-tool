@@ -16,6 +16,24 @@ struct Color
     uint8_t b;
     uint8_t a;
 
+    Color() : r(0), g(0), b(0), a(0)
+    {
+    }
+    Color(uint32_t hex) : Color(Color::hex(hex))
+    {
+    }
+    Color(uint8_t r, uint8_t g, uint8_t b) : Color(Color::rgb(r, g, b))
+    {
+    }
+    Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+        : Color(Color::rgba(r, g, b, a))
+    {
+    }
+    Color(Vector4 v)
+        : Color(Color::rgba(v.x * 255, v.y * 255, v.z * 255, v.w * 255))
+    {
+    }
+
     /// @param hex hex color 0xRRGGBBAA
     static Vector4 hex2v4(uint32_t hex);
     static Color hex(uint32_t hex);

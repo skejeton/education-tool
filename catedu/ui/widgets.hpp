@@ -1,5 +1,4 @@
 #pragma once
-#include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/user.hpp"
 
 struct WindowInfo

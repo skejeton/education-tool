@@ -179,8 +179,8 @@ void UiRenderingCore::render_object(UiBrush brush)
 
     ui_vs_params_t vs_params;
     vs_params.mvp = matrix;
-    vs_params.color_bottom = brush.color_bottom;
-    vs_params.color_top = brush.color_top;
+    vs_params.color_bottom = brush.color_bottom.to_vector4();
+    vs_params.color_top = brush.color_top.to_vector4();
     rect_to_uv(brush.image_region_rect, vector2i_to_vector2(img->size),
                &vs_params.uv_min, &vs_params.uv_max);
 

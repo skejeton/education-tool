@@ -6,6 +6,7 @@
 #include "catedu/core/math/math.hpp"
 #include "catedu/core/memory/buffer.hpp"
 #include "catedu/core/storage/table.hpp"
+#include "catedu/rendering/color.hpp"
 #include "sokol/sokol_gfx.h"
 
 struct UiBuffer
@@ -35,8 +36,8 @@ struct UiImage
 struct UiBrush
 {
     UiBuffers buffer;
-    Vector4 color_bottom;
-    Vector4 color_top;
+    Color color_bottom;
+    Color color_top;
     UiImageId image;
     Rect image_region_rect;
 };

@@ -7,6 +7,7 @@
 #include "catedu/gui/transition/transition.hpp"
 #include "catedu/misc/camera_input.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
+#include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/widgets.hpp"
 #include "edit_building.hpp"
 #include "offscreen.hpp"
@@ -73,8 +74,8 @@ void begin_toolbar(UiUser &user, const char *name, RectSide side)
     toolbar.padding = {2, 2, 2, 2};
     toolbar.margin = {2, 2, 2, 2};
     toolbar.border = {1, 1, 1, 1};
-    user.begin_generic(toolbar, UiMakeBrush::make_solid({1.0, 1.0, 1.0, 0.6}),
-                       {}, user.state->element_storage.id());
+    user.begin_generic(toolbar, UiMakeBrush::make_solid(0xFFFFFF99), {},
+                       user.state->element_storage.id());
 }
 
 void end_toolbar(UiUser &user)

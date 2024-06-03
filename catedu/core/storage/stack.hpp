@@ -1,5 +1,6 @@
 #pragma once
 
+#include "catedu/core/alloc/allocator.hpp"
 #include <assert.h>
 #include <iterator>
 #include <stdlib.h>
@@ -14,7 +15,7 @@ template <class T> struct Stack
 
     void deinit()
     {
-        free(values);
+        ALLOCATOR_MALLOC.free(values);
     }
 
     bool scale()
@@ -25,8 +26,9 @@ template <class T> struct Stack
         else
             new_capacity *= 2;
 
-        T *new_values = (T *)realloc(values, sizeof(T) * new_capacity);
-        // NOTE: Allocation error
+        T *new_values =
+            (T *)ALLOCATOR_MALLOC.realloc(values, sizeof(T) * new_capacity);
+
         if (new_values == NULL)
         {
             return false;
