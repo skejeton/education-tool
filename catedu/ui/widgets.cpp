@@ -69,7 +69,7 @@ bool begin_show_window(UiUser &user, WindowInfo info)
 
         UiBrush border = UiMakeBrush::make_gradient(
             theme[0] * Vector4{1, 1, 1, 0.9}, theme[1] * Vector4{1, 1, 1, 0.7});
-        UiBrush background = UiMakeBrush::make_solid(0x000088FF);
+        UiBrush background = UiMakeBrush::make_solid(0x00008800);
         user.begin_generic(el, background, border);
         label(user, info.title, {1, 1});
         user.end_generic();

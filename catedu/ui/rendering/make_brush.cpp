@@ -14,8 +14,8 @@ UiMakeBrush UiMakeBrush::make_image_brush(UiBuffers shape,
     UiMakeBrush maker = {};
     maker.brush.buffer = shape;
     maker.brush.image = image;
-    maker.brush.color_bottom = {1, 1, 1, 1};
-    maker.brush.color_top = {1, 1, 1, 1};
+    maker.brush.color_bottom = 0xFFFFFFFF;
+    maker.brush.color_top = 0xFFFFFFFF;
     UiImage *image_struct = core->get_image(image);
     if (image_struct)
     {

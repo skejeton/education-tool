@@ -33,7 +33,8 @@ bool button_radio(UiUser &user, const char *text, int &mode, int val);
 void img(UiUser &user, const char *path, Vector2 scale = {1, 1});
 void img(UiUser &user, UiImageId id, Vector2 scale = {1, 1});
 void label(UiUser &user, const char *text, Vector2 scale = {1, 1},
-           UiBrush style = {UiBuffers::Rectangle, {0, 0, 0, 1}, {0, 0, 0, 1}});
+           UiBrush style = {
+               UiBuffers::Rectangle, {0, 0, 0, 255}, {0, 0, 0, 255}});
 
 /// @returns Which button was pressed. -1 if none.
 int msgbox(UiUser &user, const char *title, const char *text, MsgBoxType type,
