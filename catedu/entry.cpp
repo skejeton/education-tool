@@ -5,7 +5,6 @@
 #include "catedu/rendering/3d/camera.hpp"
 #include "catedu/resources/resources.hpp"
 #include "catedu/sys/sg_tricks.hpp"
-#include "catedu/ui/rendering/colors.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/widgets.hpp"
 #include <cstdlib>
@@ -103,15 +102,6 @@ void show_debug_panel(UiUser &user, RuntimeMode &mode)
 
 void Entry::frame(void)
 {
-    // Clear the screen
-    sg_pass pass = {0};
-    pass.action.colors[0].load_action = SG_LOADACTION_CLEAR;
-    pass.action.colors[0].store_action = SG_STOREACTION_STORE;
-    pass.action.colors[0].clear_value = {0.0f, 0.0f, 0.0f, 1.0f};
-    pass.swapchain = sglue_swapchain();
-    sg_begin_pass(&pass);
-    sg_end_pass();
-
     bool reload_module = false;
 
     UiUser user = UiUser::init(ui_state);
@@ -152,6 +142,8 @@ void Entry::frame(void)
     this->ui_user = NULL;
     user.end_pass();
 
+    // FIXME: We need to defer `editor.deinit`, because `deinit` removes the
+    // target images, which are still in use during the UI pass.
     if (returned_to_menu)
     {
         this->editor.deinit();
@@ -179,6 +171,10 @@ void Entry::cleanup(void)
 
     this->panorama.destroy();
 
+    // NOTE: Some memory will show as "leak" because this function is called
+    // before the sokol deinitializers are called.
+    // TODO: Trace the memory allocations before initialization and correctly
+    // display them.
     fprintf(stderr, "Memory leaked: %zu\n",
             ALLOCATOR_MALLOC.tracer.total_bytes_allocated);
 }

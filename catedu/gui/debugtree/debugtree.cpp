@@ -1,5 +1,4 @@
 #include "debugtree.hpp"
-#include "catedu/ui/rendering/colors.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/widgets.hpp"
 
@@ -50,59 +49,63 @@ void GuiDebugTree::size(const char *name, size_t value)
     size_t mebibytes = kibibytes / 1024;
     size_t gibibytes = mebibytes / 1024;
 
+    char buffer[256];
+
     if (gibibytes > 0)
     {
-        alloc_debug_entry(
-            this, name, 0x000000FF,
-            stdstrfmt("%zu GiB (%zu B)", gibibytes, bytes).c_str(), 0x000077FF);
+        snprintf(buffer, 256, "%zu GiB (%zu B)", gibibytes, bytes);
+        alloc_debug_entry(this, name, 0x000000FF, buffer, 0x000077FF);
     }
     else if (mebibytes > 0)
     {
-        alloc_debug_entry(
-            this, name, 0x000000FF,
-            stdstrfmt("%zu MiB (%zu B)", mebibytes, bytes).c_str(), 0x000077FF);
+        snprintf(buffer, 256, "%zu MiB (%zu B)", mebibytes, bytes);
+        alloc_debug_entry(this, name, 0x000000FF, buffer, 0x000077FF);
     }
     else if (kibibytes > 0)
     {
-        alloc_debug_entry(
-            this, name, 0x000000FF,
-            stdstrfmt("%zu KiB (%zu B)", kibibytes, bytes).c_str(), 0x000077FF);
+        snprintf(buffer, 256, "%zu KiB (%zu B)", kibibytes, bytes);
+        alloc_debug_entry(this, name, 0x000000FF, buffer, 0x000077FF);
     }
     else
     {
-        alloc_debug_entry(this, name, 0x000000FF,
-                          stdstrfmt("%zu B", bytes).c_str(), 0x000077FF);
+        snprintf(buffer, 256, "%zu B", bytes);
+        alloc_debug_entry(this, name, 0x000000FF, buffer, 0x000077FF);
     }
 }
 
 void GuiDebugTree::value(const char *name, int64_t value)
 {
-    alloc_debug_entry(this, name, 0x000000FF, stdstrfmt("%lli", value).c_str(),
-                      0x000077FF);
+    char buffer[256];
+    snprintf(buffer, 256, "%lli", value);
+    alloc_debug_entry(this, name, 0x000000FF, buffer, 0x000077FF);
 }
 
 void GuiDebugTree::value(const char *name, uint64_t value)
 {
-    alloc_debug_entry(this, name, 0x000000FF, stdstrfmt("%llu", value).c_str(),
-                      0x000077FF);
+    char buffer[256];
+    snprintf(buffer, 256, "%llu", value);
+    alloc_debug_entry(this, name, 0x000000FF, buffer, 0x000077FF);
 }
 
 void GuiDebugTree::value(const char *name, float value)
 {
-    alloc_debug_entry(this, name, 0x000000FF, stdstrfmt("%g", value).c_str(),
-                      0x000077FF);
+    char buffer[256];
+    snprintf(buffer, 256, "%g", value);
+    alloc_debug_entry(this, name, 0x000000FF, buffer, 0x000077FF);
 }
 
 void GuiDebugTree::value(const char *name, double value)
 {
-    alloc_debug_entry(this, name, 0x000000FF, stdstrfmt("%g", value).c_str(),
-                      0x000077FF);
+    char buffer[256];
+    snprintf(buffer, 256, "%g", value);
+    alloc_debug_entry(this, name, 0x000000FF, buffer, 0x000077FF);
 }
 
 void GuiDebugTree::value(const char *name, bool value)
 {
-    alloc_debug_entry(this, name, 0x000000FF,
-                      stdstrfmt("%s", value ? "true" : "false").c_str(),
+    char buffer[256];
+    snprintf(buffer, 256, "%s", value ? "true" : "false");
+    alloc_debug_entry(this, name, 0x000000FF, buffer,
                       value ? 0x007700FF : 0x770000FF);
 }
 

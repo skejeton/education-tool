@@ -11,8 +11,10 @@ static const Vector4 theme[] = {
 
 bool begin_show_window(UiUser &user, WindowInfo info)
 {
-    user.state->element_storage.push(stdstrfmt("%s#window", info.title).c_str(),
-                                     {false, {}, {}, info.rect});
+    // TODO: Create a formatter that will use the UI state
+    char buffer[256];
+    snprintf(buffer, 256, "%s#window", info.title);
+    user.state->element_storage.push(buffer, {false, {}, {}, info.rect});
     user.state->element_storage.element_retainer.bump(9999999);
 
     UiPersistentElement *pe = user.state->element_storage.value();
@@ -386,11 +388,12 @@ AutoLayoutElement make_auto(AutoLayout layout, Vector2 align = {0, 0});
 int msgbox(UiUser &user, const char *title, const char *text, MsgBoxType type,
            const char *buttons[])
 {
+    Rect scaled_screen_rect = Rect{
+        {0, 0}, Vector2{sapp_widthf(), sapp_heightf()} / user.state->dpi_scale};
+
     begin_show_window(
-        user, {title,
-               rect_center_rect(sapp_screen_rect_scaled(user.state->dpi_scale),
-                                {0, 0, 350, 76}),
-               true});
+        user,
+        {title, rect_center_rect(scaled_screen_rect, {0, 0, 350, 76}), true});
     user.begin_generic(make_auto({AutoLayout::Column}, {0, 0}), {}, {});
 
     user.begin_generic(make_auto({AutoLayout::Row}), {}, {});

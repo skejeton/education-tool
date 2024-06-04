@@ -216,7 +216,5 @@ UiImage ui_image_make_from_data(Buffer data, Vector2i size)
     sampler_desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
     sampler_desc.label = "ui-sampler";
 
-    return {sg_make_image(image_desc),
-            sg_make_sampler(sampler_desc),
-            {size.x, size.y}};
+    return {sg_make_image(image_desc), sg_make_sampler(sampler_desc), size};
 }

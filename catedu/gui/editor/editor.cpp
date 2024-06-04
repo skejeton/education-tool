@@ -231,7 +231,7 @@ void show_left_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
     element.clip = true;
     element.width = {AutoLayoutDimension::Pixel, 200};
     element.height = {AutoLayoutDimension::Pixel,
-                      sapp_screen_rect_scaled(user.state->dpi_scale).siz.y};
+                      sapp_heightf() * user.state->dpi_scale};
     user.state->element_storage.push("Left Panel", {});
     user.begin_generic(element, {}, {}, user.state->element_storage.id());
 

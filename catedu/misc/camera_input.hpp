@@ -1,6 +1,7 @@
 ///
 /// BRIEF: Camera controller that uses Input structure.
 ///
+#pragma once
 
 #include "catedu/rendering/3d/camera.hpp"
 #include "catedu/sys/input.hpp"

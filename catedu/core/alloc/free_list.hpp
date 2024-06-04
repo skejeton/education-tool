@@ -12,7 +12,9 @@
 #include <assert.h>
 #include <iterator>
 
+#ifdef _FREELIST_SANITYCHECKS
 int rand();
+#endif
 
 template <class T> struct FreeList
 {
@@ -20,13 +22,17 @@ template <class T> struct FreeList
     {
         T data;
         uint64_t free;
+#ifdef _FREELIST_SANITYCHECKS
         uint64_t check;
+#endif
         Node *next;
     };
 
     Arena arena;
     Node *freed;
+#ifdef _FREELIST_SANITYCHECKS
     uint64_t check;
+#endif
 
     static FreeList create(Arena arena);
     void destroy();
@@ -39,7 +45,9 @@ template <class T> inline FreeList<T> FreeList<T>::create(Arena arena)
 {
     FreeList fl = {};
     fl.arena = arena;
+#ifdef _FREELIST_SANITYCHECKS
     fl.check = rand();
+#endif
     return fl;
 }
 
@@ -60,7 +68,9 @@ template <class T> inline T *FreeList<T>::alloc()
 
     Node *node = (Node *)this->arena.alloc(sizeof(Node));
     node->free = 0;
+#ifdef _FREELIST_SANITYCHECKS
     node->check = this->check;
+#endif
     node->next = nullptr;
 
     return &node->data;

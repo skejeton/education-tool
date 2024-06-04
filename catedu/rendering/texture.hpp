@@ -10,14 +10,12 @@ struct Texture
 
     bool if_crop;
     Rect crop;
-    Vector2 tile_count;
 
     static Texture init(const char *png_path);
     void deinit();
 
     Texture uncropped();
     Texture cropped(Rect crop);
-    Texture tiled(Vector2 tile_count);
 
     Vector2 uv_min();
     Vector2 uv_max();

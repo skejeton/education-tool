@@ -15,6 +15,8 @@ template <typename T> struct IdRetainerNode
 template <typename T> struct IdRetainer
 {
     size_t cycle_number;
+
+    // TODO: Get rid of STL containers.
     std::vector<std::string> current_path;
     std::map<std::string, IdRetainerNode<T>> values;
 

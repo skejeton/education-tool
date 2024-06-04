@@ -45,7 +45,6 @@ Texture Texture::init(const char *png_path)
     Buffer data_buf = {data, size_t(width * height * 4)};
     Vector2 data_dims = {(float)width, (float)height};
     result.size = data_dims;
-    result.tile_count = {1, 1};
 
     init_sampler_tex(result.sysid_sampler, result.sysid_texture, data_dims,
                      data_buf);
@@ -74,13 +73,6 @@ Texture Texture::cropped(Rect crop)
     Texture tex = *this;
     tex.crop = crop;
     tex.if_crop = true;
-    return tex;
-}
-
-Texture Texture::tiled(Vector2 tile_count)
-{
-    Texture tex = *this;
-    tex.tile_count = tile_count;
     return tex;
 }
 
