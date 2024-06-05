@@ -7,7 +7,7 @@ lib/umka/src
 -I
 lib/lib-enet/include
 -I
-.
+./
 -Wall
 -Wno-missing-braces
 -Werror

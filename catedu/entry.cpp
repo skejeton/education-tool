@@ -1,80 +1,10 @@
 #include "entry.hpp"
 #include "catedu/gui/editor/world_file.hpp"
 #include "catedu/gui/transition/transition.hpp"
-#include "catedu/misc/camera_input.hpp"
-#include "catedu/rendering/3d/camera.hpp"
 #include "catedu/resources/resources.hpp"
 #include "catedu/sys/sg_tricks.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/widgets.hpp"
-#include <cstdlib>
-
-Camera camera = Camera::init(45);
-
-Entry *entry_ptr;
-
-void on_umka_warning(UmkaError *warning)
-{
-    fprintf(stderr, "UMKA WARNING: %s\n", warning->msg);
-}
-
-void umka_button(UmkaStackSlot *params, UmkaStackSlot *result)
-{
-    char *string = (char *)params[0].ptrVal;
-
-    assert(entry_ptr->ui_user);
-
-    result->uintVal = button(*entry_ptr->ui_user, string);
-}
-
-void umka_label(UmkaStackSlot *params, UmkaStackSlot *result)
-{
-    // Color is in the format 0xRRGGBBAA
-    uint32_t color = params[0].uintVal;
-    char *string = (char *)params[1].ptrVal;
-
-    assert(entry_ptr->ui_user);
-
-    label(*entry_ptr->ui_user, string, {1, 1}, UiMakeBrush::make_solid(color));
-}
-
-void umka_nextrow(UmkaStackSlot *params, UmkaStackSlot *result)
-{
-    assert(entry_ptr->ui_user);
-
-    entry_ptr->ui_user->end_generic();
-    AutoLayoutElement element = {};
-    element.layout.type = AutoLayout::Row;
-    entry_ptr->ui_user->begin_generic(element, {}, {});
-}
-
-void load_umka(Entry &entry)
-{
-    entry.umka = umkaAlloc();
-
-    assert(entry.umka);
-
-    if (!umkaInit(entry.umka, "assets/script/main.um", NULL, 1024 * 1024, NULL,
-                  0, NULL, false, false, NULL))
-    {
-        return;
-    }
-
-    umkaAddFunc(entry.umka, "button", &umka_button);
-    umkaAddFunc(entry.umka, "label", &umka_label);
-    umkaAddFunc(entry.umka, "nextrow", &umka_nextrow);
-
-    if (!umkaCompile(entry.umka))
-    {
-        return;
-    }
-}
-
-void reload_umka(Entry &entry)
-{
-    umkaFree(entry.umka);
-    load_umka(entry);
-}
 
 void show_debug_panel(UiUser &user, RuntimeMode &mode)
 {
@@ -106,7 +36,6 @@ void Entry::frame(void)
 
     UiUser user = UiUser::init(ui_state);
     user.begin_pass();
-    this->ui_user = &user;
 
     bool returned_to_menu = false;
 
@@ -139,7 +68,6 @@ void Entry::frame(void)
 
     transition.show(user, user.state->input);
 
-    this->ui_user = NULL;
     user.end_pass();
 
     // FIXME: We need to defer `editor.deinit`, because `deinit` removes the
@@ -151,7 +79,7 @@ void Entry::frame(void)
 
     if (reload_module)
     {
-        reload_umka(*this);
+        this->umka_module.reload();
     }
 }
 
@@ -167,7 +95,7 @@ void Entry::cleanup(void)
     this->renderer.deinit();
     sg_tricks_deinit();
 
-    umkaFree(this->umka);
+    this->umka_module.destroy();
 
     this->panorama.destroy();
 
@@ -181,9 +109,7 @@ void Entry::cleanup(void)
 
 void Entry::init()
 {
-    entry_ptr = this;
-
-    load_umka(*this);
+    this->umka_module = UmkaModule::create(&this->umka_bindings_data);
 
     sg_tricks_init();
 

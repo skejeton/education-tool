@@ -9,6 +9,7 @@
 #include "catedu/rendering/resource_spec.hpp"
 #include "catedu/sys/input.hpp"
 #include "catedu/sys/sokol_setup.hpp"
+#include "catedu/umka/umka.hpp"
 #include "sokol/sokol_app.h"
 #include "sokol/sokol_gfx.h"
 #include "sokol/sokol_glue.h"
@@ -26,7 +27,6 @@ enum class RuntimeMode
 struct Entry : SokolSetup
 {
     UiState ui_state;
-    UiUser *ui_user;
 
     RuntimeMode mode = RuntimeMode::menu;
 
@@ -36,7 +36,8 @@ struct Entry : SokolSetup
     ResourceSpec res;
     Dispatcher panorama;
 
-    void *umka;
+    UmkaBindingsData umka_bindings_data;
+    UmkaModule umka_module;
 
     catedu::pbr::Renderer renderer;
 
