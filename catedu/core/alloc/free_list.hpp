@@ -1,11 +1,6 @@
 ///
 /// Free list allocator for fast entity allocation at a fixed place.
 ///
-/// WARNING: If you pass an arena that is in use, the free list will iterate
-///          over unrelated data, causing undefined behavior.
-////
-/// TODO:    Either reserve an arena for itself, or use a linked list.
-///
 
 #pragma once
 #include "arena.hpp"
@@ -21,15 +16,16 @@ template <class T> struct FreeList
     struct alignas(Arena::ALIGN) Node
     {
         T data;
-        uint64_t free;
 #ifdef _FREELIST_SANITYCHECKS
         uint64_t check;
 #endif
-        Node *next;
+        Node *prev, *next;
     };
 
     Arena arena;
     Node *freed;
+    Node *first;
+    Node *last;
 #ifdef _FREELIST_SANITYCHECKS
     uint64_t check;
 #endif
@@ -58,20 +54,39 @@ template <class T> inline void FreeList<T>::destroy()
 
 template <class T> inline T *FreeList<T>::alloc()
 {
+    auto link_node = [&](Node *node) {
+        node->next = nullptr;
+
+        node->prev = last;
+        if (last != nullptr)
+        {
+            last->next = node;
+        }
+
+        last = node;
+        if (first == nullptr)
+        {
+            first = node;
+        }
+    };
+
     if (this->freed)
     {
         Node *node = this->freed;
         this->freed = node->next;
-        node->free = 0;
+
+        link_node(node);
+
         return &node->data;
     }
 
     Node *node = (Node *)this->arena.alloc(sizeof(Node));
-    node->free = 0;
+
+    link_node(node);
+
 #ifdef _FREELIST_SANITYCHECKS
     node->check = this->check;
 #endif
-    node->next = nullptr;
 
     return &node->data;
 }
@@ -79,9 +94,28 @@ template <class T> inline T *FreeList<T>::alloc()
 template <class T> inline void FreeList<T>::free(T *ptr)
 {
     Node *node = (Node *)ptr;
-    assert(!node->free);
+    // TODO: Assert node not already in the free list
+
+    if (node == last)
+    {
+        last = node->prev;
+    }
+    if (node == first)
+    {
+        first = node->next;
+    }
+
+    if (node->prev)
+    {
+        node->prev->next = node->next;
+    }
+    if (node->next)
+    {
+        node->next->prev = node->prev;
+    }
+
     node->next = this->freed;
-    node->free = 1;
+
     this->freed = node;
 }
 
@@ -90,9 +124,7 @@ template <class T> inline void FreeList<T>::free(T *ptr)
 template <class T> struct FreeListIterator
 {
     using N = typename FreeList<T>::Node;
-    static const constexpr size_t S = sizeof(N);
-    size_t index;
-    Arena::Chunk *node;
+    N *node;
 
     static FreeListIterator create(FreeList<T> *fl);
     void skip();
@@ -104,8 +136,7 @@ template <class T>
 inline FreeListIterator<T> FreeListIterator<T>::create(FreeList<T> *fl)
 {
     FreeListIterator it = {};
-    it.node = fl->arena.first;
-    it.skip();
+    it.node = fl->first;
     return it;
 }
 
@@ -113,22 +144,12 @@ template <class T> inline void FreeListIterator<T>::skip()
 {
     assert(this->node);
 
-    while (this->node && this->index >= (this->node->size / S))
-    {
-        this->node = this->node->next;
-        this->index = 0;
-    }
-
-    if (this->node && ((((N *)this->node->data)[this->index]).free))
-    {
-        index++;
-        skip();
-    }
+    this->node = this->node->next;
 }
 
 template <class T> inline T *FreeListIterator<T>::get()
 {
-    return &((((N *)this->node->data)[this->index]).data);
+    return &this->node->data;
 }
 
 template <class T> inline T *FreeListIterator<T>::next()
@@ -136,7 +157,6 @@ template <class T> inline T *FreeListIterator<T>::next()
     assert(this->node);
 
     T *data = get();
-    index++;
     skip();
 
     return data;
@@ -165,16 +185,12 @@ template <class T> struct CxxFreeListIterator
 
     CxxFreeListIterator end()
     {
-        FreeListIterator<T> it = iterator;
-        it.node = nullptr;
-        it.index = 0;
-        return it;
+        return FreeListIterator<T>{};
     }
 
     bool operator==(const CxxFreeListIterator<T> &other) const
     {
-        return iterator.node == other.iterator.node &&
-               iterator.index == other.iterator.index;
+        return iterator.node == other.iterator.node;
     }
 
     bool operator!=(const CxxFreeListIterator<T> &other) const
