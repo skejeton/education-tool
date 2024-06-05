@@ -7,6 +7,8 @@
 #include <assert.h>
 #include <iterator>
 
+#define _FREELIST_DUMMYPTR (Node *)(size_t)0xDEADBEEF
+
 #ifdef _FREELIST_SANITYCHECKS
 int rand();
 #endif
@@ -94,7 +96,10 @@ template <class T> inline T *FreeList<T>::alloc()
 template <class T> inline void FreeList<T>::free(T *ptr)
 {
     Node *node = (Node *)ptr;
-    // TODO: Assert node not already in the free list
+#ifdef _FREELIST_SANITYCHECKS
+    assert(node->check == this->check);
+#endif
+    assert(node->prev != _FREELIST_DUMMYPTR && "Freeing already freed memory");
 
     if (node == last)
     {
@@ -115,6 +120,7 @@ template <class T> inline void FreeList<T>::free(T *ptr)
     }
 
     node->next = this->freed;
+    node->prev = _FREELIST_DUMMYPTR;
 
     this->freed = node;
 }
