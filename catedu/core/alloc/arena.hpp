@@ -5,6 +5,7 @@
 #pragma once
 
 #include "allocator.hpp"
+#include <cstdint>
 
 struct Arena
 {
@@ -15,7 +16,7 @@ struct Arena
         Chunk *next;
         size_t size;
         size_t cap;
-        char data[];
+        uint8_t data[];
     };
 
     Allocator *allocator;

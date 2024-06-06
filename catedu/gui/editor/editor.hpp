@@ -42,6 +42,7 @@ struct GuiEditor
     bool playtest_no_player;
     bool show_debug;
     bool playtesting;
+    bool returning_back;
     Playtest playtest;
     UiState *ui_state;
     EditorCamera editor_camera;

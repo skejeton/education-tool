@@ -11,9 +11,9 @@ struct EditOp
 {
     enum class Type
     {
-        Noop,
-        Place,
-        Remove
+        noop,
+        place,
+        remove
     };
 
     Type type;

@@ -26,4 +26,5 @@ struct MallocAllocator : Allocator
     void free(void *ptr) override;
 };
 
+// TODO: Thread_local or mutex? Maybe mutex in debug builds. I need diagnostics.
 extern MallocAllocator ALLOCATOR_MALLOC;

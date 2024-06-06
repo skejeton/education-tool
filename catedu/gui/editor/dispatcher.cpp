@@ -5,17 +5,17 @@ void unperform_op(EditOp &op, World *world)
 {
     switch (op.type)
     {
-    case EditOp::Type::Place:
+    case EditOp::Type::place:
         assert(world->current->get_object_at(op.object.x, op.object.y) !=
                nullptr);
         world->current->remove_object(op.object.x, op.object.y);
         return;
         break;
-    case EditOp::Type::Remove:
+    case EditOp::Type::remove:
         assert(world->current->place_object(op.object) != nullptr);
         return;
         break;
-    case EditOp::Type::Noop:
+    case EditOp::Type::noop:
         assert(false);
         break;
     }
@@ -27,10 +27,10 @@ bool perform_op(EditOp &op, World *world)
 {
     switch (op.type)
     {
-    case EditOp::Type::Place:
+    case EditOp::Type::place:
         return world->current->place_object(op.object) != nullptr;
         break;
-    case EditOp::Type::Remove:
+    case EditOp::Type::remove:
         if (world->current->get_object_at(op.object.x, op.object.y) == nullptr)
         {
             return false;
@@ -38,7 +38,7 @@ bool perform_op(EditOp &op, World *world)
         world->current->remove_object(op.object.x, op.object.y);
         return true;
         break;
-    case EditOp::Type::Noop:
+    case EditOp::Type::noop:
         assert(false);
         break;
         break;
@@ -75,7 +75,7 @@ Dispatcher Dispatcher::create()
         FreeList<EditOp>::create(Arena::create(&ALLOCATOR_MALLOC));
     dispatcher.current = dispatcher.history.alloc();
     *dispatcher.current = {};
-    dispatcher.current->type = EditOp::Type::Noop;
+    dispatcher.current->type = EditOp::Type::noop;
     dispatcher.world = World::create();
     return dispatcher;
 }
@@ -89,7 +89,7 @@ void Dispatcher::destroy()
 void Dispatcher::place_object(Object object)
 {
     EditOp op = {};
-    op.type = EditOp::Type::Place;
+    op.type = EditOp::Type::place;
     op.object = object;
 
     if (object.type == Object::Type::Player)
@@ -127,7 +127,7 @@ void Dispatcher::remove_object(int x, int y)
     obj->place = nullptr;
 
     EditOp op = {};
-    op.type = EditOp::Type::Remove;
+    op.type = EditOp::Type::remove;
     op.object = *obj;
     op.object.x = x;
     op.object.y = y;

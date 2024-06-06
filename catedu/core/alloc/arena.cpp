@@ -1,7 +1,6 @@
 /// TODO: Handle *random* abnormally large allocations
 
 #include "arena.hpp"
-#include <cstdlib>
 
 using Chunk = Arena::Chunk;
 

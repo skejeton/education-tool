@@ -522,6 +522,18 @@ bool GuiEditor::show(UiUser &user, GuiTransition &transition,
 
     show_popups(user, *this, return_back);
 
+    if (return_back)
+    {
+        transition.begin();
+        this->returning_back = true;
+        return_back = false;
+    }
+
+    if (this->returning_back && transition.switching())
+    {
+        return_back = true;
+    }
+
     return return_back;
 }
 

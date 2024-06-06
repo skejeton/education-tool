@@ -26,7 +26,9 @@ Vector3 polar3_into_cartesian(Polar3 coord)
 Polar3 cartesian_into_polar3(Vector3 coord)
 {
     float length = vector3_length(coord);
-    float angle = atan2(coord.y, coord.x), acos(coord.z / length);
 
-    return {length, angle};
+    float longitude = atan2(coord.y, coord.x);
+    float latitude = acos(coord.z / length);
+
+    return {length, longitude, latitude};
 }
