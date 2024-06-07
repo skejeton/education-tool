@@ -1,6 +1,6 @@
 #include "edit_basic.hpp"
 #include "catedu/genobj/tree.hpp"
-#include "catedu/gui/editor/world.hpp"
+#include "catedu/scene/world.hpp"
 #include <catedu/genobj/grid.hpp>
 #include <catedu/genobj/player.hpp>
 #include <catedu/genobj/road.hpp>

@@ -1,8 +1,8 @@
 #include "catedu/gui/editor/camera.hpp"
 #include "catedu/gui/transition/transition.hpp"
 #include "catedu/scene/physics.hpp"
+#include "catedu/scene/world.hpp"
 #include "catedu/ui/user.hpp"
-#include "world.hpp"
 #include <catedu/sys/input.hpp>
 
 struct Playtest

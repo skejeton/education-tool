@@ -3,7 +3,7 @@
 #include "catedu/genobj/grid.hpp"
 #include "catedu/genobj/road.hpp"
 #include "catedu/genobj/wall.hpp"
-#include "catedu/gui/editor/world.hpp"
+#include "catedu/scene/world.hpp"
 
 void EditLine::show(UiUser &user, Object::Type type,
                     catedu::pbr::Renderer &renderer, Dispatcher &disp,

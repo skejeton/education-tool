@@ -1,9 +1,9 @@
 #pragma once
 #include "catedu/gui/editor/camera.hpp"
-#include "catedu/gui/editor/world.hpp"
 #include "catedu/gui/transition/transition.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
 #include "catedu/rendering/resource_spec.hpp"
+#include "catedu/scene/world.hpp"
 #include "catedu/ui/user.hpp"
 #include <sokol/sokol_app.h>
 

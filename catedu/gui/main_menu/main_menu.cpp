@@ -1,7 +1,7 @@
 #include "main_menu.hpp"
 #include "catedu/gui/editor/camera.hpp"
-#include "catedu/gui/editor/render_world.hpp"
 #include "catedu/gui/transition/transition.hpp"
+#include "catedu/scene/render_world.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/widgets.hpp"
 #include "sokol/sokol_app.h"

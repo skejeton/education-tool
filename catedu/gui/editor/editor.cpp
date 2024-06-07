@@ -3,15 +3,14 @@
 #include "catedu/genobj/deleter.hpp"
 #include "catedu/genobj/render.hpp"
 #include "catedu/genobj/tree.hpp"
-#include "catedu/gui/editor/render_world.hpp"
 #include "catedu/gui/transition/transition.hpp"
-#include "catedu/misc/camera_input.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
+#include "catedu/scene/render_world.hpp"
+#include "catedu/scene/world_file.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/widgets.hpp"
 #include "edit_building.hpp"
 #include "offscreen.hpp"
-#include "world_file.hpp"
 #include <catedu/genobj/ground.hpp>
 #include <catedu/genobj/player.hpp>
 #include <catedu/genobj/road.hpp>

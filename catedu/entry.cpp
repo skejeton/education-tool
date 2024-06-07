@@ -1,7 +1,7 @@
 #include "entry.hpp"
-#include "catedu/gui/editor/world_file.hpp"
 #include "catedu/gui/transition/transition.hpp"
 #include "catedu/resources/resources.hpp"
+#include "catedu/scene/world_file.hpp"
 #include "catedu/sys/sg_tricks.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/widgets.hpp"

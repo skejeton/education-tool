@@ -1,7 +1,7 @@
 #pragma once
 
 #include "catedu/genobj/render.hpp"
-#include "catedu/gui/editor/world.hpp"
+#include "world.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
 #include "catedu/rendering/resource_spec.hpp"
 

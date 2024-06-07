@@ -5,7 +5,7 @@
 #pragma once
 
 #include "catedu/core/alloc/free_list.hpp"
-#include "world.hpp"
+#include "catedu/scene/world.hpp"
 
 struct EditOp
 {
