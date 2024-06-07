@@ -12,6 +12,10 @@ void unperform_op(EditOp &op, World *world)
         return;
         break;
     case EditOp::Type::remove:
+        if (op.has_place_embedding)
+        {
+            op.object.place = world->places.alloc(op.place_embedding);
+        }
         assert(world->current->place_object(op.object) != nullptr);
         return;
         break;
@@ -113,6 +117,8 @@ void Dispatcher::place_object(Object object)
 void Dispatcher::remove_object(int x, int y)
 {
     Object *obj = world.current->get_object_at(x, y);
+    Place *place_embedding = nullptr;
+
     if (obj == nullptr)
     {
         return;
@@ -120,8 +126,7 @@ void Dispatcher::remove_object(int x, int y)
 
     if (obj->place && obj->place != world.first)
     {
-        obj->place->destroy();
-        world.places.free(obj->place);
+        place_embedding = obj->place;
     }
 
     obj->place = nullptr;
@@ -129,8 +134,17 @@ void Dispatcher::remove_object(int x, int y)
     EditOp op = {};
     op.type = EditOp::Type::remove;
     op.object = *obj;
-    op.object.x = x;
-    op.object.y = y;
+    op.object.x = obj->x;
+    op.object.y = obj->y;
+
+    if (place_embedding)
+    {
+        op.has_place_embedding = true;
+        op.place_embedding = *place_embedding;
+        // TODO: Ideally i'd do it in the perform_op function.
+        world.places.free(place_embedding);
+    }
+
     if (perform_op(op, &world))
     {
         dirty = true;

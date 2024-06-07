@@ -18,6 +18,12 @@ struct EditOp
 
     Type type;
     Object object;
+
+    // FIXME: Seems to be a hack, but for now I need to store the place as value
+    // since it's freed from the free list.
+    bool has_place_embedding;
+    Place place_embedding;
+
     Place *place;
 
     EditOp *next;

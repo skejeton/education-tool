@@ -36,6 +36,7 @@ template <class T> struct FreeList
     void destroy();
 
     T *alloc();
+    T *alloc(T);
     void free(T *);
 };
 
@@ -91,6 +92,13 @@ template <class T> inline T *FreeList<T>::alloc()
 #endif
 
     return &node->data;
+}
+
+template <class T> inline T *FreeList<T>::alloc(T v)
+{
+    T *ptr = alloc();
+    *ptr = v;
+    return ptr;
 }
 
 template <class T> inline void FreeList<T>::free(T *ptr)

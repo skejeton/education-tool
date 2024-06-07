@@ -28,8 +28,8 @@ RectI object_dimensions(Object &object)
 
 bool point_in_dimensions(int x, int y, RectI dimensions)
 {
-    return dimensions.pos.x <= x && dimensions.pos.x + dimensions.siz.x >= x &&
-           dimensions.pos.y <= y && dimensions.pos.y + dimensions.siz.y >= y;
+    return dimensions.pos.x <= x && dimensions.pos.x + dimensions.siz.x > x &&
+           dimensions.pos.y <= y && dimensions.pos.y + dimensions.siz.y > y;
 }
 
 Object *object_space(int x, int y, FreeList<Object> &objects)

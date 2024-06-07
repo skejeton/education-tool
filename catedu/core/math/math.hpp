@@ -532,6 +532,11 @@ inline Rect rect_center_rect(Rect parent, Rect child)
             child.siz.y};
 }
 
+inline Vector2 rect_center(Rect r)
+{
+    return {r.pos.x + r.siz.x / 2.0f, r.pos.y + r.siz.y / 2.0f};
+}
+
 inline Rect rect_from_min_max(Vector2 min, Vector2 max)
 {
     return {min.x, min.y, max.x - min.x, max.y - min.y};
