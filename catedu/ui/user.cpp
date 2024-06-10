@@ -229,7 +229,7 @@ UiState UiState::init(const char *font_path, const char *font_bold_path,
     state.font =
         UiFontRenderer::init(state.core, {font_path, 16}, dpi_scale * 2);
     state.font_bold =
-        UiFontRenderer::init(state.core, {font_bold_path, 32}, dpi_scale * 2);
+        UiFontRenderer::init(state.core, {font_bold_path, 16}, dpi_scale * 2);
     state.frame_storage = Arena::create(&ALLOCATOR_MALLOC);
     state.lifetime_storage = Arena::create(&ALLOCATOR_MALLOC);
     return state;

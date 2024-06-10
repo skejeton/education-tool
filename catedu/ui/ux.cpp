@@ -8,6 +8,7 @@ UX UX::begin(UiState &state)
     ux.state = &state;
     ux.pass = UiPass::init(state);
     ux.pass.begin_pass();
+    ux.nx_color = UiMakeBrush::make_solid(0xFFFFFFFF);
 
     return ux;
 }
@@ -42,6 +43,24 @@ UX &UX::border_color(Color color)
     nx_border = UiMakeBrush::make_solid(color);
     return *this;
 }
+
+UX &UX::color(Color color)
+{
+    nx_color = UiMakeBrush::make_solid(color);
+    return *this;
+}
+
+UX &UX::margin(float px)
+{
+    nx_margin = px;
+    return *this;
+}
+
+UX &UX::padding(float px)
+{
+    nx_padding = px;
+    return *this;
+}
 #pragma endregion
 
 // MARK: Layout
@@ -53,11 +72,15 @@ UX &UX::row(std::function<void()> cb)
     AutoLayoutElement el = {};
     el.border = {nx_border_size, nx_border_size, nx_border_size,
                  nx_border_size};
+    el.margin = {nx_margin, nx_margin, nx_margin, nx_margin};
+    el.padding = {nx_padding, nx_padding, nx_padding, nx_padding};
     el.layout.type = AutoLayout::row;
     pass.begin_generic(el, nx_background, nx_border);
     nx_background = {};
     nx_border = {};
     nx_border_size = {};
+    nx_margin = {};
+    nx_padding = {};
     cb();
     pass.end_generic();
     return *this;
@@ -70,11 +93,15 @@ UX &UX::column(std::function<void()> cb)
     AutoLayoutElement el = {};
     el.border = {nx_border_size, nx_border_size, nx_border_size,
                  nx_border_size};
+    el.margin = {nx_margin, nx_margin, nx_margin, nx_margin};
+    el.padding = {nx_padding, nx_padding, nx_padding, nx_padding};
     el.layout.type = AutoLayout::column;
     pass.begin_generic(el, nx_background, nx_border);
     nx_background = {};
     nx_border = {};
     nx_border_size = {};
+    nx_margin = {};
+    nx_padding = {};
     cb();
     pass.end_generic();
     return *this;
@@ -92,7 +119,8 @@ bool UX::button(const char *text)
 
 UX &UX::label(const char *text)
 {
-    ::label(pass, text, {1, 1}, UiMakeBrush::make_solid(0xFFFFFFFF));
+    ::label(pass, text, {1, 1}, nx_color);
+    nx_color = UiMakeBrush::make_solid(0xFFFFFFFF);
 
     return *this;
 }
@@ -100,7 +128,8 @@ UX &UX::label(const char *text)
 UX &UX::heading(const char *text)
 {
     pass.bold = true;
-    ::label(pass, text, {1.5, 1.5}, UiMakeBrush::make_solid(0xFFFFFFFF));
+    ::label(pass, text, {2, 2}, nx_color);
+    nx_color = UiMakeBrush::make_solid(0xFFFFFFFF);
     pass.bold = false;
 
     return *this;

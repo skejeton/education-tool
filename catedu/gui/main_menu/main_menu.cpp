@@ -3,6 +3,7 @@
 #include "catedu/gui/transition/transition.hpp"
 #include "catedu/scene/render_world.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
+#include "catedu/ui/ux.hpp"
 #include "catedu/ui/widgets.hpp"
 #include "sokol/sokol_app.h"
 
@@ -92,9 +93,11 @@ static void menu_exit(UiPass &pass, GuiMainMenu &state)
     }
 }
 
-bool GuiMainMenu::show(UiPass &pass, GuiTransition &transition, World &world,
+bool GuiMainMenu::show(UX &ux, GuiTransition &transition, World &world,
                        catedu::pbr::Renderer &renderer, ResourceSpec &resources)
 {
+    UiPass &pass = ux.pass;
+
     this->angle += sapp_frame_duration() * 10.0f;
     this->camera.follow({20, 0, -10}, this->angle * MATH_DEG_TO_RAD, 6);
     this->camera.update({sapp_width(), sapp_height()});
@@ -104,43 +107,29 @@ bool GuiMainMenu::show(UiPass &pass, GuiTransition &transition, World &world,
     renderer.end_pass();
 
     pass.begin_generic(
-        make_element({AutoLayout::row},
+        make_element({AutoLayout::column},
                      {sapp_widthf() / this->ui_state->dpi_scale,
                       sapp_heightf() / this->ui_state->dpi_scale},
                      false, false, {0.5, 0.5}, 0),
         UiMakeBrush::make_gradient(0x00004499, 0x000A8899), {});
 
-    pass.begin_generic(make_auto({AutoLayout::row}), {}, {});
-    pass.begin_generic(make_auto({AutoLayout::column}, {0.5, 0}), {}, {});
-    AutoLayoutElement el =
-        make_element({AutoLayout::row}, {0, 0}, true, true, {0.0, 0.0}, 3, 3);
-    pass.begin_generic(el, {}, {});
+    ux.color(0x44CC00FF).heading("STORYLAND");
 
-    pass.bold = true;
-    label(pass, "STORYLAND", {2.5, 2.5},
-          UiMakeBrush::make_gradient(0x44CC00FF, 0x88CC00FF));
-    pass.bold = false;
+    ux.row([&] {
+        if (big_menu_button(pass, "Settings"))
+        {
+            this->state = GuiMainMenu::settings;
+        }
+        if (big_menu_button(pass, "Play & Edit", true))
+        {
+            transition.begin();
+        }
+        if (big_menu_button(pass, "Exit"))
+        {
+            this->state = GuiMainMenu::exit;
+        }
+    });
 
-    pass.end_generic();
-    el = make_element({AutoLayout::row}, {0, 0}, true, true, {0.0, 0.0}, 3, 3);
-    pass.begin_generic(el, {}, {});
-
-    if (big_menu_button(pass, "Settings"))
-    {
-        this->state = GuiMainMenu::settings;
-    }
-    if (big_menu_button(pass, "Play & Edit", true))
-    {
-        transition.begin();
-    }
-    if (big_menu_button(pass, "Exit"))
-    {
-        this->state = GuiMainMenu::exit;
-    }
-
-    pass.end_generic();
-    pass.end_generic();
-    pass.end_generic();
     pass.end_generic();
 
     float scale_delta = 0;

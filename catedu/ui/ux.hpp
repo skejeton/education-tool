@@ -14,7 +14,10 @@ struct UX
     // element
     UiBrush nx_background;
     UiBrush nx_border;
+    UiBrush nx_color;
     float nx_border_size;
+    float nx_margin;
+    float nx_padding;
 
     static UX begin(UiState &state);
     void end();
@@ -26,6 +29,9 @@ struct UX
     UX &background_color(Color color);
     UX &border_size(float px);
     UX &border_color(Color color);
+    UX &color(Color color);
+    UX &margin(float px);
+    UX &padding(float px);
 
     // MARK: Layout
     UX &row(std::function<void()> cb);

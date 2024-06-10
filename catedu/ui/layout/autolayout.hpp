@@ -84,6 +84,7 @@ struct AutoLayoutElement
     Rect base_box;    // Box inside border.
     Rect border_box;  // Box inside margin.
     Rect margin_box;  //
+    Rect content_box; // Box inside padding that is the size of the content.
 };
 
 struct AutoLayoutResult

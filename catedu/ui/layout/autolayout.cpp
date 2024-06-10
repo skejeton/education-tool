@@ -67,6 +67,8 @@ void recurse(AutoLayoutProcess *process, AutoLayoutNode *node)
         child = child->sibling;
     }
 
+    node->element.content_box.siz = my_size;
+
     if (el.width.type == AutoLayoutDimension::Type::pixel)
     {
         my_size.x = el.width.value;
@@ -103,15 +105,17 @@ void align_to_parents(AutoLayoutProcess *process, AutoLayoutNode *node)
     {
         Vector2 delta = {0, 0};
 
-        if (child->element.position != AutoLayoutPosition::absolute)
+        if (child->element.position != AutoLayoutPosition::absolute &&
+            child->element.position != AutoLayoutPosition::detached)
         {
             child->element.padding_box.pos += node->element.padding_box.pos;
             child->element.base_box.pos += node->element.padding_box.pos;
             child->element.border_box.pos += node->element.padding_box.pos;
             child->element.margin_box.pos += node->element.padding_box.pos;
+
             delta =
                 (node->element.padding_box.siz -
-                 child->element.margin_box.siz) *
+                 node->element.content_box.siz) *
                 Vector2{node->element.align_width, node->element.align_height};
         }
 

@@ -7,13 +7,17 @@
 
 void show_debug_panel(UX &ux, RuntimeMode &mode)
 {
-    ux.background_color(0x000000FF);
-    ux.border_color(0x666666FF);
-    ux.border_size(2);
-    ux.column([&]() {
-        ux.heading("Debug panel");
+    ux.background_color(0x000000FF)
+        .border_color(0x666666FF)
+        .border_size(1)
+        .margin(10)
+        .padding(10);
 
-        ux.label("Select mode");
+    ux.border_color(0x666666FF);
+    ux.column([&]() {
+        ux.color(0xEEEEFFFF).heading("Debug panel");
+
+        ux.color(0x999999FF).label("Select mode");
 
         ux.row([&]() {
             if (ux.button("Menu"))
@@ -51,7 +55,7 @@ void Entry::frame(void)
         }
         break;
     case RuntimeMode::menu:
-        if (this->main_menu.show(pass, transition, this->panorama.world,
+        if (this->main_menu.show(ux, transition, this->panorama.world,
                                  this->renderer, this->res))
         {
             this->editor = GuiEditor::init(&this->ui_state);
