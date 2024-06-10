@@ -9,7 +9,7 @@ static const Vector4 theme[] = {
     {1.0, 1.0, 1.0, 1.0}                        // Window
 };
 
-bool begin_show_window(UiUser &user, WindowInfo info)
+bool begin_show_window(UiPass &user, WindowInfo info)
 {
     // TODO: Create a formatter that will use the UI state
     char buffer[256];
@@ -49,11 +49,11 @@ bool begin_show_window(UiUser &user, WindowInfo info)
     }
 
     AutoLayoutElement cel = {};
-    cel.position = AutoLayoutPosition::Absolute;
+    cel.position = AutoLayoutPosition::absolute;
     cel.offset = info.rect.pos;
-    cel.width.type = AutoLayoutDimension::Auto;
-    cel.height.type = AutoLayoutDimension::Auto;
-    cel.layout.type = AutoLayout::Column;
+    cel.width.type = AutoLayoutDimension::autom;
+    cel.height.type = AutoLayoutDimension::autom;
+    cel.layout.type = AutoLayout::column;
     cel.border = {1, 1, 2, 1};
     user.begin_generic(cel, {},
                        UiMakeBrush::make_gradient(0x00000044, 0x00000000),
@@ -63,9 +63,9 @@ bool begin_show_window(UiUser &user, WindowInfo info)
     {
         AutoLayoutElement el = {};
         el.border = {3, 3, 3, 3};
-        el.width.type = AutoLayoutDimension::Pixel;
+        el.width.type = AutoLayoutDimension::pixel;
         el.width.value = info.rect.siz.x - 6;
-        el.height.type = AutoLayoutDimension::Auto;
+        el.height.type = AutoLayoutDimension::autom;
         el.padding = {3, 3, 3, 3};
         el.clip = true;
 
@@ -81,9 +81,9 @@ bool begin_show_window(UiUser &user, WindowInfo info)
     {
         AutoLayoutElement el = {};
         el.border = {3, 3, 3, 3};
-        el.width.type = AutoLayoutDimension::Pixel;
+        el.width.type = AutoLayoutDimension::pixel;
         el.width.value = info.rect.siz.x;
-        el.height.type = AutoLayoutDimension::Pixel;
+        el.height.type = AutoLayoutDimension::pixel;
         el.height.value = info.rect.siz.y;
         el.hidden = pe->hidden;
         el.clip = true;
@@ -96,12 +96,12 @@ bool begin_show_window(UiUser &user, WindowInfo info)
     // Resize handle
     {
         AutoLayoutElement el = {};
-        el.width.type = AutoLayoutDimension::Pixel;
+        el.width.type = AutoLayoutDimension::pixel;
         el.width.value = 6;
-        el.height.type = AutoLayoutDimension::Pixel;
+        el.height.type = AutoLayoutDimension::pixel;
         el.height.value = 6;
         el.clip = true;
-        el.position = AutoLayoutPosition::Detached;
+        el.position = AutoLayoutPosition::detached;
         el.offset = info.rect.siz;
         el.pop = true;
 
@@ -121,12 +121,12 @@ bool begin_show_window(UiUser &user, WindowInfo info)
     // Resize handle bottom
     {
         AutoLayoutElement el = {};
-        el.width.type = AutoLayoutDimension::Pixel;
+        el.width.type = AutoLayoutDimension::pixel;
         el.width.value = info.rect.siz.x;
-        el.height.type = AutoLayoutDimension::Pixel;
+        el.height.type = AutoLayoutDimension::pixel;
         el.height.value = 6;
         el.clip = true;
-        el.position = AutoLayoutPosition::Detached;
+        el.position = AutoLayoutPosition::detached;
         el.offset = {0, info.rect.siz.y};
         el.pop = true;
 
@@ -146,12 +146,12 @@ bool begin_show_window(UiUser &user, WindowInfo info)
     // Resize handle right
     {
         AutoLayoutElement el = {};
-        el.width.type = AutoLayoutDimension::Pixel;
+        el.width.type = AutoLayoutDimension::pixel;
         el.width.value = 6;
-        el.height.type = AutoLayoutDimension::Pixel;
+        el.height.type = AutoLayoutDimension::pixel;
         el.height.value = info.rect.siz.y;
         el.clip = true;
-        el.position = AutoLayoutPosition::Detached;
+        el.position = AutoLayoutPosition::detached;
         el.offset = {info.rect.siz.x, 0};
         el.pop = true;
 
@@ -171,7 +171,7 @@ bool begin_show_window(UiUser &user, WindowInfo info)
     return !pe->hidden;
 }
 
-void end_show_window(UiUser &user)
+void end_show_window(UiPass &user)
 {
     user.end_generic();
     user.end_generic();
@@ -179,12 +179,12 @@ void end_show_window(UiUser &user)
     user.state->element_storage.pop();
 }
 
-void begin_button_frame(UiUser &user, const char *id, AutoLayoutElement el,
+void begin_button_frame(UiPass &user, const char *id, AutoLayoutElement el,
                         Vector4 background)
 {
     user.state->element_storage.push(id, {});
 
-    el.position = AutoLayoutPosition::Relative;
+    el.position = AutoLayoutPosition::relative;
 
     Vector4 color_top = theme[1] * background;
     Vector4 color_bottom = theme[0] * background;
@@ -207,7 +207,7 @@ void begin_button_frame(UiUser &user, const char *id, AutoLayoutElement el,
                        user.state->element_storage.id());
 }
 
-bool end_button_frame(UiUser &user)
+bool end_button_frame(UiPass &user)
 {
     bool pressed =
         user.hovered() && user.state->input.k[INPUT_MB_LEFT].released;
@@ -216,7 +216,7 @@ bool end_button_frame(UiUser &user)
     return pressed;
 }
 
-bool button(UiUser &user, const char *text, Vector4 background)
+bool button(UiPass &user, const char *text, Vector4 background)
 {
     AutoLayoutElement el = {};
     el.padding = {3, 3, 3, 3};
@@ -228,7 +228,7 @@ bool button(UiUser &user, const char *text, Vector4 background)
     return end_button_frame(user);
 }
 
-bool button_toggle(UiUser &user, const char *text, bool &state)
+bool button_toggle(UiPass &user, const char *text, bool &state)
 {
     if (button(user, text,
                state ? Vector4{0.8, 1.0, 0.8, 1.0}
@@ -239,7 +239,7 @@ bool button_toggle(UiUser &user, const char *text, bool &state)
     return state;
 }
 
-bool button_radio(UiUser &user, const char *text, int &mode, int val)
+bool button_radio(UiPass &user, const char *text, int &mode, int val)
 {
     const Vector4 color =
         mode == val ? Vector4{0.8, 1.0, 0.8, 1.0} : Vector4{1.0, 1.0, 1.0, 1.0};
@@ -251,16 +251,16 @@ bool button_radio(UiUser &user, const char *text, int &mode, int val)
     return false;
 }
 
-void img(UiUser &user, const char *path, Vector2 scale)
+void img(UiPass &user, const char *path, Vector2 scale)
 {
     UiImageId id = user.state->get_image(path);
 
     AutoLayoutElement el = {};
-    el.layout = {AutoLayout::Row};
+    el.layout = {AutoLayout::row};
     Vector2 size = vector2i_to_vector2(user.state->core->get_image(id)->size);
 
-    el.width = {AutoLayoutDimension::Pixel, size.x * scale.x};
-    el.height = {AutoLayoutDimension::Pixel, size.y * scale.y};
+    el.width = {AutoLayoutDimension::pixel, size.x * scale.x};
+    el.height = {AutoLayoutDimension::pixel, size.y * scale.y};
 
     user.begin_generic(el,
                        UiMakeBrush::make_image_brush(UiBuffers::Rectangle,
@@ -271,14 +271,14 @@ void img(UiUser &user, const char *path, Vector2 scale)
     user.end_generic();
 }
 
-void img(UiUser &user, UiImageId id, Vector2 scale)
+void img(UiPass &user, UiImageId id, Vector2 scale)
 {
     AutoLayoutElement el = {};
-    el.layout = {AutoLayout::Row};
+    el.layout = {AutoLayout::row};
     Vector2 size = vector2i_to_vector2(user.state->core->get_image(id)->size);
 
-    el.width = {AutoLayoutDimension::Pixel, size.x * scale.x};
-    el.height = {AutoLayoutDimension::Pixel, size.y * scale.y};
+    el.width = {AutoLayoutDimension::pixel, size.x * scale.x};
+    el.height = {AutoLayoutDimension::pixel, size.y * scale.y};
 
     user.begin_generic(el,
                        UiMakeBrush::make_image_brush(UiBuffers::Rectangle,
@@ -289,7 +289,7 @@ void img(UiUser &user, UiImageId id, Vector2 scale)
     user.end_generic();
 }
 
-void label(UiUser &user, const char *text, Vector2 scale, UiBrush style)
+void label(UiPass &user, const char *text, Vector2 scale, UiBrush style)
 {
     Vector2 size = user.state->font.bounds_text_utf8({0, 0}, text, scale).siz;
     if (user.bold)
@@ -301,9 +301,9 @@ void label(UiUser &user, const char *text, Vector2 scale, UiBrush style)
     strcpy((char *)ptr, text);
 
     AutoLayoutElement el = {};
-    el.layout = {AutoLayout::Row};
-    el.width = {AutoLayoutDimension::Pixel, size.x};
-    el.height = {AutoLayoutDimension::Pixel, size.y};
+    el.layout = {AutoLayout::row};
+    el.width = {AutoLayoutDimension::pixel, size.x};
+    el.height = {AutoLayoutDimension::pixel, size.y};
 
     UiGenericStyles styles = {style, {}, (char *)ptr, scale, 0};
     styles.bold = user.bold;
@@ -314,7 +314,7 @@ void label(UiUser &user, const char *text, Vector2 scale, UiBrush style)
     user.layout.add_element(user.current_node, el);
 }
 
-bool input(UiUser &user, const char *id, char *out, int max)
+bool input(UiPass &user, const char *id, char *out, int max)
 {
     bool edited = false;
 
@@ -344,9 +344,9 @@ bool input(UiUser &user, const char *id, char *out, int max)
     }
 
     AutoLayoutElement el = {};
-    el.layout = {AutoLayout::Row};
-    el.width = {AutoLayoutDimension::Pixel, 150};
-    el.height = {AutoLayoutDimension::Auto};
+    el.layout = {AutoLayout::row};
+    el.width = {AutoLayoutDimension::pixel, 150};
+    el.height = {AutoLayoutDimension::autom};
     el.clip = true;
     el.padding = {2, 2, 2, 2};
     el.margin = {0, 0, 0, 0};
@@ -359,7 +359,7 @@ bool input(UiUser &user, const char *id, char *out, int max)
     if (user.focused())
     {
         bg = UiMakeBrush::make_gradient(theme[5], theme[4]);
-        el.width = {AutoLayoutDimension::Auto};
+        el.width = {AutoLayoutDimension::autom};
         el.pop = true;
     }
 
@@ -385,66 +385,62 @@ AutoLayoutElement make_element(AutoLayout layout, Vector2 size, bool autox,
 
 AutoLayoutElement make_auto(AutoLayout layout, Vector2 align = {0, 0});
 
-int msgbox(UiUser &user, const char *title, const char *text, MsgBoxType type,
+static void msgbox_icon(UiPass &user, uint32_t color1, uint32_t color2,
+                        const char *text)
+{
+    UiBrush border = UiMakeBrush::make_gradient(0x00000088, 0x00000000);
+    user.begin_generic(make_element({AutoLayout::column}, {40, 40}, false,
+                                    false, {0.5, 0.5}, 1, 1),
+                       UiMakeBrush::make_gradient(color1, color2), border);
+    label(user, text, {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
+    user.end_generic();
+}
+
+int msgbox(UiPass &user, const char *title, const char *text, MsgBoxType type,
            const char *buttons[])
 {
     Rect scaled_screen_rect = Rect{
         {0, 0}, Vector2{sapp_widthf(), sapp_heightf()} / user.state->dpi_scale};
 
-    begin_show_window(
-        user,
-        {title, rect_center_rect(scaled_screen_rect, {0, 0, 350, 76}), true});
-    user.begin_generic(make_auto({AutoLayout::Column}, {0, 0}), {}, {});
-
-    user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
-
-    UiBrush border = UiMakeBrush::make_gradient(0x00000088, 0x00000000);
-
-    switch (type)
-    {
-    default:
-    case MsgBoxType::Info:
-        user.begin_generic(make_element({AutoLayout::Column}, {40, 40}, false,
-                                        false, {0.5, 0.5}, 1, 1),
-                           UiMakeBrush::make_gradient(0x4444FFFF, 0x0033FF66),
-                           border);
-        label(user, "?", {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
-        break;
-    case MsgBoxType::Warning:
-        user.begin_generic(make_element({AutoLayout::Column}, {40, 40}, false,
-                                        false, {0.5, 0.5}, 1, 1),
-                           UiMakeBrush::make_gradient(0xFFCC44FF, 0xFFAA0066),
-                           border);
-        label(user, ":/", {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
-        break;
-    case MsgBoxType::Error:
-        user.begin_generic(make_element({AutoLayout::Column}, {40, 40}, false,
-                                        false, {0.5, 0.5}, 1, 1),
-                           UiMakeBrush::make_gradient(0xFF4444FF, 0xFF000066),
-                           border);
-        label(user, "!", {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
-        break;
-    }
-    user.end_generic();
-
-    label(user, text);
-
-    user.end_generic();
-    user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
-
     int result = -1;
-    for (int i = 0; buttons[i]; i++)
-    {
-        if (button(user, buttons[i]))
+
+    WindowInfo winfo = {
+        title, rect_center_rect(scaled_screen_rect, {0, 0, 350, 76}), true};
+    window(user, winfo, [&] {
+        user.begin_generic(make_auto({AutoLayout::column}, {0, 0}), {}, {});
+
+        user.begin_generic(make_auto({AutoLayout::row}), {}, {});
+
+        switch (type)
         {
-            result = i;
+        default:
+        case MsgBoxType::Info:
+            msgbox_icon(user, 0x4444FFFF, 0x0033FF66, "?");
+            break;
+        case MsgBoxType::Warning:
+            msgbox_icon(user, 0xFFCC44FF, 0xFFAA0066, ":/");
+            break;
+        case MsgBoxType::Error:
+            msgbox_icon(user, 0xFF4444FF, 0xFF000066, "!");
+            break;
         }
-    }
 
-    user.end_generic();
-    user.end_generic();
+        label(user, text);
 
-    end_show_window(user);
+        user.end_generic();
+        user.begin_generic(make_auto({AutoLayout::row}), {}, {});
+
+        for (int i = 0; buttons[i]; i++)
+        {
+            if (button(user, buttons[i]))
+            {
+                result = i;
+            }
+        }
+
+        user.end_generic();
+        user.end_generic();
+    });
 
     return result;
 }

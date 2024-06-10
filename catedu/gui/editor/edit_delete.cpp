@@ -4,7 +4,7 @@
 #include "catedu/genobj/render.hpp"
 #include "catedu/sys/input.hpp"
 
-void EditDelete::show(UiUser &user, catedu::pbr::Renderer &renderer,
+void EditDelete::show(UiPass &user, catedu::pbr::Renderer &renderer,
                       Dispatcher &disp, GenResources &gen_resources,
                       Input &input, Camera &camera)
 {

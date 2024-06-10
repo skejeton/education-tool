@@ -12,7 +12,7 @@ struct ResultBuilder
 
 AutoLayoutResult *alloc_result(ResultBuilder &builder)
 {
-    auto *result = zeroinit(builder.alloc->alloct<AutoLayoutResult>());
+    auto *result = builder.alloc->alloc(AutoLayoutResult{});
 
     builder.last->next = result;
     builder.last = result;
@@ -41,17 +41,17 @@ void recurse(AutoLayoutProcess *process, AutoLayoutNode *node)
         Vector2 size = cel.margin_box.siz;
         Vector2 delta = {0, 0};
 
-        if (cel.position != AutoLayoutPosition::Absolute &&
-            cel.position != AutoLayoutPosition::Detached)
+        if (cel.position != AutoLayoutPosition::absolute &&
+            cel.position != AutoLayoutPosition::detached)
         {
             switch (el.layout.type)
             {
-            case AutoLayout::Column:
+            case AutoLayout::column:
                 delta = {0, my_size.y};
                 my_size.y += size.y;
                 my_size.x = std::max(size.x, my_size.x);
                 break;
-            case AutoLayout::Row:
+            case AutoLayout::row:
                 delta = {my_size.x, 0};
                 my_size.x += size.x;
                 my_size.y = std::max(size.y, my_size.y);
@@ -67,11 +67,11 @@ void recurse(AutoLayoutProcess *process, AutoLayoutNode *node)
         child = child->sibling;
     }
 
-    if (el.width.type == AutoLayoutDimension::Type::Pixel)
+    if (el.width.type == AutoLayoutDimension::Type::pixel)
     {
         my_size.x = el.width.value;
     }
-    if (el.height.type == AutoLayoutDimension::Type::Pixel)
+    if (el.height.type == AutoLayoutDimension::Type::pixel)
     {
         my_size.y = el.height.value;
     }
@@ -103,7 +103,7 @@ void align_to_parents(AutoLayoutProcess *process, AutoLayoutNode *node)
     {
         Vector2 delta = {0, 0};
 
-        if (child->element.position != AutoLayoutPosition::Absolute)
+        if (child->element.position != AutoLayoutPosition::absolute)
         {
             child->element.padding_box.pos += node->element.padding_box.pos;
             child->element.base_box.pos += node->element.padding_box.pos;
@@ -176,7 +176,7 @@ AutoLayoutProcess AutoLayoutProcess::init(Arena &arena, AutoLayoutNode **root)
     result.arena = &arena;
 
     AutoLayoutNode node = {0};
-    node.element.layout = {AutoLayout::Row};
+    node.element.layout = {AutoLayout::row};
 
     // TODO: Properly initialize root element.
     result.root = arena.alloct<AutoLayoutNode>();
@@ -223,7 +223,7 @@ void AutoLayoutProcess::process(Arena &alloc, AutoLayoutResult *&result)
 {
     ResultBuilder builder = {};
     builder.process = this;
-    builder.last = result = zeroinit(alloc.alloct<AutoLayoutResult>());
+    builder.last = result = alloc.alloc(AutoLayoutResult{});
     builder.alloc = &alloc;
 
     recurse(this, builder.process->root);

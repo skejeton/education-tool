@@ -13,5 +13,5 @@ struct GuiTransition
     bool going();
     bool switching();
 
-    void show(UiUser &user, Input &input);
+    void show(UiPass &user, Input &input);
 };

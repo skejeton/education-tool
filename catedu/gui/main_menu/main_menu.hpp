@@ -11,9 +11,9 @@ struct GuiMainMenu
 {
     enum
     {
-        Normal,
-        Settings,
-        Exit,
+        normal,
+        settings,
+        exit,
     } state;
     UiState *ui_state;
 
@@ -24,6 +24,6 @@ struct GuiMainMenu
     void deinit();
 
     // @returns true if the menu switched to the editor.
-    bool show(UiUser &user, GuiTransition &transition, World &world,
+    bool show(UiPass &user, GuiTransition &transition, World &world,
               catedu::pbr::Renderer &renderer, ResourceSpec &resources);
 };

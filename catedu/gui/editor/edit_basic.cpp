@@ -6,7 +6,7 @@
 #include <catedu/genobj/road.hpp>
 #include <catedu/genobj/wall.hpp>
 
-void EditBasic::show(UiUser &user, catedu::pbr::Renderer &renderer,
+void EditBasic::show(UiPass &user, catedu::pbr::Renderer &renderer,
                      Dispatcher &disp, GenResources &gen_resources,
                      Input &input, Camera &camera, Object::Type type)
 {

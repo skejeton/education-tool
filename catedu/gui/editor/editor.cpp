@@ -17,16 +17,16 @@
 #include <catedu/genobj/wall.hpp>
 #include <umka_api.h>
 
-bool icon_button(UiUser &user, const char *name, const char *icon,
+bool icon_button(UiPass &user, const char *name, const char *icon,
                  Vector4 color = {1.0, 1.0, 1.0, 1.0}, float scale = 1);
 
-AutoLayoutElement create_main_element(UiUser &user)
+AutoLayoutElement create_main_element(UiPass &user)
 {
     AutoLayoutElement element = {};
-    element.position = AutoLayoutPosition::Absolute;
-    element.width.type = AutoLayoutDimension::Pixel;
+    element.position = AutoLayoutPosition::absolute;
+    element.width.type = AutoLayoutDimension::pixel;
     element.width.value = sapp_widthf() / user.state->dpi_scale;
-    element.height.type = AutoLayoutDimension::Pixel;
+    element.height.type = AutoLayoutDimension::pixel;
     element.height.value = sapp_heightf() / user.state->dpi_scale;
     return element;
 }
@@ -44,7 +44,7 @@ bool rect_side_is_horizontal(RectSide &side)
     return side == RectSide::Bottom || side == RectSide::Top;
 }
 
-void begin_toolbar(UiUser &user, const char *name, RectSide side)
+void begin_toolbar(UiPass &user, const char *name, RectSide side)
 {
     float align_y = 0, align_x = 0;
 
@@ -67,9 +67,9 @@ void begin_toolbar(UiUser &user, const char *name, RectSide side)
 
     AutoLayoutElement toolbar = {};
     toolbar.layout.type =
-        rect_side_is_horizontal(side) ? AutoLayout::Row : AutoLayout::Column;
-    toolbar.width.type = AutoLayoutDimension::Auto;
-    toolbar.height.type = AutoLayoutDimension::Auto;
+        rect_side_is_horizontal(side) ? AutoLayout::row : AutoLayout::column;
+    toolbar.width.type = AutoLayoutDimension::autom;
+    toolbar.height.type = AutoLayoutDimension::autom;
     toolbar.padding = {2, 2, 2, 2};
     toolbar.margin = {2, 2, 2, 2};
     toolbar.border = {1, 1, 1, 1};
@@ -77,14 +77,14 @@ void begin_toolbar(UiUser &user, const char *name, RectSide side)
                        user.state->element_storage.id());
 }
 
-void end_toolbar(UiUser &user)
+void end_toolbar(UiPass &user)
 {
     user.end_generic();
     user.pop_id();
     user.end_generic();
 }
 
-bool icon_button(UiUser &user, const char *name, const char *icon,
+bool icon_button(UiPass &user, const char *name, const char *icon,
                  Vector4 color, float scale)
 {
     AutoLayoutElement el = {};
@@ -97,14 +97,14 @@ bool icon_button(UiUser &user, const char *name, const char *icon,
     return end_button_frame(user);
 }
 
-bool object_icon_button(UiUser &user, const char *name, SubEditor::Type type,
+bool object_icon_button(UiPass &user, const char *name, SubEditor::Type type,
                         SubEditor::Type &current,
                         catedu::pbr::Renderer &renderer,
                         ResourceSpec &resources)
 {
     AutoLayoutElement el = {};
-    el.width = {AutoLayoutDimension::Pixel, 140};
-    el.height = {AutoLayoutDimension::Pixel, 100};
+    el.width = {AutoLayoutDimension::pixel, 140};
+    el.height = {AutoLayoutDimension::pixel, 100};
     el.align_width = 0.5;
     el.align_height = 0.5;
     el.padding = {2, 2, 2, 2};
@@ -194,7 +194,7 @@ GuiEditor GuiEditor::init(UiState *ui_state)
     return result;
 }
 
-void show_build_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
+void show_build_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
                       catedu::pbr::Renderer &renderer)
 {
     object_icon_button(user, "Delete", SubEditor::Type::Deleter,
@@ -223,13 +223,13 @@ void show_build_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
                        editor.sub_editor.type, renderer, resources);
 }
 
-void show_left_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
+void show_left_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
                      catedu::pbr::Renderer &renderer)
 {
     AutoLayoutElement element = {};
     element.clip = true;
-    element.width = {AutoLayoutDimension::Pixel, 200};
-    element.height = {AutoLayoutDimension::Pixel,
+    element.width = {AutoLayoutDimension::pixel, 200};
+    element.height = {AutoLayoutDimension::pixel,
                       sapp_heightf() * user.state->dpi_scale};
     user.state->element_storage.push("Left Panel", {});
     user.begin_generic(element, {}, {}, user.state->element_storage.id());
@@ -248,7 +248,7 @@ void show_left_panel(UiUser &user, GuiEditor &editor, ResourceSpec &resources,
     user.state->element_storage.pop();
 }
 
-void show_popups(UiUser &user, GuiEditor &editor, bool &return_back)
+void show_popups(UiPass &user, GuiEditor &editor, bool &return_back)
 {
     if (editor.exit_requested)
     {
@@ -313,13 +313,11 @@ void show_popups(UiUser &user, GuiEditor &editor, bool &return_back)
             "allocs", (uint64_t)ALLOCATOR_MALLOC.tracer.total_allocations);
         editor.debug_tree.size(
             "bytes", (uint64_t)ALLOCATOR_MALLOC.tracer.total_bytes_allocated);
-        // begin_show_window(user, info);
         editor.debug_tree.show(user);
-        // end_show_window(user);
     }
 }
 
-void show_editor_controls(UiUser &user, GuiEditor &editor, bool &return_back)
+void show_editor_controls(UiPass &user, GuiEditor &editor, bool &return_back)
 {
     begin_toolbar(user, "Controls", RectSide::Bottom);
 
@@ -415,7 +413,7 @@ void render_physics_boxes(catedu::pbr::Renderer &renderer, PhysicsWorld &world,
     }
 }
 
-void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
+void show_editor_ui(GuiEditor &editor, UiPass &user, ResourceSpec &resources,
                     catedu::pbr::Renderer &renderer, Input &input,
                     bool &return_back, GuiTransition &transition)
 {
@@ -477,7 +475,7 @@ void show_editor_ui(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
     handle_shortcuts(editor, input);
 }
 
-bool show_main_editor(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
+bool show_main_editor(GuiEditor &editor, UiPass &user, ResourceSpec &resources,
                       catedu::pbr::Renderer &renderer, Input &input,
                       GuiTransition &transition)
 {
@@ -494,7 +492,7 @@ bool show_main_editor(GuiEditor &editor, UiUser &user, ResourceSpec &resources,
     return return_back;
 }
 
-bool GuiEditor::show(UiUser &user, GuiTransition &transition,
+bool GuiEditor::show(UiPass &user, GuiTransition &transition,
                      catedu::pbr::Renderer &renderer, ResourceSpec &resources)
 {
     offscreen_clear();
@@ -549,7 +547,7 @@ void GuiEditor::deinit()
     debug_tree.deinit();
 }
 
-void SubEditor::show(UiUser &user, catedu::pbr::Renderer &renderer,
+void SubEditor::show(UiPass &user, catedu::pbr::Renderer &renderer,
                      Dispatcher &disp, GenResources &gen_resources,
                      Input &input, Camera &camera)
 {

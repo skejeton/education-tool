@@ -97,7 +97,7 @@ struct UiGenericStyles
     bool bold;
 };
 
-struct UiUser
+struct UiPass
 {
     UiState *state;
     UiRenderingPass pass;
@@ -105,7 +105,7 @@ struct UiUser
     AutoLayoutNode *current_node;
     bool bold;
 
-    static UiUser init(UiState &state);
+    static UiPass init(UiState &state);
 
     void begin_pass();
     void end_pass();
@@ -121,13 +121,4 @@ struct UiUser
     void begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,
                        TableId persistent = NULL_ID);
     void end_generic();
-
-    template <typename T> void collection(AutoLayout::Type layout, T &&f)
-    {
-        AutoLayoutElement el = {};
-        el.layout.type = layout;
-        begin_generic(el, {}, {});
-        f();
-        end_generic();
-    }
 };

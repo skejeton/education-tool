@@ -15,7 +15,7 @@ struct EditLine
     Vector2 pointer_start;
     Vector2 pointer_end;
 
-    void show(UiUser &user, Object::Type type, catedu::pbr::Renderer &renderer,
+    void show(UiPass &user, Object::Type type, catedu::pbr::Renderer &renderer,
               Dispatcher &disp, GenResources &gen_resources, Input &input,
               Camera &camera);
 };

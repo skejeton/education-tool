@@ -30,6 +30,13 @@ struct Arena
 
     void *alloc(size_t size);
 
+    template <class T> T *alloc(T v)
+    {
+        T *p = (T *)this->alloc(sizeof(T));
+        *p = v;
+        return p;
+    }
+
     template <class T> T *alloct()
     {
         return (T *)this->alloc(sizeof(T));

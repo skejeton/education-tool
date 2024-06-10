@@ -5,7 +5,7 @@
 
 struct UmkaBindingsData
 {
-    UiUser *user;
+    UiPass *user;
 };
 
 struct UmkaModule

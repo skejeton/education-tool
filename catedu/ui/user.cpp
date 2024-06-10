@@ -30,12 +30,12 @@ void draw_brush(UiRenderingPass &pass, Rect rect, UiBrush brush)
     pass.pop_transform();
 }
 
-UiUser UiUser::init(UiState &state)
+UiPass UiPass::init(UiState &state)
 {
-    return UiUser{&state};
+    return UiPass{&state};
 }
 
-void UiUser::begin_pass()
+void UiPass::begin_pass()
 {
     this->state->frame_storage.reset();
     this->layout = AutoLayoutProcess::init(this->state->frame_storage,
@@ -48,7 +48,7 @@ void UiUser::begin_pass()
     }
 }
 
-void render_object(UiUser &user, AutoLayoutResult &result)
+void render_object(UiPass &user, AutoLayoutResult &result)
 {
     UiGenericStyles *styles = (UiGenericStyles *)result.userdata;
 
@@ -87,7 +87,7 @@ void render_object(UiUser &user, AutoLayoutResult &result)
     }
 }
 
-void render_out(UiUser &user)
+void render_out(UiPass &user)
 {
     AutoLayoutResult *result;
     user.layout.process(user.state->frame_storage, result);
@@ -107,7 +107,7 @@ void render_out(UiUser &user)
     user.layout.deinit();
 }
 
-void UiUser::end_pass()
+void UiPass::end_pass()
 {
     this->pass = UiRenderingPass::begin(state->core);
     render_out(*this);
@@ -129,37 +129,37 @@ void UiUser::end_pass()
     this->state->element_storage.end_cycle();
 }
 
-void UiUser::push_id(int64_t id)
+void UiPass::push_id(int64_t id)
 {
     this->state->element_storage.push(std::to_string(id).c_str(), {});
 }
 
-void UiUser::push_id(const char *id)
+void UiPass::push_id(const char *id)
 {
     this->state->element_storage.push(id, {});
 }
 
-void UiUser::pop_id()
+void UiPass::pop_id()
 {
     this->state->element_storage.pop();
 }
 
-bool UiUser::focused()
+bool UiPass::focused()
 {
     return state->interaction_table.focused == state->element_storage.id();
 }
 
-bool UiUser::active()
+bool UiPass::active()
 {
     return state->interaction_table.active == state->element_storage.id();
 }
 
-bool UiUser::hovered()
+bool UiPass::hovered()
 {
     return state->interaction_table.hovered == state->element_storage.id();
 }
 
-void UiUser::begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,
+void UiPass::begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,
                            TableId persistent_id)
 {
     UiGenericStyles styles = {brush, border, nullptr, {1, 1}, persistent_id};
@@ -170,7 +170,7 @@ void UiUser::begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,
     this->current_node = this->layout.add_element(this->current_node, el);
 }
 
-void UiUser::end_generic()
+void UiPass::end_generic()
 {
     assert(this->current_node && "Begin generic was not called");
 

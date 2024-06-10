@@ -2,7 +2,7 @@
 #include <catedu/genobj/building.hpp>
 #include <catedu/genobj/grid.hpp>
 
-void EditBuilding::show(UiUser &user, catedu::pbr::Renderer &renderer,
+void EditBuilding::show(UiPass &user, catedu::pbr::Renderer &renderer,
                         Dispatcher &disp, GenResources &gen_resources,
                         Input &input, Camera &camera)
 {

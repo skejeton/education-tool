@@ -31,7 +31,7 @@ struct SubEditor
     EditBuilding edit_building;
     EditLine edit_line;
 
-    void show(UiUser &user, catedu::pbr::Renderer &renderer, Dispatcher &disp,
+    void show(UiPass &user, catedu::pbr::Renderer &renderer, Dispatcher &disp,
               GenResources &gen_resources, Input &input, Camera &camera);
 };
 
@@ -56,7 +56,7 @@ struct GuiEditor
 
     static GuiEditor init(UiState *ui_state);
 
-    bool show(UiUser &user, GuiTransition &transition,
+    bool show(UiPass &user, GuiTransition &transition,
               catedu::pbr::Renderer &renderer, ResourceSpec &resources);
     void deinit();
 };

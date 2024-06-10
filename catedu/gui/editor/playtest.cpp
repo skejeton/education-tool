@@ -74,7 +74,7 @@ void Playtest::destroy()
     world.destroy();
 }
 
-void Playtest::update(UiUser &user, Input &input, EditorCamera &camera,
+void Playtest::update(UiPass &user, Input &input, EditorCamera &camera,
                       GuiTransition &transition)
 {
     if (this->player == NULL_ID)

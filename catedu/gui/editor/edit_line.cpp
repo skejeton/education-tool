@@ -5,7 +5,7 @@
 #include "catedu/genobj/wall.hpp"
 #include "catedu/scene/world.hpp"
 
-void EditLine::show(UiUser &user, Object::Type type,
+void EditLine::show(UiPass &user, Object::Type type,
                     catedu::pbr::Renderer &renderer, Dispatcher &disp,
                     GenResources &gen_resources, Input &input, Camera &camera)
 {

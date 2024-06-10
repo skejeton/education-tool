@@ -11,6 +11,6 @@ struct EditBuilding
     float y;
     int floors;
 
-    void show(UiUser &user, catedu::pbr::Renderer &renderer, Dispatcher &disp,
+    void show(UiPass &user, catedu::pbr::Renderer &renderer, Dispatcher &disp,
               GenResources &gen_resources, Input &input, Camera &camera);
 };

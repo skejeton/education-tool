@@ -35,7 +35,7 @@ static void umka_nextrow(UmkaStackSlot *params, UmkaStackSlot *result)
 {
     _data->user->end_generic();
     AutoLayoutElement element = {};
-    element.layout.type = AutoLayout::Row;
+    element.layout.type = AutoLayout::row;
     _data->user->begin_generic(element, {}, {});
 }
 

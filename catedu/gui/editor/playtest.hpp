@@ -15,6 +15,6 @@ struct Playtest
     static Playtest create(World world);
     void destroy();
 
-    void update(UiUser &user, Input &input, EditorCamera &camera,
+    void update(UiPass &user, Input &input, EditorCamera &camera,
                 GuiTransition &transition);
 };

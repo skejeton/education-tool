@@ -1,5 +1,6 @@
 #pragma once
 #include "catedu/ui/user.hpp"
+#include <functional>
 
 struct WindowInfo
 {
@@ -15,27 +16,36 @@ enum struct MsgBoxType
     Error
 };
 
-bool begin_show_window(UiUser &user, WindowInfo info);
-void end_show_window(UiUser &user);
+bool begin_show_window(UiPass &user, WindowInfo info);
+void end_show_window(UiPass &user);
+static inline void window(UiPass &user, WindowInfo info,
+                          std::function<void()> cb)
+{
+    if (begin_show_window(user, info))
+    {
+        cb();
+    }
+    end_show_window(user);
+}
 
-bool input(UiUser &user, const char *id, char *out, int max);
+bool input(UiPass &user, const char *id, char *out, int max);
 
-void begin_button_frame(UiUser &user, const char *id, AutoLayoutElement el = {},
+void begin_button_frame(UiPass &user, const char *id, AutoLayoutElement el = {},
                         Vector4 background = {1.0, 1.0, 1.0, 1.0});
-bool end_button_frame(UiUser &user);
+bool end_button_frame(UiPass &user);
 
-bool button(UiUser &user, const char *text,
+bool button(UiPass &user, const char *text,
             Vector4 background = {1.0, 1.0, 1.0, 1.0});
-bool button_toggle(UiUser &user, const char *text, bool &state);
+bool button_toggle(UiPass &user, const char *text, bool &state);
 
-bool button_radio(UiUser &user, const char *text, int &mode, int val);
+bool button_radio(UiPass &user, const char *text, int &mode, int val);
 
-void img(UiUser &user, const char *path, Vector2 scale = {1, 1});
-void img(UiUser &user, UiImageId id, Vector2 scale = {1, 1});
-void label(UiUser &user, const char *text, Vector2 scale = {1, 1},
+void img(UiPass &user, const char *path, Vector2 scale = {1, 1});
+void img(UiPass &user, UiImageId id, Vector2 scale = {1, 1});
+void label(UiPass &user, const char *text, Vector2 scale = {1, 1},
            UiBrush style = {
                UiBuffers::Rectangle, {0, 0, 0, 255}, {0, 0, 0, 255}});
 
 /// @returns Which button was pressed. -1 if none.
-int msgbox(UiUser &user, const char *title, const char *text, MsgBoxType type,
+int msgbox(UiPass &user, const char *title, const char *text, MsgBoxType type,
            const char *buttons[]);

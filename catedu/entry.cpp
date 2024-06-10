@@ -3,26 +3,28 @@
 #include "catedu/resources/resources.hpp"
 #include "catedu/scene/world_file.hpp"
 #include "catedu/sys/sg_tricks.hpp"
-#include "catedu/ui/rendering/make_brush.hpp"
-#include "catedu/ui/widgets.hpp"
+#include "catedu/ui/ux.hpp"
 
-void show_debug_panel(UiUser &user, RuntimeMode &mode)
+void show_debug_panel(UX &ux, RuntimeMode &mode)
 {
-    user.collection(AutoLayout::Column, [&]() {
-        label(user, "Debug panel", {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
+    ux.background_color(0x000000FF);
+    ux.border_color(0x666666FF);
+    ux.border_size(2);
+    ux.column([&]() {
+        ux.heading("Debug panel");
 
-        label(user, "Select mode", {1, 1}, UiMakeBrush::make_solid(0xFFFFFF88));
+        ux.label("Select mode");
 
-        user.collection(AutoLayout::Row, [&]() {
-            if (button(user, "Menu"))
+        ux.row([&]() {
+            if (ux.button("Menu"))
             {
                 mode = RuntimeMode::menu;
             }
-            if (button(user, "Editor"))
+            if (ux.button("Editor"))
             {
                 mode = RuntimeMode::editor;
             }
-            if (button(user, "Game"))
+            if (ux.button("Game"))
             {
                 mode = RuntimeMode::game;
             }
@@ -34,22 +36,22 @@ void Entry::frame(void)
 {
     bool reload_module = false;
 
-    UiUser user = UiUser::init(ui_state);
-    user.begin_pass();
+    UX ux = UX::begin(ui_state);
+    UiPass &pass = ux.pass;
 
     bool returned_to_menu = false;
 
     switch (mode)
     {
     case RuntimeMode::debug:
-        show_debug_panel(user, mode);
+        show_debug_panel(ux, mode);
         if (mode == RuntimeMode::editor)
         {
             this->editor = GuiEditor::init(&this->ui_state);
         }
         break;
     case RuntimeMode::menu:
-        if (this->main_menu.show(user, transition, this->panorama.world,
+        if (this->main_menu.show(pass, transition, this->panorama.world,
                                  this->renderer, this->res))
         {
             this->editor = GuiEditor::init(&this->ui_state);
@@ -58,7 +60,7 @@ void Entry::frame(void)
         break;
     case RuntimeMode::editor:
     case RuntimeMode::game:
-        if (editor.show(user, transition, this->renderer, this->res))
+        if (editor.show(pass, transition, this->renderer, this->res))
         {
             mode = RuntimeMode::menu;
             returned_to_menu = true;
@@ -66,9 +68,9 @@ void Entry::frame(void)
         break;
     }
 
-    transition.show(user, user.state->input);
+    transition.show(pass, pass.state->input);
 
-    user.end_pass();
+    ux.end();
 
     // FIXME: We need to defer `editor.deinit`, because `deinit` removes the
     // target images, which are still in use during the UI pass.

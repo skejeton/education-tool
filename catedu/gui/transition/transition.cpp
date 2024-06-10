@@ -26,7 +26,7 @@ bool GuiTransition::switching()
     return alpha >= 0.999 && alpha_target >= 0.5f;
 }
 
-void GuiTransition::show(UiUser &user, Input &input)
+void GuiTransition::show(UiPass &user, Input &input)
 {
     if (alpha_target > 0.5f)
     {
@@ -45,9 +45,9 @@ void GuiTransition::show(UiUser &user, Input &input)
     alpha = slerp(alpha, alpha_target, speed, sapp_frame_duration());
 
     AutoLayoutElement element = {};
-    element.width = {AutoLayoutDimension::Pixel, sapp_widthf()};
-    element.height = {AutoLayoutDimension::Pixel, sapp_heightf()};
-    element.position = AutoLayoutPosition::Absolute;
+    element.width = {AutoLayoutDimension::pixel, sapp_widthf()};
+    element.height = {AutoLayoutDimension::pixel, sapp_heightf()};
+    element.position = AutoLayoutPosition::absolute;
     user.begin_generic(
         element, UiMakeBrush::make_solid(Color(Vector4{0, 0, 0, alpha})), {});
     user.end_generic();

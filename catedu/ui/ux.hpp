@@ -1,0 +1,38 @@
+#pragma once
+
+#include "catedu/rendering/color.hpp"
+#include "catedu/ui/layout/autolayout.hpp"
+#include "catedu/ui/user.hpp"
+#include <functional>
+
+struct UX
+{
+    UiState *state;
+    UiPass pass;
+
+    // NOTE: These are the properties that are going to be applied to the next
+    // element
+    UiBrush nx_background;
+    UiBrush nx_border;
+    float nx_border_size;
+
+    static UX begin(UiState &state);
+    void end();
+
+    // MARK: Events
+    bool clicked();
+
+    // MARK: Style
+    UX &background_color(Color color);
+    UX &border_size(float px);
+    UX &border_color(Color color);
+
+    // MARK: Layout
+    UX &row(std::function<void()> cb);
+    UX &column(std::function<void()> cb);
+
+    // MARK: Widgets
+    bool button(const char *text);
+    UX &label(const char *text);
+    UX &heading(const char *text);
+};

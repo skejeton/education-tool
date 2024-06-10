@@ -1,7 +1,6 @@
 #pragma once
 #include "catedu/core/alloc/arena.hpp"
 #include "catedu/core/math/math.hpp"
-#include "catedu/core/storage/table.hpp"
 
 // Top, right, bottom, left.
 struct TRBL
@@ -33,8 +32,8 @@ struct AutoLayout
 {
     enum Type
     {
-        Column,
-        Row
+        column,
+        row
     };
 
     Type type;
@@ -44,8 +43,8 @@ struct AutoLayoutDimension
 {
     enum Type
     {
-        Auto,
-        Pixel
+        autom,
+        pixel
     };
 
     Type type;
@@ -54,12 +53,12 @@ struct AutoLayoutDimension
 
 enum AutoLayoutPosition
 {
-    Embedded, // Affects the parent's layout.
-    Relative, // Affects the parent's layout, positioned relative to the
+    embedded, // Affects the parent's layout.
+    relative, // Affects the parent's layout, positioned relative to the
               // parent.
-    Detached, // Doesn't affect the parent's layout, positioned relative to the
+    detached, // Doesn't affect the parent's layout, positioned relative to the
               // parent.
-    Absolute  // Doesn't affect the parent's layout, positioned relative to the
+    absolute  // Doesn't affect the parent's layout, positioned relative to the
               // screen.
 };
 

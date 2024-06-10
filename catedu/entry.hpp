@@ -28,7 +28,7 @@ struct Entry : SokolSetup
 {
     UiState ui_state;
 
-    RuntimeMode mode = RuntimeMode::menu;
+    RuntimeMode mode = RuntimeMode::debug;
 
     GuiMainMenu main_menu;
     GuiEditor editor;

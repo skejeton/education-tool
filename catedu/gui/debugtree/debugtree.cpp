@@ -114,14 +114,14 @@ void GuiDebugTree::value(const char *name, const char *value)
     alloc_debug_entry(this, name, 0x000000FF, value, 0x777700FF);
 }
 
-void GuiDebugTree::show(UiUser &user)
+void GuiDebugTree::show(UiPass &user)
 {
     AutoLayoutElement wrapper = {};
-    wrapper.layout.type = AutoLayout::Row;
+    wrapper.layout.type = AutoLayout::row;
     user.begin_generic(wrapper, {}, {});
 
     AutoLayoutElement el = {};
-    el.layout.type = AutoLayout::Column;
+    el.layout.type = AutoLayout::column;
     user.begin_generic(el, {}, {});
 
     for (DebugEntry *entry = this->entry; entry; entry = entry->next)
@@ -132,12 +132,12 @@ void GuiDebugTree::show(UiUser &user)
 
     user.end_generic();
 
-    el.width.type = AutoLayoutDimension::Pixel;
+    el.width.type = AutoLayoutDimension::pixel;
     el.width.value = 25;
     user.begin_generic(el, {}, {});
     user.end_generic();
 
-    el.width.type = AutoLayoutDimension::Auto;
+    el.width.type = AutoLayoutDimension::autom;
     el.width.value = 0;
 
     user.begin_generic(el, {}, {});

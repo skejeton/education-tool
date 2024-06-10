@@ -12,9 +12,10 @@ AutoLayoutElement make_element(AutoLayout layout, Vector2 size, bool autox,
 {
     AutoLayoutElement el = {};
     el.layout = layout;
-    el.width = {autox ? AutoLayoutDimension::Auto : AutoLayoutDimension::Pixel,
+    el.width = {autox ? AutoLayoutDimension::autom : AutoLayoutDimension::pixel,
                 size.x};
-    el.height = {autoy ? AutoLayoutDimension::Auto : AutoLayoutDimension::Pixel,
+    el.height = {autoy ? AutoLayoutDimension::autom
+                       : AutoLayoutDimension::pixel,
                  size.y};
     el.padding = {p, p, p, p};
     el.margin = {m, m, m, m};
@@ -36,7 +37,7 @@ AutoLayoutElement make_auto(AutoLayout layout, Vector2 align = {})
 
 GuiMainMenu GuiMainMenu::init(UiState *ui_state)
 {
-    GuiMainMenu mm = {Normal, ui_state};
+    GuiMainMenu mm = {normal, ui_state};
     mm.camera = EditorCamera::create();
     return mm;
 }
@@ -46,26 +47,26 @@ void GuiMainMenu::deinit()
     // Nothing yet
 }
 
-static bool big_menu_button(UiUser &user, const char *text, bool major = false)
+static bool big_menu_button(UiPass &user, const char *text, bool major = false)
 {
     float size = major ? 256 : 192;
     float margin = (256 - size) / 2;
 
-    AutoLayoutElement el = make_element({AutoLayout::Row}, {size, size}, false,
+    AutoLayoutElement el = make_element({AutoLayout::row}, {size, size}, false,
                                         false, {0.5, 0.5}, 0, margin);
     begin_button_frame(user, text, el);
     label(user, text, {3, 3});
     return end_button_frame(user);
 }
 
-static void menu_settings(UiUser &user, float &scale_delta, GuiMainMenu &state)
+static void menu_settings(UiPass &pass, float &scale_delta, GuiMainMenu &state)
 {
     const char *buttons[] = {"Close", "Scale+", "Scale-", NULL};
-    switch (msgbox(user, "Settings", "Change the scale of the UI.",
+    switch (msgbox(pass, "Settings", "Change the scale of the UI.",
                    MsgBoxType::Info, buttons))
     {
     case 0:
-        state.state = GuiMainMenu::Normal;
+        state.state = GuiMainMenu::normal;
         break;
     case 1:
         scale_delta = 0.1;
@@ -76,22 +77,22 @@ static void menu_settings(UiUser &user, float &scale_delta, GuiMainMenu &state)
     }
 }
 
-static void menu_exit(UiUser &user, GuiMainMenu &state)
+static void menu_exit(UiPass &pass, GuiMainMenu &state)
 {
     const char *buttons[] = {"Yes", "No", NULL};
-    switch (msgbox(user, "Exit", "Are you sure you want to exit?",
+    switch (msgbox(pass, "Exit", "Are you sure you want to exit?",
                    MsgBoxType::Warning, buttons))
     {
     case 0:
         sapp_request_quit();
         break;
     case 1:
-        state.state = GuiMainMenu::Normal;
+        state.state = GuiMainMenu::normal;
         break;
     }
 }
 
-bool GuiMainMenu::show(UiUser &user, GuiTransition &transition, World &world,
+bool GuiMainMenu::show(UiPass &pass, GuiTransition &transition, World &world,
                        catedu::pbr::Renderer &renderer, ResourceSpec &resources)
 {
     this->angle += sapp_frame_duration() * 10.0f;
@@ -102,54 +103,54 @@ bool GuiMainMenu::show(UiUser &user, GuiTransition &transition, World &world,
     render_place(*world.first, renderer, resources);
     renderer.end_pass();
 
-    user.begin_generic(
-        make_element({AutoLayout::Row},
+    pass.begin_generic(
+        make_element({AutoLayout::row},
                      {sapp_widthf() / this->ui_state->dpi_scale,
                       sapp_heightf() / this->ui_state->dpi_scale},
                      false, false, {0.5, 0.5}, 0),
         UiMakeBrush::make_gradient(0x00004499, 0x000A8899), {});
 
-    user.begin_generic(make_auto({AutoLayout::Row}), {}, {});
-    user.begin_generic(make_auto({AutoLayout::Column}, {0.5, 0}), {}, {});
+    pass.begin_generic(make_auto({AutoLayout::row}), {}, {});
+    pass.begin_generic(make_auto({AutoLayout::column}, {0.5, 0}), {}, {});
     AutoLayoutElement el =
-        make_element({AutoLayout::Row}, {0, 0}, true, true, {0.0, 0.0}, 3, 3);
-    user.begin_generic(el, {}, {});
+        make_element({AutoLayout::row}, {0, 0}, true, true, {0.0, 0.0}, 3, 3);
+    pass.begin_generic(el, {}, {});
 
-    user.bold = true;
-    label(user, "STORYLAND", {2.5, 2.5},
+    pass.bold = true;
+    label(pass, "STORYLAND", {2.5, 2.5},
           UiMakeBrush::make_gradient(0x44CC00FF, 0x88CC00FF));
-    user.bold = false;
+    pass.bold = false;
 
-    user.end_generic();
-    el = make_element({AutoLayout::Row}, {0, 0}, true, true, {0.0, 0.0}, 3, 3);
-    user.begin_generic(el, {}, {});
+    pass.end_generic();
+    el = make_element({AutoLayout::row}, {0, 0}, true, true, {0.0, 0.0}, 3, 3);
+    pass.begin_generic(el, {}, {});
 
-    if (big_menu_button(user, "Settings"))
+    if (big_menu_button(pass, "Settings"))
     {
-        this->state = GuiMainMenu::Settings;
+        this->state = GuiMainMenu::settings;
     }
-    if (big_menu_button(user, "Play & Edit", true))
+    if (big_menu_button(pass, "Play & Edit", true))
     {
         transition.begin();
     }
-    if (big_menu_button(user, "Exit"))
+    if (big_menu_button(pass, "Exit"))
     {
-        this->state = GuiMainMenu::Exit;
+        this->state = GuiMainMenu::exit;
     }
 
-    user.end_generic();
-    user.end_generic();
-    user.end_generic();
-    user.end_generic();
+    pass.end_generic();
+    pass.end_generic();
+    pass.end_generic();
+    pass.end_generic();
 
     float scale_delta = 0;
     switch (this->state)
     {
-    case GuiMainMenu::Settings:
-        menu_settings(user, scale_delta, *this);
+    case GuiMainMenu::settings:
+        menu_settings(pass, scale_delta, *this);
         break;
-    case GuiMainMenu::Exit:
-        menu_exit(user, *this);
+    case GuiMainMenu::exit:
+        menu_exit(pass, *this);
         break;
     default:
         break;
@@ -157,7 +158,7 @@ bool GuiMainMenu::show(UiUser &user, GuiTransition &transition, World &world,
 
     // FIXME: This will scale while the UI User is in the pass, but it will not
     // be applied until the next frame. This is a bug.
-    user.state->dpi_scale += scale_delta;
+    pass.state->dpi_scale += scale_delta;
 
     return transition.switching();
 }

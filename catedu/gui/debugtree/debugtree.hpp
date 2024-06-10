@@ -31,5 +31,5 @@ struct GuiDebugTree
     void value(const char *name, bool value);
     void value(const char *name, const char *value);
 
-    void show(UiUser &user);
+    void show(UiPass &user);
 };
