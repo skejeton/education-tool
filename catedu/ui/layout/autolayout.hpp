@@ -94,10 +94,11 @@ struct AutoLayoutResult
     Rect base_box;    // Box inside border.
     Rect border_box;  // Box inside margin.
     Rect margin_box;  //
-    Rect clip_box;    // Box inside clip.
-    bool hidden;
+    bool clip;
     char *note;
     AutoLayoutResult *next;
+    AutoLayoutResult *child;
+    AutoLayoutResult *sibling;
 };
 
 // Different from the `AutoLayoutElement` because it contains references to

@@ -18,6 +18,7 @@ struct UiPersistentElement
     Vector2 pin;
     bool pinned;
     bool hidden;
+    float scale;
 };
 
 struct UiElementStorage
@@ -95,6 +96,7 @@ struct UiGenericStyles
     Vector2 text_scale;
     TableId persistent;
     bool bold;
+    float scale;
 };
 
 struct UiPass
@@ -119,6 +121,6 @@ struct UiPass
     bool hovered();
 
     void begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,
-                       TableId persistent = NULL_ID);
+                       TableId persistent = NULL_ID, float scale = 1.0);
     void end_generic();
 };

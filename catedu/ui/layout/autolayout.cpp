@@ -1,5 +1,4 @@
 #include "autolayout.hpp"
-#include "catedu/core/memory/init.hpp"
 #include <algorithm>
 #include <assert.h>
 
@@ -112,6 +111,16 @@ void align_to_parents(AutoLayoutProcess *process, AutoLayoutNode *node)
             child->element.base_box.pos += node->element.padding_box.pos;
             child->element.border_box.pos += node->element.padding_box.pos;
             child->element.margin_box.pos += node->element.padding_box.pos;
+            if (node->element.layout.type == AutoLayout::row)
+            {
+                node->element.content_box.siz.y =
+                    child->element.margin_box.siz.y;
+            }
+            else
+            {
+                node->element.content_box.siz.x =
+                    child->element.margin_box.siz.x;
+            }
 
             delta =
                 (node->element.padding_box.siz -
@@ -132,14 +141,14 @@ void align_to_parents(AutoLayoutProcess *process, AutoLayoutNode *node)
 }
 
 // FIXME: Using a giant clip rect for now.
-void build_results(ResultBuilder &builder, AutoLayoutNode *node, bool hidden,
-                   Rect clip = {0, 0, 100000, 100000})
+AutoLayoutResult *build_results(ResultBuilder &builder, AutoLayoutNode *node,
+                                Rect clip = {0, 0, 100000, 100000})
 {
     assert(node);
 
     if (node->element.hidden)
     {
-        hidden = true;
+        return nullptr;
     }
 
     if (node->element.pop)
@@ -148,30 +157,40 @@ void build_results(ResultBuilder &builder, AutoLayoutNode *node, bool hidden,
     }
 
     AutoLayoutResult *result = alloc_result(builder);
-    if (!hidden)
-    {
-        result->padding_box = node->element.padding_box;
-        result->base_box = node->element.base_box;
-        result->border_box = node->element.border_box;
-        result->margin_box = node->element.margin_box;
-        result->clip_box = clip;
-    }
+
+    result->padding_box = node->element.padding_box;
+    result->base_box = node->element.base_box;
+    result->border_box = node->element.border_box;
+    result->margin_box = node->element.margin_box;
 
     result->userdata = node->element.userdata;
-    result->hidden = hidden;
 
     if (node->element.clip)
     {
         clip = rect_and(clip, result->padding_box);
     }
 
+    AutoLayoutResult *last_sibling = nullptr;
     AutoLayoutNode *child = node->child;
     while (child != nullptr)
     {
-        assert(child);
-        build_results(builder, child, hidden, clip);
+        AutoLayoutResult *child_result = build_results(builder, child, clip);
+        if (child_result)
+        {
+            if (last_sibling)
+            {
+                last_sibling->sibling = child_result;
+            }
+            else
+            {
+                result->child = child_result;
+            }
+            last_sibling = child_result;
+        }
         child = child->sibling;
     }
+
+    return result;
 }
 
 AutoLayoutProcess AutoLayoutProcess::init(Arena &arena, AutoLayoutNode **root)
@@ -227,10 +246,10 @@ void AutoLayoutProcess::process(Arena &alloc, AutoLayoutResult *&result)
 {
     ResultBuilder builder = {};
     builder.process = this;
-    builder.last = result = alloc.alloc(AutoLayoutResult{});
+    builder.last = alloc.alloc(AutoLayoutResult{});
     builder.alloc = &alloc;
 
     recurse(this, builder.process->root);
     align_to_parents(this, builder.process->root);
-    build_results(builder, builder.process->root, false);
+    result = build_results(builder, builder.process->root);
 }

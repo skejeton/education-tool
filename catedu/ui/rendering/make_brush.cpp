@@ -27,14 +27,14 @@ UiMakeBrush UiMakeBrush::make_image_brush(UiBuffers shape,
 
 UiBrush UiMakeBrush::make_solid(Color color)
 {
-    return UiMakeBrush::make_plain_brush(UiBuffers::Rectangle)
+    return UiMakeBrush::make_plain_brush(UiBuffers::rectangle)
         .with_solid(color)
         .build();
 }
 
 UiBrush UiMakeBrush::make_gradient(Color color_bottom, Color color_top)
 {
-    return UiMakeBrush::make_plain_brush(UiBuffers::Rectangle)
+    return UiMakeBrush::make_plain_brush(UiBuffers::rectangle)
         .with_gradient(color_bottom, color_top)
         .build();
 }

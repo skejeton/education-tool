@@ -1,21 +1,9 @@
 #include "user.hpp"
+#include "catedu/core/alloc/arena.hpp"
 #include "catedu/ui/layout/dpi_scale.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
+#include "catedu/ui/rendering/transform.hpp"
 #include "resources/load_image.hpp"
-
-void draw_rectangle_gradient(UiRenderingPass &pass, Rect rect,
-                             Vector4 color_top, Vector4 color_bottom)
-{
-    UiTransform transform = {};
-    transform.scale = {1, 1};
-    transform.base = rect;
-
-    pass.push_transform(transform);
-
-    pass.render_brush(UiMakeBrush::make_gradient(color_bottom, color_top));
-
-    pass.pop_transform();
-}
 
 void draw_brush(UiRenderingPass &pass, Rect rect, UiBrush brush)
 {
@@ -48,43 +36,85 @@ void UiPass::begin_pass()
     }
 }
 
-void render_object(UiPass &user, AutoLayoutResult &result)
+struct Renderable
 {
+    UiGenericStyles *styles;
+    // These boxes are absolute.
+    Rect border_box;
+    Rect base_box;
+    // These boxes are relative to the parent.
+    Rect border_box_rel;
+    Rect base_box_rel;
+};
+
+void render_object(UiPass &user, AutoLayoutResult &result,
+                   Vector2 suboffs = {0, 0})
+{
+    if (result.clip)
+    {
+        user.pass.begin_scissor(result.padding_box);
+    }
+
     UiGenericStyles *styles = (UiGenericStyles *)result.userdata;
 
+    Rect margin_box_rel = result.margin_box;
+    margin_box_rel.pos -= suboffs;
+    Rect padding_box_rel = result.padding_box;
+    padding_box_rel.pos -= suboffs;
+    Rect border_box_rel = result.border_box;
+    border_box_rel.pos -= suboffs + margin_box_rel.pos;
+    Rect base_box_rel = result.base_box;
+    base_box_rel.pos -= suboffs + margin_box_rel.pos;
+
+    UiTransform transform = {};
+    transform.base = margin_box_rel;
+    transform.origin = {0.5, 0.5};
+    transform.scale = {1, 1};
+    if (styles != nullptr)
+    {
+        transform.scale = {styles->scale, styles->scale};
+    }
+    user.pass.push_transform(transform);
+
     // TODO: Why would style be null?
-    if (styles == nullptr)
+    if (styles != nullptr)
     {
-        return;
+        // FIXME: Way too into the guts of the system.
+        auto *pe = user.state->element_storage.elements.get(styles->persistent);
+        if (pe)
+        {
+            pe->border_box = result.border_box;
+        }
+
+        if (styles->text)
+        {
+            UiFontRenderer &font =
+                styles->bold ? user.state->font_bold : user.state->font;
+
+            font.render_text_utf8(&user.pass, base_box_rel.pos, styles->text,
+                                  styles->brush,
+                                  styles->text_scale * user.state->dpi_scale);
+        }
+        else
+        {
+            draw_brush(user.pass, border_box_rel, styles->border);
+            draw_brush(user.pass, base_box_rel, styles->brush);
+        }
     }
 
-    // FIXME: Way too into the guts of the system.
-    auto *pe = user.state->element_storage.elements.get(styles->persistent);
-    if (pe)
+    AutoLayoutResult *child = result.child;
+    while (child)
     {
-        pe->border_box = result.border_box;
+        render_object(user, *child, suboffs + margin_box_rel.pos);
+        child = child->sibling;
     }
 
-    if (result.hidden)
+    if (result.clip)
     {
-        return;
+        user.pass.end_scissor();
     }
 
-    if (styles->text)
-    {
-        UiFontRenderer &font =
-            styles->bold ? user.state->font_bold : user.state->font;
-
-        // FIXME: Does it really make sense to store the text in the styles?
-        font.render_text_utf8(&user.pass, result.base_box.pos, styles->text,
-                              styles->brush,
-                              styles->text_scale * user.state->dpi_scale);
-    }
-    else
-    {
-        draw_brush(user.pass, result.border_box, styles->border);
-        draw_brush(user.pass, result.base_box, styles->brush);
-    }
+    user.pass.pop_transform();
 }
 
 void render_out(UiPass &user)
@@ -93,18 +123,16 @@ void render_out(UiPass &user)
     user.layout.process(user.state->frame_storage, result);
     dpi_rescale_autolayout_result(result, user.state->dpi_scale);
 
-    while (result)
+    if (result == nullptr)
     {
-        user.pass.begin_scissor(result->clip_box);
-        render_object(user, *result);
-        result = result->next;
+        return;
     }
+
+    render_object(user, *result);
     user.pass.end_scissor();
 
     assert(user.current_node == user.layout.root &&
            "Unfinished begin_generic calls");
-
-    user.layout.deinit();
 }
 
 void UiPass::end_pass()
@@ -160,9 +188,10 @@ bool UiPass::hovered()
 }
 
 void UiPass::begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,
-                           TableId persistent_id)
+                           TableId persistent_id, float scale)
 {
-    UiGenericStyles styles = {brush, border, nullptr, {1, 1}, persistent_id};
+    UiGenericStyles styles = {brush,         border, nullptr, {1, 1},
+                              persistent_id, false,  scale};
 
     el.userdata = this->state->frame_storage.alloct<UiGenericStyles>();
     *(UiGenericStyles *)el.userdata = styles;

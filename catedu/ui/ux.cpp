@@ -125,10 +125,10 @@ UX &UX::label(const char *text)
     return *this;
 }
 
-UX &UX::heading(const char *text)
+UX &UX::heading(const char *text, int scale)
 {
     pass.bold = true;
-    ::label(pass, text, {2, 2}, nx_color);
+    ::label(pass, text, {2+(float)scale, 2+(float)scale}, nx_color);
     nx_color = UiMakeBrush::make_solid(0xFFFFFFFF);
     pass.bold = false;
 

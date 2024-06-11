@@ -45,16 +45,23 @@ void UiRenderingPass::render_brush(UiBrush brush)
 
 void UiRenderingPass::begin_scissor(Rect rect)
 {
-    // In the case that the scissor is the same, we don't need to do anything.
-    // FIXME: This might be a hack in the long run.
-    if (memcmp(&this->scissor, &rect, sizeof(Rect)) == 0)
+    if (this->scissor_count >= 32)
     {
         return;
     }
+    this->scissor[this->scissor_count++] = rect;
     this->core->begin_scissor(rect);
 }
 
 void UiRenderingPass::end_scissor()
 {
-    this->core->end_scissor();
+    if (this->scissor_count == 0)
+    {
+        this->core->end_scissor();
+    }
+    else
+    {
+        this->scissor_count--;
+        this->core->begin_scissor(this->scissor[this->scissor_count]);
+    }
 }

@@ -351,6 +351,11 @@ inline Vector2 vector2_normalize(Vector2 a)
     return a / vector2_length(a);
 }
 
+inline Vector2 vector2_spread(float v)
+{
+    return {v, v};
+}
+
 inline Vector2 vector2_rotate(Vector2 a, float angle)
 {
     float c = cos(angle), s = sin(angle);

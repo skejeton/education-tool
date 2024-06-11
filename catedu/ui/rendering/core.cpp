@@ -62,12 +62,12 @@ UiRenderingCore UiRenderingCore::init()
 {
     UiRenderingCore result = {};
 
-    result.buffers[(int)UiBuffers::Ellipse] = generate_buffer(
+    result.buffers[(int)UiBuffers::ellipse] = generate_buffer(
         rendering_2d_generate_circle({4, 0}, DEFAULT_SAMPLE_COUNT));
-    result.buffers[(int)UiBuffers::Squircle] =
+    result.buffers[(int)UiBuffers::squircle] =
         generate_buffer(rendering_2d_generate_squircle(
             {4, 0}, DEFAULT_SAMPLE_COUNT, 5, {0.5, 0.5}));
-    result.buffers[(int)UiBuffers::Rectangle] =
+    result.buffers[(int)UiBuffers::rectangle] =
         generate_buffer(rendering_2d_generate_square({4, 0}));
 
     result.shader = sg_make_shader(ui_prog_shader_desc(sg_query_backend()));
@@ -105,7 +105,7 @@ UiRenderingCore UiRenderingCore::init()
 
 void UiRenderingCore::deinit()
 {
-    for (size_t i = 0; i < (size_t)UiBuffers::Count_; i++)
+    for (size_t i = 0; i < (size_t)UiBuffers::count_; i++)
     {
         sg_destroy_buffer(this->buffers[i].vertex_buffer);
         sg_destroy_buffer(this->buffers[i].index_buffer);

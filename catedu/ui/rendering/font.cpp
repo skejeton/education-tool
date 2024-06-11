@@ -121,7 +121,7 @@ void UiFontRenderer::render_glyph(UiRenderingPass *pass, Vector2 position,
                           float(packed_char->y1) - float(packed_char->y0)}};
 
     auto new_brush =
-        UiMakeBrush::make_image_brush(UiBuffers::Rectangle, pass->core,
+        UiMakeBrush::make_image_brush(UiBuffers::rectangle, pass->core,
                                       this->chunks[glyph / 256]->image)
             .with_image_region(image_region)
             .with_gradient(brush.color_bottom, brush.color_top)

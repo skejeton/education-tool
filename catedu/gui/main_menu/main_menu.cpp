@@ -2,6 +2,7 @@
 #include "catedu/gui/editor/camera.hpp"
 #include "catedu/gui/transition/transition.hpp"
 #include "catedu/scene/render_world.hpp"
+#include "catedu/ui/rendering/core.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/ux.hpp"
 #include "catedu/ui/widgets.hpp"
@@ -55,7 +56,7 @@ static bool big_menu_button(UiPass &user, const char *text, bool major = false)
 
     AutoLayoutElement el = make_element({AutoLayout::row}, {size, size}, false,
                                         false, {0.5, 0.5}, 0, margin);
-    begin_button_frame(user, text, el);
+    begin_button_frame(user, text, el, {1, 1, 1, 1}, UiBuffers::squircle);
     label(user, text, {3, 3});
     return end_button_frame(user);
 }
@@ -113,7 +114,7 @@ bool GuiMainMenu::show(UX &ux, GuiTransition &transition, World &world,
                      false, false, {0.5, 0.5}, 0),
         UiMakeBrush::make_gradient(0x00004499, 0x000A8899), {});
 
-    ux.color(0x44CC00FF).heading("STORYLAND");
+    ux.color(0x44CC00FF).heading("STORYLAND", 3);
 
     ux.row([&] {
         if (big_menu_button(pass, "Settings"))

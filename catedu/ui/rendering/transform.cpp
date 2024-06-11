@@ -69,8 +69,7 @@ void UiTransform::stack(UiTransform previous)
     this->rotationm_ *= previous.rotationm_;
     this->translationm_ *= previous.translationm_;
 
-    Matrix4 combine =
-        parent * this->scalem_ * this->rotationm_ * this->translationm_;
+    Matrix4 combine = this->scalem_ * this->rotationm_ * this->translationm_;
 
     this->combinem_ = combine;
 }
@@ -91,7 +90,7 @@ void UiTransformer::push(UiTransform transform)
     transform.stack(previous_transform);
 
     this->core->matrix = transform.calculate_matrix(this->screen_size);
-    this->core->rect = transform.base;
+    this->core->rect = {{0, 0}, transform.base.siz};
 
     this->transforms.push_back(transform);
 }

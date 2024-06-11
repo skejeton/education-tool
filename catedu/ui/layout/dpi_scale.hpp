@@ -45,8 +45,6 @@ static inline void dpi_rescale_autolayout_result(AutoLayoutResult *result,
         result->margin_box.siz *= scale;
         result->padding_box.pos *= scale;
         result->padding_box.siz *= scale;
-        result->clip_box.pos *= scale;
-        result->clip_box.siz *= scale;
 
         fix_wacky_box(result->border_box, result->base_box);
 

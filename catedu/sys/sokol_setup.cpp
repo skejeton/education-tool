@@ -78,6 +78,9 @@ sapp_desc sokol_setup_default(const char *title, SokolSetup *setup)
     r.height = 768 * sapp_dpi_scale();
     r.icon.sokol_default = false;
 
+    // TODO: Figure out why this breaks offscreen rendering
+    // r.sample_count = 2;
+
     // System settings
     r.enable_clipboard = true;
 

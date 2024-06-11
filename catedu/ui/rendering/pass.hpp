@@ -9,7 +9,8 @@ struct UiRenderingPass
 {
     UiTransformer transformer;
     UiRenderingCore *core;
-    Rect scissor;
+    Rect scissor[32];
+    size_t scissor_count;
 
     static UiRenderingPass begin(UiRenderingCore *core);
     void end();

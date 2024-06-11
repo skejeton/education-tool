@@ -7,6 +7,7 @@
 #include "catedu/rendering/3d/pbr.hpp"
 #include "catedu/scene/render_world.hpp"
 #include "catedu/scene/world_file.hpp"
+#include "catedu/ui/rendering/core.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/widgets.hpp"
 #include "edit_building.hpp"
@@ -72,8 +73,8 @@ void begin_toolbar(UiPass &user, const char *name, RectSide side)
     toolbar.height.type = AutoLayoutDimension::autom;
     toolbar.padding = {2, 2, 2, 2};
     toolbar.margin = {2, 2, 2, 2};
-    toolbar.border = {1, 1, 1, 1};
-    user.begin_generic(toolbar, UiMakeBrush::make_solid(0xFFFFFF99), {},
+    toolbar.border = {0, 0, 5, 0};
+    user.begin_generic(toolbar, {}, UiMakeBrush::make_solid(0xFFFFFF22),
                        user.state->element_storage.id());
 }
 
@@ -92,7 +93,7 @@ bool icon_button(UiPass &user, const char *name, const char *icon,
     el.margin = {2, 2, 2, 2};
     el.border = {1, 1, 1, 1};
 
-    begin_button_frame(user, name, el, color);
+    begin_button_frame(user, name, el, color, UiBuffers::squircle);
     img(user, icon, {scale, scale});
     return end_button_frame(user);
 }
@@ -119,7 +120,7 @@ bool object_icon_button(UiPass &user, const char *name, SubEditor::Type type,
         color = {0.4, 1.0, 0.4, 1.0};
     }
 
-    begin_button_frame(user, name, el, color);
+    begin_button_frame(user, name, el, color, UiBuffers::squircle);
     {
         Camera camera = Camera::init(5);
         camera.set_aspect(el.width.value / el.height.value);

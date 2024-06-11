@@ -40,5 +40,5 @@ struct UX
     // MARK: Widgets
     bool button(const char *text);
     UX &label(const char *text);
-    UX &heading(const char *text);
+    UX &heading(const char *text, int size = 0);
 };

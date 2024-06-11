@@ -13,7 +13,6 @@ void show_debug_panel(UX &ux, RuntimeMode &mode)
         .margin(10)
         .padding(10);
 
-    ux.border_color(0x666666FF);
     ux.column([&]() {
         ux.color(0xEEEEFFFF).heading("Debug panel");
 

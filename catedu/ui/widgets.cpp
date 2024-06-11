@@ -1,4 +1,5 @@
 #include "widgets.hpp"
+#include "catedu/ui/rendering/core.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 
 static const Vector4 theme[] = {
@@ -180,7 +181,7 @@ void end_show_window(UiPass &user)
 }
 
 void begin_button_frame(UiPass &user, const char *id, AutoLayoutElement el,
-                        Vector4 background)
+                        Vector4 background, UiBuffers buf)
 {
     user.state->element_storage.push(id, {});
 
@@ -188,11 +189,21 @@ void begin_button_frame(UiPass &user, const char *id, AutoLayoutElement el,
 
     Vector4 color_top = theme[1] * background;
     Vector4 color_bottom = theme[0] * background;
+    auto v = user.state->element_storage.value();
+    if (v->scale < 1)
+    {
+        v->scale = 1;
+    }
 
     if (user.hovered())
     {
         color_top = theme[5] * background;
         color_bottom = theme[4] * background;
+        v->scale = slerp(v->scale, 1.25, 20, sapp_frame_duration());
+    }
+    else
+    {
+        v->scale = slerp(v->scale, 1, 20, sapp_frame_duration());
     }
 
     if (user.state->input.k[INPUT_MB_LEFT].held && user.active())
@@ -202,9 +213,13 @@ void begin_button_frame(UiPass &user, const char *id, AutoLayoutElement el,
 
     color_top.w = 0.4f;
 
-    user.begin_generic(el, UiMakeBrush::make_gradient(color_bottom, color_top),
-                       UiMakeBrush::make_gradient(0x00000088, 0x00000000),
-                       user.state->element_storage.id());
+    UiBrush base = UiMakeBrush::make_gradient(color_bottom, color_top);
+    UiBrush border = UiMakeBrush::make_gradient(0x00000088, 0x00000000);
+    base.buffer = buf;
+    border.buffer = buf;
+
+    user.begin_generic(el, base, border, user.state->element_storage.id(),
+                       v->scale);
 }
 
 bool end_button_frame(UiPass &user)
@@ -223,7 +238,7 @@ bool button(UiPass &user, const char *text, Vector4 background)
     el.margin = {1, 1, 1, 1};
     el.border = {1, 1, 1, 1};
 
-    begin_button_frame(user, text, el, background);
+    begin_button_frame(user, text, el, background, UiBuffers::rectangle);
     label(user, text, {1, 1}, UiMakeBrush::make_solid(theme[3]));
     return end_button_frame(user);
 }
@@ -263,7 +278,7 @@ void img(UiPass &user, const char *path, Vector2 scale)
     el.height = {AutoLayoutDimension::pixel, size.y * scale.y};
 
     user.begin_generic(el,
-                       UiMakeBrush::make_image_brush(UiBuffers::Rectangle,
+                       UiMakeBrush::make_image_brush(UiBuffers::rectangle,
                                                      user.state->core, id)
                            .build(),
                        UiMakeBrush::make_solid(0xFFFFFF00));
@@ -281,7 +296,7 @@ void img(UiPass &user, UiImageId id, Vector2 scale)
     el.height = {AutoLayoutDimension::pixel, size.y * scale.y};
 
     user.begin_generic(el,
-                       UiMakeBrush::make_image_brush(UiBuffers::Rectangle,
+                       UiMakeBrush::make_image_brush(UiBuffers::rectangle,
                                                      user.state->core, id)
                            .build(),
                        UiMakeBrush::make_solid(0xFFFFFF00));
@@ -307,6 +322,7 @@ void label(UiPass &user, const char *text, Vector2 scale, UiBrush style)
 
     UiGenericStyles styles = {style, {}, (char *)ptr, scale, 0};
     styles.bold = user.bold;
+    styles.scale = 1;
 
     el.userdata = user.state->frame_storage.alloct<UiGenericStyles>();
     *(UiGenericStyles *)el.userdata = styles;

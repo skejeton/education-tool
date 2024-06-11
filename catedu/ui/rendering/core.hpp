@@ -18,10 +18,10 @@ struct UiBuffer
 
 enum class UiBuffers
 {
-    Ellipse,
-    Squircle,
-    Rectangle,
-    Count_
+    ellipse,
+    squircle,
+    rectangle,
+    count_
 };
 
 typedef TableId UiImageId;
@@ -44,7 +44,7 @@ struct UiBrush
 
 struct UiRenderingCore
 {
-    UiBuffer buffers[(size_t)UiBuffers::Count_];
+    UiBuffer buffers[(size_t)UiBuffers::count_];
     sg_pass_action pass_action;
     sg_bindings bindings;
     sg_pipeline pipeline;
