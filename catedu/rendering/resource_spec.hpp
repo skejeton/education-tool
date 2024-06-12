@@ -6,7 +6,7 @@
 struct SpecModel
 {
     const char *name;
-    catedu::Model model;
+    Model model;
     bool if_editor_only;
 };
 

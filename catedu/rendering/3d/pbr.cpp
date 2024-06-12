@@ -1,11 +1,8 @@
 #include "pbr.hpp"
 #include "catedu/shaders.hxx"
 #include "sokol/sokol_app.h"
-#include <cstring>
 #include <sokol/sokol_glue.h>
 #include <stdio.h>
-
-using namespace catedu::pbr;
 
 static void init_pipelines(sg_shader shader, sg_pipeline &pipeline,
                            sg_pipeline &offscreen_pipeline)
@@ -68,7 +65,7 @@ void Renderer::deinit()
     sg_destroy_pipeline(pipeline);
 }
 
-void catedu::pbr::Renderer::begin_pass()
+void Renderer::begin_pass()
 {
     if (camera.aspect < 0.01f)
     {
@@ -119,7 +116,7 @@ void Renderer::render_model(const Model &model, Params params)
     sg_draw(0, model.index_count, 1);
 }
 
-void catedu::pbr::Renderer::end_pass()
+void Renderer::end_pass()
 {
     sg_end_pass();
 }

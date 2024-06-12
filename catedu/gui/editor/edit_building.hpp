@@ -1,8 +1,8 @@
 #pragma once
+#include "catedu/genobj/render.hpp"
 #include "catedu/gui/editor/dispatcher.hpp"
-#include <catedu/genobj/render.hpp>
-#include <catedu/rendering/3d/camera.hpp>
-#include <catedu/ui/user.hpp>
+#include "catedu/rendering/3d/camera.hpp"
+#include "catedu/ui/user.hpp"
 
 struct EditBuilding
 {
@@ -11,6 +11,6 @@ struct EditBuilding
     float y;
     int floors;
 
-    void show(UiPass &user, catedu::pbr::Renderer &renderer, Dispatcher &disp,
+    void show(UiPass &user, Renderer &renderer, Dispatcher &disp,
               GenResources &gen_resources, Input &input, Camera &camera);
 };

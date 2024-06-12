@@ -1,5 +1,4 @@
 #pragma once
-#include "../debugtree/debugtree.hpp"
 #include "catedu/gui/editor/camera.hpp"
 #include "catedu/gui/editor/dispatcher.hpp"
 #include "catedu/gui/editor/edit_building.hpp"
@@ -31,7 +30,7 @@ struct SubEditor
     EditBuilding edit_building;
     EditLine edit_line;
 
-    void show(UiPass &user, catedu::pbr::Renderer &renderer, Dispatcher &disp,
+    void show(UiPass &user, Renderer &renderer, Dispatcher &disp,
               GenResources &gen_resources, Input &input, Camera &camera);
 };
 
@@ -54,7 +53,7 @@ struct GuiEditor
 
     static GuiEditor init(UiState *ui_state);
 
-    bool show(UiPass &user, GuiTransition &transition,
-              catedu::pbr::Renderer &renderer, ResourceSpec &resources);
+    bool show(UiPass &user, GuiTransition &transition, Renderer &renderer,
+              ResourceSpec &resources);
     void deinit();
 };

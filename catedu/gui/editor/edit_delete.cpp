@@ -4,9 +4,8 @@
 #include "catedu/genobj/render.hpp"
 #include "catedu/sys/input.hpp"
 
-void EditDelete::show(UiPass &user, catedu::pbr::Renderer &renderer,
-                      Dispatcher &disp, GenResources &gen_resources,
-                      Input &input, Camera &camera)
+void EditDelete::show(UiPass &user, Renderer &renderer, Dispatcher &disp,
+                      GenResources &gen_resources, Input &input, Camera &camera)
 {
 
     Ray3 pointer_ray = camera.screen_to_world_ray(

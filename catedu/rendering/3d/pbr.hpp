@@ -14,9 +14,6 @@
 #include "catedu/rendering/3d/camera.hpp"
 #include "model.hpp"
 
-namespace catedu::pbr
-{
-
 struct Params
 {
     Vector4 color_mul;
@@ -40,5 +37,3 @@ struct Renderer
     void render_model(const Model &model, Params params);
     void end_pass();
 };
-
-} // namespace catedu::pbr

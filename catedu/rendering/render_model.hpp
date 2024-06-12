@@ -5,14 +5,13 @@
 #include "resource_spec.hpp"
 
 static inline void render_model_at(Vector3 pos, ResourceSpec &res, TableId id,
-                                   catedu::pbr::Renderer &renderer,
-                                   bool if_editor, bool if_shadow = false,
-                                   int rotation = 0)
+                                   Renderer &renderer, bool if_editor,
+                                   bool if_shadow = false, int rotation = 0)
 
 {
     SpecModel &model = res.models.get_assert(id);
 
-    catedu::pbr::Params vs_params;
+    Params vs_params;
     vs_params.model =
         Matrix4::translate(pos) * Matrix4::rotate_y(rotation * (MATH_TAU / 4));
     vs_params.lightness = 0.0f;

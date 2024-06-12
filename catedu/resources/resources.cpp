@@ -59,11 +59,11 @@ ResourceSpec load_resource_spec(const char *path)
     result.tileset = Texture::init("./assets/test_spritesheet_01.png");
     for (auto &proto : model_protos)
     {
-        catedu::RawModel raw_model;
-        bool ok = catedu::RawModel::load_gltf(proto.path, raw_model);
+        RawModel raw_model;
+        bool ok = RawModel::load_gltf(proto.path, raw_model);
         assert(ok && "Failed to load model");
-        catedu::Model model;
-        ok = catedu::Model::load_from_raw(raw_model, model, proto.submodel);
+        Model model;
+        ok = Model::load_from_raw(raw_model, model, proto.submodel);
         assert(ok && "Failed to create model");
         result.models.allocate({proto.name, model, false});
     }

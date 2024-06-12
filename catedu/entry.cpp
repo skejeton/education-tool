@@ -1,4 +1,5 @@
 #include "entry.hpp"
+#include "catedu/gui/debugtree/debugtree.hpp"
 #include "catedu/gui/transition/transition.hpp"
 #include "catedu/resources/resources.hpp"
 #include "catedu/scene/world_file.hpp"
@@ -155,7 +156,7 @@ void Entry::init()
 
     transition = GuiTransition::create();
 
-    this->renderer = catedu::pbr::Renderer::init();
+    this->renderer = Renderer::init();
 }
 
 void Entry::input(const sapp_event *event)

@@ -26,5 +26,5 @@ struct GuiMainMenu
 
     // @returns true if the menu switched to the editor.
     bool show(UX &ux, GuiTransition &transition, World &world,
-              catedu::pbr::Renderer &renderer, ResourceSpec &resources);
+              Renderer &renderer, ResourceSpec &resources);
 };

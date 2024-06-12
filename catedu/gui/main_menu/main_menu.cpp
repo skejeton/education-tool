@@ -95,7 +95,7 @@ static void menu_exit(UiPass &pass, GuiMainMenu &state)
 }
 
 bool GuiMainMenu::show(UX &ux, GuiTransition &transition, World &world,
-                       catedu::pbr::Renderer &renderer, ResourceSpec &resources)
+                       Renderer &renderer, ResourceSpec &resources)
 {
     UiPass &pass = ux.pass;
 

@@ -7,7 +7,7 @@ MallocAllocator ALLOCATOR_MALLOC = {};
 
 void MemoryTracer::alloc(size_t size)
 {
-    printf("Allocating %zu bytes\n", size);
+    // printf("Allocating %zu bytes\n", size);
     total_allocations++;
     total_bytes_allocated += size;
 }

@@ -5,9 +5,9 @@
 #include "catedu/genobj/wall.hpp"
 #include "catedu/scene/world.hpp"
 
-void EditLine::show(UiPass &user, Object::Type type,
-                    catedu::pbr::Renderer &renderer, Dispatcher &disp,
-                    GenResources &gen_resources, Input &input, Camera &camera)
+void EditLine::show(UiPass &user, Object::Type type, Renderer &renderer,
+                    Dispatcher &disp, GenResources &gen_resources, Input &input,
+                    Camera &camera)
 {
     Ray3 pointer_ray = camera.screen_to_world_ray(
         input.mouse_pos, {sapp_widthf(), sapp_heightf()});

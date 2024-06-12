@@ -6,9 +6,9 @@
 #include <catedu/genobj/road.hpp>
 #include <catedu/genobj/wall.hpp>
 
-void EditBasic::show(UiPass &user, catedu::pbr::Renderer &renderer,
-                     Dispatcher &disp, GenResources &gen_resources,
-                     Input &input, Camera &camera, Object::Type type)
+void EditBasic::show(UiPass &user, Renderer &renderer, Dispatcher &disp,
+                     GenResources &gen_resources, Input &input, Camera &camera,
+                     Object::Type type)
 {
     Ray3 pointer_ray = camera.screen_to_world_ray(
         input.mouse_pos, {sapp_widthf(), sapp_heightf()});

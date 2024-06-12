@@ -4,9 +4,6 @@
 #include "cgltf/cgltf.h"
 #include "sokol/sokol_gfx.h"
 
-namespace catedu
-{
-
 struct RawModel
 {
     cgltf_data *data;
@@ -28,5 +25,3 @@ struct Model
     static bool load_from_raw(RawModel &raw, Model &dest, int submodel = 0);
     void deinit();
 };
-
-} // namespace catedu

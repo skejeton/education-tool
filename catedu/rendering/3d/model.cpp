@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-using namespace catedu;
-
 float *merge_buffers(float *pos, float *norm, float *uv, size_t vertex_count)
 {
     float *result =
@@ -76,7 +74,7 @@ void RawModel::deinit()
     cgltf_free(data);
 }
 
-void catedu::print_info(RawModel &model)
+void print_info(RawModel &model)
 {
     cgltf_data *data = model.data;
 
@@ -116,7 +114,7 @@ void catedu::print_info(RawModel &model)
     }
 }
 
-bool catedu::Model::load_from_raw(RawModel &raw, Model &dest, int submodel)
+bool Model::load_from_raw(RawModel &raw, Model &dest, int submodel)
 {
     cgltf_data *data = raw.data;
 
@@ -232,7 +230,7 @@ bool catedu::Model::load_from_raw(RawModel &raw, Model &dest, int submodel)
     return true;
 }
 
-void catedu::Model::deinit()
+void Model::deinit()
 {
     sg_destroy_buffer(vertex_buffer);
     sg_destroy_buffer(index_buffer);

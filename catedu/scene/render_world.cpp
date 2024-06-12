@@ -18,9 +18,9 @@ GenResources get_genres(ResourceSpec &resources)
     return result;
 }
 
-void show_backdrop(catedu::pbr::Renderer &renderer, ResourceSpec &resources)
+void show_backdrop(Renderer &renderer, ResourceSpec &resources)
 {
-    catedu::pbr::Params vs_params;
+    Params vs_params;
 
     vs_params.model =
         Matrix4::translate(renderer.camera.position) * Matrix4::scale(32);
@@ -32,8 +32,7 @@ void show_backdrop(catedu::pbr::Renderer &renderer, ResourceSpec &resources)
         vs_params);
 }
 
-void render_place(Place &place, catedu::pbr::Renderer &renderer,
-                  ResourceSpec &resources)
+void render_place(Place &place, Renderer &renderer, ResourceSpec &resources)
 {
     GenResources gen_resources = get_genres(resources);
 

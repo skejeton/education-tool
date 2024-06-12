@@ -39,9 +39,9 @@ struct Entry : SokolSetup
     UmkaBindingsData umka_bindings_data;
     UmkaModule umka_module;
 
-    bool show_debug = false;
+    bool show_debug;
 
-    catedu::pbr::Renderer renderer;
+    Renderer renderer;
 
     void init();
     void frame();

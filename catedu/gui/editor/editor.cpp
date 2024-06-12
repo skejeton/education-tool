@@ -91,8 +91,7 @@ bool icon_button(UiPass &user, const char *name, const char *icon,
 }
 
 bool object_icon_button(UiPass &user, const char *name, SubEditor::Type type,
-                        SubEditor::Type &current,
-                        catedu::pbr::Renderer &renderer,
+                        SubEditor::Type &current, Renderer &renderer,
                         ResourceSpec &resources)
 {
     AutoLayoutElement el = {};
@@ -187,7 +186,7 @@ GuiEditor GuiEditor::init(UiState *ui_state)
 }
 
 void show_build_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
-                      catedu::pbr::Renderer &renderer)
+                      Renderer &renderer)
 {
     object_icon_button(user, "Delete", SubEditor::Type::Deleter,
                        editor.sub_editor.type, renderer, resources);
@@ -216,7 +215,7 @@ void show_build_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
 }
 
 void show_left_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
-                     catedu::pbr::Renderer &renderer)
+                     Renderer &renderer)
 {
     AutoLayoutElement element = {};
     element.clip = true;
@@ -375,15 +374,15 @@ void handle_shortcuts(GuiEditor &editor, Input &input)
     }
 }
 
-void render_physics_boxes(catedu::pbr::Renderer &renderer, PhysicsWorld &world,
+void render_physics_boxes(Renderer &renderer, PhysicsWorld &world,
                           ResourceSpec &resources)
 {
-    catedu::Model *hitbox =
+    Model *hitbox =
         &resources.models.get(resources.find_model_by_name("hitbox"))->model;
 
     for (auto [id, body] : iter(world.bodies))
     {
-        catedu::pbr::Params vs_params;
+        Params vs_params;
         vs_params.model =
             Matrix4::translate({body.area.pos.x + body.area.siz.x / 2.0f, 0,
                                 body.area.pos.y + body.area.siz.y / 2.0f}) *
@@ -395,8 +394,8 @@ void render_physics_boxes(catedu::pbr::Renderer &renderer, PhysicsWorld &world,
 }
 
 void show_editor_ui(GuiEditor &editor, UiPass &user, ResourceSpec &resources,
-                    catedu::pbr::Renderer &renderer, Input &input,
-                    bool &return_back, GuiTransition &transition)
+                    Renderer &renderer, Input &input, bool &return_back,
+                    GuiTransition &transition)
 {
     renderer.camera = editor.editor_camera.cam;
     renderer.begin_pass();
@@ -452,7 +451,7 @@ void show_editor_ui(GuiEditor &editor, UiPass &user, ResourceSpec &resources,
 }
 
 bool show_main_editor(GuiEditor &editor, UiPass &user, ResourceSpec &resources,
-                      catedu::pbr::Renderer &renderer, Input &input,
+                      Renderer &renderer, Input &input,
                       GuiTransition &transition)
 {
     AutoLayoutElement element = create_main_element(user);
@@ -469,7 +468,7 @@ bool show_main_editor(GuiEditor &editor, UiPass &user, ResourceSpec &resources,
 }
 
 bool GuiEditor::show(UiPass &user, GuiTransition &transition,
-                     catedu::pbr::Renderer &renderer, ResourceSpec &resources)
+                     Renderer &renderer, ResourceSpec &resources)
 {
     offscreen_clear();
 
@@ -522,9 +521,8 @@ void GuiEditor::deinit()
     dispatcher.destroy();
 }
 
-void SubEditor::show(UiPass &user, catedu::pbr::Renderer &renderer,
-                     Dispatcher &disp, GenResources &gen_resources,
-                     Input &input, Camera &camera)
+void SubEditor::show(UiPass &user, Renderer &renderer, Dispatcher &disp,
+                     GenResources &gen_resources, Input &input, Camera &camera)
 {
     switch (type)
     {
