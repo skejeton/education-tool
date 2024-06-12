@@ -11,7 +11,7 @@ void show_debug_panel(UX &ux, RuntimeMode &mode)
 {
     ux.background_color(0x000000FF)
         .border_color(0x666666FF)
-        .border_size(1)
+        .border_size(3)
         .margin(10)
         .padding(10);
 

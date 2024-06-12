@@ -45,8 +45,10 @@ void GuiTransition::show(UiPass &user, Input &input)
     alpha = slerp(alpha, alpha_target, speed, sapp_frame_duration());
 
     AutoLayoutElement element = {};
-    element.width = {AutoLayoutDimension::pixel, sapp_widthf()};
-    element.height = {AutoLayoutDimension::pixel, sapp_heightf()};
+    element.width = {AutoLayoutDimension::pixel,
+                     sapp_widthf() / user.state->dpi_scale};
+    element.height = {AutoLayoutDimension::pixel,
+                      sapp_heightf() / user.state->dpi_scale};
     element.position = AutoLayoutPosition::absolute;
     user.begin_generic(
         element, UiMakeBrush::make_solid(Color(Vector4{0, 0, 0, alpha})), {});

@@ -40,11 +40,12 @@ struct UiBrush
     Color color_top;
     UiImageId image;
     Rect image_region_rect;
+    float radius;
 };
 
 struct UiRenderingCore
 {
-    UiBuffer buffers[(size_t)UiBuffers::count_];
+    UiBuffer buffer;
     sg_pass_action pass_action;
     sg_bindings bindings;
     sg_pipeline pipeline;

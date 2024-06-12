@@ -62,13 +62,7 @@ UiRenderingCore UiRenderingCore::init()
 {
     UiRenderingCore result = {};
 
-    result.buffers[(int)UiBuffers::ellipse] = generate_buffer(
-        rendering_2d_generate_circle({4, 0}, DEFAULT_SAMPLE_COUNT));
-    result.buffers[(int)UiBuffers::squircle] =
-        generate_buffer(rendering_2d_generate_squircle(
-            {4, 0}, DEFAULT_SAMPLE_COUNT, 5, {0.5, 0.5}));
-    result.buffers[(int)UiBuffers::rectangle] =
-        generate_buffer(rendering_2d_generate_square({4, 0}));
+    result.buffer = generate_buffer(rendering_2d_generate_square({4, 0}));
 
     result.shader = sg_make_shader(ui_prog_shader_desc(sg_query_backend()));
 
@@ -91,8 +85,8 @@ UiRenderingCore UiRenderingCore::init()
 
     result.pipeline = sg_make_pipeline(pipeline_desc);
 
-    result.bindings.vertex_buffers[0] = result.buffers[0].vertex_buffer;
-    result.bindings.index_buffer = result.buffers[0].index_buffer;
+    result.bindings.vertex_buffers[0] = result.buffer.vertex_buffer;
+    result.bindings.index_buffer = result.buffer.index_buffer;
 
     result.pass_action.colors[0].load_action = SG_LOADACTION_LOAD;
     result.pass_action.colors[0].store_action = SG_STOREACTION_STORE;
@@ -105,11 +99,8 @@ UiRenderingCore UiRenderingCore::init()
 
 void UiRenderingCore::deinit()
 {
-    for (size_t i = 0; i < (size_t)UiBuffers::count_; i++)
-    {
-        sg_destroy_buffer(this->buffers[i].vertex_buffer);
-        sg_destroy_buffer(this->buffers[i].index_buffer);
-    }
+    sg_destroy_buffer(this->buffer.vertex_buffer);
+    sg_destroy_buffer(this->buffer.index_buffer);
 
     sg_destroy_pipeline(this->pipeline);
     sg_destroy_shader(this->shader);
@@ -168,16 +159,33 @@ void UiRenderingCore::render_object(UiBrush brush)
     UiImage *img = this->get_image(brush.image);
     assert(img && "Trying to render with an invalid image id");
 
-    UiBuffer *buf = &this->buffers[(size_t)brush.buffer];
-
-    this->bindings.vertex_buffers[0] = buf->vertex_buffer;
-    this->bindings.index_buffer = buf->index_buffer;
     this->bindings.fs.images[0] = img->image;
     this->bindings.fs.samplers[0] = img->sampler;
 
     sg_apply_bindings(this->bindings);
 
     ui_vs_params_t vs_params;
+
+    switch (brush.buffer)
+    {
+    case UiBuffers::ellipse:
+        vs_params.radius = {2, 2, 2, 2};
+        vs_params.gaps_x = {0, 0, 0, 0};
+        vs_params.gaps_y = {0, 0, 0, 0};
+        break;
+    case UiBuffers::squircle:
+        vs_params.radius = {5, 5, 5, 5};
+        vs_params.gaps_x = {0, 0, 0, 0};
+        vs_params.gaps_y = {0, 0, 0, 0};
+        break;
+    default:
+    case UiBuffers::rectangle:
+        vs_params.radius = {1, 1, 1, 1};
+        vs_params.gaps_x = {1, 1, 1, 1};
+        vs_params.gaps_y = {1, 1, 1, 1};
+        break;
+    }
+
     vs_params.mvp = matrix;
     vs_params.color_bottom = brush.color_bottom.to_vector4();
     vs_params.color_top = brush.color_top.to_vector4();
@@ -187,7 +195,7 @@ void UiRenderingCore::render_object(UiBrush brush)
     sg_range params_range = SG_RANGE(vs_params);
 
     sg_apply_uniforms(SG_SHADERSTAGE_VS, SLOT_ui_vs_params, &params_range);
-    sg_draw(0, buf->indices, 1);
+    sg_draw(0, this->buffer.indices, 1);
 }
 
 void UiRenderingCore::begin_scissor(Rect r)
