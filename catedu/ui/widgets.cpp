@@ -195,11 +195,23 @@ void begin_button_frame(UiPass &user, const char *id, AutoLayoutElement el,
         v->scale = 1;
     }
 
+    color_top.w = 0.4f;
+
     if (user.hovered())
     {
         color_top = theme[5] * background;
         color_bottom = theme[4] * background;
         v->scale = slerp(v->scale, 1.25, 20, sapp_frame_duration());
+        color_top.w *= v->scale;
+        color_bottom.w *= v->scale;
+        if (color_top.w > 1)
+        {
+            color_top.w = 1;
+        }
+        if (color_bottom.w > 1)
+        {
+            color_bottom.w = 1;
+        }
     }
     else
     {
@@ -210,8 +222,6 @@ void begin_button_frame(UiPass &user, const char *id, AutoLayoutElement el,
     {
         std::swap(color_top, color_bottom);
     }
-
-    color_top.w = 0.4f;
 
     UiBrush base = UiMakeBrush::make_gradient(color_bottom, color_top);
     UiBrush border = UiMakeBrush::make_gradient(0x00000088, 0x00000000);

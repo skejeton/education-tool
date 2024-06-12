@@ -9,3 +9,10 @@
 - [ ] Add decals to generated objects
   - [x] Shaded decals
   - [ ] Window decals
+- [ ] UI
+  - [ ] Port widgets to ux.cpp
+  - [ ] Add a z-index property
+  - [ ] Implement a better styling system
+  - [ ] More configurable squircle/border radius
+  - [ ] Rewrite the debug tree to use the new system
+  - [ ] Add scrolling
