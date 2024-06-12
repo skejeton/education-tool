@@ -1,5 +1,4 @@
 #include "camera.hpp"
-#include <cstdio>
 
 EditorCamera EditorCamera::create()
 {

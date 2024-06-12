@@ -13,7 +13,7 @@ void EditBuilding::show(UiPass &user, Renderer &renderer, Dispatcher &disp,
     ray3_vs_horizontal_plane(pointer_ray, 0, &t);
 
     Vector3 at = ray3_at(pointer_ray, t);
-    Vector2 pointer = {roundf(at.x), roundf(at.z)};
+    Vector2 pointer = {floorf(at.x), floorf(at.z)};
 
     if (placing)
     {

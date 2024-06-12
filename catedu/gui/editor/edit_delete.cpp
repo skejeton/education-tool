@@ -12,10 +12,10 @@ void EditDelete::show(UiPass &user, Renderer &renderer, Dispatcher &disp,
         input.mouse_pos, {sapp_widthf(), sapp_heightf()});
 
     float t;
-    ray3_vs_horizontal_plane(pointer_ray, 0, &t);
+    ray3_vs_horizontal_plane(pointer_ray, 0.0, &t);
 
     Vector3 at = ray3_at(pointer_ray, t);
-    Vector2 pointer = {roundf(at.x), roundf(at.z)};
+    Vector2 pointer = {floorf(at.x), floorf(at.z)};
 
     Object *obj = disp.world.current->get_object_at(pointer.x, pointer.y);
     if (obj)
