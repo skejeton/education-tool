@@ -181,7 +181,7 @@ void end_show_window(UiPass &user)
 }
 
 void begin_button_frame(UiPass &user, const char *id, AutoLayoutElement el,
-                        Vector4 background, UiBuffers buf)
+                        Vector4 background, float radius)
 {
     user.state->element_storage.push(id, {});
 
@@ -223,10 +223,14 @@ void begin_button_frame(UiPass &user, const char *id, AutoLayoutElement el,
         std::swap(color_top, color_bottom);
     }
 
-    UiBrush base = UiMakeBrush::make_gradient(color_bottom, color_top);
-    UiBrush border = UiMakeBrush::make_gradient(0x00000088, 0x00000000);
-    base.buffer = buf;
-    border.buffer = buf;
+    UiBrush base = UiMakeBrush::make_plain_brush()
+                       .squircle(radius)
+                       .with_gradient(color_bottom, color_top)
+                       .build();
+    UiBrush border = UiMakeBrush::make_plain_brush()
+                         .squircle(radius)
+                         .with_gradient(0x00000088, 0x00000000)
+                         .build();
 
     user.begin_generic(el, base, border, user.state->element_storage.id(),
                        v->scale);
@@ -248,7 +252,7 @@ bool button(UiPass &user, const char *text, Vector4 background)
     el.margin = {1, 1, 1, 1};
     el.border = {1, 1, 1, 1};
 
-    begin_button_frame(user, text, el, background, UiBuffers::rectangle);
+    begin_button_frame(user, text, el, background);
     label(user, text, {1, 1}, UiMakeBrush::make_solid(theme[3]));
     return end_button_frame(user);
 }
@@ -287,11 +291,9 @@ void img(UiPass &user, const char *path, Vector2 scale)
     el.width = {AutoLayoutDimension::pixel, size.x * scale.x};
     el.height = {AutoLayoutDimension::pixel, size.y * scale.y};
 
-    user.begin_generic(el,
-                       UiMakeBrush::make_image_brush(UiBuffers::rectangle,
-                                                     user.state->core, id)
-                           .build(),
-                       UiMakeBrush::make_solid(0xFFFFFF00));
+    user.begin_generic(
+        el, UiMakeBrush::make_image_brush(user.state->core, id).build(),
+        UiMakeBrush::make_solid(0xFFFFFF00));
 
     user.end_generic();
 }
@@ -305,11 +307,9 @@ void img(UiPass &user, UiImageId id, Vector2 scale)
     el.width = {AutoLayoutDimension::pixel, size.x * scale.x};
     el.height = {AutoLayoutDimension::pixel, size.y * scale.y};
 
-    user.begin_generic(el,
-                       UiMakeBrush::make_image_brush(UiBuffers::rectangle,
-                                                     user.state->core, id)
-                           .build(),
-                       UiMakeBrush::make_solid(0xFFFFFF00));
+    user.begin_generic(
+        el, UiMakeBrush::make_image_brush(user.state->core, id).build(),
+        UiMakeBrush::make_solid(0xFFFFFF00));
 
     user.end_generic();
 }

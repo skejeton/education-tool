@@ -1,18 +1,21 @@
 #include "make_brush.hpp"
 
-UiMakeBrush UiMakeBrush::make_plain_brush(UiBuffers shape)
+UiMakeBrush UiMakeBrush::make_plain_brush()
 {
     UiMakeBrush maker = {};
-    maker.brush.buffer = shape;
+    maker.brush.radius = {1, 1, 1, 1};
+    maker.brush.gaps_x = {1, 1, 1, 1};
+    maker.brush.gaps_y = {1, 1, 1, 1};
     return maker;
 }
 
-UiMakeBrush UiMakeBrush::make_image_brush(UiBuffers shape,
-                                          UiRenderingCore *core,
+UiMakeBrush UiMakeBrush::make_image_brush(UiRenderingCore *core,
                                           UiImageId image)
 {
     UiMakeBrush maker = {};
-    maker.brush.buffer = shape;
+    maker.brush.radius = {1, 1, 1, 1};
+    maker.brush.gaps_x = {1, 1, 1, 1};
+    maker.brush.gaps_y = {1, 1, 1, 1};
     maker.brush.image = image;
     maker.brush.color_bottom = 0xFFFFFFFF;
     maker.brush.color_top = 0xFFFFFFFF;
@@ -27,16 +30,22 @@ UiMakeBrush UiMakeBrush::make_image_brush(UiBuffers shape,
 
 UiBrush UiMakeBrush::make_solid(Color color)
 {
-    return UiMakeBrush::make_plain_brush(UiBuffers::rectangle)
-        .with_solid(color)
-        .build();
+    return UiMakeBrush::make_plain_brush().with_solid(color).build();
 }
 
 UiBrush UiMakeBrush::make_gradient(Color color_bottom, Color color_top)
 {
-    return UiMakeBrush::make_plain_brush(UiBuffers::rectangle)
+    return UiMakeBrush::make_plain_brush()
         .with_gradient(color_bottom, color_top)
         .build();
+}
+
+UiMakeBrush &UiMakeBrush::squircle(float radius)
+{
+    brush.radius = {4, 4, 4, 4};
+    brush.gaps_x = {radius, radius, radius, radius};
+    brush.gaps_y = {radius, radius, radius, radius};
+    return *this;
 }
 
 UiMakeBrush &UiMakeBrush::with_solid(Color color)

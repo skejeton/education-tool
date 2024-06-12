@@ -64,7 +64,8 @@ void begin_toolbar(UiPass &user, const char *name)
     toolbar.border = {-32, 0, 0, 0};
     toolbar.align_height = 1;
     user.begin_generic(toolbar, {},
-                       UiMakeBrush::make_plain_brush(UiBuffers::ellipse)
+                       UiMakeBrush::make_plain_brush()
+                           .squircle(0.5)
                            .with_gradient(0xFFFFFF77, 0xFFFFFF11)
                            .build(),
                        user.state->element_storage.id());
@@ -85,7 +86,7 @@ bool icon_button(UiPass &user, const char *name, const char *icon,
     el.margin = {2, 2, 2, 2};
     el.border = {1, 1, 1, 1};
 
-    begin_button_frame(user, name, el, color, UiBuffers::squircle);
+    begin_button_frame(user, name, el, color, 0.5);
     img(user, icon, {scale / 1.2f, scale / 1.2f});
     return end_button_frame(user);
 }
@@ -111,7 +112,7 @@ bool object_icon_button(UiPass &user, const char *name, SubEditor::Type type,
         color = {0.4, 1.0, 0.4, 1.0};
     }
 
-    begin_button_frame(user, name, el, color, UiBuffers::squircle);
+    begin_button_frame(user, name, el, color, 0.5);
     {
         Camera camera = Camera::init(5);
         camera.set_aspect(el.width.value / el.height.value);

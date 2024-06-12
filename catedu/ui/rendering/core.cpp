@@ -166,25 +166,9 @@ void UiRenderingCore::render_object(UiBrush brush)
 
     ui_vs_params_t vs_params;
 
-    switch (brush.buffer)
-    {
-    case UiBuffers::ellipse:
-        vs_params.radius = {2, 2, 2, 2};
-        vs_params.gaps_x = {0, 0, 0, 0};
-        vs_params.gaps_y = {0, 0, 0, 0};
-        break;
-    case UiBuffers::squircle:
-        vs_params.radius = {5, 5, 5, 5};
-        vs_params.gaps_x = {0, 0, 0, 0};
-        vs_params.gaps_y = {0, 0, 0, 0};
-        break;
-    default:
-    case UiBuffers::rectangle:
-        vs_params.radius = {1, 1, 1, 1};
-        vs_params.gaps_x = {1, 1, 1, 1};
-        vs_params.gaps_y = {1, 1, 1, 1};
-        break;
-    }
+    vs_params.radius = brush.radius;
+    vs_params.gaps_x = brush.gaps_x;
+    vs_params.gaps_y = brush.gaps_y;
 
     vs_params.mvp = matrix;
     vs_params.color_bottom = brush.color_bottom.to_vector4();

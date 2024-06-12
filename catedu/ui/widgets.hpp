@@ -32,7 +32,7 @@ bool input(UiPass &user, const char *id, char *out, int max);
 
 void begin_button_frame(UiPass &user, const char *id, AutoLayoutElement el = {},
                         Vector4 background = {1.0, 1.0, 1.0, 1.0},
-                        UiBuffers buffer = UiBuffers::rectangle);
+                        float radius = 1);
 bool end_button_frame(UiPass &user);
 
 bool button(UiPass &user, const char *text,
@@ -44,8 +44,7 @@ bool button_radio(UiPass &user, const char *text, int &mode, int val);
 void img(UiPass &user, const char *path, Vector2 scale = {1, 1});
 void img(UiPass &user, UiImageId id, Vector2 scale = {1, 1});
 void label(UiPass &user, const char *text, Vector2 scale = {1, 1},
-           UiBrush style = {
-               UiBuffers::rectangle, {0, 0, 0, 255}, {0, 0, 0, 255}});
+           UiBrush style = {{0, 0, 0, 255}, {0, 0, 0, 255}});
 
 /// @returns Which button was pressed. -1 if none.
 int msgbox(UiPass &user, const char *title, const char *text, MsgBoxType type,

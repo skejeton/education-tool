@@ -16,14 +16,6 @@ struct UiBuffer
     size_t indices;
 };
 
-enum class UiBuffers
-{
-    ellipse,
-    squircle,
-    rectangle,
-    count_
-};
-
 typedef TableId UiImageId;
 
 struct UiImage
@@ -35,12 +27,13 @@ struct UiImage
 
 struct UiBrush
 {
-    UiBuffers buffer;
     Color color_bottom;
     Color color_top;
     UiImageId image;
     Rect image_region_rect;
-    float radius;
+    Vector4 radius;
+    Vector4 gaps_x;
+    Vector4 gaps_y;
 };
 
 struct UiRenderingCore

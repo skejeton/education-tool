@@ -56,7 +56,7 @@ static bool big_menu_button(UiPass &user, const char *text, bool major = false)
 
     AutoLayoutElement el = make_element({AutoLayout::row}, {size, size}, false,
                                         false, {0.5, 0.5}, 0, margin);
-    begin_button_frame(user, text, el, {1, 1, 1, 1}, UiBuffers::squircle);
+    begin_button_frame(user, text, el, {1, 1, 1, 1}, 0.5);
     label(user, text, {3, 3});
     return end_button_frame(user);
 }
