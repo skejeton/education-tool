@@ -97,6 +97,8 @@ PhysicsManifolds PhysicsWorld::detect_collisions()
                     r.manifolds.allocate({id, body2.id});
                 }
             }
+
+            bodies.deinit();
         }
     }
 

@@ -2,6 +2,7 @@
 #include "catedu/gui/transition/transition.hpp"
 #include "catedu/resources/resources.hpp"
 #include "catedu/scene/world_file.hpp"
+#include "catedu/sys/input.hpp"
 #include "catedu/sys/sg_tricks.hpp"
 #include "catedu/ui/ux.hpp"
 
@@ -73,6 +74,24 @@ void Entry::frame(void)
 
     transition.show(pass, pass.state->input);
 
+    if (pass.state->input.k[SAPP_KEYCODE_F3].pressed)
+    {
+        pass.state->input.clear(SAPP_KEYCODE_F3);
+        show_debug = !show_debug;
+    }
+
+    DEBUG_TREE.reset();
+    DEBUG_TREE.value("frees", (uint64_t)ALLOCATOR_MALLOC.tracer.total_frees);
+    DEBUG_TREE.value("allocs",
+                     (uint64_t)ALLOCATOR_MALLOC.tracer.total_allocations);
+    DEBUG_TREE.size("bytes",
+                    (uint64_t)ALLOCATOR_MALLOC.tracer.total_bytes_allocated);
+
+    if (show_debug)
+    {
+        DEBUG_TREE.show(pass);
+    }
+
     ux.end();
 
     // FIXME: We need to defer `editor.deinit`, because `deinit` removes the
@@ -103,6 +122,8 @@ void Entry::cleanup(void)
     this->umka_module.destroy();
 
     this->panorama.destroy();
+
+    DEBUG_TREE.deinit();
 
     // NOTE: Some memory will show as "leak" because this function is called
     // before the sokol deinitializers are called.

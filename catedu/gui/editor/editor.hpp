@@ -40,13 +40,11 @@ struct GuiEditor
     bool exit_requested;
     bool tried_to_return_back;
     bool playtest_no_player;
-    bool show_debug;
     bool playtesting;
     bool returning_back;
     Playtest playtest;
     UiState *ui_state;
     EditorCamera editor_camera;
-    GuiDebugTree debug_tree;
     SubEditor sub_editor;
     Dispatcher dispatcher;
 

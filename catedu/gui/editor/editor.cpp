@@ -45,20 +45,9 @@ bool rect_side_is_horizontal(RectSide &side)
     return side == RectSide::Bottom || side == RectSide::Top;
 }
 
-void begin_toolbar(UiPass &user, const char *name, RectSide side)
+void begin_toolbar(UiPass &user, const char *name)
 {
-    float align_y = 0, align_x = 0;
-
-    if (rect_side_is_horizontal(side))
-    {
-        align_y = side == RectSide::Bottom;
-        align_x = 0.5;
-    }
-    else
-    {
-        align_x = side == RectSide::Right;
-        align_y = 0.5;
-    }
+    float align_y = 1.0, align_x = 0;
 
     AutoLayoutElement element = create_main_element(user);
     element.align_height = align_y;
@@ -67,14 +56,17 @@ void begin_toolbar(UiPass &user, const char *name, RectSide side)
     user.push_id(name);
 
     AutoLayoutElement toolbar = {};
-    toolbar.layout.type =
-        rect_side_is_horizontal(side) ? AutoLayout::row : AutoLayout::column;
+    toolbar.layout.type = AutoLayout::row;
     toolbar.width.type = AutoLayoutDimension::autom;
     toolbar.height.type = AutoLayoutDimension::autom;
     toolbar.padding = {2, 2, 2, 2};
     toolbar.margin = {2, 2, 2, 2};
-    toolbar.border = {0, 0, 5, 0};
-    user.begin_generic(toolbar, {}, UiMakeBrush::make_solid(0xFFFFFF22),
+    toolbar.border = {-32, 0, 0, 0};
+    toolbar.align_height = 1;
+    user.begin_generic(toolbar, {},
+                       UiMakeBrush::make_plain_brush(UiBuffers::ellipse)
+                           .with_gradient(0xFFFFFF77, 0xFFFFFF11)
+                           .build(),
                        user.state->element_storage.id());
 }
 
@@ -94,7 +86,7 @@ bool icon_button(UiPass &user, const char *name, const char *icon,
     el.border = {1, 1, 1, 1};
 
     begin_button_frame(user, name, el, color, UiBuffers::squircle);
-    img(user, icon, {scale, scale});
+    img(user, icon, {scale / 1.2f, scale / 1.2f});
     return end_button_frame(user);
 }
 
@@ -183,7 +175,6 @@ GuiEditor GuiEditor::init(UiState *ui_state)
 {
     GuiEditor result = {};
     result.ui_state = ui_state;
-    result.debug_tree = GuiDebugTree::init();
     result.dispatcher = WorldFile::load("assets/world.dat");
     result.editor_camera = EditorCamera::create();
     result.previous_place = result.dispatcher.world.current;
@@ -304,37 +295,16 @@ void show_popups(UiPass &user, GuiEditor &editor, bool &return_back)
             break;
         }
     }
-
-    if (editor.show_debug)
-    {
-        editor.debug_tree.reset();
-        editor.debug_tree.value("frees",
-                                (uint64_t)ALLOCATOR_MALLOC.tracer.total_frees);
-        editor.debug_tree.value(
-            "allocs", (uint64_t)ALLOCATOR_MALLOC.tracer.total_allocations);
-        editor.debug_tree.size(
-            "bytes", (uint64_t)ALLOCATOR_MALLOC.tracer.total_bytes_allocated);
-        editor.debug_tree.show(user);
-    }
 }
 
 void show_editor_controls(UiPass &user, GuiEditor &editor, bool &return_back)
 {
-    begin_toolbar(user, "Controls", RectSide::Bottom);
+    begin_toolbar(user, "Controls");
 
     if (!editor.playtesting)
     {
-        if (icon_button(user, "Undo", "assets/gui/undo.png"))
-        {
-            editor.dispatcher.undo();
-        }
-
-        if (icon_button(user, "Redo", "assets/gui/redo.png"))
-        {
-            editor.dispatcher.redo();
-        }
-
-        if (icon_button(user, "Playtest", "assets/gui/play.png"))
+        if (icon_button(user, "Playtest", "assets/gui/play.png", {1, 1, 1, 1},
+                        1.1))
         {
             editor.playtesting = true;
             editor.playtest = Playtest::create(editor.dispatcher.world.clone());
@@ -345,6 +315,15 @@ void show_editor_controls(UiPass &user, GuiEditor &editor, bool &return_back)
                 editor.playtesting = false;
                 editor.playtest_no_player = true;
             }
+        }
+        if (icon_button(user, "Undo", "assets/gui/undo.png"))
+        {
+            editor.dispatcher.undo();
+        }
+
+        if (icon_button(user, "Redo", "assets/gui/redo.png"))
+        {
+            editor.dispatcher.redo();
         }
 
         if (icon_button(user, "Home", "assets/gui/home.png"))
@@ -365,7 +344,8 @@ void show_editor_controls(UiPass &user, GuiEditor &editor, bool &return_back)
     }
     else
     {
-        if (icon_button(user, "Stop Playtest", "assets/gui/stop.png"))
+        if (icon_button(user, "Stop Playtest", "assets/gui/stop.png",
+                        {1, 1, 1, 1}, 1.1))
         {
             // TODO: Find a better way of handling playtest memory.
             editor.playtesting = false;
@@ -461,17 +441,12 @@ void show_editor_ui(GuiEditor &editor, UiPass &user, ResourceSpec &resources,
 
     renderer.end_pass();
 
-    show_editor_controls(user, editor, return_back);
-
     if (!editor.playtesting)
     {
         show_left_panel(user, editor, resources, renderer);
     }
 
-    if (input.k[SAPP_KEYCODE_F3].pressed)
-    {
-        editor.show_debug = !editor.show_debug;
-    }
+    show_editor_controls(user, editor, return_back);
 
     handle_shortcuts(editor, input);
 }
@@ -545,7 +520,6 @@ void GuiEditor::deinit()
     offscreen_deinit_targets(this->ui_state->core);
 
     dispatcher.destroy();
-    debug_tree.deinit();
 }
 
 void SubEditor::show(UiPass &user, catedu::pbr::Renderer &renderer,

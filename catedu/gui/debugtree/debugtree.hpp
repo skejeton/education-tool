@@ -32,4 +32,8 @@ struct GuiDebugTree
     void value(const char *name, const char *value);
 
     void show(UiPass &user);
+
+    static GuiDebugTree &get();
 };
+
+#define DEBUG_TREE GuiDebugTree::get()

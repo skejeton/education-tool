@@ -1,4 +1,5 @@
 #include "debugtree.hpp"
+#include "catedu/ui/layout/autolayout.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/widgets.hpp"
 
@@ -117,8 +118,11 @@ void GuiDebugTree::value(const char *name, const char *value)
 void GuiDebugTree::show(UiPass &user)
 {
     AutoLayoutElement wrapper = {};
+    wrapper.position = AutoLayoutPosition::absolute;
+    wrapper.offset = {0, 0};
     wrapper.layout.type = AutoLayout::row;
-    user.begin_generic(wrapper, {}, {});
+    user.begin_generic(wrapper,
+                       UiMakeBrush::make_gradient(0xFFFFFF22, 0xFFFFFFBB), {});
 
     AutoLayoutElement el = {};
     el.layout.type = AutoLayout::column;
@@ -151,4 +155,10 @@ void GuiDebugTree::show(UiPass &user)
     user.end_generic();
 
     user.end_generic();
+}
+
+GuiDebugTree &GuiDebugTree::get()
+{
+    static GuiDebugTree instance = GuiDebugTree::init();
+    return instance;
 }
