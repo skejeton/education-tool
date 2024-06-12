@@ -486,7 +486,7 @@ bool GuiEditor::show(UiPass &user, GuiTransition &transition,
         transition.begin();
     }
 
-    if (transition.switching())
+    if (transition.switching() && !this->playtesting)
     {
         this->previous_place = this->dispatcher.world.current;
         float angle = 0;
