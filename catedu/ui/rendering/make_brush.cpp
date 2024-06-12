@@ -48,6 +48,14 @@ UiMakeBrush &UiMakeBrush::squircle(float radius)
     return *this;
 }
 
+UiMakeBrush &UiMakeBrush::squircle(float radiusx, float radiusy)
+{
+    brush.radius = {4, 4, 4, 4};
+    brush.gaps_x = {radiusx, radiusx, radiusx, radiusx};
+    brush.gaps_y = {radiusy, radiusy, radiusy, radiusy};
+    return *this;
+}
+
 UiMakeBrush &UiMakeBrush::with_solid(Color color)
 {
     this->brush.color_bottom = color;

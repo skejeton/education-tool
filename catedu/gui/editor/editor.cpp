@@ -61,12 +61,12 @@ void begin_toolbar(UiPass &user, const char *name)
     toolbar.height.type = AutoLayoutDimension::autom;
     toolbar.padding = {2, 2, 2, 2};
     toolbar.margin = {2, 2, 2, 2};
-    toolbar.border = {-32, 0, 0, 0};
+    toolbar.border = {0, 0, 0, 0};
     toolbar.align_height = 1;
     user.begin_generic(toolbar, {},
                        UiMakeBrush::make_plain_brush()
-                           .squircle(0.5)
-                           .with_gradient(0xFFFFFF77, 0xFFFFFF11)
+                           .squircle(0.9, 0.5)
+                           .with_gradient(0x00000077, 0x00000000)
                            .build(),
                        user.state->element_storage.id());
 }
@@ -220,11 +220,16 @@ void show_left_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
 {
     AutoLayoutElement element = {};
     element.clip = true;
-    element.width = {AutoLayoutDimension::pixel, 200};
+    element.width = {AutoLayoutDimension::pixel, 150};
     element.height = {AutoLayoutDimension::pixel,
-                      sapp_heightf() * user.state->dpi_scale};
+                      sapp_heightf() / user.state->dpi_scale};
     user.state->element_storage.push("Left Panel", {});
-    user.begin_generic(element, {}, {}, user.state->element_storage.id());
+    user.begin_generic(element, {},
+                       UiMakeBrush::make_plain_brush()
+                           .squircle(0.5, 0.9)
+                           .with_gradient(0x00000000, 0x00000077)
+                           .build(),
+                       user.state->element_storage.id());
 
     if (editor.dispatcher.world.current != editor.dispatcher.world.first)
     {
