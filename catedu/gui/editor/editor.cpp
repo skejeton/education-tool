@@ -198,8 +198,6 @@ void show_build_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
         {
             editor.sub_editor.type = SubEditor::Type::Wall;
         }
-        object_icon_button(user, "Wall", SubEditor::Type::Wall,
-                           editor.sub_editor.type, renderer, resources);
     }
     else
     {
@@ -210,6 +208,9 @@ void show_build_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
         object_icon_button(user, "Tree", SubEditor::Type::Tree,
                            editor.sub_editor.type, renderer, resources);
     }
+
+    object_icon_button(user, "Wall", SubEditor::Type::Wall,
+                       editor.sub_editor.type, renderer, resources);
 
     object_icon_button(user, "Player", SubEditor::Type::Player,
                        editor.sub_editor.type, renderer, resources);
@@ -222,14 +223,15 @@ void show_left_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
     element.clip = true;
     element.width = {AutoLayoutDimension::pixel, 150};
     element.height = {AutoLayoutDimension::pixel,
-                      sapp_heightf() / user.state->dpi_scale};
+                      sapp_heightf() / user.state->dpi_scale - 100};
     user.state->element_storage.push("Left Panel", {});
     user.begin_generic(element, {},
                        UiMakeBrush::make_plain_brush()
                            .squircle(0.5, 0.9)
-                           .with_gradient(0x00000000, 0x00000077)
+                           .with_gradient(0x00000077, 0x00000077)
                            .build(),
-                       user.state->element_storage.id());
+                       user.state->element_storage.id(), 1, true,
+                       {{0xFFFFFFFF}, {0xFFFFFF00}});
 
     if (editor.dispatcher.world.current != editor.dispatcher.world.first)
     {

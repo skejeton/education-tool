@@ -19,6 +19,7 @@ struct UiPersistentElement
     bool pinned;
     bool hidden;
     float scale;
+    Vector2 scroll;
 };
 
 struct UiElementStorage
@@ -97,6 +98,8 @@ struct UiGenericStyles
     TableId persistent;
     bool bold;
     float scale;
+    bool has_filter;
+    UiFilter filter;
 };
 
 struct UiPass
@@ -121,6 +124,8 @@ struct UiPass
     bool hovered();
 
     void begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,
-                       TableId persistent = NULL_ID, float scale = 1.0);
+                       TableId persistent = NULL_ID, float scale = 1.0,
+                       bool has_filter = false,
+                       UiFilter filter = {0xFFFFFFFF, 0xFFFFFFFF});
     void end_generic();
 };

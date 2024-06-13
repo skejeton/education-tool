@@ -167,6 +167,7 @@ AutoLayoutResult *build_results(ResultBuilder &builder, AutoLayoutNode *node,
 
     if (node->element.clip)
     {
+        result->clip = true;
         clip = rect_and(clip, result->padding_box);
     }
 

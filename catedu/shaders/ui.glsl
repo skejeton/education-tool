@@ -9,6 +9,8 @@ uniform ui_vs_params {
     vec4 radius;
     vec4 gaps_x;
     vec4 gaps_y;
+    vec4 filter_color_top;
+    vec4 filter_color_bottom;
 };
 
 
@@ -25,7 +27,7 @@ out vec2 frag_uv_max;
 void main() {
     gl_Position = mvp * vec4(position, 0.0, 1.0);
 
-    color = mix(color_top, color_bottom, uv.y);
+    color = mix(color_top*filter_color_top, color_bottom*filter_color_bottom, uv.y);
     frag_radius = radius;
     frag_gaps_x = gaps_x;
     frag_gaps_y = gaps_y;

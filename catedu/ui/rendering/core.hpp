@@ -9,6 +9,12 @@
 #include "catedu/rendering/color.hpp"
 #include "sokol/sokol_gfx.h"
 
+struct UiFilter
+{
+    Color color_top;
+    Color color_bottom;
+};
+
 struct UiBuffer
 {
     sg_buffer vertex_buffer;
@@ -48,6 +54,7 @@ struct UiRenderingCore
     Table<UiImage> images;
     Matrix4 matrix;
     Rect rect;
+    UiFilter filter;
 
     // Per pipeline
     Vector2 pip_size;

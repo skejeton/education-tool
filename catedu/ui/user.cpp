@@ -1,7 +1,6 @@
 #include "user.hpp"
 #include "catedu/core/alloc/arena.hpp"
 #include "catedu/ui/layout/dpi_scale.hpp"
-#include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/rendering/transform.hpp"
 #include "resources/load_image.hpp"
 
@@ -52,7 +51,7 @@ void render_object(UiPass &user, AutoLayoutResult &result,
 {
     if (result.clip)
     {
-        user.pass.begin_scissor(result.padding_box);
+        // user.pass.begin_scissor(result.padding_box);
     }
 
     UiGenericStyles *styles = (UiGenericStyles *)result.userdata;
@@ -76,9 +75,16 @@ void render_object(UiPass &user, AutoLayoutResult &result,
     }
     user.pass.push_transform(transform);
 
+    UiFilter prev_filter = user.state->core->filter;
+
     // TODO: Why would style be null?
     if (styles != nullptr)
     {
+        if (styles->has_filter)
+        {
+            user.state->core->filter = styles->filter;
+        }
+
         // FIXME: Way too into the guts of the system.
         auto *pe = user.state->element_storage.elements.get(styles->persistent);
         if (pe)
@@ -109,9 +115,11 @@ void render_object(UiPass &user, AutoLayoutResult &result,
         child = child->sibling;
     }
 
+    user.state->core->filter = prev_filter;
+
     if (result.clip)
     {
-        user.pass.end_scissor();
+        // user.pass.end_scissor();
     }
 
     user.pass.pop_transform();
@@ -188,10 +196,11 @@ bool UiPass::hovered()
 }
 
 void UiPass::begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,
-                           TableId persistent_id, float scale)
+                           TableId persistent_id, float scale, bool has_filter,
+                           UiFilter filter)
 {
-    UiGenericStyles styles = {brush,         border, nullptr, {1, 1},
-                              persistent_id, false,  scale};
+    UiGenericStyles styles = {brush, border, nullptr,    {1, 1}, persistent_id,
+                              false, scale,  has_filter, filter};
 
     el.userdata = this->state->frame_storage.alloct<UiGenericStyles>();
     *(UiGenericStyles *)el.userdata = styles;

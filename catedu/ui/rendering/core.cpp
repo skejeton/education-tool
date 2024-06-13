@@ -117,6 +117,9 @@ void UiRenderingCore::begin_pipeline()
 {
     this->pip_size = {sapp_widthf(), sapp_heightf()};
 
+    filter.color_bottom = 0xFFFFFFFF;
+    filter.color_top = 0xFFFFFFFF;
+
     sg_pass pass = {0};
     pass.action = this->pass_action;
     pass.swapchain = sglue_swapchain();
@@ -173,6 +176,8 @@ void UiRenderingCore::render_object(UiBrush brush)
     vs_params.mvp = matrix;
     vs_params.color_bottom = brush.color_bottom.to_vector4();
     vs_params.color_top = brush.color_top.to_vector4();
+    vs_params.filter_color_bottom = filter.color_bottom.to_vector4();
+    vs_params.filter_color_top = filter.color_top.to_vector4();
     rect_to_uv(brush.image_region_rect, vector2i_to_vector2(img->size),
                &vs_params.uv_min, &vs_params.uv_max);
 
