@@ -7,12 +7,12 @@ void FpsCounter::update()
 {
     count++;
     i++;
+    i = i % 32;
     auto now = std::chrono::high_resolution_clock::now();
     this->deltas[i] = std::chrono::duration_cast<std::chrono::microseconds>(
                           now - this->last_time)
                           .count() /
-                      1000000.0f;
-    i = i % 32;
+                      1000000.0;
 
     if (this->count > 32)
     {
@@ -22,9 +22,9 @@ void FpsCounter::update()
     this->last_time = std::chrono::high_resolution_clock::now();
 }
 
-float FpsCounter::get()
+double FpsCounter::get()
 {
-    float avg = this->deltas[0];
+    double avg = this->deltas[0];
 
     for (int i = 1; i < this->count; i++)
     {

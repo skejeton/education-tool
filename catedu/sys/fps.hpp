@@ -10,5 +10,5 @@ struct FpsCounter
     int count;
 
     void update();
-    float get();
+    double get();
 };
