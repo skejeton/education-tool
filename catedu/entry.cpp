@@ -39,6 +39,8 @@ void show_debug_panel(UX &ux, RuntimeMode &mode)
 
 void Entry::frame(void)
 {
+    fps.update();
+
     bool reload_module = false;
 
     UX ux = UX::begin(ui_state);
@@ -87,6 +89,7 @@ void Entry::frame(void)
                      (uint64_t)ALLOCATOR_MALLOC.tracer.total_allocations);
     DEBUG_TREE.size("bytes",
                     (uint64_t)ALLOCATOR_MALLOC.tracer.total_bytes_allocated);
+    DEBUG_TREE.value("fps", fps.get());
 
     if (show_debug)
     {
