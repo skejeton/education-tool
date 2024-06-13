@@ -15,6 +15,8 @@ struct UiMakeBrush
 
     UiMakeBrush &squircle(float radius);
     UiMakeBrush &squircle(float radiusx, float radiusy);
+    UiMakeBrush &squircle(float radiustl, float radiustr, float radiusbl,
+                          float radiusbr);
     UiMakeBrush &with_solid(Color color);
     UiMakeBrush &with_gradient(Color color_bottom, Color color_top);
     UiMakeBrush &with_image_region(Rect region);

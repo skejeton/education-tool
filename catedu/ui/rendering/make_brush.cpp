@@ -80,3 +80,11 @@ UiBrush UiMakeBrush::build()
 {
     return this->brush;
 }
+UiMakeBrush &UiMakeBrush::squircle(float radiustl, float radiustr,
+                                   float radiusbl, float radiusbr)
+{
+    brush.radius = {4, 4, 4, 4};
+    brush.gaps_x = {radiustl, radiustr, radiusbl, radiusbr};
+    brush.gaps_y = {radiustl, radiustr, radiusbl, radiusbr};
+    return *this;
+}

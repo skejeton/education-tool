@@ -1,4 +1,6 @@
 #include "widgets.hpp"
+#include "catedu/core/math/math.hpp"
+#include "catedu/sys/input.hpp"
 #include "catedu/ui/rendering/core.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 
@@ -16,9 +18,9 @@ bool begin_show_window(UiPass &user, WindowInfo info)
     char buffer[256];
     snprintf(buffer, 256, "%s#window", info.title);
     user.state->element_storage.push(buffer, {false, {}, {}, info.rect});
-    user.state->element_storage.element_retainer.bump(9999999);
 
     UiPersistentElement *pe = user.state->element_storage.value();
+    pe->scale = slerp(pe->scale, 1.0f, 25.0f, sapp_frame_duration());
 
     if (user.hovered() && user.state->input.k[INPUT_MB_LEFT].pressed)
     {
@@ -49,6 +51,8 @@ bool begin_show_window(UiPass &user, WindowInfo info)
         info.rect = pe->persistent_box;
     }
 
+    UiMakeBrush base = UiMakeBrush::make_plain_brush().squircle(0.75);
+
     AutoLayoutElement cel = {};
     cel.position = AutoLayoutPosition::absolute;
     cel.offset = info.rect.pos;
@@ -57,8 +61,8 @@ bool begin_show_window(UiPass &user, WindowInfo info)
     cel.layout.type = AutoLayout::column;
     cel.border = {1, 1, 2, 1};
     user.begin_generic(cel, {},
-                       UiMakeBrush::make_gradient(0x00000044, 0x00000000),
-                       user.state->element_storage.id());
+                       base.with_gradient(0x00000044, 0x00000000).build(),
+                       user.state->element_storage.id(), pe->scale);
 
     // Titlebar
     {
@@ -67,14 +71,15 @@ bool begin_show_window(UiPass &user, WindowInfo info)
         el.width.type = AutoLayoutDimension::pixel;
         el.width.value = info.rect.siz.x - 6;
         el.height.type = AutoLayoutDimension::autom;
-        el.padding = {3, 3, 3, 3};
+        el.padding = {6, 6, 6, 6};
         el.clip = true;
 
-        UiBrush border = UiMakeBrush::make_gradient(
-            theme[0] * Vector4{1, 1, 1, 0.9}, theme[1] * Vector4{1, 1, 1, 0.7});
-        UiBrush background = UiMakeBrush::make_solid(0x00008800);
-        user.begin_generic(el, background, border);
-        label(user, info.title, {1, 1});
+        UiBrush border = base.with_gradient(theme[0] * Vector4{1, 1, 1, 0.9},
+                                            theme[1] * Vector4{1, 1, 1, 0.7})
+                             .squircle(0.6, 0.6, 1, 1)
+                             .build();
+        user.begin_generic(el, {}, border);
+        label(user, info.title, {1.5, 1.5});
         user.end_generic();
     }
 
@@ -82,6 +87,7 @@ bool begin_show_window(UiPass &user, WindowInfo info)
     {
         AutoLayoutElement el = {};
         el.border = {3, 3, 3, 3};
+        el.padding = {3, 3, 3, 3};
         el.width.type = AutoLayoutDimension::pixel;
         el.width.value = info.rect.siz.x;
         el.height.type = AutoLayoutDimension::pixel;
@@ -89,8 +95,9 @@ bool begin_show_window(UiPass &user, WindowInfo info)
         el.hidden = pe->hidden;
         el.clip = true;
 
-        UiBrush border = UiMakeBrush::make_solid(theme[0]);
-        UiBrush background = UiMakeBrush::make_solid(theme[6]);
+        UiBrush border =
+            base.with_solid(theme[0]).squircle(1, 1, 0.75, 0.75).build();
+        UiBrush background = base.with_solid(theme[6]).build();
         user.begin_generic(el, background, border);
     }
 
@@ -252,8 +259,8 @@ bool button(UiPass &user, const char *text, Vector4 background)
     el.margin = {1, 1, 1, 1};
     el.border = {1, 1, 1, 1};
 
-    begin_button_frame(user, text, el, background);
-    label(user, text, {1, 1}, UiMakeBrush::make_solid(theme[3]));
+    begin_button_frame(user, text, el, background, 0.5);
+    label(user, text, {1.5, 1.5}, UiMakeBrush::make_solid(theme[3]));
     return end_button_frame(user);
 }
 
@@ -431,7 +438,7 @@ int msgbox(UiPass &user, const char *title, const char *text, MsgBoxType type,
     int result = -1;
 
     WindowInfo winfo = {
-        title, rect_center_rect(scaled_screen_rect, {0, 0, 350, 76}), true};
+        title, rect_center_rect(scaled_screen_rect, {0, 0, 350, 84}), true};
     window(user, winfo, [&] {
         user.begin_generic(make_auto({AutoLayout::column}, {0, 0}), {}, {});
 
@@ -451,7 +458,7 @@ int msgbox(UiPass &user, const char *title, const char *text, MsgBoxType type,
             break;
         }
 
-        label(user, text);
+        label(user, text, {1.5, 1.5});
 
         user.end_generic();
         user.begin_generic(make_auto({AutoLayout::row}), {}, {});
