@@ -1,7 +1,6 @@
 #pragma once
 
 #include "catedu/rendering/color.hpp"
-#include "catedu/ui/layout/autolayout.hpp"
 #include "catedu/ui/user.hpp"
 #include <functional>
 
@@ -38,6 +37,8 @@ struct UX
     UX &column(std::function<void()> cb);
 
     // MARK: Widgets
+    void dropdown(const char *label, const char *options[], int count,
+                  int &selction);
     bool button(const char *text);
     UX &label(const char *text);
     UX &heading(const char *text, int size = 0);
