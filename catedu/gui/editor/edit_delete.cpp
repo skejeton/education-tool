@@ -27,7 +27,7 @@ void EditDelete::show(UiPass &user, Renderer &renderer, Dispatcher &disp,
 
         genobj_render_object(renderer, gen_resources, obj);
 
-        if (input.k[INPUT_MB_LEFT].pressed)
+        if (input.k[INPUT_MB_LEFT].held)
         {
             disp.remove_object(pointer.x, pointer.y);
         }

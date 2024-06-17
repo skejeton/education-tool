@@ -1,4 +1,5 @@
 #include "editor.hpp"
+#include "catedu/core/storage/stack.hpp"
 #include "catedu/genobj/building.hpp"
 #include "catedu/genobj/deleter.hpp"
 #include "catedu/genobj/render.hpp"
@@ -7,6 +8,8 @@
 #include "catedu/rendering/3d/pbr.hpp"
 #include "catedu/scene/render_world.hpp"
 #include "catedu/scene/world_file.hpp"
+#include "catedu/sys/input.hpp"
+#include "catedu/ui/layout/autolayout.hpp"
 #include "catedu/ui/rendering/core.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/widgets.hpp"
@@ -16,6 +19,7 @@
 #include <catedu/genobj/player.hpp>
 #include <catedu/genobj/road.hpp>
 #include <catedu/genobj/wall.hpp>
+#include <cstdio>
 #include <umka_api.h>
 
 bool icon_button(UiPass &user, const char *name, const char *icon,
@@ -45,10 +49,8 @@ bool rect_side_is_horizontal(RectSide &side)
     return side == RectSide::Bottom || side == RectSide::Top;
 }
 
-void begin_toolbar(UiPass &user, const char *name)
+void begin_toolbar(UiPass &user, const char *name, float align_y, float align_x)
 {
-    float align_y = 1.0, align_x = 0;
-
     AutoLayoutElement element = create_main_element(user);
     element.align_height = align_y;
     element.align_width = align_x;
@@ -96,11 +98,11 @@ bool object_icon_button(UiPass &user, const char *name, SubEditor::Type type,
                         ResourceSpec &resources)
 {
     AutoLayoutElement el = {};
-    el.width = {AutoLayoutDimension::pixel, 140};
-    el.height = {AutoLayoutDimension::pixel, 100};
+    el.width = {AutoLayoutDimension::pixel, 90};
+    el.height = {AutoLayoutDimension::pixel, 75};
     el.align_width = 0.5;
     el.align_height = 0.5;
-    el.padding = {2, 2, 2, 2};
+    el.padding = {2, 2, 10, 2};
     el.margin = {2, 2, 2, 2};
     el.border = {1, 1, 1, 1};
 
@@ -122,6 +124,12 @@ bool object_icon_button(UiPass &user, const char *name, SubEditor::Type type,
             camera.move(0, 0, -20);
             camera.rotate_around({0, 0, 0}, 45, -45);
             camera.move(0, 0.5, 0);
+        }
+        else if (type == SubEditor::Type::Wall)
+        {
+            camera.move(0, 0, -5);
+            camera.rotate_around({0, 0, 0}, 45, -45);
+            camera.move(0, 0.1, 0);
         }
         else
         {
@@ -162,7 +170,8 @@ bool object_icon_button(UiPass &user, const char *name, SubEditor::Type type,
         renderer.end_pass();
     }
 
-    img(user, id, {0.8, 0.8});
+    img(user, id, {0.5, 0.5});
+    label(user, name, {1.2, 1.2});
     if (end_button_frame(user))
     {
         current = type;
@@ -186,11 +195,31 @@ GuiEditor GuiEditor::init(UiState *ui_state)
     return result;
 }
 
+void show_script_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
+                       Renderer &renderer)
+{
+    label(user, "TODO");
+}
+
+void show_character_panel(UiPass &user, GuiEditor &editor,
+                          ResourceSpec &resources, Renderer &renderer)
+{
+    object_icon_button(user, "Player", SubEditor::Type::Player,
+                       editor.sub_editor.type, renderer, resources);
+}
+
 void show_build_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
                       Renderer &renderer)
 {
-    object_icon_button(user, "Delete", SubEditor::Type::Deleter,
-                       editor.sub_editor.type, renderer, resources);
+    struct ObjElement
+    {
+        const char *name;
+        SubEditor::Type type;
+    };
+
+    Stack<ObjElement> elements = {};
+
+    elements.push({"Delete", SubEditor::Type::Deleter});
 
     if (editor.dispatcher.world.first != editor.dispatcher.world.current)
     {
@@ -201,37 +230,110 @@ void show_build_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
     }
     else
     {
-        object_icon_button(user, "Building", SubEditor::Type::Building,
-                           editor.sub_editor.type, renderer, resources);
-        object_icon_button(user, "Road", SubEditor::Type::Road,
-                           editor.sub_editor.type, renderer, resources);
-        object_icon_button(user, "Tree", SubEditor::Type::Tree,
-                           editor.sub_editor.type, renderer, resources);
+        elements.push({"Building", SubEditor::Type::Building});
+        elements.push({"Road", SubEditor::Type::Road});
+        elements.push({"Tree", SubEditor::Type::Tree});
     }
 
-    object_icon_button(user, "Wall", SubEditor::Type::Wall,
-                       editor.sub_editor.type, renderer, resources);
+    elements.push({"Wall", SubEditor::Type::Wall});
 
-    object_icon_button(user, "Player", SubEditor::Type::Player,
-                       editor.sub_editor.type, renderer, resources);
+    for (int i = 0; i < elements.count / 2 + 1; i++)
+    {
+        AutoLayoutElement el = {};
+        el.layout.type = AutoLayout::row;
+        user.begin_generic(el, {}, {});
+        for (int j = 0; j < 2; j++)
+        {
+            if (i * 2 + j >= elements.count)
+            {
+                break;
+            }
+            ObjElement el = elements[i * 2 + j];
+            object_icon_button(user, el.name, el.type, editor.sub_editor.type,
+                               renderer, resources);
+        }
+        user.end_generic();
+    }
+
+    elements.deinit();
 }
 
-void show_left_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
-                     Renderer &renderer)
+void show_control_panel(UiPass &user, GuiEditor &editor,
+                        ResourceSpec &resources, Renderer &renderer)
 {
+    SubMode nextmode = editor.sub_mode;
+    begin_toolbar(user, "Panel selector", 1.0, 1.0);
+    {
+        AutoLayoutElement el = {};
+        el.align_width = 1.0;
+        user.begin_generic(el, {}, {});
+
+        const char *lbl = "[error]";
+        switch (editor.sub_mode)
+        {
+        case SubMode::Script:
+            lbl = "Script";
+            break;
+        case SubMode::Character:
+            lbl = "Character";
+            break;
+        case SubMode::Build:
+            lbl = "Build";
+            break;
+        }
+
+        label(user, lbl, {1.5, 1.5}, UiMakeBrush::make_solid(0xFFFFFFFF));
+
+        AutoLayoutElement row = {};
+        row.layout.type = AutoLayout::row;
+        row.align_height = 1.0;
+        user.begin_generic(row, {}, {});
+
+        auto btn = [&](const char *name, const char *img, SubMode mode) {
+            if (editor.sub_mode == mode)
+            {
+                if (icon_button(user, name, img, {0.8, 1.0, 0.8, 1.0}, 1.2))
+                {
+                    nextmode = mode;
+                }
+            }
+            else
+            {
+                if (icon_button(user, name, img))
+                {
+                    nextmode = mode;
+                }
+            }
+        };
+
+        btn("Script", "assets/gui/script.png", SubMode::Script);
+        btn("Character", "assets/gui/char.png", SubMode::Character);
+        btn("Build", "assets/gui/building.png", SubMode::Build);
+        user.end_generic();
+
+        user.end_generic();
+    }
+    end_toolbar(user);
+
+    AutoLayoutElement parent = {};
+    parent.align_width = 1.0;
+    parent.width = {AutoLayoutDimension::pixel,
+                    sapp_widthf() / user.state->dpi_scale};
+    user.begin_generic(parent, {}, {});
+
     AutoLayoutElement element = {};
     element.clip = true;
-    element.width = {AutoLayoutDimension::pixel, 150};
+    element.padding = {2, 2, 2, 2};
+    element.width = {AutoLayoutDimension::pixel, 202};
     element.height = {AutoLayoutDimension::pixel,
-                      sapp_heightf() / user.state->dpi_scale - 100};
+                      (sapp_heightf() - 100) / user.state->dpi_scale};
     user.state->element_storage.push("Left Panel", {});
     user.begin_generic(element, {},
                        UiMakeBrush::make_plain_brush()
-                           .squircle(0.5, 0.9)
-                           .with_gradient(0x00000077, 0x00000077)
+                           .squircle(0.8, 0.9)
+                           .with_gradient(0x00002200, 0x00000077)
                            .build(),
-                       user.state->element_storage.id(), 1, true,
-                       {{0xFFFFFFFF}, {0xFFFFFF00}});
+                       user.state->element_storage.id(), 1, true);
 
     if (editor.dispatcher.world.current != editor.dispatcher.world.first)
     {
@@ -241,10 +343,24 @@ void show_left_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
         }
     }
 
-    show_build_panel(user, editor, resources, renderer);
+    switch (editor.sub_mode)
+    {
+    case SubMode::Script:
+        show_script_panel(user, editor, resources, renderer);
+        break;
+    case SubMode::Character:
+        show_character_panel(user, editor, resources, renderer);
+        break;
+    case SubMode::Build:
+        show_build_panel(user, editor, resources, renderer);
+        break;
+    }
 
     user.end_generic();
     user.state->element_storage.pop();
+    user.end_generic();
+
+    editor.sub_mode = nextmode;
 }
 
 void show_popups(UiPass &user, GuiEditor &editor, bool &return_back)
@@ -306,7 +422,7 @@ void show_popups(UiPass &user, GuiEditor &editor, bool &return_back)
 
 void show_editor_controls(UiPass &user, GuiEditor &editor, bool &return_back)
 {
-    begin_toolbar(user, "Controls");
+    begin_toolbar(user, "Controls", 1.0, 0.0);
 
     if (!editor.playtesting)
     {
@@ -323,6 +439,7 @@ void show_editor_controls(UiPass &user, GuiEditor &editor, bool &return_back)
                 editor.playtest_no_player = true;
             }
         }
+
         if (icon_button(user, "Undo", "assets/gui/undo.png"))
         {
             editor.dispatcher.undo();
@@ -450,7 +567,7 @@ void show_editor_ui(GuiEditor &editor, UiPass &user, ResourceSpec &resources,
 
     if (!editor.playtesting)
     {
-        show_left_panel(user, editor, resources, renderer);
+        show_control_panel(user, editor, resources, renderer);
     }
 
     show_editor_controls(user, editor, return_back);

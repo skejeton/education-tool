@@ -6,7 +6,7 @@ dir := -1.0
 // When you interact with an entity (using Space key), this function is called
 fn onInteract*(id: str) {
     obj, ok := lib.getObject(id)
-
+    
     if !ok {
         return
     }

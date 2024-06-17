@@ -13,6 +13,13 @@
 #include "playtest.hpp"
 #include <sokol/sokol_app.h>
 
+enum class SubMode
+{
+    Build,
+    Character,
+    Script
+};
+
 struct SubEditor
 {
     enum class Type
@@ -45,6 +52,7 @@ struct GuiEditor
     UiState *ui_state;
     EditorCamera editor_camera;
     SubEditor sub_editor;
+    SubMode sub_mode;
     Dispatcher dispatcher;
 
     // HACK: This is a hack to allow to set the camera position to the center of
