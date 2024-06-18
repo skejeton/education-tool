@@ -89,4 +89,6 @@ void offscreen_deinit_targets(UiRenderingCore *core)
         // The image and sampler is destroyed by the core
         core->dealloc_image(cache[i].id);
     }
+
+    cache.deinit();
 }

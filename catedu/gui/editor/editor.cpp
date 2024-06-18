@@ -198,7 +198,67 @@ GuiEditor GuiEditor::init(UiState *ui_state)
 void show_script_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
                        Renderer &renderer)
 {
-    label(user, "TODO");
+    {
+        AutoLayoutElement el = {};
+        el.width = {AutoLayoutDimension::pixel, 194};
+        el.height = {AutoLayoutDimension::pixel, 75};
+        el.align_width = 0.5;
+        el.align_height = 0.5;
+        el.margin = {2, 2, 2, 2};
+        el.border = {2, 2, 2, 2};
+
+        begin_button_frame(user, "Event", el, {1.0, 1.0, 0.0, 1.0}, 0.0);
+        {
+            user.bold = true;
+            label(user, "On Start", {3, 3},
+                  UiMakeBrush::make_solid(0xEEFFEEFF));
+            user.bold = false;
+        }
+        if (end_button_frame(user))
+        {
+            editor.script.things.push({});
+        }
+    }
+
+    int i = 0;
+    for (auto &s : iter(editor.script.things))
+    {
+        AutoLayoutElement el = {};
+        el.width = {AutoLayoutDimension::pixel, 194};
+        el.height = {AutoLayoutDimension::pixel, 75};
+        el.align_width = 0.5;
+        el.align_height = 0.5;
+        el.margin = {2, 2, 2, 2};
+        el.border = {2, 2, 2, 2};
+
+        user.push_id(i++);
+        begin_button_frame(user, "Script", el, {1.0, 1.0, 1.0, 1.0}, 0.5);
+        {
+            label(user, "Say");
+            input(user, "Name", s.str, 128);
+        }
+        end_button_frame(user);
+        user.pop_id();
+    };
+
+    AutoLayoutElement el = {};
+    el.width = {AutoLayoutDimension::pixel, 194};
+    el.height = {AutoLayoutDimension::pixel, 75};
+    el.align_width = 0.5;
+    el.align_height = 0.5;
+    el.margin = {2, 2, 2, 2};
+    el.border = {2, 2, 2, 2};
+
+    begin_button_frame(user, "Script Add", el, {0.0, 1.0, 0.0, 1.0}, 0.5);
+    {
+        user.bold = true;
+        label(user, "+", {3, 3}, UiMakeBrush::make_solid(0xEEFFEEFF));
+        user.bold = false;
+    }
+    if (end_button_frame(user))
+    {
+        editor.script.things.push({});
+    }
 }
 
 void show_character_panel(UiPass &user, GuiEditor &editor,
@@ -640,6 +700,8 @@ void GuiEditor::deinit()
     {
         playtest.destroy();
     }
+
+    script.things.deinit();
 
     offscreen_deinit_targets(this->ui_state->core);
 

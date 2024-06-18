@@ -1,4 +1,5 @@
 #pragma once
+#include "catedu/core/storage/stack.hpp"
 #include "catedu/gui/editor/camera.hpp"
 #include "catedu/gui/editor/dispatcher.hpp"
 #include "catedu/gui/editor/edit_building.hpp"
@@ -41,6 +42,16 @@ struct SubEditor
               GenResources &gen_resources, Input &input, Camera &camera);
 };
 
+struct ScriptStr
+{
+    char str[128];
+};
+
+struct Script
+{
+    Stack<ScriptStr> things;
+};
+
 struct GuiEditor
 {
     bool exit_requested;
@@ -54,6 +65,7 @@ struct GuiEditor
     SubEditor sub_editor;
     SubMode sub_mode;
     Dispatcher dispatcher;
+    Script script;
 
     // HACK: This is a hack to allow to set the camera position to the center of
     // the place, because the editor can't track when the place is changed.
