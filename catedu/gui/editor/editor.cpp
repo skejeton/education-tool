@@ -214,10 +214,7 @@ void show_script_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
                   UiMakeBrush::make_solid(0xEEFFEEFF));
             user.bold = false;
         }
-        if (end_button_frame(user))
-        {
-            editor.script.things.push({});
-        }
+        end_button_frame(user);
     }
 
     int i = 0;
@@ -490,7 +487,8 @@ void show_editor_controls(UiPass &user, GuiEditor &editor, bool &return_back)
                         1.1))
         {
             editor.playtesting = true;
-            editor.playtest = Playtest::create(editor.dispatcher.world.clone());
+            editor.playtest = Playtest::create(editor.dispatcher.world.clone(),
+                                               editor.script);
             // FIXME: There's probably better ways to handle this
             if (editor.playtest.player == NULL_ID)
             {

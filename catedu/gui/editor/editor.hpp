@@ -1,5 +1,4 @@
 #pragma once
-#include "catedu/core/storage/stack.hpp"
 #include "catedu/gui/editor/camera.hpp"
 #include "catedu/gui/editor/dispatcher.hpp"
 #include "catedu/gui/editor/edit_building.hpp"
@@ -12,6 +11,7 @@
 #include "catedu/ui/user.hpp"
 #include "edit_basic.hpp"
 #include "playtest.hpp"
+#include "script.hpp"
 #include <sokol/sokol_app.h>
 
 enum class SubMode
@@ -40,16 +40,6 @@ struct SubEditor
 
     void show(UiPass &user, Renderer &renderer, Dispatcher &disp,
               GenResources &gen_resources, Input &input, Camera &camera);
-};
-
-struct ScriptStr
-{
-    char str[128];
-};
-
-struct Script
-{
-    Stack<ScriptStr> things;
 };
 
 struct GuiEditor
