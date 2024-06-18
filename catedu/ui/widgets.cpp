@@ -208,7 +208,7 @@ void begin_button_frame(UiPass &user, const char *id, AutoLayoutElement el,
     {
         color_top = theme[5] * background;
         color_bottom = theme[4] * background;
-        v->scale = slerp(v->scale, 1.25, 20, sapp_frame_duration());
+        v->scale = slerp(v->scale, 1.125, 20, sapp_frame_duration());
         color_top.w *= v->scale;
         color_bottom.w *= v->scale;
         if (color_top.w > 1)

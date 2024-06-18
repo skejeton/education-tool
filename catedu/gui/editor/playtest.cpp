@@ -10,10 +10,10 @@ PhysicsWorld create_bodies(Place *parent, Place &place, TableId &player)
     player = NULL_ID;
     for (auto &obj : iter(place.objects))
     {
-        if (obj.type == Object::Type::Wall)
+        if (obj.type == Object::Type::Wall || obj.type == Object::Type::Tree)
         {
             PhysicsBody body = {};
-            body.area = {obj.x + 0.5f, obj.y + 0.5f, 1, 1};
+            body.area = {obj.x, obj.y, 1, 1};
             body.solid = true;
             body.dynamic = false;
 

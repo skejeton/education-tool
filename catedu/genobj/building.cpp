@@ -37,7 +37,7 @@ GeneratedObject genmesh_generate_building(int floor_count)
             object.push_colored_box(
                 box3_translate(
                     construct_box(Baseline::Bottom,
-                                  {0.7, 0.9, BUILDING_SIZE_Z + 0.02}),
+                                  {0.7, 0.9, BUILDING_SIZE_Z + 0.04}),
                     pos),
                 Color::hex(BUILDING_COLOR_WINDOW), true);
         }
@@ -50,7 +50,7 @@ GeneratedObject genmesh_generate_building(int floor_count)
             object.push_colored_box(
                 box3_translate(
                     construct_box(Baseline::Bottom,
-                                  {BUILDING_SIZE_X + 0.02, 0.9, 0.7}),
+                                  {BUILDING_SIZE_X + 0.04, 0.9, 0.7}),
                     pos),
                 Color::hex(BUILDING_COLOR_WINDOW), true);
         }
