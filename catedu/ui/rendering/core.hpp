@@ -29,6 +29,7 @@ struct UiImage
     sg_image image;
     sg_sampler sampler;
     Vector2i size;
+    bool fliph;
 };
 
 struct UiBrush

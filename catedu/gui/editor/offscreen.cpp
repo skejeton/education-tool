@@ -22,13 +22,12 @@ void offscreen_init_targets(UiRenderingCore *core)
         img_desc.width = 256;
         img_desc.height = 256;
         img_desc.pixel_format = SG_PIXELFORMAT_RGBA8;
-        img_desc.sample_count = 1;
 
         sg_sampler_desc sampler_desc = {};
         sampler_desc.min_filter = SG_FILTER_LINEAR;
         sampler_desc.mag_filter = SG_FILTER_LINEAR;
-        sampler_desc.wrap_u = SG_WRAP_CLAMP_TO_BORDER;
-        sampler_desc.wrap_v = SG_WRAP_CLAMP_TO_BORDER;
+        sampler_desc.wrap_u = SG_WRAP_CLAMP_TO_EDGE;
+        sampler_desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
 
         target.img = sg_make_image(&img_desc);
         img_desc.pixel_format = SG_PIXELFORMAT_DEPTH;
@@ -41,6 +40,9 @@ void offscreen_init_targets(UiRenderingCore *core)
         target.attachment = sg_make_attachments(att_desc);
 
         UiImage img = {};
+#ifdef __EMSCRIPTEN__
+        img.fliph = true;
+#endif
         img.sampler = target.sampler;
         img.image = target.img;
         img.size = {128, 128};

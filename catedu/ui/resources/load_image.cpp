@@ -9,7 +9,7 @@ UiImageId ui_resources_load_image(UiRenderingCore *core, const char *path)
     stbi_uc *data = stbi_load(path, &width, &height, &channels, 4);
     assert(data);
 
-    // Horizontally flip image
+    // Vertically flip image
     // (TODO: Look into why this is necessary)
     for (int y = 0; y < height; y++)
     {

@@ -172,6 +172,7 @@ void UiRenderingCore::render_object(UiBrush brush)
     vs_params.radius = brush.radius;
     vs_params.gaps_x = brush.gaps_x;
     vs_params.gaps_y = brush.gaps_y;
+    vs_params.fliph = img->fliph ? 1.0 : 0.0;
 
     vs_params.mvp = matrix;
     vs_params.color_bottom = brush.color_bottom.to_vector4();

@@ -11,6 +11,7 @@ uniform ui_vs_params {
     vec4 gaps_y;
     vec4 filter_color_top;
     vec4 filter_color_bottom;
+    float fliph;
 };
 
 
@@ -31,7 +32,11 @@ void main() {
     frag_radius = radius;
     frag_gaps_x = gaps_x;
     frag_gaps_y = gaps_y;
-    frag_uv = uv;
+    if (fliph > 0.5) {
+        frag_uv = 1.0-uv;
+    } else {
+        frag_uv = uv;
+    }
     frag_uv_min = uv_min;
     frag_uv_max = uv_max;
 }
