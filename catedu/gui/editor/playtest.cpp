@@ -10,8 +10,18 @@ PhysicsWorld create_bodies(Place *parent, Place &place, TableId &player)
     player = NULL_ID;
     for (auto &obj : iter(place.objects))
     {
-        if (obj.type == Object::Type::Wall || obj.type == Object::Type::Tree)
+        switch (obj.type)
         {
+        case Object::Type::Wall: {
+            PhysicsBody body = {};
+            body.area = {obj.x + 0.5f, obj.y + 0.5f, 1, 1};
+            body.solid = true;
+            body.dynamic = false;
+
+            physics.bodies.allocate(body);
+        }
+        break;
+        case Object::Type::Tree: {
             PhysicsBody body = {};
             body.area = {obj.x, obj.y, 1, 1};
             body.solid = true;
@@ -19,8 +29,8 @@ PhysicsWorld create_bodies(Place *parent, Place &place, TableId &player)
 
             physics.bodies.allocate(body);
         }
-        if (obj.type == Object::Type::Building)
-        {
+        break;
+        case Object::Type::Building: {
             PhysicsBody body = {};
             body.area = {obj.x - 4 + 0.5f, obj.y - 4 + 0.5f, 8, 8};
             body.solid = true;
@@ -36,14 +46,18 @@ PhysicsWorld create_bodies(Place *parent, Place &place, TableId &player)
 
             physics.bodies.allocate(door);
         }
-        if (obj.type == Object::Type::Player)
-        {
+        break;
+        case Object::Type::Player: {
             PhysicsBody body = {};
             body.area = {obj.x, obj.y, 1, 1};
             body.solid = true;
             body.dynamic = true;
 
             player = physics.bodies.allocate(body);
+        }
+        break;
+        default:
+            break;
         }
     }
 

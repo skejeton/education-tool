@@ -140,7 +140,7 @@ bool object_icon_button(UiPass &user, const char *name, SubEditor::Type type,
 
         renderer.camera = camera;
         renderer.begin_pass_offscreen(offscreen_pass_action(),
-                                      offscreen_alloc(id));
+                                      offscreen_alloc(user.state->core, id));
 
         GeneratedObject obj;
         switch (type)
@@ -190,7 +190,7 @@ GuiEditor GuiEditor::init(UiState *ui_state)
 
     printf("Init editor\n");
 
-    offscreen_init_targets(ui_state->core);
+    offscreen_init_targets();
 
     return result;
 }

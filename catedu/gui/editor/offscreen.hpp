@@ -10,8 +10,8 @@ struct OffscreenTarget
     UiImageId id;
 };
 
-void offscreen_init_targets(UiRenderingCore *core);
+void offscreen_init_targets();
 sg_pass_action offscreen_pass_action();
 void offscreen_clear();
-sg_attachments offscreen_alloc(UiImageId &id_out);
+sg_attachments offscreen_alloc(UiRenderingCore *core, UiImageId &id_out);
 void offscreen_deinit_targets(UiRenderingCore *core);
