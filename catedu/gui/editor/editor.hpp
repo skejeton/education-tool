@@ -11,7 +11,6 @@
 #include "catedu/ui/user.hpp"
 #include "edit_basic.hpp"
 #include "playtest.hpp"
-#include "script.hpp"
 #include <sokol/sokol_app.h>
 
 enum class SubMode
@@ -55,7 +54,6 @@ struct GuiEditor
     SubEditor sub_editor;
     SubMode sub_mode;
     Dispatcher dispatcher;
-    Script script;
 
     // HACK: This is a hack to allow to set the camera position to the center of
     // the place, because the editor can't track when the place is changed.

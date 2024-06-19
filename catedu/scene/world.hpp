@@ -1,6 +1,7 @@
 #pragma once
 #include "catedu/core/alloc/free_list.hpp"
 #include "catedu/scene/space.hpp"
+#include "script.hpp"
 
 struct Place;
 
@@ -42,6 +43,7 @@ struct Place
 struct World
 {
     FreeList<Place> places;
+    Script script;
     Place *first;
     Place *current;
 

@@ -76,11 +76,11 @@ PhysicsWorld create_bodies(Place *parent, Place &place, TableId &player)
     return physics;
 }
 
-Playtest Playtest::create(World world, Script &script)
+Playtest Playtest::create(World world)
 {
     TableId player = {};
     PhysicsWorld physics = create_bodies(nullptr, *world.first, player);
-    return {player, physics, world, nullptr, &script};
+    return {player, physics, world, nullptr};
 }
 
 void Playtest::destroy()
@@ -92,11 +92,11 @@ void Playtest::destroy()
 void Playtest::update(UiPass &user, Input &input, EditorCamera &camera,
                       GuiTransition &transition)
 {
-    if (this->script_current < this->script->things.count)
+    if (this->script_current < this->world.script.nodes.count)
     {
         const char *btns[] = {"Next", NULL};
         switch (msgbox(user, "Dialog",
-                       this->script->things[this->script_current].str,
+                       this->world.script.nodes[this->script_current].message,
                        MsgBoxType::Info, btns))
         {
         case 0:

@@ -96,6 +96,19 @@ void WorldFile::save(const char *path, Dispatcher &dispatcher)
         }
     }
 
+    uint32_t node_count = 0;
+    for (auto &_ : iter(dispatcher.world.script.nodes))
+    {
+        node_count++;
+    }
+
+    fwrite(&node_count, sizeof(node_count), 1, file);
+
+    for (auto &node : iter(dispatcher.world.script.nodes))
+    {
+        fwrite(&node, sizeof(node), 1, file);
+    }
+
     fclose(file);
 
     dispatcher.dirty = false;
@@ -154,6 +167,16 @@ Dispatcher WorldFile::load(const char *path)
             obj.place = (Place *)getptr(&mapper, so.place);
             place->place_object(obj);
         }
+    }
+
+    uint32_t node_count = 0;
+    fread(&node_count, sizeof(node_count), 1, file);
+
+    for (size_t i = 0; i < node_count; i++)
+    {
+        ScriptNode node = {};
+        fread(&node, sizeof(node), 1, file);
+        dispatcher.world.script.nodes.push(node);
     }
 
     fclose(file);

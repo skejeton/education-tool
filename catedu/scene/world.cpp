@@ -130,13 +130,9 @@ RectI Place::object_bounds(Object &object)
 World World::create()
 {
     World world = {};
-
     world.places = FreeList<Place>::create(Arena::create(&ALLOCATOR_MALLOC));
-
     world.first = world.places.alloc();
-
     *world.first = Place::create();
-
     world.current = world.first;
 
     return world;
@@ -148,7 +144,7 @@ void World::destroy()
     {
         place.destroy();
     }
-
+    script.destroy();
     places.destroy();
 
     first = nullptr;
@@ -157,6 +153,8 @@ void World::destroy()
 World World::clone()
 {
     World world = World::create();
+
+    world.script = script.clone();
 
     for (auto &place : iter(places))
     {

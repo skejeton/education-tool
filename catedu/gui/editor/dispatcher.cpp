@@ -152,6 +152,11 @@ void Dispatcher::remove_object(int x, int y)
     }
 }
 
+void Dispatcher::add_script_node(ScriptNode node)
+{
+    world.script.nodes.push(node);
+}
+
 void Dispatcher::enter_place(Object *object)
 {
     if (object->place == nullptr)

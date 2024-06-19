@@ -43,6 +43,8 @@ struct Dispatcher
     void place_object(Object object);
     void remove_object(int x, int y);
 
+    void add_script_node(ScriptNode node);
+
     void enter_place(Object *object);
 
     void undo();

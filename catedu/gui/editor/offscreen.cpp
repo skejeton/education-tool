@@ -91,4 +91,6 @@ void offscreen_deinit_targets(UiRenderingCore *core)
     }
 
     cache.deinit();
+    cache = {};
+    available_target = 0;
 }

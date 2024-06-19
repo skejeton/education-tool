@@ -218,7 +218,7 @@ void show_script_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
     }
 
     int i = 0;
-    for (auto &s : iter(editor.script.things))
+    for (auto &s : iter(editor.dispatcher.world.script.nodes))
     {
         AutoLayoutElement el = {};
         el.width = {AutoLayoutDimension::pixel, 194};
@@ -232,7 +232,7 @@ void show_script_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
         begin_button_frame(user, "Script", el, {1.0, 1.0, 1.0, 1.0}, 0.5);
         {
             label(user, "Say");
-            input(user, "Name", s.str, 128);
+            input(user, "Name", s.message, 128);
         }
         end_button_frame(user);
         user.pop_id();
@@ -254,7 +254,7 @@ void show_script_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
     }
     if (end_button_frame(user))
     {
-        editor.script.things.push({});
+        editor.dispatcher.add_script_node({});
     }
 }
 
@@ -487,8 +487,7 @@ void show_editor_controls(UiPass &user, GuiEditor &editor, bool &return_back)
                         1.1))
         {
             editor.playtesting = true;
-            editor.playtest = Playtest::create(editor.dispatcher.world.clone(),
-                                               editor.script);
+            editor.playtest = Playtest::create(editor.dispatcher.world.clone());
             // FIXME: There's probably better ways to handle this
             if (editor.playtest.player == NULL_ID)
             {
@@ -698,11 +697,7 @@ void GuiEditor::deinit()
     {
         playtest.destroy();
     }
-
-    script.things.deinit();
-
     offscreen_deinit_targets(this->ui_state->core);
-
     dispatcher.destroy();
 }
 
