@@ -19,6 +19,7 @@ UiRenderingPass UiRenderingPass::begin(UiRenderingCore *core)
 
 void UiRenderingPass::end()
 {
+    assert(scissor_count == 0);
     this->pop_transform();
     this->core->end_pipeline();
 }
@@ -55,13 +56,14 @@ void UiRenderingPass::begin_scissor(Rect rect)
 
 void UiRenderingPass::end_scissor()
 {
+    assert(scissor_count != 0);
+    this->scissor_count--;
     if (this->scissor_count == 0)
     {
         this->core->end_scissor();
     }
     else
     {
-        this->scissor_count--;
-        this->core->begin_scissor(this->scissor[this->scissor_count]);
+        this->core->begin_scissor(this->scissor[this->scissor_count - 1]);
     }
 }

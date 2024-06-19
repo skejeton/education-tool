@@ -16,47 +16,53 @@ struct Color
     uint8_t b;
     uint8_t a;
 
-    Color() : r(0), g(0), b(0), a(0)
+    constexpr Color() : r(0), g(0), b(0), a(0)
     {
     }
-    Color(uint32_t hex) : Color(Color::hex(hex))
+    constexpr Color(uint32_t hex) : Color(Color::hex(hex))
     {
     }
-    Color(uint8_t r, uint8_t g, uint8_t b) : Color(Color::rgb(r, g, b))
+    constexpr Color(uint8_t r, uint8_t g, uint8_t b)
+        : Color(Color::rgb(r, g, b))
     {
     }
-    Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+    constexpr Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
         : Color(Color::rgba(r, g, b, a))
     {
     }
-    Color(Vector4 v)
+    constexpr Color(Vector4 v)
         : Color(Color::rgba(v.x * 255, v.y * 255, v.z * 255, v.w * 255))
     {
     }
 
+    constexpr Color darken(float amount) const
+    {
+        return Color::rgb(r * amount, g * amount, b * amount);
+    }
+
     /// @param hex hex color 0xRRGGBBAA
-    static Vector4 hex2v4(uint32_t hex);
-    static Color hex(uint32_t hex);
-    static Color rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
-    static Color rgb(uint8_t r, uint8_t g, uint8_t b);
-    static Color hsv(HSV hsv);
-    HSV to_hsv() const;
-    Vector4 to_vector4() const;
+    constexpr static Vector4 hex2v4(uint32_t hex);
+    constexpr static Color hex(uint32_t hex);
+    constexpr static Color rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+    constexpr static Color rgb(uint8_t r, uint8_t g, uint8_t b);
+    constexpr static Color hsv(HSV hsv);
+    constexpr HSV to_hsv() const;
+    constexpr Vector4 to_vector4() const;
 };
 
-inline Vector4 Color::hex2v4(uint32_t hex)
+constexpr inline Vector4 Color::hex2v4(uint32_t hex)
 {
     return {((hex >> 24) & 0xFF) / 255.0f, ((hex >> 16) & 0xFF) / 255.0f,
             ((hex >> 8) & 0xFF) / 255.0f, (hex & 0xFF) / 255.0f};
 }
 
-inline Color Color::hex(uint32_t hex)
+constexpr inline Color Color::hex(uint32_t hex)
 {
     return rgba((hex >> 24) & 0xFF, (hex >> 16) & 0xFF, (hex >> 8) & 0xFF,
                 (hex) & 0xFF);
 }
 
-inline Color Color::rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+constexpr inline Color Color::rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
     Color color;
     color.r = r;
@@ -66,18 +72,22 @@ inline Color Color::rgba(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
     return color;
 }
 
-inline Color Color::rgb(uint8_t r, uint8_t g, uint8_t b)
+constexpr inline Color Color::rgb(uint8_t r, uint8_t g, uint8_t b)
 {
     return rgba(r, g, b, 255);
 }
 
-inline Color Color::hsv(HSV hsv)
+constexpr inline Color Color::hsv(HSV hsv)
 {
+    // Yes, `abs` isn't constexpr in C++17, I don't know what they were
+    // thinking.
+    constexpr auto abs = [](float x) { return x < 0 ? -x : x; };
+
     float c = hsv.v * hsv.s;
     float x = c * (1 - abs(fmod(hsv.h / 60, 2) - 1));
     float m = hsv.v - c;
 
-    float r, g, b;
+    float r = 0, g = 0, b = 0;
     if (hsv.h < 60)
     {
         r = c;
@@ -118,7 +128,7 @@ inline Color Color::hsv(HSV hsv)
     return rgba((r + m) * 255, (g + m) * 255, (b + m) * 255, 255);
 }
 
-inline HSV Color::to_hsv() const
+constexpr inline HSV Color::to_hsv() const
 {
     float r = this->r / 255.0f;
     float g = this->g / 255.0f;
@@ -151,7 +161,7 @@ inline HSV Color::to_hsv() const
     return {h, s, v};
 }
 
-inline Vector4 Color::to_vector4() const
+constexpr inline Vector4 Color::to_vector4() const
 {
     return {r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f};
 }

@@ -379,7 +379,7 @@ bool input(UiPass &user, const char *id, char *out, int max)
     AutoLayoutElement el = {};
     el.layout = {AutoLayout::row};
     el.width = {AutoLayoutDimension::pixel, 150};
-    el.height = {AutoLayoutDimension::autom};
+    el.height = {AutoLayoutDimension::pixel, 20};
     el.clip = true;
     el.padding = {2, 2, 2, 2};
     el.margin = {0, 0, 0, 0};
@@ -393,6 +393,7 @@ bool input(UiPass &user, const char *id, char *out, int max)
     {
         bg = UiMakeBrush::make_gradient(theme[5], theme[4]);
         el.width = {AutoLayoutDimension::autom};
+        el.height = {AutoLayoutDimension::autom};
         el.pop = true;
     }
 

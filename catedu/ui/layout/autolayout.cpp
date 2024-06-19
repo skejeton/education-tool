@@ -141,19 +141,13 @@ void align_to_parents(AutoLayoutProcess *process, AutoLayoutNode *node)
 }
 
 // FIXME: Using a giant clip rect for now.
-AutoLayoutResult *build_results(ResultBuilder &builder, AutoLayoutNode *node,
-                                Rect clip = {0, 0, 100000, 100000})
+AutoLayoutResult *build_results(ResultBuilder &builder, AutoLayoutNode *node)
 {
     assert(node);
 
     if (node->element.hidden)
     {
         return nullptr;
-    }
-
-    if (node->element.pop)
-    {
-        clip = {0, 0, 100000, 100000};
     }
 
     AutoLayoutResult *result = alloc_result(builder);
@@ -168,14 +162,13 @@ AutoLayoutResult *build_results(ResultBuilder &builder, AutoLayoutNode *node,
     if (node->element.clip)
     {
         result->clip = true;
-        clip = rect_and(clip, result->padding_box);
     }
 
     AutoLayoutResult *last_sibling = nullptr;
     AutoLayoutNode *child = node->child;
     while (child != nullptr)
     {
-        AutoLayoutResult *child_result = build_results(builder, child, clip);
+        AutoLayoutResult *child_result = build_results(builder, child);
         if (child_result)
         {
             if (last_sibling)

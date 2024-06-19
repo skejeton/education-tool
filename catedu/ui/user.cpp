@@ -46,14 +46,9 @@ struct Renderable
     Rect base_box_rel;
 };
 
-void render_object(UiPass &user, AutoLayoutResult &result,
-                   Vector2 suboffs = {0, 0})
+static void render_object(UiPass &user, AutoLayoutResult &result,
+                          Vector2 suboffs = {0, 0})
 {
-    if (result.clip)
-    {
-        // user.pass.begin_scissor(result.padding_box);
-    }
-
     UiGenericStyles *styles = (UiGenericStyles *)result.userdata;
 
     Rect margin_box_rel = result.margin_box;
@@ -108,6 +103,11 @@ void render_object(UiPass &user, AutoLayoutResult &result,
         }
     }
 
+    if (result.clip)
+    {
+        user.pass.begin_scissor(result.padding_box);
+    }
+
     AutoLayoutResult *child = result.child;
     while (child)
     {
@@ -119,13 +119,13 @@ void render_object(UiPass &user, AutoLayoutResult &result,
 
     if (result.clip)
     {
-        // user.pass.end_scissor();
+        user.pass.end_scissor();
     }
 
     user.pass.pop_transform();
 }
 
-void render_out(UiPass &user)
+static void render_out(UiPass &user)
 {
     AutoLayoutResult *result;
     user.layout.process(user.state->frame_storage, result);
@@ -137,7 +137,6 @@ void render_out(UiPass &user)
     }
 
     render_object(user, *result);
-    user.pass.end_scissor();
 
     assert(user.current_node == user.layout.root &&
            "Unfinished begin_generic calls");
