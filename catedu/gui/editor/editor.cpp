@@ -199,13 +199,21 @@ struct ScriptCard
 {
     const char *title;
     Color color;
+    bool embedded;
 };
 
 void show_script_card_btn(UiPass &user, ScriptCard card,
                           std::function<void()> cb, std::function<void()> press)
 {
     AutoLayoutElement el = {};
-    el.width = {AutoLayoutDimension::pixel, 186};
+    if (card.embedded)
+    {
+        el.width = {AutoLayoutDimension::pixel, 85};
+    }
+    else
+    {
+        el.width = {AutoLayoutDimension::pixel, 186};
+    }
     el.height = {AutoLayoutDimension::autom};
     el.align_width = 0.5;
     el.margin = {2, 2, 2, 2};
@@ -227,7 +235,14 @@ void show_script_card_btn(UiPass &user, ScriptCard card,
 void show_script_card(UiPass &user, ScriptCard card, std::function<void()> cb)
 {
     AutoLayoutElement el = {};
-    el.width = {AutoLayoutDimension::pixel, 186};
+    if (card.embedded)
+    {
+        el.width = {AutoLayoutDimension::pixel, 79};
+    }
+    else
+    {
+        el.width = {AutoLayoutDimension::pixel, 186};
+    }
     el.height = {AutoLayoutDimension::autom};
     el.margin = {2, 2, 2, 2};
     el.padding = {4, 4, 4, 4};
@@ -258,16 +273,29 @@ void show_script_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
         user, {"Back", 0xCCCCCC99}, [&] {},
         [&] { editor.dispatcher.add_script_node({}); });
 
-    show_script_card(user, {"Event", 0xCCCC0099}, [&] {
-        label(user, "On start", {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
+    show_script_card(user, {"On...", 0xCCCC0099}, [&] {
+        label(user, "Start", {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
     });
 
     int i = 0;
     for (auto &s : iter(editor.dispatcher.world.script.nodes))
     {
         user.push_id(i++);
-        show_script_card(user, {"Say...", 0x0000CC99},
-                         [&] { input(user, "Name", s.message, 128); });
+        show_script_card(user, {"Ask...", 0x0000CC99}, [&] {
+            input(user, "Message", s.message, 128);
+            AutoLayoutElement el = {};
+            el.layout.type = AutoLayout::row;
+
+            user.begin_generic(el, {}, {});
+            show_script_card(user, {"On...", 0xCCCC0099, true}, [&] {
+                label(user, "Yes", {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
+            });
+            show_script_card(user, {"On...", 0xCCCC0099, true}, [&] {
+                label(user, "No", {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
+            });
+            user.end_generic();
+        });
+
         user.pop_id();
     };
 
