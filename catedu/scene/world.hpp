@@ -43,7 +43,7 @@ struct Place
 struct World
 {
     FreeList<Place> places;
-    Script script;
+    Script *script;
     Place *first;
     Place *current;
 

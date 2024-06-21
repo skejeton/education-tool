@@ -96,18 +96,18 @@ void WorldFile::save(const char *path, Dispatcher &dispatcher)
         }
     }
 
-    uint32_t node_count = 0;
-    for (auto &_ : iter(dispatcher.world.script.nodes))
-    {
-        node_count++;
-    }
+    // uint32_t node_count = 0;
+    // for (auto &_ : iter(dispatcher.world.script.nodes))
+    // {
+    //     node_count++;
+    // }
 
-    fwrite(&node_count, sizeof(node_count), 1, file);
+    // fwrite(&node_count, sizeof(node_count), 1, file);
 
-    for (auto &node : iter(dispatcher.world.script.nodes))
-    {
-        fwrite(&node, sizeof(node), 1, file);
-    }
+    // for (auto &node : iter(dispatcher.world.script.nodes))
+    // {
+    //     fwrite(&node, sizeof(node), 1, file);
+    // }
 
     fclose(file);
 
@@ -121,6 +121,10 @@ Dispatcher WorldFile::load(const char *path)
     FILE *file = fopen(path, "rb");
 
     Dispatcher dispatcher = Dispatcher::create();
+
+#if 1
+    return dispatcher;
+#endif
 
     if (!file)
     {
@@ -169,15 +173,15 @@ Dispatcher WorldFile::load(const char *path)
         }
     }
 
-    uint32_t node_count = 0;
-    fread(&node_count, sizeof(node_count), 1, file);
+    // uint32_t node_count = 0;
+    // fread(&node_count, sizeof(node_count), 1, file);
 
-    for (size_t i = 0; i < node_count; i++)
-    {
-        ScriptNode node = {};
-        fread(&node, sizeof(node), 1, file);
-        dispatcher.world.script.nodes.push(node);
-    }
+    // for (size_t i = 0; i < node_count; i++)
+    // {
+    //     ScriptNode node = {};
+    //     fread(&node, sizeof(node), 1, file);
+    //     dispatcher.world.script.nodes.alloc(node);
+    // }
 
     fclose(file);
 

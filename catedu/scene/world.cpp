@@ -1,4 +1,5 @@
 #include "world.hpp"
+#include "catedu/core/alloc/allocator.hpp"
 #include <cstdio>
 #define BUILDING_DIMENSIONS_W 8
 #define BUILDING_DIMENSIONS_D 8
@@ -135,6 +136,10 @@ World World::create()
     *world.first = Place::create();
     world.current = world.first;
 
+    // Very bad, I need the pointer because it will escape if it's on stack.
+    world.script = (Script *)ALLOCATOR_MALLOC.alloc(sizeof(Script));
+    *world.script = Script::create(Arena::create(&ALLOCATOR_MALLOC));
+
     return world;
 }
 
@@ -144,7 +149,8 @@ void World::destroy()
     {
         place.destroy();
     }
-    script.destroy();
+    script->destroy();
+    ALLOCATOR_MALLOC.free(script);
     places.destroy();
 
     first = nullptr;
@@ -154,7 +160,8 @@ World World::clone()
 {
     World world = World::create();
 
-    world.script = script.clone();
+    world.script = (Script *)ALLOCATOR_MALLOC.alloc(sizeof(Script));
+    *world.script = script->clone();
 
     for (auto &place : iter(places))
     {

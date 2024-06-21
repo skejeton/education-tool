@@ -1,18 +1,64 @@
 #include "script.hpp"
+#include "catedu/core/memory/addressfixer.hpp"
+
+ScriptNode *Script::append_node(ScriptNode::Type t, ScriptNode *parent)
+{
+    ScriptNode *result = nodes.alloc();
+    *result = {};
+    result->parent = parent;
+
+    if (parent->type == ScriptNode::Type::event)
+    {
+        ScriptNode *last = parent;
+        while (1)
+        {
+            if (last->next)
+            {
+                last = last->next;
+            }
+            else
+            {
+                break;
+            }
+        }
+        last->next = result;
+    }
+
+    result->type = t;
+    return result;
+}
 
 Script Script::clone()
 {
     Script result = {};
 
-    for (auto &e : iter(nodes))
+    AddressFixer<ScriptNode> fixer = AddressFixer<ScriptNode>::create();
+    for (auto &a : iter(nodes))
     {
-        result.nodes.push(e);
+        ScriptNode *b = result.nodes.alloc(a);
+
+        fixer.add_mapping(&a, b);
+        fixer.add_pointer(&b->parent);
+        fixer.add_pointer(&b->next);
+        if (b->type == ScriptNode::Type::yesno)
+        {
+            fixer.add_pointer(&b->yesno.yes);
+            fixer.add_pointer(&b->yesno.no);
+        }
     }
+
+    fixer.fix_addresses();
+    fixer.destroy();
 
     return result;
 }
 
+Script Script::create(Arena arena)
+{
+    return {FreeList<ScriptNode>::create(arena)};
+}
+
 void Script::destroy()
 {
-    nodes.deinit();
+    nodes.destroy();
 }

@@ -4,6 +4,7 @@
 #include "catedu/gui/editor/edit_building.hpp"
 #include "catedu/gui/editor/edit_delete.hpp"
 #include "catedu/gui/editor/edit_line.hpp"
+#include "catedu/gui/editor/script_editor.hpp"
 #include "catedu/gui/transition/transition.hpp"
 #include "catedu/rendering/3d/camera.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
@@ -54,6 +55,7 @@ struct GuiEditor
     SubEditor sub_editor;
     SubMode sub_mode;
     Dispatcher dispatcher;
+    ScriptEditor script_editor;
 
     // HACK: This is a hack to allow to set the camera position to the center of
     // the place, because the editor can't track when the place is changed.

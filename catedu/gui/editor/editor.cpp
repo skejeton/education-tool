@@ -7,6 +7,7 @@
 #include "catedu/gui/transition/transition.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
 #include "catedu/scene/render_world.hpp"
+#include "catedu/scene/script.hpp"
 #include "catedu/scene/world_file.hpp"
 #include "catedu/sys/input.hpp"
 #include "catedu/ui/layout/autolayout.hpp"
@@ -187,6 +188,7 @@ GuiEditor GuiEditor::init(UiState *ui_state)
     result.dispatcher = WorldFile::load("assets/world.dat");
     result.editor_camera = EditorCamera::create();
     result.previous_place = result.dispatcher.world.current;
+    result.script_editor = ScriptEditor::create(result.dispatcher.world.script);
 
     printf("Init editor\n");
 
@@ -195,118 +197,9 @@ GuiEditor GuiEditor::init(UiState *ui_state)
     return result;
 }
 
-struct ScriptCard
+void show_script_panel(UiPass &user, GuiEditor &editor)
 {
-    const char *title;
-    Color color;
-    bool embedded;
-};
-
-void show_script_card_btn(UiPass &user, ScriptCard card,
-                          std::function<void()> cb, std::function<void()> press)
-{
-    AutoLayoutElement el = {};
-    if (card.embedded)
-    {
-        el.width = {AutoLayoutDimension::pixel, 85};
-    }
-    else
-    {
-        el.width = {AutoLayoutDimension::pixel, 186};
-    }
-    el.height = {AutoLayoutDimension::autom};
-    el.align_width = 0.5;
-    el.margin = {2, 2, 2, 2};
-    el.padding = {4, 4, 4, 4};
-    el.border = {1, 1, 1, 1};
-
-    begin_button_frame(user, card.title, el, card.color.to_vector4(), 0.9);
-
-    label(user, card.title, {1, 1}, UiMakeBrush::make_solid(0xFFFFFFBB));
-
-    cb();
-
-    if (end_button_frame(user))
-    {
-        press();
-    }
-}
-
-void show_script_card(UiPass &user, ScriptCard card, std::function<void()> cb)
-{
-    AutoLayoutElement el = {};
-    if (card.embedded)
-    {
-        el.width = {AutoLayoutDimension::pixel, 79};
-    }
-    else
-    {
-        el.width = {AutoLayoutDimension::pixel, 186};
-    }
-    el.height = {AutoLayoutDimension::autom};
-    el.margin = {2, 2, 2, 2};
-    el.padding = {4, 4, 4, 4};
-    el.border = {1, 1, 1, 1};
-
-    UiBrush background = UiMakeBrush::make_plain_brush()
-                             .with_gradient(card.color, card.color.darken(0.5))
-                             .squircle(0.9, 0.5)
-                             .build();
-    UiBrush border = UiMakeBrush::make_plain_brush()
-                         .with_solid(0x00000022)
-                         .squircle(0.9, 0.5)
-                         .build();
-
-    user.begin_generic(el, background, border);
-
-    label(user, card.title, {1, 1}, UiMakeBrush::make_solid(0xFFFFFFBB));
-
-    cb();
-
-    user.end_generic();
-}
-
-void show_script_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
-                       Renderer &renderer)
-{
-    show_script_card_btn(
-        user, {"Back", 0xCCCCCC99}, [&] {},
-        [&] { editor.dispatcher.add_script_node({}); });
-
-    show_script_card(user, {"On...", 0xCCCC0099}, [&] {
-        label(user, "Start", {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
-    });
-
-    int i = 0;
-    for (auto &s : iter(editor.dispatcher.world.script.nodes))
-    {
-        user.push_id(i++);
-        show_script_card(user, {"Ask...", 0x0000CC99}, [&] {
-            input(user, "Message", s.message, 128);
-            AutoLayoutElement el = {};
-            el.layout.type = AutoLayout::row;
-
-            user.begin_generic(el, {}, {});
-            show_script_card(user, {"On...", 0xCCCC0099, true}, [&] {
-                label(user, "Yes", {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
-            });
-            show_script_card(user, {"On...", 0xCCCC0099, true}, [&] {
-                label(user, "No", {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
-            });
-            user.end_generic();
-        });
-
-        user.pop_id();
-    };
-
-    show_script_card_btn(
-        user, {"Add action", 0x33FF3399},
-        [&] {
-            user.bold = true;
-            label(user, "+", {3, 3}, UiMakeBrush::make_solid(0xEEFFEEFF));
-            user.bold = false;
-        },
-        [&] { editor.dispatcher.add_script_node({}); });
+    editor.script_editor.show(user);
 }
 
 void show_character_panel(UiPass &user, GuiEditor &editor,
@@ -445,17 +338,16 @@ void show_control_panel(UiPass &user, GuiEditor &editor,
 
     if (editor.dispatcher.world.current != editor.dispatcher.world.first)
     {
-        show_script_card_btn(
-            user, {"Back outside"}, [&] {},
-            [&] {
-                editor.dispatcher.world.current = editor.dispatcher.world.first;
-            });
+        if (button(user, "Back outside"))
+        {
+            editor.dispatcher.world.current = editor.dispatcher.world.first;
+        }
     }
 
     switch (editor.sub_mode)
     {
     case SubMode::Script:
-        show_script_panel(user, editor, resources, renderer);
+        show_script_panel(user, editor);
         break;
     case SubMode::Character:
         show_character_panel(user, editor, resources, renderer);

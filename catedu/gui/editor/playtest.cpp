@@ -92,19 +92,19 @@ void Playtest::destroy()
 void Playtest::update(UiPass &user, Input &input, EditorCamera &camera,
                       GuiTransition &transition)
 {
-    if (this->script_current < this->world.script.nodes.count)
-    {
-        const char *btns[] = {"Next", NULL};
-        switch (msgbox(user, "Dialog",
-                       this->world.script.nodes[this->script_current].message,
-                       MsgBoxType::Info, btns))
-        {
-        case 0:
-            this->script_current++;
-            break;
-        }
-        return;
-    }
+    // if (this->script_current < this->world.script.nodes.count)
+    // {
+    //     const char *btns[] = {"Next", NULL};
+    //     switch (msgbox(user, "Dialog",
+    //                    this->world.script.nodes[this->script_current].message,
+    //                    MsgBoxType::Info, btns))
+    //     {
+    //     case 0:
+    //         this->script_current++;
+    //         break;
+    //     }
+    //     return;
+    // }
 
     if (this->player == NULL_ID)
     {
