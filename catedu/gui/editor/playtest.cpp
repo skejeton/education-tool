@@ -4,6 +4,34 @@
 #include "catedu/scene/physics.hpp"
 #include "catedu/sys/input.hpp"
 #include "catedu/ui/widgets.hpp"
+#include <cstdio>
+
+int show_say(UiPass &user, const char *msg)
+{
+    const char *btns[] = {"Next", NULL};
+    switch (msgbox(user, "Dialog", msg, MsgBoxType::Info, btns))
+    {
+    case 0:
+        return 0;
+        break;
+    }
+    return -1;
+}
+
+int show_yesno(UiPass &user, const char *msg)
+{
+    const char *btns[] = {"Yes", "No", NULL};
+    switch (msgbox(user, "Dialog", msg, MsgBoxType::Info, btns))
+    {
+    case 0:
+        return 0;
+        break;
+    case 1:
+        return 1;
+        break;
+    }
+    return -1;
+}
 
 PhysicsWorld create_bodies(Place *parent, Place &place, TableId &player)
 {
@@ -80,7 +108,7 @@ Playtest Playtest::create(World world)
 {
     TableId player = {};
     PhysicsWorld physics = create_bodies(nullptr, *world.first, player);
-    return {player, physics, world, nullptr};
+    return {player, physics, world, nullptr, world.script->root};
 }
 
 void Playtest::destroy()
@@ -92,19 +120,41 @@ void Playtest::destroy()
 void Playtest::update(UiPass &user, Input &input, EditorCamera &camera,
                       GuiTransition &transition)
 {
-    // if (this->script_current < this->world.script.nodes.count)
-    // {
-    //     const char *btns[] = {"Next", NULL};
-    //     switch (msgbox(user, "Dialog",
-    //                    this->world.script.nodes[this->script_current].message,
-    //                    MsgBoxType::Info, btns))
-    //     {
-    //     case 0:
-    //         this->script_current++;
-    //         break;
-    //     }
-    //     return;
-    // }
+    if (this->current)
+    {
+        ScriptNode *parent = this->current->parent;
+
+        switch (this->current->type)
+        {
+        case ScriptNode::Type::event:
+            this->current = this->current->next;
+            break;
+        case ScriptNode::Type::say:
+            if (show_say(user, this->current->say) == 0)
+            {
+                this->current = this->current->next;
+            }
+            break;
+        case ScriptNode::Type::yesno:
+            switch (show_yesno(user, this->current->yesno.question))
+            {
+            case 0:
+                this->current = this->current->yesno.yes;
+                break;
+            case 1:
+                this->current = this->current->yesno.no;
+                break;
+            }
+            break;
+        }
+
+        if (!this->current && parent && parent->type == ScriptNode::Type::event)
+        {
+            this->current = parent->parent->next;
+        }
+
+        return;
+    }
 
     if (this->player == NULL_ID)
     {

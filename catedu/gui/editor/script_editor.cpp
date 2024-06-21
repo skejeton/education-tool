@@ -80,7 +80,16 @@ void ScriptEditor::show(UiPass &user)
     {
         show_script_card_btn(
             user, {"Back", 0xCCCCCC99}, [&] {},
-            [&] { this->current = this->current->parent; });
+            [&] {
+                if (this->current->parent->type == ScriptNode::Type::event)
+                {
+                    this->current = this->current->parent;
+                }
+                else
+                {
+                    this->current = this->current->parent->parent;
+                }
+            });
     }
 
     int i = 0;
@@ -148,13 +157,21 @@ void ScriptEditor::show(UiPass &user)
     {
         if (yes)
         {
-            current = parent->yesno.yes =
-                script->append_node(ScriptNode::Type::event, parent);
+            if (!parent->yesno.yes)
+            {
+                parent->yesno.yes =
+                    script->append_node(ScriptNode::Type::event, parent);
+            }
+            current = parent->yesno.yes;
         }
         else
         {
-            current = parent->yesno.no =
-                script->append_node(ScriptNode::Type::event, parent);
+            if (!parent->yesno.no)
+            {
+                parent->yesno.no =
+                    script->append_node(ScriptNode::Type::event, parent);
+            }
+            current = parent->yesno.no;
         }
     }
 

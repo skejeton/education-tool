@@ -11,7 +11,7 @@ struct Playtest
     PhysicsWorld physics;
     World world;
     Place *switch_target;
-    size_t script_current;
+    ScriptNode *current;
 
     static Playtest create(World world);
     void destroy();
