@@ -189,9 +189,15 @@ bool UiPass::active()
     return state->interaction_table.active == state->element_storage.id();
 }
 
-bool UiPass::hovered()
+bool UiPass::actively_hovered()
 {
     return state->interaction_table.hovered == state->element_storage.id();
+}
+
+bool UiPass::hovered()
+{
+    auto el = state->element_storage.value();
+    return rect_vs_vector2(el->border_box, state->input.mouse_pos);
 }
 
 void UiPass::begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,

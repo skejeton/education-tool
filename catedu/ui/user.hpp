@@ -121,6 +121,7 @@ struct UiPass
 
     bool focused();
     bool active();
+    bool actively_hovered();
     bool hovered();
 
     void begin_generic(AutoLayoutElement el, UiBrush brush, UiBrush border,

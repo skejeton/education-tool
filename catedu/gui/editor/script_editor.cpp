@@ -135,22 +135,14 @@ void ScriptEditor::show(UiPass &user)
 
                 user.begin_generic(el, {}, {});
                 show_script_card_btn(
-                    user, {"On..", 0xCCCC0099, true},
-                    [&] {
-                        label(user, "Yes", {2, 2},
-                              UiMakeBrush::make_solid(0xFFFFFFFF));
-                    },
+                    user, {"On yes", 0xCCCC0099, true}, [&] {},
                     [&] {
                         parent = &s;
                         yes = true;
                         type = ScriptNode::Type::event;
                     });
                 show_script_card_btn(
-                    user, {"On...", 0xCCCC0099, true},
-                    [&] {
-                        label(user, "No", {2, 2},
-                              UiMakeBrush::make_solid(0xFFFFFFFF));
-                    },
+                    user, {"On no", 0xCCCC0099, true}, [&] {},
                     [&] {
                         parent = &s;
                         yes = false;

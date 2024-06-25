@@ -329,12 +329,24 @@ void show_control_panel(UiPass &user, GuiEditor &editor,
     element.height = {AutoLayoutDimension::pixel,
                       (sapp_heightf() - 100) / user.state->dpi_scale};
     user.state->element_storage.push("Left Panel", {});
+    element.scroll = user.state->element_storage.value()->scroll;
     user.begin_generic(element, {},
                        UiMakeBrush::make_plain_brush()
                            .squircle(0.8, 0.9)
                            .with_gradient(0x00002200, 0x00000077)
                            .build(),
                        user.state->element_storage.id(), 1, true);
+
+    if (user.hovered())
+    {
+        user.state->element_storage.value()->scroll.y +=
+            user.state->input.mouse_wheel * 20;
+
+        if (user.state->element_storage.value()->scroll.y > 0)
+        {
+            user.state->element_storage.value()->scroll.y = 0;
+        }
+    }
 
     if (editor.dispatcher.world.current != editor.dispatcher.world.first)
     {
@@ -528,7 +540,7 @@ void show_editor_ui(GuiEditor &editor, UiPass &user, ResourceSpec &resources,
 
     GenResources gen_resources = get_genres(resources);
 
-    if (user.hovered() && !editor.playtesting)
+    if (user.actively_hovered() && !editor.playtesting)
     {
         sapp_lock_mouse(input.k[INPUT_MB_MIDDLE].held);
         if (input.k[INPUT_MB_MIDDLE].held)

@@ -129,6 +129,7 @@ void align_to_parents(AutoLayoutProcess *process, AutoLayoutNode *node)
         }
 
         delta += child->element.offset;
+        delta += node->element.scroll;
 
         child->element.padding_box.pos += delta;
         child->element.base_box.pos += delta;
