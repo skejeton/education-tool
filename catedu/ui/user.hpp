@@ -20,6 +20,7 @@ struct UiPersistentElement
     bool hidden;
     float scale;
     Vector2 scroll;
+    void *userdata;
 };
 
 struct UiElementStorage

@@ -204,7 +204,7 @@ void begin_button_frame(UiPass &user, const char *id, AutoLayoutElement el,
 
     color_top.w = 0.4f;
 
-    if (user.hovered())
+    if (user.actively_hovered())
     {
         color_top = theme[5] * background;
         color_bottom = theme[4] * background;
@@ -246,7 +246,7 @@ void begin_button_frame(UiPass &user, const char *id, AutoLayoutElement el,
 bool end_button_frame(UiPass &user)
 {
     bool pressed =
-        user.hovered() && user.state->input.k[INPUT_MB_LEFT].released;
+        user.actively_hovered() && user.state->input.k[INPUT_MB_LEFT].released;
     user.end_generic();
     user.state->element_storage.pop();
     return pressed;

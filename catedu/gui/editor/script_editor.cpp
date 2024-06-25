@@ -1,4 +1,5 @@
 #include "script_editor.hpp"
+#include "catedu/ui/layout/autolayout.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/widgets.hpp"
 #include <functional>
@@ -40,7 +41,15 @@ void show_script_card_btn(UiPass &user, ScriptCard card,
     }
 }
 
-void show_script_card(UiPass &user, ScriptCard card, std::function<void()> cb)
+struct ScriptCardData
+{
+    bool dragging;
+    Vector2 drag_offset;
+    Vector2 drag_peg;
+};
+
+void show_script_card(size_t id, UiPass &user, ScriptCard card,
+                      std::function<void()> cb)
 {
     AutoLayoutElement el = {};
     if (card.embedded)
@@ -65,13 +74,52 @@ void show_script_card(UiPass &user, ScriptCard card, std::function<void()> cb)
                          .squircle(0.9, 0.5)
                          .build();
 
-    user.begin_generic(el, background, border);
+    user.push_id(id);
+    user.state->element_storage.push("Card");
+    auto val = user.state->element_storage.value();
+
+    if (val->userdata == nullptr)
+    {
+        val->userdata = ALLOCATOR_MALLOC.alloc(sizeof(ScriptCardData));
+    }
+    auto data = (ScriptCardData *)val->userdata;
+
+    if (data->dragging)
+    {
+        el.position = AutoLayoutPosition::absolute;
+        el.offset = data->drag_offset;
+        el.pop = true;
+    }
+
+    user.begin_generic(el, background, border,
+                       user.state->element_storage.id());
+
+    if (user.actively_hovered() && user.state->input.k[INPUT_MB_LEFT].pressed)
+    {
+        data->dragging = true;
+        data->drag_peg = user.state->input.mouse_pos / user.state->dpi_scale -
+                         val->border_box.pos / user.state->dpi_scale;
+    }
+
+    if (data->dragging)
+    {
+        data->drag_offset =
+            user.state->input.mouse_pos / user.state->dpi_scale -
+            data->drag_peg;
+    }
+
+    if (user.state->input.k[INPUT_MB_LEFT].released)
+    {
+        data->dragging = false;
+    }
 
     label(user, card.title, {1, 1}, UiMakeBrush::make_solid(0xFFFFFFBB));
 
     cb();
 
     user.end_generic();
+    user.state->element_storage.pop();
+    user.pop_id();
 }
 
 void ScriptEditor::show(UiPass &user)
@@ -106,7 +154,7 @@ void ScriptEditor::show(UiPass &user)
         switch (s.type)
         {
         case ScriptNode::Type::event:
-            show_script_card(user, {"On...", 0xCCCC0099}, [&] {
+            show_script_card(size_t(&s), user, {"On...", 0xCCCC0099}, [&] {
                 const char *name = "";
                 switch (s.event)
                 {
@@ -124,25 +172,25 @@ void ScriptEditor::show(UiPass &user)
             });
             break;
         case ScriptNode::Type::say:
-            show_script_card(user, {"Say...", 0x0000CC99},
+            show_script_card(size_t(&s), user, {"Say...", 0x0000CC99},
                              [&] { input(user, "Message", s.say, 256); });
             break;
         case ScriptNode::Type::yesno:
-            show_script_card(user, {"Ask...", 0x0000CC99}, [&] {
+            show_script_card(size_t(&s), user, {"Ask...", 0x0000CC99}, [&] {
                 input(user, "Message", s.yesno.question, 256);
                 AutoLayoutElement el = {};
                 el.layout.type = AutoLayout::row;
 
                 user.begin_generic(el, {}, {});
                 show_script_card_btn(
-                    user, {"On yes", 0xCCCC0099, true}, [&] {},
+                    user, {"Yes", 0xCCCC0099, true}, [&] {},
                     [&] {
                         parent = &s;
                         yes = true;
                         type = ScriptNode::Type::event;
                     });
                 show_script_card_btn(
-                    user, {"On no", 0xCCCC0099, true}, [&] {},
+                    user, {"No", 0xCCCC0099, true}, [&] {},
                     [&] {
                         parent = &s;
                         yes = false;

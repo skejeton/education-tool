@@ -96,6 +96,7 @@ struct AutoLayoutResult
     Rect border_box;  // Box inside margin.
     Rect margin_box;  //
     Rect content_box; // Box inside padding that is the size of the content.
+    bool pop;
     bool clip;
     char *note;
     AutoLayoutResult *next;

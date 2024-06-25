@@ -160,6 +160,11 @@ AutoLayoutResult *build_results(ResultBuilder &builder, AutoLayoutNode *node)
 
     result->userdata = node->element.userdata;
 
+    if (node->element.pop)
+    {
+        result->pop = true;
+    }
+
     if (node->element.clip)
     {
         result->clip = true;

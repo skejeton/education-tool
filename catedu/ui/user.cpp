@@ -111,7 +111,15 @@ static void render_object(UiPass &user, AutoLayoutResult &result,
     AutoLayoutResult *child = result.child;
     while (child)
     {
+        if (child->pop)
+        {
+            user.pass.begin_scissor(child->margin_box);
+        }
         render_object(user, *child, suboffs + margin_box_rel.pos);
+        if (child->pop)
+        {
+            user.pass.end_scissor();
+        }
         child = child->sibling;
     }
 

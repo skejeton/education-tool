@@ -7,6 +7,7 @@
 #include "catedu/sys/sg_tricks.hpp"
 #include "catedu/ui/ux.hpp"
 
+
 void show_debug_panel(UX &ux, RuntimeMode &mode)
 {
     ux.background_color(0x000000FF)
@@ -14,6 +15,7 @@ void show_debug_panel(UX &ux, RuntimeMode &mode)
         .border_size(3)
         .margin(10)
         .padding(10);
+
 
     ux.column([&]() {
         ux.color(0xEEEEFFFF).heading("Debug panel");
