@@ -4,6 +4,13 @@
 
 struct ScriptNode
 {
+    enum class EventType
+    {
+        start,
+        yes,
+        no
+    };
+
     enum class Type
     {
         event,
@@ -11,6 +18,7 @@ struct ScriptNode
         yesno
     };
 
+    EventType event;
     Type type;
 
     union {

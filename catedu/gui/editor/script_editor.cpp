@@ -107,8 +107,20 @@ void ScriptEditor::show(UiPass &user)
         {
         case ScriptNode::Type::event:
             show_script_card(user, {"On...", 0xCCCC0099}, [&] {
-                label(user, "Start", {2, 2},
-                      UiMakeBrush::make_solid(0xFFFFFFFF));
+                const char *name = "";
+                switch (s.event)
+                {
+                case ScriptNode::EventType::start:
+                    name = "Start";
+                    break;
+                case ScriptNode::EventType::yes:
+                    name = "Yes";
+                    break;
+                case ScriptNode::EventType::no:
+                    name = "No";
+                    break;
+                }
+                label(user, name, {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
             });
             break;
         case ScriptNode::Type::say:
@@ -163,6 +175,7 @@ void ScriptEditor::show(UiPass &user)
                     script->append_node(ScriptNode::Type::event, parent);
             }
             current = parent->yesno.yes;
+            parent->yesno.yes->event = ScriptNode::EventType::yes;
         }
         else
         {
@@ -170,6 +183,7 @@ void ScriptEditor::show(UiPass &user)
             {
                 parent->yesno.no =
                     script->append_node(ScriptNode::Type::event, parent);
+                parent->yesno.no->event = ScriptNode::EventType::no;
             }
             current = parent->yesno.no;
         }

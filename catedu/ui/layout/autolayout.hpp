@@ -66,6 +66,7 @@ struct AutoLayoutElement
 {
     void *userdata; // Reference to userdata.
     Vector2 offset;
+    Vector2 scroll;
     AutoLayoutDimension width;
     AutoLayoutDimension height;
     float align_width;
@@ -94,6 +95,7 @@ struct AutoLayoutResult
     Rect base_box;    // Box inside border.
     Rect border_box;  // Box inside margin.
     Rect margin_box;  //
+    Rect content_box; // Box inside padding that is the size of the content.
     bool clip;
     char *note;
     AutoLayoutResult *next;
