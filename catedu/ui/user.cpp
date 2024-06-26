@@ -1,5 +1,6 @@
 #include "user.hpp"
 #include "catedu/core/alloc/arena.hpp"
+#include "catedu/core/storage/stack.hpp"
 #include "catedu/ui/layout/dpi_scale.hpp"
 #include "catedu/ui/rendering/transform.hpp"
 #include "resources/load_image.hpp"
@@ -46,9 +47,17 @@ struct Renderable
     Rect base_box_rel;
 };
 
-static void render_object(UiPass &user, AutoLayoutResult &result,
-                          Vector2 suboffs = {0, 0})
+struct PoppedElement
 {
+    Vector2 suboffs;
+    UiTransform transform;
+    AutoLayoutResult *result;
+};
+
+static void render_object(Stack<PoppedElement> &popped, UiPass &user,
+                          AutoLayoutResult &result, Vector2 suboffs = {0, 0})
+{
+
     UiGenericStyles *styles = (UiGenericStyles *)result.userdata;
 
     Rect margin_box_rel = result.margin_box;
@@ -113,12 +122,12 @@ static void render_object(UiPass &user, AutoLayoutResult &result,
     {
         if (child->pop)
         {
-            user.pass.begin_scissor(child->margin_box);
+            popped.push({suboffs + margin_box_rel.pos,
+                         user.pass.transformer.transforms.back(), child});
         }
-        render_object(user, *child, suboffs + margin_box_rel.pos);
-        if (child->pop)
+        else
         {
-            user.pass.end_scissor();
+            render_object(popped, user, *child, suboffs + margin_box_rel.pos);
         }
         child = child->sibling;
     }
@@ -144,7 +153,20 @@ static void render_out(UiPass &user)
         return;
     }
 
-    render_object(user, *result);
+    Stack<PoppedElement> popped = {};
+    render_object(popped, user, *result);
+    while (popped.count > 0)
+    {
+        Stack<PoppedElement> next_popped = {};
+        for (auto &p : iter(popped))
+        {
+            user.pass.push_transform(p.transform);
+            render_object(next_popped, user, *p.result, p.suboffs);
+            user.pass.pop_transform();
+        }
+        popped.deinit();
+        popped = next_popped;
+    }
 
     assert(user.current_node == user.layout.root &&
            "Unfinished begin_generic calls");
@@ -385,7 +407,7 @@ void UiInteractionStatePass::process()
         }
 
         if (rect_vs_vector2(el.border_box, this->mouse_pos) &&
-            el.order > max_order)
+            (el.order > max_order || el.pop))
         {
             if (this->interaction && el.focusable)
             {

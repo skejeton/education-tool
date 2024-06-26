@@ -21,6 +21,7 @@ struct UiPersistentElement
     float scale;
     Vector2 scroll;
     void *userdata;
+    bool pop;
 };
 
 struct UiElementStorage

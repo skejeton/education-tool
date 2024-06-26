@@ -16,9 +16,9 @@
 
 enum class SubMode
 {
-    Build,
-    Character,
-    Script
+    build,
+    character,
+    script
 };
 
 struct SubEditor

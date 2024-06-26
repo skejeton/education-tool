@@ -81,6 +81,7 @@ void show_script_card(size_t id, UiPass &user, ScriptCard card,
     if (val->userdata == nullptr)
     {
         val->userdata = ALLOCATOR_MALLOC.alloc(sizeof(ScriptCardData));
+        *(ScriptCardData *)val->userdata = {};
     }
     auto data = (ScriptCardData *)val->userdata;
 
@@ -89,6 +90,7 @@ void show_script_card(size_t id, UiPass &user, ScriptCard card,
         el.position = AutoLayoutPosition::absolute;
         el.offset = data->drag_offset;
         el.pop = true;
+        val->pop = true;
     }
 
     user.begin_generic(el, background, border,

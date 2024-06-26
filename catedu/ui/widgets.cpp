@@ -111,7 +111,6 @@ bool begin_show_window(UiPass &user, WindowInfo info)
         el.clip = true;
         el.position = AutoLayoutPosition::detached;
         el.offset = info.rect.siz;
-        el.pop = true;
 
         user.state->element_storage.push(".resize", {true, {}, {}, {}});
         user.begin_generic(el, {}, {}, user.state->element_storage.id());
@@ -136,7 +135,6 @@ bool begin_show_window(UiPass &user, WindowInfo info)
         el.clip = true;
         el.position = AutoLayoutPosition::detached;
         el.offset = {0, info.rect.siz.y};
-        el.pop = true;
 
         user.state->element_storage.push(".resizev", {true, {}, {}, {}});
         user.begin_generic(el, {}, {}, user.state->element_storage.id());
@@ -161,7 +159,6 @@ bool begin_show_window(UiPass &user, WindowInfo info)
         el.clip = true;
         el.position = AutoLayoutPosition::detached;
         el.offset = {info.rect.siz.x, 0};
-        el.pop = true;
 
         user.state->element_storage.push(".resizeh", {true, {}, {}, {}});
         user.begin_generic(el, {}, {}, user.state->element_storage.id());
@@ -394,7 +391,6 @@ bool input(UiPass &user, const char *id, char *out, int max)
         bg = UiMakeBrush::make_gradient(theme[5], theme[4]);
         el.width = {AutoLayoutDimension::autom};
         el.height = {AutoLayoutDimension::autom};
-        el.pop = true;
     }
 
     user.begin_generic(el, bg, border, user.state->element_storage.id());

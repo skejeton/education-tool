@@ -7,7 +7,6 @@
 #include "catedu/gui/transition/transition.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
 #include "catedu/scene/render_world.hpp"
-#include "catedu/scene/script.hpp"
 #include "catedu/scene/world_file.hpp"
 #include "catedu/sys/input.hpp"
 #include "catedu/ui/layout/autolayout.hpp"
@@ -272,13 +271,13 @@ void show_control_panel(UiPass &user, GuiEditor &editor,
         const char *lbl = "[error]";
         switch (editor.sub_mode)
         {
-        case SubMode::Script:
+        case SubMode::script:
             lbl = "Script";
             break;
-        case SubMode::Character:
+        case SubMode::character:
             lbl = "Character";
             break;
-        case SubMode::Build:
+        case SubMode::build:
             lbl = "Build";
             break;
         }
@@ -307,9 +306,9 @@ void show_control_panel(UiPass &user, GuiEditor &editor,
             }
         };
 
-        btn("Script", "assets/gui/script.png", SubMode::Script);
-        btn("Character", "assets/gui/char.png", SubMode::Character);
-        btn("Build", "assets/gui/building.png", SubMode::Build);
+        btn("Script", "assets/gui/script.png", SubMode::script);
+        btn("Character", "assets/gui/char.png", SubMode::character);
+        btn("Build", "assets/gui/building.png", SubMode::build);
         user.end_generic();
 
         user.end_generic();
@@ -358,13 +357,13 @@ void show_control_panel(UiPass &user, GuiEditor &editor,
 
     switch (editor.sub_mode)
     {
-    case SubMode::Script:
+    case SubMode::script:
         show_script_panel(user, editor);
         break;
-    case SubMode::Character:
+    case SubMode::character:
         show_character_panel(user, editor, resources, renderer);
         break;
-    case SubMode::Build:
+    case SubMode::build:
         show_build_panel(user, editor, resources, renderer);
         break;
     }
@@ -540,7 +539,8 @@ void show_editor_ui(GuiEditor &editor, UiPass &user, ResourceSpec &resources,
 
     GenResources gen_resources = get_genres(resources);
 
-    if (user.actively_hovered() && !editor.playtesting)
+    if (user.actively_hovered() && !editor.playtesting &&
+        editor.sub_mode != SubMode::script)
     {
         sapp_lock_mouse(input.k[INPUT_MB_MIDDLE].held);
         if (input.k[INPUT_MB_MIDDLE].held)
