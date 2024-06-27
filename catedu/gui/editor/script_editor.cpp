@@ -1,4 +1,5 @@
 #include "script_editor.hpp"
+#include "catedu/scene/script.hpp"
 #include "catedu/ui/layout/autolayout.hpp"
 #include "catedu/ui/rendering/make_brush.hpp"
 #include "catedu/ui/widgets.hpp"
@@ -41,15 +42,9 @@ void show_script_card_btn(UiPass &user, ScriptCard card,
     }
 }
 
-struct ScriptCardData
-{
-    bool dragging;
-    Vector2 drag_offset;
-    Vector2 drag_peg;
-};
-
-void show_script_card(size_t id, UiPass &user, ScriptCard card,
-                      std::function<void()> cb)
+void show_generic_script_card(ScriptCardDragNDrop &dnd, ScriptNode *node,
+                              UiPass &user, ScriptCard card,
+                              std::function<void()> cb)
 {
     AutoLayoutElement el = {};
     if (card.embedded)
@@ -74,7 +69,7 @@ void show_script_card(size_t id, UiPass &user, ScriptCard card,
                          .squircle(0.9, 0.5)
                          .build();
 
-    user.push_id(id);
+    user.push_id(size_t(node));
     user.state->element_storage.push("Card");
     auto val = user.state->element_storage.value();
 
@@ -83,6 +78,7 @@ void show_script_card(size_t id, UiPass &user, ScriptCard card,
         val->userdata = ALLOCATOR_MALLOC.alloc(sizeof(ScriptCardData));
         *(ScriptCardData *)val->userdata = {};
     }
+
     auto data = (ScriptCardData *)val->userdata;
 
     if (data->dragging)
@@ -96,11 +92,23 @@ void show_script_card(size_t id, UiPass &user, ScriptCard card,
     user.begin_generic(el, background, border,
                        user.state->element_storage.id());
 
-    if (user.actively_hovered() && user.state->input.k[INPUT_MB_LEFT].pressed)
+    if (user.actively_hovered() && user.state->input.k[INPUT_MB_LEFT].pressed &&
+        node->type != ScriptNode::Type::event)
     {
         data->dragging = true;
         data->drag_peg = user.state->input.mouse_pos / user.state->dpi_scale -
                          val->border_box.pos / user.state->dpi_scale;
+
+        dnd.dragging = data;
+        dnd.node = node;
+    }
+
+    if ((user.hovered() ||
+         (user.state->input.mouse_pos.x > val->border_box.pos.x &&
+          user.state->input.mouse_pos.y > val->border_box.pos.y)) &&
+        dnd.node != node)
+    {
+        dnd.insert_after = (ScriptNode *)node;
     }
 
     if (data->dragging)
@@ -124,6 +132,74 @@ void show_script_card(size_t id, UiPass &user, ScriptCard card,
     user.pop_id();
 }
 
+ScriptCardAction show_script_card(ScriptCardDragNDrop &dnd, ScriptNode *node,
+                                  UiPass &user, bool shadow = false,
+                                  bool highlight = false)
+{
+    ScriptCardAction action = {};
+
+    if (shadow)
+    {
+        show_generic_script_card(dnd, node, user, {"...", 0xCCCCCC22}, [&] {});
+        return action;
+    }
+
+    uint32_t colormask = highlight ? 0x33333333 : 0x0;
+
+    switch (node->type)
+    {
+    case ScriptNode::Type::event:
+        show_generic_script_card(
+            dnd, node, user, {"On...", 0xCCCC0099 | colormask}, [&] {
+                const char *name = "";
+                switch (node->event)
+                {
+                case ScriptNode::EventType::start:
+                    name = "Start";
+                    break;
+                case ScriptNode::EventType::yes:
+                    name = "Yes";
+                    break;
+                case ScriptNode::EventType::no:
+                    name = "No";
+                    break;
+                }
+                label(user, name, {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
+            });
+        break;
+    case ScriptNode::Type::say:
+        show_generic_script_card(
+            dnd, node, user, {"Say...", 0x0000CC99 | colormask},
+            [&] { input(user, "Message", node->say, 256); });
+        break;
+    case ScriptNode::Type::yesno:
+        show_generic_script_card(
+            dnd, node, user, {"Ask...", 0x0000CC99 | colormask}, [&] {
+                input(user, "Message", node->yesno.question, 256);
+                AutoLayoutElement el = {};
+                el.layout.type = AutoLayout::row;
+
+                user.begin_generic(el, {}, {});
+                show_script_card_btn(
+                    user, {"Yes", 0xCCCC0099 | colormask, true}, [&] {},
+                    [&] {
+                        action.parent = node;
+                        action.yes = true;
+                    });
+                show_script_card_btn(
+                    user, {"No", 0xCCCC0099 | colormask, true}, [&] {},
+                    [&] {
+                        action.parent = node;
+                        action.yes = false;
+                    });
+                user.end_generic();
+            });
+        break;
+    }
+
+    return action;
+}
+
 void ScriptEditor::show(UiPass &user)
 {
     if (this->current->parent)
@@ -142,92 +218,104 @@ void ScriptEditor::show(UiPass &user)
             });
     }
 
-    int i = 0;
-    ScriptNode *parent = nullptr;
-    bool yes;
-    ScriptNode::Type type;
+    ScriptCardAction action = {};
 
     ScriptNode *node = this->current;
+    ScriptNode *prev = node;
+    ScriptNode *last = node;
+
+    dnd.insert_after = nullptr;
+    bool found_place = false;
     while (node)
     {
-        ScriptNode &s = *node;
-        user.push_id(i++);
-
-        switch (s.type)
+        if (node != dnd.node)
         {
-        case ScriptNode::Type::event:
-            show_script_card(size_t(&s), user, {"On...", 0xCCCC0099}, [&] {
-                const char *name = "";
-                switch (s.event)
-                {
-                case ScriptNode::EventType::start:
-                    name = "Start";
-                    break;
-                case ScriptNode::EventType::yes:
-                    name = "Yes";
-                    break;
-                case ScriptNode::EventType::no:
-                    name = "No";
-                    break;
-                }
-                label(user, name, {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
-            });
-            break;
-        case ScriptNode::Type::say:
-            show_script_card(size_t(&s), user, {"Say...", 0x0000CC99},
-                             [&] { input(user, "Message", s.say, 256); });
-            break;
-        case ScriptNode::Type::yesno:
-            show_script_card(size_t(&s), user, {"Ask...", 0x0000CC99}, [&] {
-                input(user, "Message", s.yesno.question, 256);
-                AutoLayoutElement el = {};
-                el.layout.type = AutoLayout::row;
-
-                user.begin_generic(el, {}, {});
-                show_script_card_btn(
-                    user, {"Yes", 0xCCCC0099, true}, [&] {},
-                    [&] {
-                        parent = &s;
-                        yes = true;
-                        type = ScriptNode::Type::event;
-                    });
-                show_script_card_btn(
-                    user, {"No", 0xCCCC0099, true}, [&] {},
-                    [&] {
-                        parent = &s;
-                        yes = false;
-                        type = ScriptNode::Type::event;
-                    });
-                user.end_generic();
-            });
-            break;
+            user.push_id(size_t(node));
+            action = show_script_card(dnd, node, user);
+            user.pop_id();
         }
 
-        user.pop_id();
-        node = node->next;
-    };
-
-    if (parent)
-    {
-        if (yes)
+        if (node->next == dnd.node)
         {
-            if (!parent->yesno.yes)
+            prev = node;
+        }
+
+        if (dnd.node != nullptr && dnd.insert_after_final == node)
+        {
+            found_place = true;
+            user.push_id(size_t(dnd.node) + 1);
+            ScriptCardDragNDrop mock;
+            show_script_card(mock, dnd.node, user, false, true);
+            user.pop_id();
+        }
+
+        node = node->next;
+        if (node)
+        {
+            last = node;
+        }
+    }
+
+    dnd.insert_after_final = dnd.insert_after;
+
+    if (dnd.node && user.hovered() && !found_place)
+    {
+        found_place = true;
+        user.push_id(size_t(dnd.node));
+        ScriptCardDragNDrop mock;
+        show_script_card(mock, dnd.node, user);
+        dnd.insert_after = last;
+        user.pop_id();
+    }
+
+    if (dnd.node != nullptr)
+    {
+        user.push_id(size_t(dnd.node));
+        action = show_script_card(dnd, dnd.node, user, found_place);
+        user.pop_id();
+    }
+
+    if (user.state->input.k[INPUT_MB_LEFT].released && found_place)
+    {
+        prev->next = dnd.node->next;
+
+        // insert into the new place
+        dnd.node->next = dnd.insert_after->next;
+        dnd.insert_after->next = dnd.node;
+    }
+    if (user.state->input.k[INPUT_MB_LEFT].released)
+    {
+        if (!found_place && dnd.node)
+        {
+            prev->next = dnd.node->next;
+
+            script->nodes.free(dnd.node);
+        }
+        dnd.dragging = nullptr;
+        dnd.node = nullptr;
+    }
+
+    if (action.parent)
+    {
+        if (action.yes)
+        {
+            if (!action.parent->yesno.yes)
             {
-                parent->yesno.yes =
-                    script->append_node(ScriptNode::Type::event, parent);
+                action.parent->yesno.yes =
+                    script->append_node(ScriptNode::Type::event, action.parent);
             }
-            current = parent->yesno.yes;
-            parent->yesno.yes->event = ScriptNode::EventType::yes;
+            current = action.parent->yesno.yes;
+            action.parent->yesno.yes->event = ScriptNode::EventType::yes;
         }
         else
         {
-            if (!parent->yesno.no)
+            if (!action.parent->yesno.no)
             {
-                parent->yesno.no =
-                    script->append_node(ScriptNode::Type::event, parent);
-                parent->yesno.no->event = ScriptNode::EventType::no;
+                action.parent->yesno.no =
+                    script->append_node(ScriptNode::Type::event, action.parent);
+                action.parent->yesno.no->event = ScriptNode::EventType::no;
             }
-            current = parent->yesno.no;
+            current = action.parent->yesno.no;
         }
     }
 

@@ -126,10 +126,11 @@ void align_to_parents(AutoLayoutProcess *process, AutoLayoutNode *node)
                 (node->element.padding_box.siz -
                  node->element.content_box.siz) *
                 Vector2{node->element.align_width, node->element.align_height};
+
+            delta += node->element.scroll;
         }
 
         delta += child->element.offset;
-        delta += node->element.scroll;
 
         child->element.padding_box.pos += delta;
         child->element.base_box.pos += delta;
