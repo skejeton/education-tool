@@ -146,9 +146,12 @@ void Playtest::update(UiPass &user, Input &input, EditorCamera &camera,
                 break;
             }
             break;
+        default:
+            assert(false);
         }
 
-        if (!this->current && parent && parent->type == ScriptNode::Type::event)
+        if (!this->current && parent && parent->parent &&
+            parent->parent->type == ScriptNode::Type::yesno)
         {
             this->current = parent->parent->next;
         }

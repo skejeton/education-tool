@@ -198,7 +198,16 @@ GuiEditor GuiEditor::init(UiState *ui_state)
 
 void show_script_panel(UiPass &user, GuiEditor &editor)
 {
+    AutoLayoutElement el = {};
+    el.layout = {AutoLayout::row};
+    el.padding = {1, 1, 1, 1};
+
+    user.begin_generic(el, {}, {});
+
+    editor.script_editor.show_palette(user);
     editor.script_editor.show(user);
+
+    user.end_generic();
 }
 
 void show_character_panel(UiPass &user, GuiEditor &editor,
@@ -325,6 +334,11 @@ void show_control_panel(UiPass &user, GuiEditor &editor,
     element.clip = true;
     element.padding = {2, 2, 2, 2};
     element.width = {AutoLayoutDimension::pixel, 202};
+    if (editor.sub_mode == SubMode::script)
+    {
+        element.width = {AutoLayoutDimension::pixel, 202 * 2 + 2};
+    }
+
     element.height = {AutoLayoutDimension::pixel,
                       (sapp_heightf() - 100) / user.state->dpi_scale};
     user.state->element_storage.push("Left Panel", {});
@@ -335,17 +349,6 @@ void show_control_panel(UiPass &user, GuiEditor &editor,
                            .with_gradient(0x00002200, 0x00000077)
                            .build(),
                        user.state->element_storage.id(), 1, true);
-
-    if (user.hovered())
-    {
-        user.state->element_storage.value()->scroll.y +=
-            user.state->input.mouse_wheel * 20;
-
-        if (user.state->element_storage.value()->scroll.y > 0)
-        {
-            user.state->element_storage.value()->scroll.y = 0;
-        }
-    }
 
     if (editor.dispatcher.world.current != editor.dispatcher.world.first)
     {
@@ -366,6 +369,17 @@ void show_control_panel(UiPass &user, GuiEditor &editor,
     case SubMode::build:
         show_build_panel(user, editor, resources, renderer);
         break;
+    }
+
+    if (user.hovered())
+    {
+        user.state->element_storage.value()->scroll.y +=
+            user.state->input.mouse_wheel * 20;
+
+        if (user.state->element_storage.value()->scroll.y > 0)
+        {
+            user.state->element_storage.value()->scroll.y = 0;
+        }
     }
 
     user.end_generic();

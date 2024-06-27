@@ -23,12 +23,19 @@ struct ScriptCardDragNDrop
     ScriptCardData *dragging;
 };
 
+struct ScriptCardPalettePool
+{
+    ScriptNode *nodes[int(ScriptNode::Type::count_)];
+};
+
 struct ScriptEditor
 {
     Script *script;
     ScriptNode *current;
     ScriptCardDragNDrop dnd;
+    ScriptCardPalettePool palette;
 
+    void show_palette(UiPass &user);
     void show(UiPass &user);
     static ScriptEditor create(Script *script);
 };

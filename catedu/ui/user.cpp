@@ -122,7 +122,7 @@ static void render_object(Stack<PoppedElement> &popped, UiPass &user,
     {
         if (child->pop)
         {
-            popped.push({suboffs + margin_box_rel.pos,
+            popped.push({margin_box_rel.pos,
                          user.pass.transformer.transforms.back(), child});
         }
         else

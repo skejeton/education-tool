@@ -15,7 +15,8 @@ struct ScriptNode
     {
         event,
         say,
-        yesno
+        yesno,
+        count_
     };
 
     EventType event;

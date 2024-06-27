@@ -195,13 +195,43 @@ ScriptCardAction show_script_card(ScriptCardDragNDrop &dnd, ScriptNode *node,
                 user.end_generic();
             });
         break;
+    default:;
     }
 
     return action;
 }
 
+void ScriptEditor::show_palette(UiPass &user)
+{
+    static ScriptNode stub;
+    AutoLayoutElement el = {};
+    el.margin.t = -user.state->element_storage.value()->scroll.y;
+    user.begin_generic(el, {}, {});
+    show_generic_script_card(
+        dnd, &stub, user, {"Card pallete...", 0x11111111}, [&] {
+            label(user, "Select", {2, 2}, UiMakeBrush::make_solid(0xFFFFFFFF));
+        });
+
+    for (int i = 1; i < int(ScriptNode::Type::count_); i++)
+    {
+        user.push_id(size_t(palette.nodes[i]));
+        show_script_card(dnd, palette.nodes[i], user);
+        user.pop_id();
+        if (dnd.node == palette.nodes[i])
+        {
+            palette.nodes[i] = script->nodes.alloc();
+            *palette.nodes[i] = {};
+            palette.nodes[i]->type = ScriptNode::Type(i);
+        }
+    }
+    dnd.insert_after = nullptr;
+
+    user.end_generic();
+}
+
 void ScriptEditor::show(UiPass &user)
 {
+    user.begin_generic({}, {}, {});
     if (this->current->parent)
     {
         show_script_card_btn(
@@ -221,17 +251,22 @@ void ScriptEditor::show(UiPass &user)
     ScriptCardAction action = {};
 
     ScriptNode *node = this->current;
-    ScriptNode *prev = node;
-    ScriptNode *last = node;
+    ScriptNode *prev = nullptr;
 
-    dnd.insert_after = nullptr;
     bool found_place = false;
     while (node)
     {
         if (node != dnd.node)
         {
             user.push_id(size_t(node));
-            action = show_script_card(dnd, node, user);
+            if (action.parent)
+            {
+                show_script_card(dnd, node, user);
+            }
+            else
+            {
+                action = show_script_card(dnd, node, user);
+            }
             user.pop_id();
         }
 
@@ -250,23 +285,9 @@ void ScriptEditor::show(UiPass &user)
         }
 
         node = node->next;
-        if (node)
-        {
-            last = node;
-        }
     }
 
     dnd.insert_after_final = dnd.insert_after;
-
-    if (dnd.node && user.hovered() && !found_place)
-    {
-        found_place = true;
-        user.push_id(size_t(dnd.node));
-        ScriptCardDragNDrop mock;
-        show_script_card(mock, dnd.node, user);
-        dnd.insert_after = last;
-        user.pop_id();
-    }
 
     if (dnd.node != nullptr)
     {
@@ -277,7 +298,13 @@ void ScriptEditor::show(UiPass &user)
 
     if (user.state->input.k[INPUT_MB_LEFT].released && found_place)
     {
-        prev->next = dnd.node->next;
+        if (prev)
+            prev->next = dnd.node->next;
+
+        if (dnd.node->parent == nullptr)
+        {
+            dnd.node->parent = this->current;
+        }
 
         // insert into the new place
         dnd.node->next = dnd.insert_after->next;
@@ -287,7 +314,10 @@ void ScriptEditor::show(UiPass &user)
     {
         if (!found_place && dnd.node)
         {
-            prev->next = dnd.node->next;
+            if (prev && prev->next == dnd.node)
+            {
+                prev->next = dnd.node->next;
+            }
 
             script->nodes.free(dnd.node);
         }
@@ -303,9 +333,9 @@ void ScriptEditor::show(UiPass &user)
             {
                 action.parent->yesno.yes =
                     script->append_node(ScriptNode::Type::event, action.parent);
+                action.parent->yesno.yes->event = ScriptNode::EventType::yes;
             }
             current = action.parent->yesno.yes;
-            action.parent->yesno.yes->event = ScriptNode::EventType::yes;
         }
         else
         {
@@ -319,23 +349,7 @@ void ScriptEditor::show(UiPass &user)
         }
     }
 
-    show_script_card_btn(
-        user, {"Add action 'Say'", 0x33FF3399},
-        [&] {
-            user.bold = true;
-            label(user, "+", {3, 3}, UiMakeBrush::make_solid(0xEEFFEEFF));
-            user.bold = false;
-        },
-        [&] { script->append_node(ScriptNode::Type::say, current); });
-
-    show_script_card_btn(
-        user, {"Add action 'Ask'", 0x33FF3399},
-        [&] {
-            user.bold = true;
-            label(user, "+", {3, 3}, UiMakeBrush::make_solid(0xEEFFEEFF));
-            user.bold = false;
-        },
-        [&] { script->append_node(ScriptNode::Type::yesno, current); });
+    user.end_generic();
 }
 
 ScriptEditor ScriptEditor::create(Script *script)
@@ -350,6 +364,13 @@ ScriptEditor ScriptEditor::create(Script *script)
         result.script->root->type = ScriptNode::Type::event;
     }
     result.current = script->root;
+
+    for (int i = 1; i < int(ScriptNode::Type::count_); i++)
+    {
+        result.palette.nodes[i] = script->nodes.alloc();
+        *result.palette.nodes[i] = {};
+        result.palette.nodes[i]->type = ScriptNode::Type(i);
+    }
 
     return result;
 }
