@@ -47,6 +47,7 @@ void EditBuilding::show(UiPass &user, Renderer &renderer, Dispatcher &disp,
             {
                 if (obj->type == Object::Type::building)
                 {
+                    disp.world.script->acquire_place_event(obj->place);
                     disp.enter_place(obj);
                 }
             }

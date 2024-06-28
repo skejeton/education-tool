@@ -232,6 +232,10 @@ void Playtest::update(UiPass &user, Input &input, EditorCamera &camera,
     {
         physics.bodies.deinit();
         world.current = switch_target;
+        if (switch_target != world.first)
+        {
+            current = world.script->acquire_place_event(switch_target);
+        }
         physics = create_bodies(world.first, *world.current, this->player);
 
         if (this->player == NULL_ID)

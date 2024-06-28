@@ -154,6 +154,9 @@ ScriptCardAction show_script_card(ScriptCardDragNDrop &dnd, ScriptNode *node,
                 const char *name = "";
                 switch (node->event)
                 {
+                case ScriptNode::EventType::enter:
+                    name = "Enter";
+                    break;
                 case ScriptNode::EventType::start:
                     name = "Start";
                     break;
@@ -357,13 +360,7 @@ ScriptEditor ScriptEditor::create(Script *script)
     ScriptEditor result = {};
 
     result.script = script;
-    if (result.script->root == nullptr)
-    {
-        result.script->root = result.script->nodes.alloc();
-        *result.script->root = {};
-        result.script->root->type = ScriptNode::Type::event;
-    }
-    result.current = script->root;
+    result.script->root = result.current = result.script->acquire_start_event();
 
     for (int i = 1; i < int(ScriptNode::Type::count_); i++)
     {

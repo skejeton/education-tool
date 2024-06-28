@@ -1,12 +1,16 @@
 #pragma once
 #include "catedu/core/alloc/arena.hpp"
 #include "catedu/core/alloc/free_list.hpp"
+#include "catedu/core/storage/stack.hpp"
+
+struct Place;
 
 struct ScriptNode
 {
     enum class EventType
     {
         start,
+        enter,
         yes,
         no
     };
@@ -20,6 +24,7 @@ struct ScriptNode
     };
 
     EventType event;
+    Place *place;
     Type type;
 
     union {
@@ -39,11 +44,21 @@ struct ScriptNode
 struct Script
 {
     FreeList<ScriptNode> nodes;
+    Stack<ScriptNode *> global_events;
     ScriptNode *root;
 
     ScriptNode *append_node(ScriptNode::Type t, ScriptNode *parent);
 
     Script clone();
+
+    ScriptNode *create_start_event();
+    ScriptNode *create_place_event(Place *place);
+
+    ScriptNode *get_start_event();
+    ScriptNode *get_place_event(Place *place);
+
+    ScriptNode *acquire_start_event();
+    ScriptNode *acquire_place_event(Place *place);
 
     static Script create(Arena arena);
     void destroy();

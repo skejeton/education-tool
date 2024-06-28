@@ -355,6 +355,7 @@ void show_control_panel(UiPass &user, GuiEditor &editor,
         if (button(user, "Back outside"))
         {
             editor.dispatcher.world.current = editor.dispatcher.world.first;
+            editor.dispatcher.world.script->acquire_start_event();
         }
     }
 
@@ -580,6 +581,18 @@ void show_editor_ui(GuiEditor &editor, UiPass &user, ResourceSpec &resources,
 
     if (editor.previous_place != editor.dispatcher.world.current)
     {
+        if (editor.dispatcher.world.current == editor.dispatcher.world.first)
+        {
+            editor.script_editor.current =
+                editor.dispatcher.world.script->acquire_start_event();
+        }
+        else
+        {
+            editor.script_editor.current =
+                editor.dispatcher.world.script->acquire_place_event(
+                    editor.dispatcher.world.current);
+        }
+
         transition.begin();
     }
 
