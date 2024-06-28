@@ -119,13 +119,13 @@ bool object_icon_button(UiPass &user, const char *name, SubEditor::Type type,
         Camera camera = Camera::init(5);
         camera.set_aspect(el.width.value / el.height.value);
 
-        if (type == SubEditor::Type::Building)
+        if (type == SubEditor::Type::building)
         {
             camera.move(0, 0, -20);
             camera.rotate_around({0, 0, 0}, 45, -45);
             camera.move(0, 0.5, 0);
         }
-        else if (type == SubEditor::Type::Wall)
+        else if (type == SubEditor::Type::wall)
         {
             camera.move(0, 0, -5);
             camera.rotate_around({0, 0, 0}, 45, -45);
@@ -145,22 +145,22 @@ bool object_icon_button(UiPass &user, const char *name, SubEditor::Type type,
         GeneratedObject obj;
         switch (type)
         {
-        case SubEditor::Type::Deleter:
+        case SubEditor::Type::deleter:
             obj = genmesh_generate_deleter();
             break;
-        case SubEditor::Type::Building:
+        case SubEditor::Type::building:
             obj = genmesh_generate_building(5);
             break;
-        case SubEditor::Type::Road:
+        case SubEditor::Type::road:
             obj = genmesh_generate_road();
             break;
-        case SubEditor::Type::Player:
+        case SubEditor::Type::player:
             obj = genmesh_generate_player();
             break;
-        case SubEditor::Type::Wall:
+        case SubEditor::Type::wall:
             obj = genmesh_generate_wall();
             break;
-        case SubEditor::Type::Tree:
+        case SubEditor::Type::tree:
             obj = genmesh_generate_tree();
             break;
         }
@@ -213,7 +213,7 @@ void show_script_panel(UiPass &user, GuiEditor &editor)
 void show_character_panel(UiPass &user, GuiEditor &editor,
                           ResourceSpec &resources, Renderer &renderer)
 {
-    object_icon_button(user, "Player", SubEditor::Type::Player,
+    object_icon_button(user, "Player", SubEditor::Type::player,
                        editor.sub_editor.type, renderer, resources);
 }
 
@@ -228,23 +228,23 @@ void show_build_panel(UiPass &user, GuiEditor &editor, ResourceSpec &resources,
 
     Stack<ObjElement> elements = {};
 
-    elements.push({"Delete", SubEditor::Type::Deleter});
+    elements.push({"Delete", SubEditor::Type::deleter});
 
     if (editor.dispatcher.world.first != editor.dispatcher.world.current)
     {
-        if (editor.sub_editor.type == SubEditor::Type::Building)
+        if (editor.sub_editor.type == SubEditor::Type::building)
         {
-            editor.sub_editor.type = SubEditor::Type::Wall;
+            editor.sub_editor.type = SubEditor::Type::wall;
         }
     }
     else
     {
-        elements.push({"Building", SubEditor::Type::Building});
-        elements.push({"Road", SubEditor::Type::Road});
-        elements.push({"Tree", SubEditor::Type::Tree});
+        elements.push({"Building", SubEditor::Type::building});
+        elements.push({"Road", SubEditor::Type::road});
+        elements.push({"Tree", SubEditor::Type::tree});
     }
 
-    elements.push({"Wall", SubEditor::Type::Wall});
+    elements.push({"Wall", SubEditor::Type::wall});
 
     for (int i = 0; i < elements.count / 2 + 1; i++)
     {
@@ -676,27 +676,27 @@ void SubEditor::show(UiPass &user, Renderer &renderer, Dispatcher &disp,
 {
     switch (type)
     {
-    case Type::Deleter:
+    case Type::deleter:
         edit_delete.show(user, renderer, disp, gen_resources, input, camera);
         break;
-    case Type::Building:
+    case Type::building:
         edit_building.show(user, renderer, disp, gen_resources, input, camera);
         break;
-    case Type::Road:
-        edit_line.show(user, Object::Type::Road, renderer, disp, gen_resources,
+    case Type::road:
+        edit_line.show(user, Object::Type::road, renderer, disp, gen_resources,
                        input, camera);
         break;
-    case Type::Wall:
-        edit_line.show(user, Object::Type::Wall, renderer, disp, gen_resources,
+    case Type::wall:
+        edit_line.show(user, Object::Type::wall, renderer, disp, gen_resources,
                        input, camera);
         break;
-    case Type::Player:
+    case Type::player:
         edit_basic.show(user, renderer, disp, gen_resources, input, camera,
-                        Object::Type::Player);
+                        Object::Type::player);
         break;
-    case Type::Tree:
+    case Type::tree:
         edit_basic.show(user, renderer, disp, gen_resources, input, camera,
-                        Object::Type::Tree);
+                        Object::Type::tree);
         break;
     }
 }

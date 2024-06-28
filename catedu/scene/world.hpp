@@ -9,11 +9,11 @@ struct Object
 {
     enum class Type : int
     {
-        Building,
-        Road,
-        Player,
-        Wall,
-        Tree
+        building,
+        road,
+        player,
+        wall,
+        tree
     } type;
 
     int floors;

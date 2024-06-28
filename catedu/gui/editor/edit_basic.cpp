@@ -30,10 +30,10 @@ void EditBasic::show(UiPass &user, Renderer &renderer, Dispatcher &disp,
 
         switch (type)
         {
-        case Object::Type::Player:
+        case Object::Type::player:
             obj = genmesh_generate_player();
             break;
-        case Object::Type::Tree:
+        case Object::Type::tree:
             obj = genmesh_generate_tree();
             break;
         default:

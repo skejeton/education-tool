@@ -42,19 +42,19 @@ void render_place(Place &place, Renderer &renderer, ResourceSpec &resources)
 
         switch (object.type)
         {
-        case Object::Type::Road:
+        case Object::Type::road:
             mesh = genmesh_generate_road();
             break;
-        case Object::Type::Building:
+        case Object::Type::building:
             mesh = genmesh_generate_building(object.floors);
             break;
-        case Object::Type::Player:
+        case Object::Type::player:
             mesh = genmesh_generate_player();
             break;
-        case Object::Type::Wall:
+        case Object::Type::wall:
             mesh = genmesh_generate_wall();
             break;
-        case Object::Type::Tree:
+        case Object::Type::tree:
             mesh = genmesh_generate_tree();
             break;
         }

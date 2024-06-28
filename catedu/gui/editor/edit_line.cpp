@@ -53,10 +53,10 @@ void EditLine::show(UiPass &user, Object::Type type, Renderer &renderer,
 
             switch (type)
             {
-            case Object::Type::Wall:
+            case Object::Type::wall:
                 obj = genmesh_generate_wall();
                 break;
-            case Object::Type::Road:
+            case Object::Type::road:
                 obj = genmesh_generate_road();
                 break;
             default:

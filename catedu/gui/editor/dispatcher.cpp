@@ -96,11 +96,11 @@ void Dispatcher::place_object(Object object)
     op.type = EditOp::Type::place;
     op.object = object;
 
-    if (object.type == Object::Type::Player)
+    if (object.type == Object::Type::player)
     {
         for (auto &obj : iter(world.current->objects))
         {
-            if (obj.type == Object::Type::Player)
+            if (obj.type == Object::Type::player)
             {
                 remove_object(obj.x, obj.y);
             }

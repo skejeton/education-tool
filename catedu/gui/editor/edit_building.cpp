@@ -34,7 +34,7 @@ void EditBuilding::show(UiPass &user, Renderer &renderer, Dispatcher &disp,
 
     if (input.k[INPUT_MB_LEFT].pressed && placing)
     {
-        disp.place_object({Object::Type::Building, floors, x, y});
+        disp.place_object({Object::Type::building, floors, x, y});
         placing = false;
     }
     else if (input.k[INPUT_MB_LEFT].pressed)
@@ -45,7 +45,7 @@ void EditBuilding::show(UiPass &user, Renderer &renderer, Dispatcher &disp,
             if (Object *obj = disp.world.current->get_object_at(x, y);
                 obj != nullptr)
             {
-                if (obj->type == Object::Type::Building)
+                if (obj->type == Object::Type::building)
                 {
                     disp.enter_place(obj);
                 }

@@ -1,6 +1,5 @@
 #include "world.hpp"
 #include "catedu/core/alloc/allocator.hpp"
-#include <cstdio>
 #define BUILDING_DIMENSIONS_W 8
 #define BUILDING_DIMENSIONS_D 8
 
@@ -8,21 +7,19 @@ RectI object_dimensions(Object &object)
 {
     switch (object.type)
     {
-    case Object::Type::Building:
+    case Object::Type::building:
         return {(int)ceilf(object.x) - BUILDING_DIMENSIONS_W / 2,
                 (int)ceilf(object.y) - BUILDING_DIMENSIONS_D / 2,
                 BUILDING_DIMENSIONS_W, BUILDING_DIMENSIONS_D};
-    case Object::Type::Road:
+    case Object::Type::road:
         return {(int)ceilf(object.x) - 2, (int)ceilf(object.y) - 2, 4, 4};
-    case Object::Type::Player:
+    case Object::Type::player:
         return {(int)ceilf(object.x) - 1, (int)ceilf(object.y) - 1, 2, 2};
-    case Object::Type::Wall:
+    case Object::Type::wall:
         return {(int)ceilf(object.x), (int)ceilf(object.y), 1, 1};
-    case Object::Type::Tree:
+    case Object::Type::tree:
         return {(int)ceilf(object.x) - 1, (int)ceilf(object.y) - 1, 2, 2};
     }
-
-    fprintf(stderr, "Type %d\n", (int)object.type);
 
     assert(false);
 }

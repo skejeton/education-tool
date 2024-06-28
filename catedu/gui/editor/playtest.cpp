@@ -41,7 +41,7 @@ PhysicsWorld create_bodies(Place *parent, Place &place, TableId &player)
     {
         switch (obj.type)
         {
-        case Object::Type::Wall: {
+        case Object::Type::wall: {
             PhysicsBody body = {};
             body.area = {obj.x + 0.5f, obj.y + 0.5f, 1, 1};
             body.solid = true;
@@ -50,7 +50,7 @@ PhysicsWorld create_bodies(Place *parent, Place &place, TableId &player)
             physics.bodies.allocate(body);
         }
         break;
-        case Object::Type::Tree: {
+        case Object::Type::tree: {
             PhysicsBody body = {};
             body.area = {obj.x, obj.y, 1, 1};
             body.solid = true;
@@ -59,7 +59,7 @@ PhysicsWorld create_bodies(Place *parent, Place &place, TableId &player)
             physics.bodies.allocate(body);
         }
         break;
-        case Object::Type::Building: {
+        case Object::Type::building: {
             PhysicsBody body = {};
             body.area = {obj.x - 4 + 0.5f, obj.y - 4 + 0.5f, 8, 8};
             body.solid = true;
@@ -76,7 +76,7 @@ PhysicsWorld create_bodies(Place *parent, Place &place, TableId &player)
             physics.bodies.allocate(door);
         }
         break;
-        case Object::Type::Player: {
+        case Object::Type::player: {
             PhysicsBody body = {};
             body.area = {obj.x, obj.y, 1, 1};
             body.solid = true;
@@ -212,7 +212,7 @@ void Playtest::update(UiPass &user, Input &input, EditorCamera &camera,
 
     for (auto &obj : iter(world.current->objects))
     {
-        if (obj.type == Object::Type::Player)
+        if (obj.type == Object::Type::player)
         {
             obj.x = player.area.pos.x;
             obj.y = player.area.pos.y;

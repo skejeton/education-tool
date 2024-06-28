@@ -25,12 +25,12 @@ struct SubEditor
 {
     enum class Type
     {
-        Deleter,
-        Building,
-        Road,
-        Player,
-        Wall,
-        Tree
+        deleter,
+        building,
+        road,
+        player,
+        wall,
+        tree
     } type;
 
     EditDelete edit_delete;
