@@ -20,8 +20,9 @@ credentials (`ant auth login`, or set `ANTHROPIC_API_KEY`):
 
 ```sh
 pip install anthropic
-python agents/demo.py                 # 3 residents, 12 turns, claude-opus-5-5
+python agents/demo.py                 # 3 residents, 12 turns, claude-haiku-4-5
 python agents/demo.py --agents 5 --turns 18 --seed 3
+python agents/demo.py --model claude-opus-5-5 --effort low
 ```
 
 The demo writes into `agents/out/`:
@@ -61,13 +62,14 @@ recruiting festival volunteers...), see `PERSONAS` in `demo.py`. The town is
 generated per seed: a grid of streets, two buildings per block with doors on
 the street, backyards, street lights and a fountain park.
 
-**Cost.** Requests use `claude-opus-5-5` at `low` effort, which suits short
-in-character decisions. A turn's prompt is around a thousand tokens, so the
-default run (36 decisions) should cost tens of cents; the demo prints the
-tokens it used. Use `--model` and `--effort` to change either. If a request is
-declined by a safety classifier, the API retries it on a fallback model
-(`fallbacks: "default"`); a decline that still stands makes the resident do
-nothing that turn.
+**Cost.** Requests use `claude-haiku-4-5` by default, which is fast and cheap
+for short in-character decisions. A turn's prompt is around a thousand
+tokens, so the default run (36 decisions) should cost a few cents; the demo
+prints the tokens it used. `--model` picks another model, and `--effort` sets
+its effort (Haiku 4.5 doesn't take one). With Claude Opus 5.5, Opus 5, Sonnet
+5.5 or Fable 5.1, a request declined by a safety classifier is retried on a
+fallback model (`fallbacks: "default"`). On any model, a decline that still
+stands makes the resident do nothing that turn.
 
 ## Python API
 

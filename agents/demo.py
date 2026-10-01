@@ -1,6 +1,6 @@
 """A few agents living a morning in a generated town.
 
-    python agents/demo.py             # Claude decides what everyone does
+    python agents/demo.py             # Claude Haiku 4.5 decides what everyone does
     python agents/demo.py --offline   # scripted agents, no API calls
 
 Writes town.glb, town.dat (open it in the editor), replay.json and
@@ -16,7 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from minds import DEFAULT_EFFORT, DEFAULT_MODEL, Action, ClaudeMind, Persona, ScriptedMind, Situation  # noqa: E402
+from minds import DEFAULT_EFFORT, DEFAULT_MODEL, Action, ClaudeMind, Persona, ScriptedMind, Situation, supports_effort  # noqa: E402
 from town import Town, TownError  # noqa: E402
 from towngen import generate_town  # noqa: E402
 
@@ -337,12 +337,14 @@ def main(argv=None):
     parser.add_argument("--turns", type=int, default=12, help="10-minute turns to simulate (default 12)")
     parser.add_argument("--seed", type=int, default=7, help="town layout seed")
     parser.add_argument("--model", default=DEFAULT_MODEL, help=f"Claude model (default {DEFAULT_MODEL})")
-    parser.add_argument("--effort", default=DEFAULT_EFFORT, choices=["low", "medium", "high", "xhigh", "max"], help=f"Claude effort (default {DEFAULT_EFFORT})")
+    parser.add_argument("--effort", default=DEFAULT_EFFORT, choices=["low", "medium", "high", "xhigh", "max"], help="Claude effort (default: the model's own; Haiku doesn't take one)")
     parser.add_argument("--out", type=Path, default=HERE / "out", help="output directory (default agents/out)")
     parser.add_argument("--quiet", action="store_true", help="don't print what happens")
     args = parser.parse_args(argv)
 
     personas = PERSONAS[: args.agents]
+    if args.effort and not args.offline and not supports_effort(args.model):
+        parser.error(f"{args.model} doesn't support --effort")
     if args.offline:
         mind, mind_name = ScriptedMind(args.seed), "scripted"
     else:

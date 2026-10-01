@@ -4,8 +4,16 @@ import json
 import random
 from dataclasses import dataclass, field
 
-DEFAULT_MODEL = "claude-opus-5-5"
-DEFAULT_EFFORT = "low"
+DEFAULT_MODEL = "claude-haiku-4-5"
+# None leaves effort at the model's default. Haiku 4.5 doesn't accept it.
+DEFAULT_EFFORT = None
+
+# Models whose declined requests the API can retry on a fallback model.
+FALLBACK_MODELS = {"claude-fable-5-1", "claude-opus-5-5", "claude-opus-5", "claude-sonnet-5-5"}
+
+
+def supports_effort(model):
+    return not model.startswith("claude-haiku")
 
 
 @dataclass
@@ -95,26 +103,33 @@ class ClaudeMind:
         self.output_tokens = 0
 
     def decide(self, persona, situation):
-        response = self.client.beta.messages.create(
-            model=self.model,
-            max_tokens=16000,
-            # On a safety decline, the API retries on its recommended
-            # fallback model instead of returning the refusal.
-            betas=["server-side-fallback-2026-07-01"],
-            fallbacks="default",
-            system=SYSTEM_PROMPT.format(
+        output_config = {"format": {"type": "json_schema", "schema": action_schema(situation)}}
+        if self.effort:
+            output_config["effort"] = self.effort
+        request = {
+            "model": self.model,
+            "max_tokens": 16000,
+            "system": SYSTEM_PROMPT.format(
                 name=persona.name,
                 role=persona.role,
                 traits=persona.traits,
                 goal=persona.goal,
                 hearing=self.hearing,
             ),
-            messages=[{"role": "user", "content": situation.text}],
-            output_config={
-                "effort": self.effort,
-                "format": {"type": "json_schema", "schema": action_schema(situation)},
-            },
-        )
+            "messages": [{"role": "user", "content": situation.text}],
+            "output_config": output_config,
+        }
+
+        if self.model in FALLBACK_MODELS:
+            # On a safety decline, the API retries on its recommended
+            # fallback model instead of returning the refusal.
+            response = self.client.beta.messages.create(
+                **request,
+                betas=["server-side-fallback-2026-07-01"],
+                fallbacks="default",
+            )
+        else:
+            response = self.client.messages.create(**request)
         self.input_tokens += response.usage.input_tokens
         self.output_tokens += response.usage.output_tokens
 

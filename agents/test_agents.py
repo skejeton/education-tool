@@ -183,26 +183,40 @@ class FakeMessages:
         )
 
 
+def fake_client(messages):
+    return SimpleNamespace(messages=messages, beta=SimpleNamespace(messages=messages))
+
+
 class ClaudeMindTest(unittest.TestCase):
-    def test_request_and_action(self):
+    def test_haiku_by_default(self):
         messages = FakeMessages()
-        mind = ClaudeMind(client=SimpleNamespace(beta=SimpleNamespace(messages=messages)))
+        mind = ClaudeMind(client=fake_client(messages))
         action = mind.decide(make_persona(), make_situation())
 
         self.assertEqual(action, Action("Coffee first.", "Morning!", "Café"))
         request = messages.requests[0]
-        self.assertEqual(request["model"], "claude-opus-5-5")
-        self.assertEqual(request["fallbacks"], "default")
-        self.assertEqual(request["betas"], ["server-side-fallback-2026-07-01"])
-        self.assertEqual(request["output_config"]["effort"], "low")
+        self.assertEqual(request["model"], "claude-haiku-4-5")
+        # Haiku 4.5 takes neither an effort setting nor server-side fallbacks.
+        self.assertNotIn("effort", request["output_config"])
+        self.assertNotIn("fallbacks", request)
         schema = request["output_config"]["format"]["schema"]
         self.assertEqual(schema["properties"]["go_to"]["enum"], ["", "Café", "Library", "Ben"])
         self.assertIn("You are Ada", request["system"])
         self.assertEqual(mind.usage(), "100 input and 20 output tokens")
 
+    def test_opus_gets_effort_and_fallbacks(self):
+        messages = FakeMessages()
+        mind = ClaudeMind("claude-opus-5-5", "low", client=fake_client(messages))
+        mind.decide(make_persona(), make_situation())
+
+        request = messages.requests[0]
+        self.assertEqual(request["output_config"]["effort"], "low")
+        self.assertEqual(request["fallbacks"], "default")
+        self.assertEqual(request["betas"], ["server-side-fallback-2026-07-01"])
+
     def test_refusals_do_nothing(self):
         messages = FakeMessages(stop_reason="refusal", text="")
-        mind = ClaudeMind(client=SimpleNamespace(beta=SimpleNamespace(messages=messages)))
+        mind = ClaudeMind(client=fake_client(messages))
         action = mind.decide(make_persona(), make_situation())
         self.assertEqual((action.say, action.go_to), ("", ""))
 
@@ -227,7 +241,7 @@ class ClaudeMindSdkTest(unittest.TestCase):
             def do_POST(self):
                 received.append((self.path, dict(self.headers), json.loads(self.rfile.read(int(self.headers["content-length"])))))
                 body = json.dumps({
-                    "id": "msg_test", "type": "message", "role": "assistant", "model": "claude-opus-5-5",
+                    "id": "msg_test", "type": "message", "role": "assistant", "model": "claude-haiku-4-5",
                     "content": [{"type": "text", "text": json.dumps({"thought": "Hi.", "say": "Hello", "go_to": "Library"})}],
                     "stop_reason": "end_turn", "stop_sequence": None,
                     "usage": {"input_tokens": 10, "output_tokens": 5},
@@ -248,9 +262,10 @@ class ClaudeMindSdkTest(unittest.TestCase):
 
         self.assertEqual(action, Action("Hi.", "Hello", "Library"))
         path, headers, body = received[0]
-        self.assertTrue(path.startswith("/v1/messages"))
-        self.assertEqual(headers.get("anthropic-beta"), "server-side-fallback-2026-07-01")
-        self.assertEqual(body["fallbacks"], "default")
+        self.assertEqual(path, "/v1/messages")
+        self.assertIsNone(headers.get("anthropic-beta"))
+        self.assertEqual(body["model"], "claude-haiku-4-5")
+        self.assertNotIn("fallbacks", body)
         self.assertEqual(body["output_config"]["format"]["type"], "json_schema")
 
 
