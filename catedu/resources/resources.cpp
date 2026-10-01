@@ -47,3 +47,18 @@ ResourceSpec load_resource_spec()
 
     return result;
 }
+
+bool find_model_source(const char *name, const char **path, int *submodel)
+{
+    for (auto &proto : model_protos)
+    {
+        if (strcmp(name, proto.name) == 0)
+        {
+            *path = proto.path;
+            *submodel = proto.submodel;
+            return true;
+        }
+    }
+
+    return false;
+}

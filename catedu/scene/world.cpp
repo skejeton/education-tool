@@ -103,6 +103,28 @@ static bool region_overlaps_player(RectI region, FreeList<Object> &objects)
     return false;
 }
 
+const char *object_type_name(Object::Type type)
+{
+    switch (type)
+    {
+    case Object::Type::building: return "building";
+    case Object::Type::road: return "road";
+    case Object::Type::wall: return "wall";
+    case Object::Type::tree: return "tree";
+    case Object::Type::npc: return "npc";
+    case Object::Type::item: return "item";
+    case Object::Type::animal: return "animal";
+    case Object::Type::water: return "water";
+    case Object::Type::high_grass: return "high_grass";
+    case Object::Type::player: return "player";
+    case Object::Type::prop: return "prop";
+    case Object::Type::castle: return "castle";
+    case Object::Type::bridge: return "bridge";
+    }
+
+    return "unknown";
+}
+
 Place Place::create()
 {
     Place place = {};

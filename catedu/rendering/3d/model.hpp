@@ -10,6 +10,9 @@ struct RawModel
     char *texture_path;
 
     static bool load_gltf(const char *path, RawModel &dest);
+    // Submodels share the geometry but not the texture: submodel N of a model
+    // textured with "cube.png" uses "cube_N.png".
+    bool submodel_texture_path(int submodel, char *dest, size_t size) const;
     void deinit();
 };
 

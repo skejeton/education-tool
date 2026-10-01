@@ -51,11 +51,20 @@ struct SubEditor
                 GenResources &gen_resources);
 };
 
+// The outcome of the last glTF export, shown in a popup until dismissed.
+enum class ExportStatus
+{
+    none,
+    succeeded,
+    failed
+};
+
 struct GuiEditor
 {
     bool exit_requested;
     bool tried_to_return_back;
     bool playtest_no_player;
+    ExportStatus export_status;
     bool playtesting;
     bool returning_back;
     Playtest playtest;

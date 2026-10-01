@@ -14,6 +14,7 @@
 #include "catedu/genobj/castle.hpp"
 #include "catedu/gui/transition/transition.hpp"
 #include "catedu/rendering/3d/pbr.hpp"
+#include "catedu/scene/gltf_export.hpp"
 #include "catedu/scene/render_world.hpp"
 #include "catedu/scene/sample_world.hpp"
 #include "catedu/scene/world_file.hpp"
@@ -443,8 +444,30 @@ void show_control_panel(UiPass &user, GuiEditor &editor,
     editor.sub_mode = nextmode;
 }
 
+#define GLTF_EXPORT_PATH "assets/world.glb"
+
+static void export_world(GuiEditor &editor, ResourceSpec &resources)
+{
+    bool ok = export_world_gltf(GLTF_EXPORT_PATH, editor.dispatcher.world,
+                                get_genres(resources));
+    editor.export_status = ok ? ExportStatus::succeeded : ExportStatus::failed;
+}
+
 void show_popups(UiPass &user, GuiEditor &editor, bool &return_back)
 {
+    if (editor.export_status != ExportStatus::none)
+    {
+        bool ok = editor.export_status == ExportStatus::succeeded;
+        const char *options[] = {"Ok", NULL};
+        if (msgbox(user, "Export to glTF",
+                   ok ? "The world was exported to " GLTF_EXPORT_PATH
+                      : "Failed to write " GLTF_EXPORT_PATH,
+                   ok ? MsgBoxType::Info : MsgBoxType::Error, options) == 0)
+        {
+            editor.export_status = ExportStatus::none;
+        }
+    }
+
     if (editor.exit_requested)
     {
         const char *options[] = {"Yes", "No", NULL};
@@ -500,7 +523,8 @@ void show_popups(UiPass &user, GuiEditor &editor, bool &return_back)
     }
 }
 
-void show_editor_controls(UiPass &user, GuiEditor &editor, bool &return_back)
+void show_editor_controls(UiPass &user, GuiEditor &editor,
+                          ResourceSpec &resources, bool &return_back)
 {
     begin_toolbar(user, "Controls", 1.0, 0.0);
 
@@ -547,6 +571,11 @@ void show_editor_controls(UiPass &user, GuiEditor &editor, bool &return_back)
             WorldFile::export_json("assets/world.json", editor.dispatcher);
         }
 
+        if (icon_button(user, "Export", "assets/gui/export.png"))
+        {
+            export_world(editor, resources);
+        }
+
         if (icon_button(user, "Sample", "assets/gui/home.png"))
         {
             editor.dispatcher.destroy();
@@ -570,12 +599,17 @@ void show_editor_controls(UiPass &user, GuiEditor &editor, bool &return_back)
     end_toolbar(user);
 }
 
-void handle_shortcuts(GuiEditor &editor, Input &input)
+void handle_shortcuts(GuiEditor &editor, Input &input, ResourceSpec &resources)
 {
     if (input.shortcut(MOD_CTRL, SAPP_KEYCODE_S))
     {
         WorldFile::save("assets/world.dat", editor.dispatcher);
         WorldFile::export_json("assets/world.json", editor.dispatcher);
+    }
+
+    if (input.shortcut(MOD_CTRL, SAPP_KEYCODE_E))
+    {
+        export_world(editor, resources);
     }
 
     if (input.shortcut(MOD_CTRL, SAPP_KEYCODE_Z))
@@ -675,9 +709,9 @@ void show_editor_ui(GuiEditor &editor, UiPass &user, ResourceSpec &resources,
         show_control_panel(user, editor, resources, renderer);
     }
 
-    show_editor_controls(user, editor, return_back);
+    show_editor_controls(user, editor, resources, return_back);
 
-    handle_shortcuts(editor, input);
+    handle_shortcuts(editor, input, resources);
 }
 
 bool show_main_editor(GuiEditor &editor, UiPass &user, ResourceSpec &resources,

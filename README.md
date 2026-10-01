@@ -9,6 +9,7 @@ High level editor for development of educational 3D games.
     -   [Development Installation](#development-installation)
     -   [Build and Run](#build-and-run)
     -   [Pre-built binaries](#pre-built-binaries)
+    -   [Exporting to glTF](#exporting-to-gltf)
     -   [Contributing](#contributing)
         -   [Commit message convention](#commit-message-convention)
 
@@ -41,6 +42,13 @@ python build.py run
 You can find pre-built binaries for windows in the [releases](https://github.com/skejeton/education-tool/releases) page.
 
 There's also weekly build for WASM: https://ske.land/ci/educore
+
+## Exporting to glTF
+
+The editor exports the world as a `.glb` file for Blender, Godot, Unity and other
+tools: click **Export** in the toolbar or press **Ctrl+E**, and the world is
+written to `assets/world.glb`. See [docs/gltf_export.md](docs/gltf_export.md)
+for what the file contains, its limits and next steps.
 
 ## Contributing
 

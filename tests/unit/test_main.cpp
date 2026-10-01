@@ -4,5 +4,6 @@
 #include "test_table.inl"
 #include "test_text_editing.inl"
 #include "test_editor_tools.inl"
+#include "test_gltf_export.inl"
 
 TAU_MAIN()

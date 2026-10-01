@@ -31,6 +31,9 @@ struct Object
     char id[32];
 };
 
+// The object type's name in exported files.
+const char *object_type_name(Object::Type type);
+
 struct Place
 {
     bool interior;

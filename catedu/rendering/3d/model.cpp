@@ -114,6 +114,28 @@ void print_info(RawModel &model)
     }
 }
 
+bool RawModel::submodel_texture_path(int submodel, char *dest,
+                                     size_t size) const
+{
+    if (!texture_path)
+    {
+        return false;
+    }
+
+    if (submodel == 0)
+    {
+        snprintf(dest, size, "%s", texture_path);
+        return true;
+    }
+
+    // TODO: Dynamic strings here.
+    int pos = strrchr(texture_path, '.') - texture_path;
+    assert(pos > 0 && "Invalid texture path");
+    snprintf(dest, size, "%.*s_%i%s", pos, texture_path, submodel,
+             texture_path + pos);
+    return true;
+}
+
 bool Model::load_from_raw(RawModel &raw, Model &dest, int submodel)
 {
     cgltf_data *data = raw.data;
@@ -206,23 +228,10 @@ bool Model::load_from_raw(RawModel &raw, Model &dest, int submodel)
 
     dest.index_count = index_count;
 
-    if (raw.texture_path)
+    char texture_path[1024];
+    if (raw.submodel_texture_path(submodel, texture_path, sizeof texture_path))
     {
-        if (submodel != 0)
-        {
-            // TODO: Dynamic strings here.
-            char path[1024] = {};
-            int pos = strrchr(raw.texture_path, '.') - raw.texture_path;
-            assert(pos > 0 && "Invalid texture path");
-            snprintf(path, 1024, "%.*s_%i%s", pos, raw.texture_path, submodel,
-                     raw.texture_path + pos);
-            printf("loading texture: %s\n", path);
-            dest.texture = Texture::init(path);
-        }
-        else
-        {
-            dest.texture = Texture::init(raw.texture_path);
-        }
+        dest.texture = Texture::init(texture_path);
     }
 
     return true;

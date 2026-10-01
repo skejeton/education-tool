@@ -61,22 +61,7 @@ static void export_place(FILE *f, Place *place) {
         if (!first) fprintf(f, ",\n");
         first = false;
         
-        const char *type_name = "unknown";
-        switch (obj.type) {
-            case Object::Type::building: type_name = "building"; break;
-            case Object::Type::road: type_name = "road"; break;
-            case Object::Type::wall: type_name = "wall"; break;
-            case Object::Type::tree: type_name = "tree"; break;
-            case Object::Type::npc: type_name = "npc"; break;
-            case Object::Type::item: type_name = "item"; break;
-            case Object::Type::animal: type_name = "animal"; break;
-            case Object::Type::water: type_name = "water"; break;
-            case Object::Type::high_grass: type_name = "high_grass"; break;
-            case Object::Type::player: type_name = "player"; break;
-            case Object::Type::prop: type_name = "prop"; break;
-            case Object::Type::castle: type_name = "castle"; break;
-            case Object::Type::bridge: type_name = "bridge"; break;
-        }
+        const char *type_name = object_type_name(obj.type);
         
         fprintf(f, "    {\"type\": \"%s\", \"x\": %f, \"y\": %f, \"floors\": %d", 
                 type_name, obj.x, obj.y, obj.floors);

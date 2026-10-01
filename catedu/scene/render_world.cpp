@@ -84,79 +84,96 @@ void show_backdrop(Renderer &renderer, ResourceSpec &resources, float time_of_da
         vs_params);
 }
 
-void render_place(Place &place, Renderer &renderer, ResourceSpec &resources, float time_of_day)
+Matrix4 place_object_matrix(const Object &object)
 {
-    GenResources gen_resources = get_genres(resources);
+    return Matrix4::translate({object.x, object.z, object.y});
+}
 
-    for (auto &object : iter(place.objects))
+void emit_place_object(GenSink sink, const GenResources &resources,
+                       const Object &object, Matrix4 matrix)
+{
+    if (object.type == Object::Type::prop)
     {
-        Matrix4 at = Matrix4::translate(
-            {(float)object.x, (float)object.z, (float)object.y});
-
-        if (object.type == Object::Type::prop)
-        {
-            genobj_render_prop(renderer, gen_resources, object.id, at,
-                               time_of_day);
-            continue;
-        }
-
-        GeneratedObject mesh = {};
-
-        switch (object.type)
-        {
-        case Object::Type::road:
-            mesh = genmesh_generate_road();
-            break;
-        case Object::Type::building:
-            mesh = genmesh_generate_building(object.floors);
-            break;
-        case Object::Type::player:
-            mesh = genmesh_generate_player();
-            break;
-        case Object::Type::wall:
-            mesh = genmesh_generate_wall();
-            break;
-        case Object::Type::tree:
-            mesh = genmesh_generate_tree();
-            break;
-        case Object::Type::npc:
-            mesh = genmesh_generate_npc();
-            break;
-        case Object::Type::item:
-            mesh = genmesh_generate_item();
-            break;
-        case Object::Type::animal:
-            mesh = genmesh_generate_animal();
-            break;
-        case Object::Type::water:
-            mesh = genmesh_generate_water();
-            break;
-        case Object::Type::high_grass:
-            mesh = genmesh_generate_high_grass();
-            break;
-        case Object::Type::prop:
-            break;
-        case Object::Type::castle:
-            mesh = genmesh_generate_castle(object.floors);
-            break;
-        case Object::Type::bridge:
-            mesh = genmesh_generate_bridge();
-            break;
-        }
-
-        genobj_render_object(renderer, gen_resources, mesh, at, time_of_day);
+        genobj_emit_prop(sink, resources, object.id, matrix);
+        return;
     }
 
+    GeneratedObject mesh = {};
+
+    switch (object.type)
+    {
+    case Object::Type::road:
+        mesh = genmesh_generate_road();
+        break;
+    case Object::Type::building:
+        mesh = genmesh_generate_building(object.floors);
+        break;
+    case Object::Type::player:
+        mesh = genmesh_generate_player();
+        break;
+    case Object::Type::wall:
+        mesh = genmesh_generate_wall();
+        break;
+    case Object::Type::tree:
+        mesh = genmesh_generate_tree();
+        break;
+    case Object::Type::npc:
+        mesh = genmesh_generate_npc();
+        break;
+    case Object::Type::item:
+        mesh = genmesh_generate_item();
+        break;
+    case Object::Type::animal:
+        mesh = genmesh_generate_animal();
+        break;
+    case Object::Type::water:
+        mesh = genmesh_generate_water();
+        break;
+    case Object::Type::high_grass:
+        mesh = genmesh_generate_high_grass();
+        break;
+    case Object::Type::prop:
+        break;
+    case Object::Type::castle:
+        mesh = genmesh_generate_castle(object.floors);
+        break;
+    case Object::Type::bridge:
+        mesh = genmesh_generate_bridge();
+        break;
+    }
+
+    genobj_emit_object(sink, resources, mesh, matrix);
+}
+
+void emit_place_ground(GenSink sink, const GenResources &resources,
+                       const Place &place)
+{
     if (place.interior)
     {
-        genobj_render_object(renderer, gen_resources,
-                             genmesh_generate_ground(true), Matrix4::identity(), time_of_day);
+        genobj_emit_object(sink, resources, genmesh_generate_ground(true));
     }
     else
     {
-        show_backdrop(renderer, resources, time_of_day);
         // The floor model's top face sits at y = -0.6.
-        genobj_render_model(renderer, gen_resources.grass_floor,
-                            Matrix4::translate({0, 0.6f, 0}), time_of_day);
+        sink.draw(sink.user, {&resources.grass_floor, "grass_floor",
+                              Matrix4::translate({0, 0.6f, 0}), {1, 1, 1, 1}});
     }
+}
+
+void render_place(Place &place, Renderer &renderer, ResourceSpec &resources, float time_of_day)
+{
+    GenResources gen_resources = get_genres(resources);
+    GenRenderSink render = {&renderer, time_of_day};
+
+    for (auto &object : iter(place.objects))
+    {
+        emit_place_object(render.sink(), gen_resources, object,
+                          place_object_matrix(object));
+    }
+
+    if (!place.interior)
+    {
+        show_backdrop(renderer, resources, time_of_day);
+    }
+    emit_place_ground(render.sink(), gen_resources, place);
 }
