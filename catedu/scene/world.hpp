@@ -33,6 +33,8 @@ struct Object
 
 // The object type's name in exported files.
 const char *object_type_name(Object::Type type);
+// Finds the object type with the name `object_type_name` gives it.
+bool object_type_from_name(const char *name, Object::Type *type);
 
 struct Place
 {

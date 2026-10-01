@@ -1,6 +1,7 @@
 #include "world.hpp"
 #include "catedu/core/alloc/allocator.hpp"
 #include "catedu/core/memory/addressfixer.hpp"
+#include <string.h>
 #define BUILDING_DIMENSIONS_W 8
 #define BUILDING_DIMENSIONS_D 8
 
@@ -123,6 +124,21 @@ const char *object_type_name(Object::Type type)
     }
 
     return "unknown";
+}
+
+bool object_type_from_name(const char *name, Object::Type *type)
+{
+    // Castle is the last type.
+    for (int i = 0; i <= (int)Object::Type::castle; i++)
+    {
+        if (strcmp(name, object_type_name((Object::Type)i)) == 0)
+        {
+            *type = (Object::Type)i;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 Place Place::create()

@@ -1,6 +1,10 @@
 # Binaries
 bin/
 
+# Agent demo output and Python caches
+agents/out/
+__pycache__/
+
 
 # Compiled headers
 catedu/shaders.hxx

@@ -1,5 +1,7 @@
+#include "agent_server.hpp"
 #include "entry.hpp"
 #include "viewport_server.hpp"
+#include <cstdlib>
 #include <cstring>
 
 sapp_desc sokol_main(int argc, char *argv[])
@@ -10,7 +12,12 @@ sapp_desc sokol_main(int argc, char *argv[])
 
     for (int i = 1; i < argc; i++)
     {
-        if (strcmp(argv[i], "--viewport-server") == 0)
+        if (strcmp(argv[i], "--agent-server") == 0)
+        {
+            // Headless: runs until stdin closes, without opening a window.
+            exit(run_agent_server());
+        }
+        else if (strcmp(argv[i], "--viewport-server") == 0)
         {
             viewport_server = true;
         }

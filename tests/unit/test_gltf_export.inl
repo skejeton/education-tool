@@ -1,4 +1,4 @@
-#include "catedu/genobj/prop.hpp"
+#include "catedu/resources/resources.hpp"
 #include "catedu/rendering/resource_spec.hpp"
 #include "catedu/scene/gltf_export.hpp"
 #include "cgltf/cgltf.h"
@@ -10,15 +10,10 @@
 static const char *const GLTF_TEST_PATH = "bin/gltf_export_test.glb";
 
 // Exports the world and reads the file back. The exporter only needs the
-// names of the models, so the models themselves can stay empty and no GPU is
-// needed.
+// names of the models, so no GPU is needed.
 static cgltf_data *export_and_parse(World &world)
 {
-    ResourceSpec spec = {};
-    for (size_t i = 0; i < PROP_MODEL_COUNT; i++)
-    {
-        spec.models.allocate({PROP_MODELS[i].id, {}, false});
-    }
+    ResourceSpec spec = load_resource_names();
     GenResources resources = {};
     resources.spec = &spec;
 

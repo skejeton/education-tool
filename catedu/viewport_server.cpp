@@ -2,6 +2,7 @@
 #include "catedu/resources/resources.hpp"
 #include "catedu/scene/render_world.hpp"
 #include "catedu/scene/world_file.hpp"
+#include "catedu/sys/json_fields.hpp"
 #include "catedu/sys/sg_tricks.hpp"
 #include "sokol/sokol_glue.h"
 
@@ -27,70 +28,6 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
 #endif
-
-// Minimal JSON parser helpers (no dependency needed for this simple protocol)
-static bool json_match_str(const char *json, const char *key, char *out,
-                           int out_size)
-{
-    char pattern[128];
-    snprintf(pattern, sizeof(pattern), "\"%s\"", key);
-    const char *p = strstr(json, pattern);
-    if (!p)
-        return false;
-    p += strlen(pattern);
-    while (*p == ' ' || *p == ':' || *p == '\t')
-        p++;
-    if (*p == '"')
-    {
-        p++;
-        int i = 0;
-        while (*p && *p != '"' && i < out_size - 1)
-        {
-            out[i++] = *p++;
-        }
-        out[i] = '\0';
-        return true;
-    }
-    return false;
-}
-
-static bool json_match_double(const char *json, const char *key, double *out)
-{
-    char pattern[128];
-    snprintf(pattern, sizeof(pattern), "\"%s\"", key);
-    const char *p = strstr(json, pattern);
-    if (!p)
-        return false;
-    p += strlen(pattern);
-    while (*p == ' ' || *p == ':' || *p == '\t')
-        p++;
-    char *end;
-    *out = strtod(p, &end);
-    return end != p;
-}
-
-static bool json_match_bool(const char *json, const char *key, bool *out)
-{
-    char pattern[128];
-    snprintf(pattern, sizeof(pattern), "\"%s\"", key);
-    const char *p = strstr(json, pattern);
-    if (!p)
-        return false;
-    p += strlen(pattern);
-    while (*p == ' ' || *p == ':' || *p == '\t')
-        p++;
-    if (strncmp(p, "true", 4) == 0)
-    {
-        *out = true;
-        return true;
-    }
-    if (strncmp(p, "false", 5) == 0)
-    {
-        *out = false;
-        return true;
-    }
-    return false;
-}
 
 ViewportServer::ViewportServer(int w, int h) : width(w), height(h)
 {

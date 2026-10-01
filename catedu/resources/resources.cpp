@@ -48,6 +48,18 @@ ResourceSpec load_resource_spec()
     return result;
 }
 
+ResourceSpec load_resource_names()
+{
+    ResourceSpec result = {};
+
+    for (auto &proto : model_protos)
+    {
+        result.models.allocate({proto.name, {}, false});
+    }
+
+    return result;
+}
+
 bool find_model_source(const char *name, const char **path, int *submodel)
 {
     for (auto &proto : model_protos)

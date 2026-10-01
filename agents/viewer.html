@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Town Life</title>
+<style>
+  :root {
+    --bg: #f4f1ea;
+    --panel: #fffdf8;
+    --ink: #22201c;
+    --muted: #77716a;
+    --line: #e2ddd2;
+    --accent: #2e86ab;
+    --bubble: #ffffff;
+    --sky: #a9cdea;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17181b;
+      --panel: #1f2125;
+      --ink: #ecebe8;
+      --muted: #9a978f;
+      --line: #33363b;
+      --accent: #6cb4d4;
+      --bubble: #fffdf8;
+      --sky: #2a3a4c;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  #app {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    grid-template-rows: minmax(0, 1fr) auto;
+    height: 100vh;
+  }
+  #stage { position: relative; overflow: hidden; background: var(--sky); }
+  #stage canvas { display: block; width: 100%; height: 100%; }
+  #labels { position: absolute; inset: 0; pointer-events: none; }
+  .tag {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }
+  .name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    padding: 1px 7px;
+    border-radius: 999px;
+  }
+  .bubble {
+    max-width: 240px;
+    white-space: normal;
+    background: var(--bubble);
+    color: #22201c;
+    border-radius: 10px;
+    padding: 6px 9px;
+    font-size: 12.5px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.2);
+  }
+  .bubble.thought { font-style: italic; color: #6b665f; background: rgb(255 255 255 / 0.85); }
+  .place {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 1px 3px rgb(0 0 0 / 0.8);
+    white-space: nowrap;
+  }
+  #hud {
+    position: absolute;
+    left: 16px;
+    top: 12px;
+    color: #fff;
+    text-shadow: 0 1px 4px rgb(0 0 0 / 0.6);
+    pointer-events: none;
+  }
+  #hud h1 { margin: 0; font-size: 20px; }
+  #hud p { margin: 2px 0 0; font-size: 13px; opacity: 0.9; }
+  #clock-big { font-variant-numeric: tabular-nums; font-size: 28px; font-weight: 700; margin-top: 4px; }
+  aside {
+    grid-row: 1 / 3;
+    grid-column: 2;
+    background: var(--panel);
+    border-left: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  #cast { padding: 14px 16px 6px; border-bottom: 1px solid var(--line); }
+  .person { display: grid; grid-template-columns: 12px 1fr; gap: 2px 8px; margin-bottom: 10px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; margin-top: 4px; }
+  .person b { font-size: 14px; }
+  .person small { grid-column: 2; color: var(--muted); font-size: 12px; }
+  #log { flex: 1; overflow-y: auto; padding: 10px 16px 16px; }
+  .entry { margin: 0 0 8px; }
+  .entry time { color: var(--muted); font-variant-numeric: tabular-nums; margin-right: 6px; font-size: 12px; }
+  .entry.thought { color: var(--muted); font-style: italic; }
+  .entry.move { color: var(--muted); font-size: 12.5px; }
+  footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: var(--panel);
+    border-top: 1px solid var(--line);
+  }
+  button, select {
+    font: inherit;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 5px 12px;
+  }
+  button { min-width: 72px; cursor: pointer; }
+  input[type=range] { flex: 1; min-width: 0; accent-color: var(--accent); }
+  label { display: flex; align-items: center; gap: 5px; color: var(--muted); white-space: nowrap; }
+  #error { position: absolute; inset: 0; display: none; place-items: center; padding: 24px; text-align: center; color: #fff; background: rgb(0 0 0 / 0.6); }
+  @media (max-width: 800px) {
+    #app { grid-template-columns: 1fr; grid-template-rows: 55vh auto minmax(0, 1fr); height: auto; min-height: 100vh; }
+    aside { grid-row: 3; grid-column: 1; border-left: 0; border-top: 1px solid var(--line); }
+    #log { max-height: 50vh; }
+    footer { flex-wrap: wrap; }
+    input[type=range] { flex-basis: 100%; order: 5; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <canvas id="view"></canvas>
+    <div id="labels"></div>
+    <div id="hud"><h1>Town life</h1><p id="meta"></p><div id="clock-big">08:00</div></div>
+    <div id="error"></div>
+  </div>
+  <aside>
+    <div id="cast"></div>
+    <div id="log" aria-live="polite"></div>
+  </aside>
+  <footer>
+    <button id="play" type="button">Pause</button>
+    <input id="scrub" type="range" min="0" step="0.01" value="0" aria-label="Time">
+    <select id="speed" aria-label="Speed">
+      <option value="2">Slow</option>
+      <option value="5" selected>Normal</option>
+      <option value="12">Fast</option>
+    </select>
+    <label><input id="thoughts" type="checkbox" checked> Thoughts</label>
+  </footer>
+</div>
+
+<script id="replay-data" type="application/json">__REPLAY_JSON__</script>
+<script id="town-data" type="text/plain">__GLB_BASE64__</script>
+<script type="importmap">
+{"imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+const replay = JSON.parse(document.getElementById("replay-data").textContent);
+const glb = Uint8Array.from(atob(document.getElementById("town-data").textContent.trim()), (c) => c.charCodeAt(0));
+
+// How long words stay above someone's head, in ticks.
+const BUBBLE_TICKS = 12;
+const lastTick = replay.frames.length - 1;
+
+const stage = document.getElementById("stage");
+const canvas = document.getElementById("view");
+const labels = document.getElementById("labels");
+const log = document.getElementById("log");
+const scrub = document.getElementById("scrub");
+const playButton = document.getElementById("play");
+const speed = document.getElementById("speed");
+const showThoughts = document.getElementById("thoughts");
+
+document.getElementById("meta").textContent =
+  `${replay.agents.length} residents · decided by ${replay.mind} · town seed ${replay.seed}`;
+scrub.max = lastTick;
+
+// Tiles are one unit; the engine's tile (x, y) is glTF (x, height, -y).
+const toWorld = (x, y, height = 0) => new THREE.Vector3(x + 0.5, height, -(y + 0.5));
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight(0xffffff, 0x4a5a30, 2.2));
+const sun = new THREE.DirectionalLight(0xfff2dd, 2.0);
+sun.position.set(30, 60, 20);
+scene.add(sun);
+
+const [minX, minY, maxX, maxY] = replay.bounds;
+const center = toWorld((minX + maxX) / 2, (minY + maxY) / 2);
+const size = Math.max(maxX - minX, maxY - minY);
+const camera = new THREE.PerspectiveCamera(45, 1, 0.5, 1000);
+// From the south, where the front doors face.
+camera.position.copy(center).add(new THREE.Vector3(0, size * 0.7, size * 0.75));
+const controls = new OrbitControls(camera, canvas);
+controls.target.copy(center);
+controls.maxPolarAngle = Math.PI * 0.47;
+controls.enableDamping = true;
+
+new GLTFLoader().parse(glb.buffer, "", (gltf) => scene.add(gltf.scene), (error) => {
+  const box = document.getElementById("error");
+  box.style.display = "grid";
+  box.textContent = `Couldn't load the town: ${error.message || error}`;
+});
+
+// Residents.
+const agents = replay.agents.map((agent, i) => {
+  const body = new THREE.Mesh(
+    new THREE.CapsuleGeometry(0.42, 0.8, 4, 12),
+    new THREE.MeshStandardMaterial({ color: agent.color, roughness: 0.6 }),
+  );
+  scene.add(body);
+
+  const tag = document.createElement("div");
+  tag.className = "tag";
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  const name = document.createElement("div");
+  name.className = "name";
+  name.textContent = agent.name;
+  name.style.background = agent.color;
+  tag.append(bubble, name);
+  labels.append(tag);
+
+  const says = replay.events.filter((e) => e.agent === i && e.kind === "say");
+  const thinks = replay.events.filter((e) => e.agent === i && e.kind === "thought");
+  return { ...agent, body, tag, bubble, says, thinks };
+});
+
+// Place names above the buildings and the park.
+const places = replay.locations.map((location) => {
+  const label = document.createElement("div");
+  label.className = "place";
+  label.textContent = location.name;
+  labels.append(label);
+  const height = location.kind === "park" ? 2.5 : location.floors * 2 + 1.4;
+  return { label, at: toWorld(location.center[0] - 0.5, location.center[1] - 0.5, height) };
+});
+
+// Cast list.
+const cast = document.getElementById("cast");
+for (const agent of replay.agents) {
+  const row = document.createElement("div");
+  row.className = "person";
+  const dot = document.createElement("span");
+  dot.className = "dot";
+  dot.style.background = agent.color;
+  const name = document.createElement("b");
+  name.textContent = `${agent.name}, ${agent.role}`;
+  const goal = document.createElement("small");
+  goal.textContent = agent.goal;
+  row.append(dot, name, goal);
+  cast.append(row);
+}
+
+const clockAt = (tick) => {
+  const minutes = replay.startMinutes + Math.floor(tick) * replay.minutesPerTick;
+  return `${String(Math.floor(minutes / 60) % 24).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+};
+
+const latest = (events, tick) => {
+  let found = null;
+  for (const event of events) {
+    if (event.tick > tick) break;
+    found = event;
+  }
+  return found && tick - found.tick < BUBBLE_TICKS ? found : null;
+};
+
+let shownUpTo = -1;
+let shownThoughts = showThoughts.checked;
+function updateLog(tick) {
+  const upTo = Math.floor(tick);
+  if (upTo === shownUpTo && shownThoughts === showThoughts.checked) return;
+  const rebuild = upTo < shownUpTo || shownThoughts !== showThoughts.checked;
+  if (rebuild) log.replaceChildren();
+  for (const event of replay.events) {
+    if (event.tick > upTo) break;
+    if (!rebuild && event.tick <= shownUpTo) continue;
+    if (event.kind === "thought" && !showThoughts.checked) continue;
+    const agent = replay.agents[event.agent];
+    const entry = document.createElement("p");
+    entry.className = `entry ${event.kind === "say" ? "say" : event.kind === "thought" ? "thought" : "move"}`;
+    const time = document.createElement("time");
+    time.textContent = clockAt(event.tick);
+    const who = document.createElement("b");
+    who.textContent = agent.name;
+    who.style.color = agent.color;
+    const text =
+      event.kind === "say" ? `: “${event.text}”`
+      : event.kind === "thought" ? ` thinks: ${event.text}`
+      : event.kind === "go" ? ` heads to ${event.text}`
+      : ` arrives at ${event.text}`;
+    entry.append(time, who, text);
+    log.append(entry);
+  }
+  shownUpTo = upTo;
+  shownThoughts = showThoughts.checked;
+  log.scrollTop = log.scrollHeight;
+}
+
+let tick = 0;
+let playing = true;
+playButton.addEventListener("click", () => {
+  if (tick >= lastTick) tick = 0;
+  playing = !playing;
+});
+scrub.addEventListener("input", () => {
+  tick = Number(scrub.value);
+  playing = false;
+});
+
+function resize() {
+  const { clientWidth: width, clientHeight: height } = stage;
+  renderer.setSize(width, height, false);
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage);
+
+function place(element, position) {
+  const p = position.clone().project(camera);
+  const visible = p.z < 1 && Math.abs(p.x) < 1.1 && Math.abs(p.y) < 1.1;
+  element.style.display = visible ? "" : "none";
+  if (visible) {
+    element.style.left = `${((p.x + 1) / 2) * stage.clientWidth}px`;
+    element.style.top = `${((1 - p.y) / 2) * stage.clientHeight}px`;
+  }
+}
+
+let previous = performance.now();
+function frame(now) {
+  // The first frame's timestamp can be older than `previous`.
+  const dt = Math.min(Math.max((now - previous) / 1000, 0), 0.1);
+  previous = now;
+  if (playing) {
+    tick = Math.min(tick + dt * Number(speed.value), lastTick);
+    if (tick >= lastTick) playing = false;
+    scrub.value = tick;
+  }
+  playButton.textContent = playing ? "Pause" : "Play";
+
+  const a = Math.floor(tick);
+  const b = Math.min(a + 1, lastTick);
+  const f = tick - a;
+  agents.forEach((agent, i) => {
+    const [ax, ay, aInside] = replay.frames[a][i];
+    const [bx, by, bInside] = replay.frames[b][i];
+    const inside = aInside && bInside;
+    agent.body.visible = !inside;
+    agent.body.position.copy(toWorld(ax + (bx - ax) * f, ay + (by - ay) * f, 0.85));
+    if (!inside) agent.body.position.y += Math.abs(Math.sin(tick * Math.PI)) * 0.12 * (ax !== bx || ay !== by);
+
+    const said = latest(agent.says, tick);
+    const thought = showThoughts.checked ? latest(agent.thinks, tick) : null;
+    const shown = said || thought;
+    agent.bubble.style.display = shown ? "" : "none";
+    if (shown) {
+      agent.bubble.textContent = shown.text;
+      agent.bubble.classList.toggle("thought", !said);
+    }
+    agent.tag.style.opacity = inside ? 0.55 : 1;
+    place(agent.tag, agent.body.position.clone().add(new THREE.Vector3(0, inside ? 1.2 : 1.1, 0)));
+  });
+  for (const p of places) place(p.label, p.at);
+
+  document.getElementById("clock-big").textContent = clockAt(tick);
+  updateLog(tick);
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+resize();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

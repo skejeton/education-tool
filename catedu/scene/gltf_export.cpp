@@ -1,8 +1,8 @@
 #include "gltf_export.hpp"
 #include "catedu/resources/resources.hpp"
+#include "catedu/sys/json_fields.hpp"
 #include "render_world.hpp"
 #include <math.h>
-#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -84,47 +84,6 @@ struct GltfExport
     std::vector<GltfNode> nodes;
     std::vector<GltfScene> scenes;
 };
-
-static void appendf(std::string &out, const char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    va_list copy;
-    va_copy(copy, args);
-    int size = vsnprintf(nullptr, 0, fmt, copy);
-    va_end(copy);
-
-    if (size > 0)
-    {
-        size_t at = out.size();
-        out.resize(at + size + 1);
-        vsnprintf(&out[at], size + 1, fmt, args);
-        out.resize(at + size);
-    }
-    va_end(args);
-}
-
-static void append_json_string(std::string &out, const char *str)
-{
-    out += '"';
-    for (const char *c = str; *c; c++)
-    {
-        if (*c == '"' || *c == '\\')
-        {
-            out += '\\';
-            out += *c;
-        }
-        else if ((unsigned char)*c < 0x20)
-        {
-            appendf(out, "\\u%04x", *c);
-        }
-        else
-        {
-            out += *c;
-        }
-    }
-    out += '"';
-}
 
 static void append_int_array(std::string &out, const std::vector<int> &values)
 {

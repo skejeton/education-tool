@@ -10,6 +10,7 @@ High level editor for development of educational 3D games.
     -   [Build and Run](#build-and-run)
     -   [Pre-built binaries](#pre-built-binaries)
     -   [Exporting to glTF](#exporting-to-gltf)
+    -   [Agent sandbox](#agent-sandbox)
     -   [Contributing](#contributing)
         -   [Commit message convention](#commit-message-convention)
 
@@ -49,6 +50,13 @@ The editor exports the world as a `.glb` file for Blender, Godot, Unity and othe
 tools: click **Export** in the toolbar or press **Ctrl+E**, and the world is
 written to `assets/world.glb`. See [docs/gltf_export.md](docs/gltf_export.md)
 for what the file contains, its limits and next steps.
+
+## Agent sandbox
+
+An experimental Python API runs the world headless for AI agents, with a demo
+of Claude-driven residents spending a morning in a generated town:
+`python agents/demo.py --offline` runs it without API calls. See
+[agents/README.md](agents/README.md).
 
 ## Contributing
 
